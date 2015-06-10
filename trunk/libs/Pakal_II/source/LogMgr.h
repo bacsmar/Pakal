@@ -10,14 +10,14 @@
 #pragma once
 #include "config.h"
 
-#if TEO_USE_LOG == 1
+#if PAKAL_USE_LOG == 1
 	#ifndef _DEBUG
 
-	#define LOG_DEBUG(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_DEBUG,"[DEBUG]\t"    format, ## __VA_ARGS__);
-	#define LOG_INFO(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_INFO,"[INFO]\t"    format, ## __VA_ARGS__);
-	#define LOG_WARNING(format, ...)	ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_WARNING,"[WARNING]\t" format, ## __VA_ARGS__);
-	#define LOG_ERROR(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_ERROR,"[ERROR]\t"   format, ## __VA_ARGS__);
-	#define LOG_FATAL(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_FATAL,"[FATAL]\t"   format, ## __VA_ARGS__);
+	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_DEBUG,"[DEBUG]\t"    format, ## __VA_ARGS__);
+	#define LOG_INFO(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_INFORMATION,"[INFO]\t"    format, ## __VA_ARGS__);
+	#define LOG_WARNING(format, ...)	Pakal::LogMgr::log(Pakal::LogMgr::LOG_WARNING,"[WARNING]\t" format, ## __VA_ARGS__);
+	#define LOG_ERROR(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_ERROR,"[ERROR]\t"   format, ## __VA_ARGS__);
+	#define LOG_FATAL(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_FATAL,"[FATAL]\t"   format, ## __VA_ARGS__);
 
 	#else /* Not NDEBUG */
 
@@ -26,11 +26,11 @@
 	#define __LOG_INFO_FORMAT__ "%-80s"
 	#define __LOG_INFO__ "[" __FILE__ ":" _LOG_QUOTE_(__LINE__) "]: "
 
-	#define LOG_DEBUG(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_DEBUG, "[DEBUG]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_INFO(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_INFO, "[INFO]\t"    __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_WARNING(format, ...)	ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_WARNING, "[WARNING]\t" __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_ERROR(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_ERROR, "[ERROR]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_FATAL(format, ...)		ZombieWar::LogMgr::log(ZombieWar::LogMgr::LOG_FATAL, "[FATAL]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_DEBUG, "[DEBUG]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_INFO(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_INFORMATION, "[INFO]\t"    __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_WARNING(format, ...)	Pakal::LogMgr::log(Pakal::LogMgr::LOG_WARNING, "[WARNING]\t" __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_ERROR(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_ERROR, "[ERROR]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_FATAL(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_FATAL, "[FATAL]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
 
 	#endif // NDEBUG
 #else
@@ -41,24 +41,28 @@
 	#define LOG_FATAL(format, ...)		
 #endif
 
-namespace ZombieWar{	
+namespace Pakal{	
 
 	namespace LogMgr 
 	{
-
-		enum LogLevel{ LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL};
+		enum LogLevel{ LOG_NONE, LOG_FATAL, LOG_CRITICAL, LOG_ERROR, LOG_WARNING, LOG_NOTICE, LOG_INFORMATION, LOG_DEBUG, LOG_TRACE};
 
 		void log( int level, const char *format, ... );
+
+		void setLogLevel(int level);
+
+		bool init();
 	};
 }
 
-#if TEO_USE_SCRIPTS == 1
+#if PAKAL_USE_SCRIPTS == 1
 
 class  TLog
 {
-	ZombieWar::LogMgr *pManager;
+	//Pakal::LogMgr *pManager;
 public:	
-	TLog() { pManager = ZombieWar::LogMgr::instance(); }
+	TLog() { //pManager = Pakal::LogMgr::instance(); 
+			 }
 	// funciones miembro de las clases huesped
 	inline void log(const std::string& msg) { LOG_INFO("[Script] %s", msg.c_str()); }
 };

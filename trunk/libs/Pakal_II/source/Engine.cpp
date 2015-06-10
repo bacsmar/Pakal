@@ -5,15 +5,15 @@
 #include "Poco/ConsoleChannel.h"
 #include "Poco/WindowsConsoleChannel.h"
 
+#include "LogMgr.h"
+
 using namespace Pakal;
 
 void Pakal::Engine::run( IPakalApplication *application )
 {
-	//Poco::Logger::root().setChannel( new Poco::ColorConsoleChannel() );
-	Poco::Logger::root().setChannel( new Poco::WindowsColorConsoleChannel() );
-	//Poco::Logger::root().setProperty("enableColors", "true");
-	Poco::Logger::root().information("Initializing Pakal Engine Version " );
-	Poco::Logger::root().warning("outasd");
+	Pakal::LogMgr::init();
+
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 	mApplication = application;
 }
 
