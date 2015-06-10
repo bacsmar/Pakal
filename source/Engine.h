@@ -5,6 +5,7 @@ namespace Pakal
 {
 
 	class IPakalApplication;
+	class IGraphicsSystem;
 
 	class _PAKALExport Engine 
 	{
