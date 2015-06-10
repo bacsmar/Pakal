@@ -5,7 +5,8 @@ namespace Pakal
 {
 
 	class IPakalApplication;
-	class IGraphicsSystem;
+	class GraphicsSystem;
+	class EventSystem;
 
 	class _PAKALExport Engine 
 	{
@@ -14,6 +15,10 @@ namespace Pakal
 
 		static Engine &instance();
 	protected:
-		IPakalApplication * mApplication;
+		IPakalApplication	*mApplication;
+		EventSystem			*mEventSystem;
+		GraphicsSystem		*mGraphicsSystem;
+
+		static bool			msInitialized;
 	};
 }
