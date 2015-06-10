@@ -47,11 +47,11 @@ namespace Pakal{
 	{
 		enum LogLevel{ LOG_NONE, LOG_FATAL, LOG_CRITICAL, LOG_ERROR, LOG_WARNING, LOG_NOTICE, LOG_INFORMATION, LOG_DEBUG, LOG_TRACE};
 
-		void log( int level, const char *format, ... );
+		void _PAKALExport log( int level, const char *format, ... );
 
-		void setLogLevel(int level);
+		void _PAKALExport setLogLevel(int level);
 
-		bool init();
+		bool _PAKALExport init();
 	};
 }
 
