@@ -89,4 +89,9 @@
 
 #define SAFE_DEL(x) {if(x){delete (x);x=nullptr;}}
 
-#define ASSERT(x) assert (x);
+#ifdef _DEBUG
+	#define ASSERT(x) assert (x);
+	#include <cassert>
+#else
+	#define  ASSERT(x)
+#endif

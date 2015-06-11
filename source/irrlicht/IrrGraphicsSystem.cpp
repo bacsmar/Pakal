@@ -32,9 +32,9 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	evt->displayEvent.height = driver->getScreenSize().Height;
 	*/
 #ifdef PAKAL_WIN32_PLATFORM
-	mWindow = (size_t)driver->getExposedVideoData().OpenGLWin32.HWnd;
+	m_Window = (size_t)driver->getExposedVideoData().OpenGLWin32.HWnd;
 #else
-	mWindow = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
+	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
 #endif	
 
 	//evt->displayEvent.windowHwnd = mWindow;
