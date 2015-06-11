@@ -18,11 +18,11 @@ namespace Pakal
 		~Engine();
 
 	protected:
-		IPakalApplication	*mApplication;
-		EventSystem			*mEventSystem;
-		GraphicsSystem		*mGraphicsSystem;
+		IPakalApplication	*m_Application;
+		EventSystem			*m_EventSystem;
+		GraphicsSystem		*m_GraphicsSystem;
 
-		static bool			msInitialized;
+		static bool			ms_Initialized;
 		
 	};
 }

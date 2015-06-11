@@ -9,8 +9,6 @@ using namespace Pakal;
 
 Pakal::GraphicsSystem* Pakal::GraphicsSystem::createGraphicsSystem()
 {
-	GraphicsSystem *graphicsSystem = nullptr;
-
 #if PAKAL_USE_IRRLICHT == 1
 	return new Pakal::IrrGraphicsSystem();
 #endif

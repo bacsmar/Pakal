@@ -22,9 +22,9 @@ namespace Pakal
 
 		bool mIsRendering;				
 
-		std::string mHomePath;
-		std::string mConfigPath;
-		size_t		mWindow;
+		std::string m_HomePath;
+		std::string m_ConfigPath;
+		size_t		m_Window;
 
 		irr::IrrlichtDevice			* device;		
 		irr::video::IVideoDriver	* driver;		
