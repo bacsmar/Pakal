@@ -7,7 +7,7 @@
 
 using namespace Poco;
 
-Pakal::EventSystem::EventSystem() : mNotificationQueue( new NotificationQueue() )
+Pakal::EventSystem::EventSystem() : m_NotificationQueue( new NotificationQueue() )
 {
 
 }

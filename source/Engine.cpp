@@ -8,20 +8,20 @@
 
 using namespace Pakal;
 
-bool Pakal::Engine::msInitialized = false;
+bool Pakal::Engine::ms_Initialized = false;
 
 void Pakal::Engine::run( IPakalApplication *application )
 {
 	Pakal::LogMgr::init();
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 
-	mApplication = application;
+	m_Application = application;
 
-	mGraphicsSystem = GraphicsSystem::createGraphicsSystem();
-	mGraphicsSystem->init();
-	mGraphicsSystem->initWindow();
+	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
+	m_GraphicsSystem->init();
+	m_GraphicsSystem->initWindow();
 
-	msInitialized = true;
+	ms_Initialized = true;
 }
 
 Pakal::Engine & Pakal::Engine::instance()
@@ -32,6 +32,6 @@ Pakal::Engine & Pakal::Engine::instance()
 
 Pakal::Engine::~Engine()
 {
-	SAFE_DEL(mGraphicsSystem);
-	SAFE_DEL(mApplication);
+	SAFE_DEL(m_GraphicsSystem);
+	SAFE_DEL(m_Application);
 }

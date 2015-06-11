@@ -14,6 +14,6 @@ namespace Pakal
 	{
 		EventSystem();
 	protected:
-		Poco::NotificationQueue *mNotificationQueue;
+		Poco::NotificationQueue *m_NotificationQueue;
 	};
 }
