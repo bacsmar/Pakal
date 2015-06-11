@@ -18,6 +18,7 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* getDriver() const { return driver;	}		
 		inline irr::scene::ISceneManager* getSmgr() const	{ return smgr;		}		
 		inline irr::gui::IGUIEnvironment* getGuienv() const { return guienv;	}
+		IrrGraphicsSystem();
 	protected:
 
 		bool mIsRendering;				
@@ -39,11 +40,15 @@ namespace Pakal
 
 		virtual void beginScene();
 
-		virtual bool draw( float time );
+		virtual bool draw(  );
 
 		virtual void endScene();
 
 		virtual void setWindowCaption( const char* caption );
+
+		virtual bool update();
+
+		virtual void showFps( bool val );
 
 	};
 }
