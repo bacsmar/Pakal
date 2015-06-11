@@ -22,6 +22,30 @@ void Pakal::Engine::run( IPakalApplication *application )
 	m_GraphicsSystem->initWindow();
 
 	ms_Initialized = true;
+
+	// TODO: Arrancar los threads
+
+	while( true )
+	{		  
+
+#ifdef PAKAL_WIN32_PLATFORM
+		MSG  msg;
+		while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
+		{
+			TranslateMessage( &msg );
+			DispatchMessage( &msg );
+		}
+#elif defined(PAKAL_ANDROID_PLATFORM)
+		//ALooper_pollAll( EngineApp::getSingleton().isRunning() ? 0 : -1, NULL, NULL, NULL);
+#endif
+		bool running = m_GraphicsSystem->update();
+
+		if (msg.message == WM_QUIT || !running)
+		{
+			// TODO: notificar a los sistemas que hemos terminado 
+			break;
+		}
+	}
 }
 
 Pakal::Engine & Pakal::Engine::instance()

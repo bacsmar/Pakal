@@ -2,14 +2,24 @@
 
 #include "LogMgr.h"
 
-#include <assert.h>
-
 using namespace irr;
 using namespace core;
 using namespace scene;
 using namespace video;
 using namespace io;
 using namespace gui;
+
+Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
+	: mIsRendering(false),
+	m_Window(0),
+	device(nullptr),
+	driver(0),
+	smgr(0),
+	guienv(0),
+	fpsText(0)
+{
+	m_showFps = false;
+}
 
 void Pakal::IrrGraphicsSystem::initWindow()
 {
@@ -21,6 +31,11 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
+
+	fpsText = guienv->addStaticText(L"",
+		rect<s32>(10,10,260,22), true);
+	fpsText->setOverrideColor( video::SColor(255,255,255,255));
+	showFps(m_showFps);
 
 	//
 
@@ -48,11 +63,11 @@ void Pakal::IrrGraphicsSystem::initWindow()
 
 void Pakal::IrrGraphicsSystem::beginScene()
 {
-	//ASSERT(driver);
+	ASSERT(driver);
 	driver->beginScene(true, true, SColor(255,0,0,0));
 }
 
-bool Pakal::IrrGraphicsSystem::draw( float time )
+bool Pakal::IrrGraphicsSystem::draw()
 {
 	smgr->drawAll();
 	guienv->drawAll();
@@ -70,7 +85,10 @@ bool Pakal::IrrGraphicsSystem::draw( float time )
 		*/
 	}	
 
-	fpsText->setText( core::stringw(driver->getFPS()).c_str());
+	if( m_showFps)
+	{
+		fpsText->setText( core::stringw(driver->getFPS()).c_str());
+	}
 
 	return isRunning;
 }
@@ -84,4 +102,19 @@ void Pakal::IrrGraphicsSystem::setWindowCaption( const char * caption )
 {
 	ASSERT(device);
 	device->setWindowCaption(L"");
+}
+
+bool Pakal::IrrGraphicsSystem::update()
+{
+	beginScene();
+	bool isDrawing = draw();
+	endScene();
+	return isDrawing;
+}
+
+void Pakal::IrrGraphicsSystem::showFps( bool val )
+{
+	ASSERT(fpsText);
+	m_showFps = val;
+	fpsText->setVisible(val);
 }

@@ -41,7 +41,7 @@ void Pakal::GraphicsSystem::beginScene()
 
 }
 
-bool Pakal::GraphicsSystem::draw( float time )
+bool Pakal::GraphicsSystem::draw()
 {
 	return true;
 }
