@@ -37,6 +37,8 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	fpsText->setOverrideColor( video::SColor(255,255,255,255));
 	showFps(m_showFps);
 
+	smgr->addCameraSceneNode();
+
 	//
 
 	LOG_INFO("[Graphic System] Sending message");
