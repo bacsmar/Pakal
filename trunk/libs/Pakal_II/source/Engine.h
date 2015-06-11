@@ -14,11 +14,15 @@ namespace Pakal
 		void run(IPakalApplication *application );
 
 		static Engine &instance();
+
+		~Engine();
+
 	protected:
 		IPakalApplication	*mApplication;
 		EventSystem			*mEventSystem;
 		GraphicsSystem		*mGraphicsSystem;
 
 		static bool			msInitialized;
+		
 	};
 }

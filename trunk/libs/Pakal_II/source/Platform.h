@@ -87,3 +87,6 @@
 //#endif
 #endif
 
+#define SAFE_DEL(x) {if(x){delete (x);x=nullptr;}}
+
+#define ASSERT(x) assert (x);
