@@ -13,10 +13,10 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	: mIsRendering(false),
 	m_Window(0),
 	device(nullptr),
-	driver(0),
-	smgr(0),
-	guienv(0),
-	fpsText(0)
+	driver(nullptr),
+	smgr(nullptr),
+	guienv(nullptr),
+	fpsText(nullptr)
 {
 	m_showFps = false;
 }
@@ -27,7 +27,7 @@ void Pakal::IrrGraphicsSystem::initWindow()
 
 	device =
 		createDevice( video::EDT_OPENGL, dimension2d<u32>(640, 480), 32,
-		false, false, false, 0);
+		false, false, false, nullptr);
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
@@ -49,7 +49,7 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	evt->displayEvent.height = driver->getScreenSize().Height;
 	*/
 #ifdef PAKAL_WIN32_PLATFORM
-	m_Window = (size_t)driver->getExposedVideoData().OpenGLWin32.HWnd;
+	m_Window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
 #else
 	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
 #endif	

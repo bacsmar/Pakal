@@ -5,19 +5,19 @@ namespace Poco
 {
 	class Thread;
 }
-
+//TODO shutdown of engine
 namespace Pakal
 {
-
 	class IPakalApplication;
 	class GraphicsSystem;
 	class EventSystem;
 	class PhysicsSystem;
+	class GameStateSystem;
 
 	class _PAKALExport Engine 
 	{
 	public:
-		void run(IPakalApplication *application );
+		void start(IPakalApplication *application );
 
 		static Engine &instance();
 
@@ -29,10 +29,9 @@ namespace Pakal
 		EventSystem			*m_EventSystem;
 		GraphicsSystem		*m_GraphicsSystem;
 		PhysicsSystem		*m_PhysicsSystem;
-
+		GameStateSystem		*m_GameStateSystem;
+		
 		Poco::Thread		*m_LogicThread;
-		Poco::Thread		*m_PhysicsThread;
-		//Poco::Thread		*m_GraphicsThread; //main thread
 
 		static bool			ms_Initialized;
 

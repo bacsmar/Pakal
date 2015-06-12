@@ -21,11 +21,11 @@ namespace Pakal
 	class IPakalApplication
 	{
 	public:
-		virtual bool setUpEnvironment( const Pakal::Engine * engine) = 0;
+		virtual bool setUpEnvironment( const Engine * engine) = 0;
 
-		virtual bool setUpComponents( const Pakal::ComponentManager * componentManager) = 0;
+		virtual bool setUpComponents( const ComponentManager * componentManager) = 0;
 
-		virtual bool setUpGameStates( const Pakal::GameStateManager * gameStateManager) = 0;
+		virtual bool setUpGameStates( const GameStateManager * gameStateManager) = 0;
 
 		virtual ~IPakalApplication() {}
 	};
