@@ -36,19 +36,19 @@ namespace Pakal
 
 		virtual ~IrrGraphicsSystem(){}
 
-		virtual void initWindow();
+		virtual void initWindow() override;
 
-		virtual void beginScene();
+		virtual void beginScene() override;
 
-		virtual bool draw(  );
+		virtual bool draw(  ) override;
 
-		virtual void endScene();
+		virtual void endScene() override;
 
-		virtual void setWindowCaption( const char* caption );
+		virtual void setWindowCaption( const char* caption ) override;
 
-		virtual bool update();
+		virtual bool update() override;
 
-		virtual void showFps( bool val );
+		virtual void showFps( bool val ) override;
 
 	};
 }

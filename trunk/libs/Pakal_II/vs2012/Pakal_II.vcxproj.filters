@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\source\CompileUnit_1.cpp" />
+    <ClCompile Include="..\source\Engine.cpp" />
+    <ClCompile Include="..\source\GameStateSystem.cpp">
+      <Filter>Systems\GameStateSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EventSystem.cpp">
+      <Filter>Systems\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LogMgr.cpp">
+      <Filter>Systems\LogSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PhysicsSystem.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\Config.h" />
+    <ClInclude Include="..\source\Engine.h" />
+    <ClInclude Include="..\source\IPakalApplication.h" />
+    <ClInclude Include="..\source\Platform.h" />
+    <ClInclude Include="..\source\BaseGameState.h">
+      <Filter>Systems\GameStateSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GameStateSystem.h">
+      <Filter>Systems\GameStateSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventSystem.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LogMgr.h">
+      <Filter>Systems\LogSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PhysicsSystem.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{419fd1b0-3d43-44dd-ba4e-60d13d870417}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\GameStateSystem">
+      <UniqueIdentifier>{a51f6029-8d1d-4e6f-9541-382654dee482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\GraphicsSystem">
+      <UniqueIdentifier>{e84a9c28-03ec-4bc5-9cc2-3310f8f9b6c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\EventSystem">
+      <UniqueIdentifier>{c8ecabd8-79e1-4f04-8a81-f385f1a316ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\LogSystem">
+      <UniqueIdentifier>{1e5c0fce-70c0-4021-804e-7881f3ad741b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\PhysicsSystem">
+      <UniqueIdentifier>{d4b08ee1-65c9-4335-ab85-c8dbcff602ed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

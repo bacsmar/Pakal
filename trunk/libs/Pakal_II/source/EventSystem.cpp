@@ -1,7 +1,6 @@
 #include "EventSystem.h"
 
 #include "Poco/SingletonHolder.h"
-#include "LogMgr.h"
 
 #include "Poco/NotificationQueue.h"
 
@@ -11,3 +10,5 @@ Pakal::EventSystem::EventSystem() : m_NotificationQueue( new NotificationQueue()
 {
 
 }
+
+void Pakal::EventSystem::initialize() {}

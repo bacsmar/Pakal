@@ -1,22 +1,48 @@
 #include "PhysicsSystem.h"
-#include "LogMgr.h"
+#include "Poco/Thread.h"
+#include "Poco/RunnableAdapter.h"
 
-using namespace Pakal;
 
 #if PAKAL_USE_BOX2D == 1
 	#include "box2D/IrrGraphicsSystem.h"
 #endif
 
-Pakal::PhysicsSystem* Pakal::PhysicsSystem::createPhysicsSystem()
+using namespace Pakal;
+
+PhysicsSystem* PhysicsSystem::createPhysicsSystem()
 {
 #if PAKAL_USE_BOX2D == 1
-	return new Pakal::Box2DPhysicsSystem();
+	return new Box2DPhysicsSystem();
+#else
+	return new PhysicsSystem();
 #endif
 
-	return new Pakal::PhysicsSystem();
 }
 
-void Pakal::PhysicsSystem::run()
+PhysicsSystem::~PhysicsSystem()
 {
-	
+	SAFE_DEL(m_PhysicsThread);
+	SAFE_DEL(m_entryPoint);
+}
+
+PhysicsSystem::PhysicsSystem()
+{
+	m_PhysicsThread = new Poco::Thread();
+	m_entryPoint = new Poco::RunnableAdapter<PhysicsSystem>(*this, &PhysicsSystem::run);
+}
+
+void PhysicsSystem::run()
+{
+		std::cout << "Hello, world! from Physics" << std::endl;
+}
+
+void PhysicsSystem::initialize()
+{
+	m_PhysicsThread->setName("Physics");
+	m_PhysicsThread->start(*m_entryPoint);
+}
+
+void PhysicsSystem::terminate()
+{
+	m_PhysicsThread->join();
 }

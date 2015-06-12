@@ -15,9 +15,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\BaseGameState.h" />
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\EventSystem.h" />
+    <ClInclude Include="..\source\GameStateSystem.h" />
     <ClInclude Include="..\source\GraphicsSystem.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
@@ -29,6 +31,7 @@
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EventSystem.cpp" />
+    <ClCompile Include="..\source\GameStateSystem.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />

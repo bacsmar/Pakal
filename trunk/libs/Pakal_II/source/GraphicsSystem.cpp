@@ -1,5 +1,5 @@
 #include "GraphicsSystem.h"
-#include "LogMgr.h"
+#include "Poco/Foundation.h"
 
 using namespace Pakal;
 
@@ -7,46 +7,58 @@ using namespace Pakal;
 #include "irrlicht/IrrGraphicsSystem.h"
 #endif
 
-Pakal::GraphicsSystem* Pakal::GraphicsSystem::createGraphicsSystem()
+GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 {
 #if PAKAL_USE_IRRLICHT == 1
-	return new Pakal::IrrGraphicsSystem();
+	return new IrrGraphicsSystem();
+#else
+	return new GraphicsSystem();
 #endif
-
-	return new Pakal::GraphicsSystem();
 }
 
-bool Pakal::GraphicsSystem::init()
+bool GraphicsSystem::init()
 {
 	return true;
 }
 
-void Pakal::GraphicsSystem::initWindow()
-{
+void GraphicsSystem::initWindow() {}
 
-}
+void GraphicsSystem::restoreWindow() {}
 
-void Pakal::GraphicsSystem::restoreWindow()
-{
+void GraphicsSystem::destroyWindow() {}
 
-}
+bool GraphicsSystem::update() { return true; }
 
-void Pakal::GraphicsSystem::destroyWindow()
-{
+void GraphicsSystem::beginScene() {}
 
-}
-
-void Pakal::GraphicsSystem::beginScene()
-{
-
-}
-
-bool Pakal::GraphicsSystem::draw()
+bool GraphicsSystem::draw()
 {
 	return true;
 }
 
-void Pakal::GraphicsSystem::endScene()
-{
+void GraphicsSystem::endScene() {}
 
+void GraphicsSystem::run()
+{
+	init();
+	initWindow();
+
+	while (true)
+	{
+#ifdef PAKAL_WIN32_PLATFORM
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+#endif
+		bool running = update();
+
+		if (msg.message == WM_QUIT || !running)
+		{
+			// TODO: notificar a los sistemas que hemos terminado 
+			break;
+		}
+	}
 }

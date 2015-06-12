@@ -14,7 +14,7 @@ namespace Pakal
 		virtual void restoreWindow();
 		virtual void destroyWindow();
 
-		virtual bool update(){ return true; }
+		virtual bool update();
 
 		virtual void setWindowCaption(const char* caption){}
 		virtual void showFps(bool val) { m_showFps = val; }
@@ -23,6 +23,7 @@ namespace Pakal
 		virtual bool draw(  );
 		virtual void endScene();
 
+		void run();
 	protected:
 		bool m_Initialized;
 		bool m_showFps;
