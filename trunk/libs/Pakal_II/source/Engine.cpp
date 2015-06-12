@@ -35,6 +35,10 @@ void Engine::init()
 
 	ms_Initialized = true;
 
+	m_Application->setUpGameStates(m_GameStateSystem);
+
+	// TODO: loop para el thread de logica, wait, sleep, wait for algo
+
 	m_PhysicsSystem->terminate();
 
 	update();

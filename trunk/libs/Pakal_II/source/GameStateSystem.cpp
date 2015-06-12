@@ -43,7 +43,7 @@ void GameStateSystem::push_state(BaseGameState* new_state, bool deallocate_on_po
 {
 	if (!states.empty())
 	{
-		states.top()->OnPause(this);
+		states.top()->onPause();
 	}
 
 	new_state->game_state_system = this;
@@ -67,7 +67,7 @@ void GameStateSystem::pop_state()
 	if (states.empty())  return;
 	
 	state = peek_state();
-	state->OnResume(this);
+	state->onResume();
 }
 
 void GameStateSystem::pause_state()
@@ -76,7 +76,7 @@ void GameStateSystem::pause_state()
 
 	BaseGameState* state = peek_state();
 
-	state->OnPause(this);
+	state->onPause();
 }
 
 void GameStateSystem::resume_state()
@@ -85,7 +85,8 @@ void GameStateSystem::resume_state()
 
 	BaseGameState* state = peek_state();
 
-	state->OnResume(this);}
+	state->onResume();
+}
 
 void GameStateSystem::pop_states(int amount)
 {

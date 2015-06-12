@@ -14,18 +14,18 @@
 namespace Pakal
 {
 
-	class ComponentManager;
-	class GameStateManager;
+	class ComponentSystem;
+	class GameStateSystem;
 	class Engine;
 
 	class IPakalApplication
 	{
 	public:
-		virtual bool setUpEnvironment( const Engine * engine) = 0;
+		virtual bool setUpEnvironment( Engine * engine) = 0;
 
-		virtual bool setUpComponents( const ComponentManager * componentManager) = 0;
+		virtual bool setUpComponents( ComponentSystem * componentSystem) = 0;
 
-		virtual bool setUpGameStates( const GameStateManager * gameStateManager) = 0;
+		virtual bool setUpGameStates( GameStateSystem * gameStateSystem) = 0;
 
 		virtual ~IPakalApplication() {}
 	};
