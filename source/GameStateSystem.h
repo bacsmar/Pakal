@@ -20,8 +20,8 @@ namespace Pakal
 
 		void initialize(Engine* engine);
 	
-		void transition_to_state(BaseGameState* new_state,bool deallocate_on_pop = true);
-		void push_state(BaseGameState* new_state,bool deallocate_on_pop = true);
+		void transition_to_state(BaseGameState* new_state, bool deallocate_on_pop = true);
+		void push_state(BaseGameState* new_state, bool deallocate_on_pop = true);
 		void pop_state();
 		void pause_state();
 		void resume_state();
