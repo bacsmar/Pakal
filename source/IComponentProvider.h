@@ -13,6 +13,6 @@ namespace Pakal
 	public:	
 		~IComponentProvider(){}
 
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) = 0;
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) = 0;
 	};
 }

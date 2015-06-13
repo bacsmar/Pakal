@@ -16,7 +16,7 @@ void Box2DPhysicsSystem::run()
 		//std::cout << "Hello, world! from Physics" << std::endl;
 }
 
-void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &componentVector )
+void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {
 
 }
