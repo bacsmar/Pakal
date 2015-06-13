@@ -16,7 +16,7 @@ void Pakal::ComponentSystem::registerFactories( IComponentProvider *provider )
 {
 
 	std::vector<IComponentFactory*> factories;
-	provider->registerYourComponents(factories);
+	provider->registerComponentFactories(factories);
 
 	for (auto & factory : factories)
 	{

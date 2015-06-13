@@ -27,6 +27,9 @@
     <ClCompile Include="..\source\EntitySystem.cpp">
       <Filter>Systems\ComponentSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Box2DPhysicsSystem.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -77,6 +80,12 @@
     </ClInclude>
     <ClInclude Include="..\source\IComponentProvider.h">
       <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Box2DPhysicsSystem.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IEntity.h">
+      <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

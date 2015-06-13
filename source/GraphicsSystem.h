@@ -4,7 +4,7 @@
 #include "IComponentProvider.h"
 
 namespace Pakal
-{		
+{
 	class _PAKALExport GraphicsSystem : public IComponentProvider
 	{
 	public:
@@ -26,7 +26,7 @@ namespace Pakal
 
 		void run();
 
-		virtual void registerYourComponents( std::vector<IComponentFactory*> &componentVector) = 0;
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) {};
 
 	protected:
 		bool m_Initialized;

@@ -18,30 +18,30 @@ using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 bool Engine::ms_Initialized = false;
 //////////////////////////////////////////////////////////////////////////
-void Engine::update()
+void Engine::run()
 {
-	std::cout << "Hello, world! from engine" << std::endl;
+	std::cout << "Hello, world! from engine" << std::endl;	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::init()
 {
-	ASSERT(ms_Initialized == false);
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);			
+	ASSERT(ms_Initialized == false);	
 
 	m_Application->setUpGameStates(m_GameStateSystem);
 
-	// TODO: loop para el thread de logica, wait, sleep, wait for algo
-	//m_PhysicsSystem->terminate();
+	// TODO: loop para el thread de logica, wait, sleep, wait for algo	
 
 	ms_Initialized = true;
 
-	update();
+	run();
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::start( IPakalApplication *application )
 {
 	LogMgr::init();
 	LogMgr::setLogLevel(10);
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
+
 	m_Application = application;
 
 	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
@@ -50,17 +50,21 @@ void Engine::start( IPakalApplication *application )
 	m_GameStateSystem = new GameStateSystem();
 	m_ComponentSystem = new ComponentSystem();
 
-	m_GameStateSystem->initialize(this);
-	m_PhysicsSystem->initialize();
-	m_EventSystem->initialize();
-
 	m_ComponentSystem->registerFactories(m_GraphicsSystem);
+	m_ComponentSystem->registerFactories(m_PhysicsSystem);
+
+	m_GameStateSystem->initialize(this);
+	m_EventSystem->initialize();
+	m_PhysicsSystem->initialize();	// creates his own thread		
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
 
-	m_GraphicsSystem->run();
+	m_GraphicsSystem->run();	// runs in this (main) thread
+
+	m_PhysicsSystem->terminate();
+	m_LogicThread->join();
 }
 //////////////////////////////////////////////////////////////////////////
 Engine & Engine::instance()

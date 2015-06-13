@@ -15,11 +15,11 @@
 
 namespace Pakal
 {	
-	class Entity;	
+	class IEntity;	
 	//--------------------------------- IComponent ---------------------------------------------------
 	class _PAKALExport IComponent
 	{
-		friend class Entity;
+		friend class IEntity;
 	public:
 		virtual ~IComponent(void){}	
 		
@@ -28,8 +28,8 @@ namespace Pakal
 			m_ParentFactory(factory)
 		{}
 
-		inline const Entity * getParentEntity() const	{ return m_ParentEntity; };
-		inline void setParentEntity(const Entity *parent )	{ m_ParentEntity = parent; };
+		inline const IEntity * getParentEntity() const	{ return m_ParentEntity; };
+		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };
 
 		virtual const Pakal::RTTI &getType() = 0;
 				
@@ -42,7 +42,7 @@ namespace Pakal
 			m_ParentFactory->inityAsync(this);
 		}	
 	protected:
-		const Entity			*m_ParentEntity;
+		const IEntity			*m_ParentEntity;
 		const IComponentFactory	*m_ParentFactory;
 	};
 }
