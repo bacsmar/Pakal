@@ -13,6 +13,8 @@ namespace Pakal
 	class EventSystem;
 	class PhysicsSystem;
 	class GameStateSystem;
+	class ComponentSystem;
+	class EntitySystem;
 
 	class _PAKALExport Engine 
 	{
@@ -30,6 +32,9 @@ namespace Pakal
 		GraphicsSystem		*m_GraphicsSystem;
 		PhysicsSystem		*m_PhysicsSystem;
 		GameStateSystem		*m_GameStateSystem;
+
+		ComponentSystem		*m_ComponentSystem;
+		EntitySystem		*m_EntitySystem;
 		
 		Poco::Thread		*m_LogicThread;
 

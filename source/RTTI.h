@@ -55,6 +55,9 @@ namespace Pakal{
 	private:
 		const char *m_name;		
 		const RTTI *m_parent;
+
+		void operator=(const RTTI &other){}
+		RTTI(const RTTI &other){}
 	};
 
 	inline bool operator==(const RTTI &left, const RTTI &right)
