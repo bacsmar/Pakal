@@ -2,6 +2,7 @@
 #include "Poco/Foundation.h"
 
 #include "IComponentFactory.h"
+#include "IComponentProvider.h"
 #include "LogMgr.h"
 
 using namespace Pakal;
@@ -9,6 +10,18 @@ using namespace Pakal;
 void Pakal::ComponentSystem::registerFactory( IComponentFactory *factory )
 {
 	registerFactory(factory, factory->getTypeName() );
+}
+
+void Pakal::ComponentSystem::registerFactories( IComponentProvider *provider )
+{
+
+	std::vector<IComponentFactory*> factories;
+	provider->registerYourComponents(factories);
+
+	for (auto & factory : factories)
+	{
+		registerFactory(factory);
+	}
 }
 
 void Pakal::ComponentSystem::registerFactory( IComponentFactory* factory, const std::string & name )

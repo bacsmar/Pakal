@@ -2,6 +2,9 @@
 
 #include "LogMgr.h"
 
+#include "Engine.h"
+#include "ComponentSystem.h"
+
 using namespace irr;
 using namespace core;
 using namespace scene;
@@ -57,11 +60,17 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	//evt->displayEvent.windowHwnd = mWindow;
 	//EVENT_MANAGER->raiseEvent(evt);
 
-	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 	//registerIrrComponents(this);
+	//Engine::instance().getComponentSystem()->registerFactory( new ComponentFactory<MeshComponent, IrrGraphicsSystem>(this) );
 
 	LOG_INFO("[Graphic System] done");
 }
+/*
+void Pakal::IrrGraphicsSystem::registerYourFuckingComponentsFuckingSystem( ve)
+{
+
+}
+*/
 
 void Pakal::IrrGraphicsSystem::beginScene()
 {
@@ -119,4 +128,10 @@ void Pakal::IrrGraphicsSystem::showFps( bool val )
 	ASSERT(fpsText);
 	m_showFps = val;
 	fpsText->setVisible(val);
+}
+
+void Pakal::IrrGraphicsSystem::registerYourComponents( std::vector<IComponentFactory*> &componentVector )
+{
+	LOG_INFO("[Graphic System] Registering Irrlicht Components");
+	//componentVector.push_back( new ComponentFactory<MeshComponent, IrrGraphicsSystem>(this) );	
 }

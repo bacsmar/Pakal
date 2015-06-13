@@ -1,10 +1,11 @@
 #pragma once
 #include "Config.h"
 
+#include "IComponentProvider.h"
+
 namespace Pakal
-{
-	
-	class _PAKALExport GraphicsSystem
+{		
+	class _PAKALExport GraphicsSystem : public IComponentProvider
 	{
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
@@ -24,6 +25,9 @@ namespace Pakal
 		virtual void endScene();
 
 		void run();
+
+		virtual void registerYourComponents( std::vector<IComponentFactory*> &componentVector) = 0;
+
 	protected:
 		bool m_Initialized;
 		bool m_showFps;
