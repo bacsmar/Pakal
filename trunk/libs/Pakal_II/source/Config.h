@@ -28,7 +28,7 @@
 #define PAKAL_USE_BULLET 0
 
 //! compile with BOX2D physics
-#define PAKAL_USE_BOX2D 0
+#define PAKAL_USE_BOX2D 1
 
 //! compile with Rocket GUI
 #define PAKAL_USE_ROCKET 1

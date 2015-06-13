@@ -50,7 +50,7 @@ namespace Pakal
 
 		virtual void showFps( bool val ) override;
 
-		virtual void registerYourComponents( std::vector<IComponentFactory*> &componentVector );
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector );
 
 	};
 }

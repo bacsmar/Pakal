@@ -43,7 +43,7 @@ namespace Pakal
 
 		static bool			ms_Initialized;
 
-		void update();
+		void run();
 		void init();
 		
 	};

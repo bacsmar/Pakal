@@ -130,7 +130,7 @@ void Pakal::IrrGraphicsSystem::showFps( bool val )
 	fpsText->setVisible(val);
 }
 
-void Pakal::IrrGraphicsSystem::registerYourComponents( std::vector<IComponentFactory*> &componentVector )
+void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &componentVector )
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 	//componentVector.push_back( new ComponentFactory<MeshComponent, IrrGraphicsSystem>(this) );	

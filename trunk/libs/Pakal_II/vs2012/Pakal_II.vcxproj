@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\BaseGameState.h" />
+    <ClInclude Include="..\source\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="..\source\IComponent.h" />
     <ClInclude Include="..\source\IComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
+    <ClInclude Include="..\source\IEntity.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\source\LogMgr.h" />
@@ -34,6 +36,7 @@
     <ClInclude Include="..\source\RTTI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />

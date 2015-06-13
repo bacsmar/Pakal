@@ -4,7 +4,7 @@
 
 
 #if PAKAL_USE_BOX2D == 1
-	#include "box2D/IrrGraphicsSystem.h"
+	#include "Box2DPhysicsSystem.h"
 #endif
 
 using namespace Pakal;
