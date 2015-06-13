@@ -33,6 +33,8 @@ namespace Pakal
 
 		ComponentFactory(SubSystemType *s) : m_Subsystem(s) {}
 
+		virtual ~ComponentFactory(){}
+
 		virtual IComponent* create() const
 		{
 			return new componentType(this);

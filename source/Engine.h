@@ -26,6 +26,9 @@ namespace Pakal
 		~Engine();
 		Engine();
 
+		inline EntitySystem		* getEntitySystem() const { return m_EntitySystem; }
+		inline ComponentSystem	* getComponentSystem() const { return m_ComponentSystem; }
+
 	protected:
 		IPakalApplication	*m_Application;
 		EventSystem			*m_EventSystem;
@@ -33,9 +36,9 @@ namespace Pakal
 		PhysicsSystem		*m_PhysicsSystem;
 		GameStateSystem		*m_GameStateSystem;
 
-		ComponentSystem		*m_ComponentSystem;
-		EntitySystem		*m_EntitySystem;
-		
+		ComponentSystem		*m_ComponentSystem;		
+		EntitySystem		*m_EntitySystem;		
+
 		Poco::Thread		*m_LogicThread;
 
 		static bool			ms_Initialized;

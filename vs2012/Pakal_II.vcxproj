@@ -25,6 +25,7 @@
     <ClInclude Include="..\source\GraphicsSystem.h" />
     <ClInclude Include="..\source\IComponent.h" />
     <ClInclude Include="..\source\IComponentFactory.h" />
+    <ClInclude Include="..\source\IComponentProvider.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\source\LogMgr.h" />

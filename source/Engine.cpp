@@ -26,25 +26,14 @@ void Engine::update()
 void Engine::init()
 {
 	ASSERT(ms_Initialized == false);
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
-	
-	m_EventSystem = new EventSystem();
-	m_GameStateSystem = new GameStateSystem();
-	m_ComponentSystem = new ComponentSystem();
-
-	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
-
-	m_GameStateSystem->initialize(this);
-	m_PhysicsSystem->initialize();
-	m_EventSystem->initialize();
-
-	ms_Initialized = true;
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);			
 
 	m_Application->setUpGameStates(m_GameStateSystem);
 
 	// TODO: loop para el thread de logica, wait, sleep, wait for algo
+	//m_PhysicsSystem->terminate();
 
-	m_PhysicsSystem->terminate();
+	ms_Initialized = true;
 
 	update();
 }
@@ -56,12 +45,20 @@ void Engine::start( IPakalApplication *application )
 	m_Application = application;
 
 	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
+	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
+	m_EventSystem = new EventSystem();
+	m_GameStateSystem = new GameStateSystem();
+	m_ComponentSystem = new ComponentSystem();
+
+	m_GameStateSystem->initialize(this);
+	m_PhysicsSystem->initialize();
+	m_EventSystem->initialize();
+
+	m_ComponentSystem->registerFactories(m_GraphicsSystem);
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
-
-	while( !m_ComponentSystem );// TODO: Fix this shit
 
 	m_GraphicsSystem->run();
 }

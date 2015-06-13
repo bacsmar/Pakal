@@ -75,6 +75,9 @@
     <ClInclude Include="..\source\IComponentFactory.h">
       <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\IComponentProvider.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
