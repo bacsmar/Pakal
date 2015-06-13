@@ -6,6 +6,9 @@
 #include "IPakalApplication.h"
 #include "EventSystem.h"
 
+#include "IComponent.h"
+#include "ComponentSystem.h"
+
 #include "Poco/SingletonHolder.h"
 #include "Poco/Thread.h"
 #include "Poco/RunnableAdapter.h"
@@ -24,10 +27,12 @@ void Engine::init()
 {
 	ASSERT(ms_Initialized == false);
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
-
-	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
+	
 	m_EventSystem = new EventSystem();
 	m_GameStateSystem = new GameStateSystem();
+	m_ComponentSystem = new ComponentSystem();
+
+	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
 
 	m_GameStateSystem->initialize(this);
 	m_PhysicsSystem->initialize();
@@ -47,6 +52,7 @@ void Engine::init()
 void Engine::start( IPakalApplication *application )
 {
 	LogMgr::init();
+	LogMgr::setLogLevel(10);
 	m_Application = application;
 
 	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
@@ -54,6 +60,8 @@ void Engine::start( IPakalApplication *application )
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
+
+	while( !m_ComponentSystem );// TODO: Fix this shit
 
 	m_GraphicsSystem->run();
 }
@@ -79,7 +87,10 @@ Engine::Engine() :
 	m_EventSystem(nullptr),
 	m_GraphicsSystem(nullptr),
 	m_GameStateSystem(nullptr),
-	m_LogicThread(nullptr)
+	m_LogicThread(nullptr),
+	m_PhysicsSystem(nullptr),
+	m_ComponentSystem(nullptr),
+	m_EntitySystem(nullptr)
 {
 	m_LogicThread = new Poco::Thread();
 }

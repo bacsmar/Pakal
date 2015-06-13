@@ -21,12 +21,15 @@
     <ClCompile Include="..\source\PhysicsSystem.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\ComponentSystem.cpp">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntitySystem.cpp">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
-    <ClInclude Include="..\source\IPakalApplication.h" />
-    <ClInclude Include="..\source\Platform.h" />
     <ClInclude Include="..\source\BaseGameState.h">
       <Filter>Systems\GameStateSystem</Filter>
     </ClInclude>
@@ -48,6 +51,30 @@
     <ClInclude Include="..\source\PhysicsSystem.h">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\RTTI.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Platform.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IPakalApplication.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Config.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ComponentSystem.h">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntitySystem.h">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IComponent.h">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IComponentFactory.h">
+      <Filter>Systems\ComponentSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -67,6 +94,12 @@
     </Filter>
     <Filter Include="Systems\PhysicsSystem">
       <UniqueIdentifier>{d4b08ee1-65c9-4335-ab85-c8dbcff602ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{3d9176a9-4c65-46ce-b0c5-98cfe337a95c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\ComponentSystem">
+      <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
