@@ -8,6 +8,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 namespace Pakal
 {
 	class IComponent;	
@@ -25,39 +27,76 @@ namespace Pakal
 		virtual ~IComponentFactory() {}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class componentType, class SubSystemType>
+
+	class DefaultComponentInitializer
+	{
+	public:
+		void initComponentAsync(IComponent *c){}
+		void terminateComponentAsync(IComponent *c){}
+	};
+
+	template <class componentType, class ComponentInitializer = DefaultComponentInitializer>
 	class ComponentFactory : public IComponentFactory
 	{
 	public:
 
-		ComponentFactory(SubSystemType *s) : m_Subsystem(s) {}
+		ComponentFactory(ComponentInitializer *s) : m_System(s) {}
 
 		virtual ~ComponentFactory(){}
 
 		virtual IComponent* create() const
 		{
+			// if you want to use this template factory, your component class should define 
+			// a constructor similar to the one used in IComponent.h
 			return new componentType(this);
 		}
 
 		virtual void inityAsync( IComponent *c ) const
 		{
 			// set an async task to redirect the initialization to the correct thread		?
-			// when if the component is ready the subsystem should call component::init()	?
-			m_Subsystem->initComponentAsync(c);
+			// when if the component is ready the Initializer should call component::internalInit()	?
+			if(m_System) 
+			{ 
+				m_System->initComponentAsync(c);
+			}
+			else // null Initializer?
+			{
+				c->internalInit();
+			}			
 		}
 
 		virtual void terminateAsync( IComponent *c ) const
 		{
-			m_Subsystem->terminateComponentAsync(c);
+			if(m_System) 
+			{ 
+				m_System->terminateComponentAsync(c);
+			}
+			else // null Initializer?
+			{
+				//c->terminate();
+			}			
 		}
 
-		virtual const char* getTypeName()
+		virtual const char* getTypeName() override
 		{
 			return componentType::getRTTI().getName();
 		}
 
 	protected:
-		SubSystemType *m_Subsystem;
+		ComponentInitializer *m_System;
 	};
+
+	template <class componentType, class T>
+	IComponentFactory * CreateComponentFactory(T *t)
+	{
+		return new ComponentFactory<componentType, T>(t);		
+	};
+	
+	template <class componentType>
+	IComponentFactory * CreateComponentFactory()
+	{
+		return new ComponentFactory<componentType>(nullptr);
+	};
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 }

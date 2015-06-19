@@ -13,6 +13,14 @@
 #include "Poco/Thread.h"
 #include "Poco/RunnableAdapter.h"
 
+//////////////////////////// BEGIN TESTS /////////////////////////////////
+#include "GenericEntity.h"
+#include "IComponentFactory.h"
+
+class TestEntity : public Pakal::GenericEntity
+{
+};
+//////////////////////////// END TESTS /////////////////////////////////
 
 using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
@@ -21,6 +29,18 @@ bool Engine::ms_Initialized = false;
 void Engine::run()
 {
 	std::cout << "Hello, world! from engine" << std::endl;	
+	TestEntity entity;
+
+	//m_ComponentSystem->registerFactory( CreateComponentFactory<TestComponent>(m_GraphicsSystem) );
+	//m_ComponentSystem->registerFactory( CreateComponentFactory<MeshComponent>(this) );
+	//m_ComponentSystem->registerFactory( CreateComponentFactory<TestComponent>() );
+
+	//entity.addComponent( m_ComponentSystem->createComponent<TestComponent>() );
+	entity.addComponent( m_ComponentSystem->createComponent("TestComponent") );
+
+	entity.initializeComponents();
+
+	//entity.getComponent<TestComponent>();	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::init()
