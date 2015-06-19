@@ -5,12 +5,19 @@
 #include "Engine.h"
 #include "ComponentSystem.h"
 
+#include <memory>
+
+#include "IComponentFactory.h"
+#include "IComponent.h"
+
 using namespace irr;
 using namespace core;
 using namespace scene;
 using namespace video;
 using namespace io;
 using namespace gui;
+
+using namespace Pakal;
 
 Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	: mIsRendering(false),
@@ -40,7 +47,7 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	fpsText->setOverrideColor( video::SColor(255,255,255,255));
 	showFps(m_showFps);
 
-	smgr->addCameraSceneNode();
+	smgr->addCameraSceneNode();	
 
 	//
 
@@ -133,5 +140,31 @@ void Pakal::IrrGraphicsSystem::showFps( bool val )
 void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
-	//componentVector.push_back( new ComponentFactory<MeshComponent, IrrGraphicsSystem>(this) );	
+
+
+	class TestComponent : public Pakal::IComponent
+	{
+		DECLARE_RTTI(TestComponent);
+		void internalInit()	{}
+		TestComponent(const Pakal::IComponentFactory *factory) : IComponent(factory){}
+	};
+	
+	factories.push_back( Pakal::CreateComponentFactory<TestComponent>(this) );
+}
+Task * IrrGraphicsSystem::initComponentAsync(IComponent *c)
+{
+	c->internalInit();	// poner en la lista de inicializacion....
+	return nullptr;
+}
+Task * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
+{
+	return nullptr;
+}
+
+
+class xyz{};
+xyz a;
+void functionDePrue4b()
+{
+	xyz *ptr = &a;
 }

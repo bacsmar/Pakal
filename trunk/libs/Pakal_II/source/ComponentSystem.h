@@ -9,7 +9,8 @@
 #pragma once
 #include "Config.h"
 
-#include <hash_map>
+#include <unordered_map>
+#include <string>
 
 namespace Pakal
 {
@@ -40,6 +41,6 @@ namespace Pakal
 		virtual ~ComponentSystem();
 		ComponentSystem(){}
 	private:
-		std::hash_map<std::string, IComponentFactory*> m_ComponentFactories;
+		std::unordered_map<std::string, IComponentFactory*> m_ComponentFactories;
 	};
 }
