@@ -23,30 +23,24 @@ namespace Pakal
 	public:
 		virtual ~IComponent(void){}	
 		
-		IComponent(const IComponentFactory *factory) : 
+		IComponent() : 
 			m_isInitialized(0),
-			m_ParentEntity(0),
-			m_ParentFactory(factory)
+			m_ParentEntity(0)
 		{}		
-
-		virtual const Pakal::RTTI &getType() = 0;				
 
 		inline const IEntity * getParentEntity() const		{ return m_ParentEntity; };
 
 		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };
-
-		inline void initAsync()								{ m_ParentFactory->inityAsync(this); }
-		//inline void initAsync()								= 0;
-		//virtual ISystem *getParentSystem() = 0;
-
+		
 		inline bool isInitialized()	const					{ return m_isInitialized; }
 
 		virtual void internalInit() = 0;		
+		virtual const Pakal::RTTI &getType() = 0;
+		virtual void initAsync()							= 0;
 
 	protected:		
 
-		const IEntity			*m_ParentEntity;
-		const IComponentFactory	*m_ParentFactory;
+		const IEntity			*m_ParentEntity;		
 		bool m_isInitialized;		
 
 		//virtual void showYourSelfClass() = 0;

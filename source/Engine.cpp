@@ -31,14 +31,10 @@ void Engine::run()
 	std::cout << "Hello, world! from engine" << std::endl;	
 	TestEntity entity;
 
-	//m_ComponentSystem->registerFactory( CreateComponentFactory<TestComponent>(m_GraphicsSystem) );
-	//m_ComponentSystem->registerFactory( CreateComponentFactory<MeshComponent>(this) );
-	//m_ComponentSystem->registerFactory( CreateComponentFactory<TestComponent>() );
 
-	//entity.addComponent( m_ComponentSystem->createComponent<TestComponent>() );
 	entity.addComponent( m_ComponentSystem->createComponent("TestComponent") );
 
-	entity.initializeComponents();
+	entity.initializeComponents();	
 
 	//entity.getComponent<TestComponent>();	
 }
