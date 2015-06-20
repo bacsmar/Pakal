@@ -33,6 +33,9 @@
     <ClCompile Include="..\source\GenericEntity.cpp">
       <Filter>Systems\ComponentSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\GraphicComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -92,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="..\source\GenericEntity.h">
       <Filter>Systems\ComponentSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GraphicComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

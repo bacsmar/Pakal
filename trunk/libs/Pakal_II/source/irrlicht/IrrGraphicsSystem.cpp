@@ -9,6 +9,7 @@
 
 #include "IComponentFactory.h"
 #include "IComponent.h"
+#include "components/GraphicComponent.h"
 
 using namespace irr;
 using namespace core;
@@ -142,14 +143,17 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
 
-	class TestComponent : public Pakal::IComponent
+	class TestComponent : public Pakal::RenderComponent
 	{
 		DECLARE_RTTI(TestComponent);
 		void internalInit()	{}
-		TestComponent(const Pakal::IComponentFactory *factory) : IComponent(factory){}
+		//TestComponent() : RenderComponent(nullptr){}
+		TestComponent(IrrGraphicsSystem * irr) : RenderComponent(irr){}
+		virtual void initAsync(){}
 	};
 	
 	factories.push_back( Pakal::CreateComponentFactory<TestComponent>(this) );
+	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
 Task * IrrGraphicsSystem::initComponentAsync(IComponent *c)
 {

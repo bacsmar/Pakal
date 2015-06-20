@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+//#include <type_traits>
 
 namespace Pakal
 {
@@ -18,84 +19,60 @@ namespace Pakal
 	class IComponentFactory
 	{
 	public:
-		virtual IComponent* create() const = 0 ;
-		virtual void		inityAsync(IComponent *c) const = 0;
-		virtual void		terminateAsync(IComponent *c) const = 0;
+		virtual IComponent* create() = 0;
 
 		virtual const char* getTypeName() = 0;
 
 		virtual ~IComponentFactory() {}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	class DefaultComponentInitializer
-	{
-	public:
-		void initComponentAsync(IComponent *c){}
-		void terminateComponentAsync(IComponent *c){}
-	};
-
-	template <class componentType, class ComponentInitializer = DefaultComponentInitializer>
+	template <class componentType, class ComponentInitializer = void>
 	class ComponentFactory : public IComponentFactory
 	{
+	protected:
+		
+		template<class T>
+		inline IComponent *  _create (T * system)	
+		{
+			componentType * c = new componentType(system); 
+			//componentType * c = new componentType(); 
+			//c->setSystem(m_System);
+			//m_system->addToUpdateList( c );
+			return c;
+		}
+		
+		inline IComponent *  _create (void * dummy) { return new componentType(); }
+
 	public:
 
 		ComponentFactory(ComponentInitializer *s) : m_System(s) {}
 
 		virtual ~ComponentFactory(){}
 
-		virtual IComponent* create() const
+		virtual IComponent* create() override //const override
 		{
-			// if you want to use this template factory, your component class should define 
-			// a constructor similar to the one used in IComponent.h
-			return new componentType(this);
-		}
-
-		virtual void inityAsync( IComponent *c ) const
-		{
-			// set an async task to redirect the initialization to the correct thread		?
-			// when if the component is ready the Initializer should call component::internalInit()	?
-			if(m_System) 
-			{ 
-				m_System->initComponentAsync(c);
-			}
-			else // null Initializer?
-			{
-				c->internalInit();
-			}			
-		}
-
-		virtual void terminateAsync( IComponent *c ) const
-		{
-			if(m_System) 
-			{ 
-				m_System->terminateComponentAsync(c);
-			}
-			else // null Initializer?
-			{
-				//c->terminate();
-			}			
+			return _create(m_System);			
 		}
 
 		virtual const char* getTypeName() override
 		{
 			return componentType::getRTTI().getName();
 		}
-
+				
 	protected:
 		ComponentInitializer *m_System;
 	};
-
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class componentType, class T>
 	IComponentFactory * CreateComponentFactory(T *t)
 	{
 		return new ComponentFactory<componentType, T>(t);		
 	};
-	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class componentType>
 	IComponentFactory * CreateComponentFactory()
 	{
-		return new ComponentFactory<componentType>(nullptr);
+		return new ComponentFactory<componentType, void>(nullptr);
 	};
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
