@@ -11,7 +11,7 @@
 
 namespace Pakal
 {
-	class Task;
+	class BasicTask;
 	class IComponent;
 
 	class _PAKALExport IrrGraphicsSystem : public GraphicsSystem
@@ -56,7 +56,7 @@ namespace Pakal
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
 		
 	public:
-		virtual Task * initComponentAsync(IComponent *c);
-		virtual Task * terminateComponentAsync(IComponent *c);
+		virtual BasicTask * initComponentAsync(IComponent *c);
+		virtual BasicTask * terminateComponentAsync(IComponent *c);
 	};
 }

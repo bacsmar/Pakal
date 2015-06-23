@@ -1,13 +1,13 @@
 #pragma once
 #include <stack>
-
+#include "Config.h"
 
 namespace Pakal
 {
 	class BaseGameState;
 	class Engine;
 
-	class GameStateSystem
+	class _PAKALExport GameStateSystem
 	{
 	private:
 		std::stack<BaseGameState*> states;

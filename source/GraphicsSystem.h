@@ -2,10 +2,13 @@
 #include "Config.h"
 
 #include "IComponentProvider.h"
+#include "AsyncTaskDispatcher.h"
+
+
 
 namespace Pakal
 {
-	class _PAKALExport GraphicsSystem : public IComponentProvider
+	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
@@ -26,7 +29,8 @@ namespace Pakal
 
 		void run();
 
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) {};
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override
+		{};
 
 	protected:
 		bool m_Initialized;

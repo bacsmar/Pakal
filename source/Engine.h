@@ -10,7 +10,7 @@ namespace Pakal
 {
 	class IPakalApplication;
 	class GraphicsSystem;
-	class EventSystem;
+	class EventScheduler;
 	class PhysicsSystem;
 	class GameStateSystem;
 	class ComponentSystem;
@@ -31,7 +31,7 @@ namespace Pakal
 
 	protected:
 		IPakalApplication	*m_Application;
-		EventSystem			*m_EventSystem;
+		EventScheduler		*m_EventScheduler;
 		GraphicsSystem		*m_GraphicsSystem;
 		PhysicsSystem		*m_PhysicsSystem;
 		GameStateSystem		*m_GameStateSystem;

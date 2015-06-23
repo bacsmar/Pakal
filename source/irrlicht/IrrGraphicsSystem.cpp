@@ -155,12 +155,12 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	factories.push_back( Pakal::CreateComponentFactory<TestComponent>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
-Task * IrrGraphicsSystem::initComponentAsync(IComponent *c)
+BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
 {
 	c->internalInit();	// poner en la lista de inicializacion....
 	return nullptr;
 }
-Task * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
+BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
 {
 	return nullptr;
 }

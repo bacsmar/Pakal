@@ -10,6 +10,8 @@
 #include "config.h"
 #include "Platform.h"
 
+#include "Task.h"
+
 #ifdef PAKAL_WIN32_PLATFORM
 	#ifdef _DEBUG
 		#pragma comment(lib, "Pakal_II.lib")	// engine name

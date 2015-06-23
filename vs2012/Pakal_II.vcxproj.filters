@@ -9,9 +9,6 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\EventSystem.cpp">
-      <Filter>Systems\EventSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
@@ -33,8 +30,14 @@
     <ClCompile Include="..\source\GenericEntity.cpp">
       <Filter>Systems\ComponentSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\GraphicComponent.cpp">
-      <Filter>Components</Filter>
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\EventScheduler.cpp">
+      <Filter>Systems\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\InboxQueue.cpp">
+      <Filter>Systems\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\AsyncTaskDispatcher.cpp">
+      <Filter>Systems\EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -47,9 +50,6 @@
     </ClInclude>
     <ClInclude Include="..\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\EventSystem.h">
-      <Filter>Systems\EventSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
@@ -96,8 +96,23 @@
     <ClInclude Include="..\source\GenericEntity.h">
       <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\GraphicComponent.h">
-      <Filter>Components</Filter>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\AsyncTaskDispatcher.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\BasicTask.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Event.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\EventScheduler.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\InboxQueue.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Task.h">
+      <Filter>Systems\EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
