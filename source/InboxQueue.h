@@ -27,9 +27,9 @@ namespace Pakal
 	public:
 		
 		template<class TOut>
-		Poco::AutoPtr< Pakal::Task<TOut> > pushTask( std::function<TOut(void)> & delegate)
+		Poco::AutoPtr< Task<TOut> > pushTask( std::function<TOut(void)> & delegate)
 		{
-			Poco::AutoPtr< Pakal::Task<TOut> > task = new Pakal::Task<TOut>( delegate, m_scheduler);
+			Poco::AutoPtr< Task<TOut> > task = new Pakal::Task<TOut>( delegate, m_scheduler);
 
 			m_inboxStore.enqueueNotification(task);
 			return task;
