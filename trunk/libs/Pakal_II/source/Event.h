@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <Poco/Thread.h>
+#include <Poco/Mutex.h>
 
 #include "InboxQueue.h"
 #include "EventScheduler.h"
@@ -33,6 +34,7 @@ namespace Pakal
 		EventScheduler* m_scheduler;
 		std::vector<DelegateData*> m_delegates;
 		bool m_isEnabled;
+		Poco::FastMutex m_mutex;
 
 	public:
 
@@ -49,6 +51,7 @@ namespace Pakal
 		{
 			DelegateData* data = new DelegateData(delegate, Poco::Thread::currentTid());
 
+			Poco::FastMutex::ScopedLock lock(m_mutex);
 			m_delegates.push_back(data);
 		}
 
@@ -69,6 +72,8 @@ namespace Pakal
 
 		void remove(MethodDelegate& delegate)
 		{
+			Poco::FastMutex::ScopedLock lock(m_mutex);
+
 			for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it)
 			{
 				if (delegate == (*it)->delegate)
@@ -87,7 +92,11 @@ namespace Pakal
 
 			auto currentTid = Poco::Thread::currentTid();
 
-			for (DelegateData* dd : m_delegates)
+			m_mutex.lock();
+			std::vector<DelegateData*> copyDelegates(m_delegates);
+			m_mutex.unlock();
+
+			for (DelegateData* dd : copyDelegates)
 			{
 				if (m_scheduler && dd->tid != currentTid)
 				{
