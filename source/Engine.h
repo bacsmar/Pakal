@@ -28,6 +28,7 @@ namespace Pakal
 
 		inline EntitySystem		* getEntitySystem() const { return m_EntitySystem; }
 		inline ComponentSystem	* getComponentSystem() const { return m_ComponentSystem; }
+		inline GraphicsSystem	* getGraphicsSystem() const { return m_GraphicsSystem; }
 
 	protected:
 		IPakalApplication	*m_Application;

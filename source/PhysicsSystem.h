@@ -21,20 +21,28 @@ namespace Pakal
 	private:
 		void initialize();
 		void terminate();
-	protected:
-
-		friend class Engine;
+	protected:		
 
 		Poco::Thread* m_PhysicsThread;
-		Poco::RunnableAdapter<PhysicsSystem>* m_entryPoint;		
+		Poco::RunnableAdapter<PhysicsSystem>* m_entryPoint;	
 
-		static PhysicsSystem* createPhysicsSystem();
-
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) {};
 		void run();
-		virtual void update() {};		
 
+		// from IComponentProvicer
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
+		virtual BasicTask * initComponentAsync(IComponent *c) override { return nullptr; };
+		virtual BasicTask * terminateComponentAsync(IComponent *c) override { return nullptr; };
+
+		// virtual functions
+		virtual void update() {};
+		virtual void initWorld() {};
+		virtual void clearWorld() {};
+
+		// initialization ^ destruction
+		friend class Engine;
+		static PhysicsSystem* createPhysicsSystem();
 		virtual ~PhysicsSystem();
 		PhysicsSystem();
+
 	};
 }

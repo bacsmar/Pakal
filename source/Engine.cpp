@@ -103,6 +103,14 @@ Engine::Engine() :
 {
 	m_LogicThread = new Poco::Thread();
 }
-
-
 //////////////////////////////////////////////////////////////////////////
+
+// TODO: DELETE THIS SHIT
+namespace Pakal
+{
+	class IrrGraphicsSystem;
+	const IrrGraphicsSystem * getIrrlicht()
+	{	
+		return reinterpret_cast<IrrGraphicsSystem*>( Engine::instance().getGraphicsSystem() );		
+	}
+}

@@ -13,6 +13,7 @@ namespace Pakal
 
 	public:
 		virtual ~AsyncTaskDispatcher() {}
+		AsyncTaskDispatcher() : m_inbox(nullptr) {}
 
 		inline InboxQueue* getInbox()
 		{
