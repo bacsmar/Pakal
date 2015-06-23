@@ -2,9 +2,10 @@
 
 #include "Config.h"
 
-#include "vector"
+#include <vector>
 #include <functional>
-#include "Poco/Thread.h"
+
+#include <Poco/Thread.h>
 
 #include "InboxQueue.h"
 #include "EventScheduler.h"

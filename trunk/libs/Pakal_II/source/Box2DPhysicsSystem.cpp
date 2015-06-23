@@ -11,7 +11,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem()
 {	
 }
 
-void Box2DPhysicsSystem::run()
+void Box2DPhysicsSystem::update()
 {
 		//std::cout << "Hello, world! from Physics" << std::endl;
 }

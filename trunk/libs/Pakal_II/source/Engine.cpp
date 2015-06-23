@@ -63,8 +63,7 @@ void Engine::start( IPakalApplication *application )
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
 
 	m_GameStateSystem->initialize(this);
-	m_PhysicsSystem->initialize();	// creates his own thread	
-
+	m_PhysicsSystem->initialize();	// creates his own thread		
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");

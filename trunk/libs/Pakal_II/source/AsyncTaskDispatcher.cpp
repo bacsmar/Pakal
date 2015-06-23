@@ -1,5 +1,6 @@
 #include "AsyncTaskDispatcher.h"
 #include "InboxQueue.h"
+#include "BasicTask.h"
 
 
 void Pakal::AsyncTaskDispatcher::dispatchTasks(bool waitForTasks)

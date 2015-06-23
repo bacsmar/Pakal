@@ -3,7 +3,6 @@
 #include "Config.h"
 #include <Poco/Notification.h>
 
-
 namespace Pakal
 {
 

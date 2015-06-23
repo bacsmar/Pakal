@@ -3,16 +3,15 @@
 #include "Config.h"
 
 #include <functional>
-
-
 #include <Poco/NotificationQueue.h>
-#include "Task.h"
-
 
 namespace Pakal
 {
 
 	class EventScheduler;
+	class BasicTask;
+	template <class T>
+	class Task;
 
 
 	class _PAKALExport InboxQueue
@@ -26,16 +25,16 @@ namespace Pakal
 		explicit InboxQueue(EventScheduler* dispatcher);
 
 	public:
-
+		
 		template<class TOut>
-		Poco::AutoPtr<Pakal::Task<TOut>> pushTask(std::function<TOut(void)>& delegate)
+		Poco::AutoPtr< Pakal::Task<TOut> > pushTask( std::function<TOut(void)> & delegate)
 		{
-			Poco::AutoPtr<Pakal::Task<TOut>> task = new Pakal::Task<TOut>(delegate,m_scheduler);
+			Poco::AutoPtr< Pakal::Task<TOut> > task = new Pakal::Task<TOut>( delegate, m_scheduler);
 
 			m_inboxStore.enqueueNotification(task);
 			return task;
 		}
-
+		
 		inline Poco::AutoPtr<BasicTask> popTask();
 		inline Poco::AutoPtr<BasicTask> waitPopTask();
 
