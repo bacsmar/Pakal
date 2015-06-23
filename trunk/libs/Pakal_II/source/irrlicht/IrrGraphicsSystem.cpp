@@ -1,12 +1,9 @@
 #include "IrrGraphicsSystem.h"
 
-#include "LogMgr.h"
-
-#include "Engine.h"
-#include "ComponentSystem.h"
-
 #include <memory>
 
+#include "LogMgr.h"
+#include "ComponentSystem.h"
 #include "IComponentFactory.h"
 #include "IComponent.h"
 #include "components/GraphicComponent.h"
@@ -163,12 +160,4 @@ BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
 BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
 {
 	return nullptr;
-}
-
-
-class xyz{};
-xyz a;
-void functionDePrue4b()
-{
-	xyz *ptr = &a;
 }

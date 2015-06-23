@@ -17,9 +17,9 @@ namespace Pakal
 	class _PAKALExport IrrGraphicsSystem : public GraphicsSystem
 	{
 	public:
-		inline irr::IrrlichtDevice		* getDevice() const { return device;	}		
-		inline irr::video::IVideoDriver	* getDriver() const { return driver;	}		
-		inline irr::scene::ISceneManager* getSmgr() const	{ return smgr;		}		
+		inline irr::IrrlichtDevice		* getDevice() const { return device;	}
+		inline irr::video::IVideoDriver	* getDriver() const { return driver;	}
+		inline irr::scene::ISceneManager* getSmgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* getGuienv() const { return guienv;	}
 		IrrGraphicsSystem();
 	protected:
@@ -59,4 +59,6 @@ namespace Pakal
 		virtual BasicTask * initComponentAsync(IComponent *c);
 		virtual BasicTask * terminateComponentAsync(IComponent *c);
 	};
+
+	const IrrGraphicsSystem *getIrrlicht();
 }

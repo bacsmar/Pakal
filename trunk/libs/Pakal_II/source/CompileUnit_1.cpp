@@ -8,15 +8,12 @@
 #pragma once
 
 #include "config.h"
-#include "Platform.h"
-
-#include "Task.h"
 
 #ifdef PAKAL_WIN32_PLATFORM
 	#ifdef _DEBUG
 		#pragma comment(lib, "Pakal_II.lib")	// engine name
 		#pragma comment(lib, "box2d.lib")
-		//#pragma comment(lib, "Irrlicht.lib")
+		#pragma comment(lib, "Irrlicht.lib")
 		#pragma comment(lib, "lua.lib")
 		#pragma comment(lib, "oolua.lib")
 		#pragma comment(lib, "PocoFoundationmdd.lib")

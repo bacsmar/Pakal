@@ -4,7 +4,7 @@
 
 
 #if PAKAL_USE_BOX2D == 1
-	#include "Box2DPhysicsSystem.h"
+	#include "Box2D/Box2DPhysicsSystem.h"
 #endif
 
 using namespace Pakal;
@@ -33,9 +33,11 @@ PhysicsSystem::PhysicsSystem()
 
 void PhysicsSystem::run()
 {
-		std::cout << "Hello, world! from Physics" << std::endl;
+	initWorld();
+	std::cout << "Hello, world! from Physics" << std::endl;
 	while (true)
 	{
+		update();
 		this->dispatchTasks(false);
 	}
 }

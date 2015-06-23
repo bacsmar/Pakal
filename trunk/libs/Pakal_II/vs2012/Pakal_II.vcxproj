@@ -18,7 +18,8 @@
     <ClInclude Include="..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
     <ClInclude Include="..\source\BasicTask.h" />
-    <ClInclude Include="..\source\Box2DPhysicsSystem.h" />
+    <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h" />
+    <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
     <ClInclude Include="..\source\components\GraphicComponent.h" />
     <ClInclude Include="..\source\Config.h" />
@@ -44,13 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
-    <ClCompile Include="..\source\Box2DPhysicsSystem.cpp" />
+    <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp" />
+    <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
     <ClCompile Include="..\source\components\GraphicComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EntitySystem.cpp" />
-    <ClCompile Include="..\source\Event.cpp" />
     <ClCompile Include="..\source\EventScheduler.cpp" />
     <ClCompile Include="..\source\GameStateSystem.cpp" />
     <ClCompile Include="..\source\GenericEntity.cpp" />
