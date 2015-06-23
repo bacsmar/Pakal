@@ -6,10 +6,10 @@
 
 #include <Poco/Condition.h>
 #include <Poco/Mutex.h>
+#include <Poco/AutoPtr.h>
 
 #include "BasicTask.h"
 #include "Event.h"
-#include "Poco/AutoPtr.h"
 
 namespace Pakal
 {

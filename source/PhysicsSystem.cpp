@@ -36,7 +36,7 @@ void PhysicsSystem::run()
 		std::cout << "Hello, world! from Physics" << std::endl;
 	while (true)
 	{
-		this->dispatchTasks(true);
+		this->dispatchTasks(false);
 	}
 }
 

@@ -4,10 +4,6 @@
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
 
-
-
-//#include "Task.h"
-
 namespace Poco
 {
 	class Thread;
@@ -35,17 +31,8 @@ namespace Pakal
 		static PhysicsSystem* createPhysicsSystem();
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) {};
-		virtual void run();
-
-		//Poco::AutoPtr<Task<int>>  getNumberOfBodiesAsync()
-		//{
-		//	std::function<int()> lambda = []()
-		//	{
-		//		return 555;
-		//	};
-
-		//	return getInbox()->pushTask(lambda);
-		//}
+		void run();
+		virtual void update() {};		
 
 		virtual ~PhysicsSystem();
 		PhysicsSystem();

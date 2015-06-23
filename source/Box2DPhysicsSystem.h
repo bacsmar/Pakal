@@ -16,6 +16,6 @@ namespace Pakal
 		friend class Engine;		
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories);
-		virtual void run();
+		virtual void update();
 	};
 }
