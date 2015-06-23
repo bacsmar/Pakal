@@ -15,6 +15,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\AsyncTaskDispatcher.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\BasicTask.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Event.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\EventScheduler.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\InboxQueue.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Task.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
     <ClInclude Include="..\source\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
@@ -22,7 +28,6 @@
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\EntitySystem.h" />
-    <ClInclude Include="..\source\EventSystem.h" />
     <ClInclude Include="..\source\GameStateSystem.h" />
     <ClInclude Include="..\source\GenericEntity.h" />
     <ClInclude Include="..\source\GraphicsSystem.h" />
@@ -38,13 +43,15 @@
     <ClInclude Include="..\source\RTTI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\AsyncTaskDispatcher.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\EventScheduler.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\InboxQueue.cpp" />
     <ClCompile Include="..\source\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
     <ClCompile Include="..\source\components\GraphicComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EntitySystem.cpp" />
-    <ClCompile Include="..\source\EventSystem.cpp" />
     <ClCompile Include="..\source\GameStateSystem.cpp" />
     <ClCompile Include="..\source\GenericEntity.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />

@@ -4,9 +4,8 @@
 #include "PhysicsSystem.h"
 #include "GameStateSystem.h"
 #include "IPakalApplication.h"
-#include "EventSystem.h"
+#include "EventScheduler.h"
 
-#include "IComponent.h"
 #include "ComponentSystem.h"
 
 #include "Poco/SingletonHolder.h"
@@ -14,29 +13,20 @@
 #include "Poco/RunnableAdapter.h"
 
 //////////////////////////// BEGIN TESTS /////////////////////////////////
-#include "GenericEntity.h"
-#include "IComponentFactory.h"
 
-class TestEntity : public Pakal::GenericEntity
-{
-};
+
 //////////////////////////// END TESTS /////////////////////////////////
 
 using namespace Pakal;
+
+
 //////////////////////////////////////////////////////////////////////////
 bool Engine::ms_Initialized = false;
 //////////////////////////////////////////////////////////////////////////
 void Engine::run()
 {
-	std::cout << "Hello, world! from engine" << std::endl;	
-	TestEntity entity;
+	std::cout << "Hello, world! from engine" << std::endl;
 
-
-	entity.addComponent( m_ComponentSystem->createComponent("TestComponent") );
-
-	entity.initializeComponents();	
-
-	//entity.getComponent<TestComponent>();	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::init()
@@ -62,16 +52,19 @@ void Engine::start( IPakalApplication *application )
 
 	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
 	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
-	m_EventSystem = new EventSystem();
+	m_EventScheduler = new EventScheduler();
 	m_GameStateSystem = new GameStateSystem();
 	m_ComponentSystem = new ComponentSystem();
 
 	m_ComponentSystem->registerFactories(m_GraphicsSystem);
 	m_ComponentSystem->registerFactories(m_PhysicsSystem);
 
+	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
+	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
+
 	m_GameStateSystem->initialize(this);
-	m_EventSystem->initialize();
-	m_PhysicsSystem->initialize();	// creates his own thread		
+	m_PhysicsSystem->initialize();	// creates his own thread	
+
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
@@ -94,21 +87,23 @@ Engine::~Engine()
 	SAFE_DEL(m_GraphicsSystem);
 	SAFE_DEL(m_Application);
 	SAFE_DEL(m_GameStateSystem);
-	SAFE_DEL(m_EventSystem)
+	SAFE_DEL(m_EventScheduler)
 
 	SAFE_DEL(m_LogicThread);
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine() :
 	m_Application(nullptr),
-	m_EventSystem(nullptr),
+	m_EventScheduler(nullptr),
 	m_GraphicsSystem(nullptr),
-	m_GameStateSystem(nullptr),
-	m_LogicThread(nullptr),
 	m_PhysicsSystem(nullptr),
+	m_GameStateSystem(nullptr),
 	m_ComponentSystem(nullptr),
-	m_EntitySystem(nullptr)
+	m_EntitySystem(nullptr),
+	m_LogicThread(nullptr)
 {
 	m_LogicThread = new Poco::Thread();
 }
+
+
 //////////////////////////////////////////////////////////////////////////
