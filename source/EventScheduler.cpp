@@ -2,6 +2,16 @@
 #include "InboxQueue.h"
 #include "AsyncTaskDispatcher.h"
 
+Pakal::EventScheduler::~EventScheduler()
+{
+	for(auto& item : m_inboxes)
+	{
+		delete item.second;
+	}
+
+	m_inboxes.clear();
+}
+
 Pakal::InboxQueue* Pakal::EventScheduler::InboxForThread(Poco::Thread::TID tid)
 {
 	auto currentTid = tid;

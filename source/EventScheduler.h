@@ -17,7 +17,11 @@ namespace Pakal
 	{
 		template <class T> friend class Event;
 
+		~EventScheduler();
+
 		std::map<Poco::Thread::TID,InboxQueue*> m_inboxes;
+
+		typedef std::map<Poco::Thread::TID,InboxQueue*>::iterator Iterator;
 
 		InboxQueue* InboxForThread(Poco::Thread::TID tid);
 
