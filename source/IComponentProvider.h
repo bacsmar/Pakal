@@ -12,8 +12,8 @@ namespace Pakal
 
 	class _PAKALExport IComponentProvider
 	{
-	public:	
-		~IComponentProvider(){}
+	public:
+		virtual ~IComponentProvider(){}
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) = 0;
 		virtual BasicTask * initComponentAsync(IComponent *c) = 0;

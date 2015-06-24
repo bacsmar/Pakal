@@ -29,6 +29,12 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	m_showFps = false;
 }
 
+bool IrrGraphicsSystem::initialize()
+{
+	initWindow();
+	return true;
+}
+
 void Pakal::IrrGraphicsSystem::initWindow()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");

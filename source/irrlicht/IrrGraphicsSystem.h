@@ -39,7 +39,9 @@ namespace Pakal
 
 		virtual ~IrrGraphicsSystem(){}
 
-		virtual void initWindow() override;
+		virtual bool initialize() override;
+
+		void initWindow();
 
 		virtual void beginScene() override;
 
@@ -56,8 +58,8 @@ namespace Pakal
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
 		
 	public:
-		virtual BasicTask * initComponentAsync(IComponent *c);
-		virtual BasicTask * terminateComponentAsync(IComponent *c);
+		virtual BasicTask * initComponentAsync(IComponent *c) override;
+		virtual BasicTask * terminateComponentAsync(IComponent *c) override;
 	};
 
 	const IrrGraphicsSystem *getIrrlicht();
