@@ -68,6 +68,16 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 
 }
 //////////////////////////////////////////////////////////////////////////
+BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
+{
+	return nullptr;
+}
+//////////////////////////////////////////////////////////////////////////
+BasicTask * Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 
+{
+	return nullptr;
+}
+//////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)
 {
 	return m_pWorld->CreateBody(def);

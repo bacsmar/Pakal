@@ -69,6 +69,9 @@ namespace Pakal
 		friend class Engine;		
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override;
+		virtual BasicTask * initComponentAsync(IComponent *c) override ;
+		virtual BasicTask * terminateComponentAsync(IComponent *c) override ;
+
 		virtual void update() override;
 		virtual void initWorld() override;
 		virtual void clearWorld() override;
