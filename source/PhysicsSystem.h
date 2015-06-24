@@ -15,6 +15,7 @@ namespace Poco
 namespace Pakal
 {
 	class Engine;
+	class IDebugDrawer;
 
 	class _PAKALExport PhysicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
@@ -30,13 +31,14 @@ namespace Pakal
 
 		// from IComponentProvicer
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
-		virtual BasicTask * initComponentAsync(IComponent *c) override { return nullptr; };
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override { return nullptr; };
+		virtual BasicTask * initComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
+		virtual BasicTask * terminateComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
 
 		// virtual functions
 		virtual void update() {};
 		virtual void initWorld() {};
 		virtual void clearWorld() {};
+		virtual IDebugDrawer * getDebugDrawer(){  return nullptr; };
 
 		// initialization ^ destruction
 		friend class Engine;

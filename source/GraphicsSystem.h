@@ -8,6 +8,8 @@
 
 namespace Pakal
 {
+	class IDebugDrawer;
+
 	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
 	public:
@@ -26,8 +28,9 @@ namespace Pakal
 		virtual void beginScene();
 		virtual bool draw(  );
 		virtual void endScene();
+		virtual void addDebugDrawer(IDebugDrawer * debugDrawer) {};
 
-		void run();
+		void run();		
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override {};
 		virtual BasicTask * initComponentAsync(IComponent *c) override { return nullptr; };

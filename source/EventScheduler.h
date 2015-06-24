@@ -15,6 +15,7 @@ namespace Pakal
 
 	class _PAKALExport EventScheduler
 	{
+		friend class Engine;
 		template <class T> friend class Event;
 
 		~EventScheduler();
