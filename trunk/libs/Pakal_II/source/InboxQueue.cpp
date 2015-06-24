@@ -20,7 +20,7 @@ namespace Pakal
 
 	bool InboxQueue::empty()
 	{
-		return m_inboxStore.size() == 0;
+		return m_inboxStore.empty();
 	}
 
 	int InboxQueue::size()

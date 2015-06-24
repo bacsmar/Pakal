@@ -5,6 +5,7 @@
 #include "GameStateSystem.h"
 #include "IPakalApplication.h"
 #include "EventScheduler.h"
+#include "EntitySystem.h"
 
 #include "ComponentSystem.h"
 
@@ -63,6 +64,7 @@ void Engine::start( IPakalApplication *application )
 
 	m_GameStateSystem->initialize(this);
 	m_PhysicsSystem->initialize();	// it creates his own thread
+	m_GraphicsSystem->initialize();
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
@@ -70,6 +72,7 @@ void Engine::start( IPakalApplication *application )
 
 	// TODO
 	m_GraphicsSystem->addDebugDrawer( m_PhysicsSystem->getDebugDrawer() );
+	m_GraphicsSystem->showFps(true);
 	//m_GraphicsSystem->addDebugDrawer( DebugDrawerDelegate );
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
@@ -87,10 +90,13 @@ Engine & Engine::instance()
 Engine::~Engine()
 {
 	SAFE_DEL(m_GraphicsSystem);
-	SAFE_DEL(m_Application);
+	SAFE_DEL(m_PhysicsSystem);
 	SAFE_DEL(m_GameStateSystem);
 	SAFE_DEL(m_EventScheduler)
+	SAFE_DEL(m_ComponentSystem)
+	SAFE_DEL(m_EntitySystem)
 
+	SAFE_DEL(m_Application);
 	SAFE_DEL(m_LogicThread);
 }
 //////////////////////////////////////////////////////////////////////////

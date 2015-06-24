@@ -7,7 +7,7 @@ namespace Pakal
 	class _PAKALExport EntitySystem
 	{
 	public:		
-	protected:				
 		virtual ~EntitySystem(){}
+	protected:				
 	};
 }

@@ -47,15 +47,15 @@ namespace Pakal
 	{
 	public:
 		// TODO: implement this
-		virtual bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB) { return false; } 
+		virtual bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB) override { return false; } 
 	};
 	//////////////////////////////////////////////////////////////////////////
 	class DestructionListener : public b2DestructionListener
 	{
 	public:
 
-		virtual void SayGoodbye(b2Joint* joint) {};
-		virtual void SayGoodbye(b2Fixture* fixture) {};
+		virtual void SayGoodbye(b2Joint* joint) override {};
+		virtual void SayGoodbye(b2Fixture* fixture) override {};
 	};
 	//////////////////////////////////////////////////////////////////////////	
 

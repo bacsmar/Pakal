@@ -15,11 +15,7 @@ namespace Pakal
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
 
-		virtual bool init();
-		virtual void initWindow();
-		virtual void restoreWindow();
-		virtual void destroyWindow();
-
+		virtual bool initialize();
 		virtual bool update();
 
 		virtual void setWindowCaption(const char* caption){}
@@ -28,7 +24,7 @@ namespace Pakal
 		virtual void beginScene();
 		virtual bool draw(  );
 		virtual void endScene();
-		virtual void addDebugDrawer(IDebugDrawer * debugDrawer) {};
+		virtual void addDebugDrawer(IDebugDrawer * debugDrawer) {}
 
 		void run();		
 

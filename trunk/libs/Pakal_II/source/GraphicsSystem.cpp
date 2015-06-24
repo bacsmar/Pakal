@@ -16,16 +16,6 @@ GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 #endif
 }
 
-bool GraphicsSystem::init()
-{
-	return true;
-}
-
-void GraphicsSystem::initWindow() {}
-
-void GraphicsSystem::restoreWindow() {}
-
-void GraphicsSystem::destroyWindow() {}
 
 bool GraphicsSystem::update() { return true; }
 
@@ -38,10 +28,13 @@ bool GraphicsSystem::draw()
 
 void GraphicsSystem::endScene() {}
 
+bool GraphicsSystem::initialize()
+{
+	return true;
+}
+
 void GraphicsSystem::run()
 {
-	init();
-	initWindow();
 
 	while (true)
 	{
