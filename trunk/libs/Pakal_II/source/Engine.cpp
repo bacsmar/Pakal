@@ -63,11 +63,15 @@ void Engine::start( IPakalApplication *application )
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
 
 	m_GameStateSystem->initialize(this);
-	m_PhysicsSystem->initialize();	// creates his own thread		
+	m_PhysicsSystem->initialize();	// it creates his own thread
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
+
+	// TODO
+	//m_GraphicsSystem->addDebugDrawer( IDebugDrawer );
+	//m_GraphicsSystem->addDebugDrawer( DebugDrawerDelegate );
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
 
