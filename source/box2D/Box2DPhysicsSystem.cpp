@@ -29,6 +29,9 @@ void Box2DPhysicsSystem::update()
 	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
 		
 	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);	
+
+	m_pWorld->DrawDebugData();
+
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::initWorld()
@@ -47,11 +50,7 @@ void Box2DPhysicsSystem::initWorld()
 	m_pWorld->SetDestructionListener(m_pDestructionListener);
 
 	m_pDebugDraw = nullptr;	
-	
-#if PAKAL_USE_IRRLICHT	
-	//m_pDebugDraw = new B2DebugDrawIrr(getIrrlicht()->getDevice(), getIrrlicht()->getDriver());	
-	//m_pWorld->SetDebugDraw(m_pDebugDraw);
-#endif
+
 
 }
 //////////////////////////////////////////////////////////////////////////
