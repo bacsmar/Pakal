@@ -3,6 +3,9 @@
 #include "Box2DPhysicsListeners.h"
 #include "IComponent.h"
 
+#include "InboxQueue.h"
+#include "Task.h"
+
 // TODO: Encontrar una mejor forma de hacer esta mierda.. un componente?
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
@@ -16,13 +19,17 @@ Box2DPhysicsSystem::~Box2DPhysicsSystem()
 }
 //////////////////////////////////////////////////////////////////////////
 Box2DPhysicsSystem::Box2DPhysicsSystem() :
-	m_ActiveQueue(0)
+		m_pWorld(0),
+		m_pContactListener(0),
+		m_pContactFilter(0),
+		m_pDestructionListener(0),
+		m_pDebugDraw(0)		
 {	
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::update()
-{		
-	initializeComponentsInQueue();
+{			
+	dispatchTasks();
 
 	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
@@ -66,25 +73,11 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 
 }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::initializeComponentsInQueue()
-{
-	m_ComponentQueueMutex.lock();
-	int queueToProcess = m_ActiveQueue;
-	m_ActiveQueue = (m_ActiveQueue + 1) % MAX_INITIALIZATION_QUEUES;
-	m_ComponentInitializationList[m_ActiveQueue].clear();
-	m_ComponentQueueMutex.unlock();	
-	
-	for( auto& c : m_ComponentInitializationList[queueToProcess] )
-	{
-		c->internalInit();
-	}	
-}
-//////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
-	std::lock_guard<std::mutex> lock(m_ComponentQueueMutex);
-	m_ComponentInitializationList[m_ActiveQueue].push_back( c );	
-	return nullptr;
+	std::function<int()> lambdaInit = [&] (void) { c->internalInit(); return 0; };
+
+	return getInbox()->pushTask( lambdaInit );
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 
