@@ -57,14 +57,14 @@ void Engine::start( IPakalApplication *application )
 	m_ComponentSystem = new ComponentSystem();
 
 	m_ComponentSystem->registerFactories(m_GraphicsSystem);
-	m_ComponentSystem->registerFactories(m_PhysicsSystem);
+	m_ComponentSystem->registerFactories(m_PhysicsSystem);	
 
 	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
 
 	m_GameStateSystem->initialize(this);
 	m_PhysicsSystem->initialize();	// it creates his own thread
-	m_GraphicsSystem->initialize();
+	m_GraphicsSystem->initialize();	
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");

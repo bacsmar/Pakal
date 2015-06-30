@@ -19,23 +19,12 @@ namespace Pakal
 
 		std::map<Poco::Thread::TID,InboxQueue*> m_inboxes;
 
-		InboxQueue* InboxForThread(Poco::Thread::TID tid);
+		InboxQueue* InboxForThread(Poco::Thread::TID tid);		
 
 	public:
 		virtual ~EventScheduler();
 		void registerDispatcher(AsyncTaskDispatcher* dispatcher);
+		InboxQueue* getAnInboxForThisThread();
 
 	};
-
-
-
-
-
-
-
-
-
-
-
-
 }
