@@ -72,9 +72,7 @@ void Engine::start( IPakalApplication *application )
 
 	// TODO
 	m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
-	m_GraphicsSystem->showFps(true);
-	//m_GraphicsSystem->addDebugDrawer( DebugDrawerDelegate );
-	//m_PhysicsSystem->setDebugDrawerClient( m_GraphicsSystem );
+	m_GraphicsSystem->showFps(true);	
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
 

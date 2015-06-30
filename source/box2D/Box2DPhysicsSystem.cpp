@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "Box2DPhysicsSystem.h"
 #include "Box2DPhysicsListeners.h"
+#include "IComponent.h"
 
 // TODO: Encontrar una mejor forma de hacer esta mierda.. un componente?
 #if PAKAL_USE_IRRLICHT
@@ -14,14 +15,17 @@ Box2DPhysicsSystem::~Box2DPhysicsSystem()
 {	
 }
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::Box2DPhysicsSystem()
+Box2DPhysicsSystem::Box2DPhysicsSystem() :
+	m_ActiveQueue(0)
 {	
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::update()
 {		
+	initializeComponentsInQueue();
+
 	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
-		
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
 	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
 
 }
@@ -32,6 +36,7 @@ void Box2DPhysicsSystem::initWorld()
 	m_pWorld = new b2World(gravity);
 	m_pWorld->SetWarmStarting(true);
 	m_pWorld->SetContinuousPhysics(false);	
+	m_pWorld->SetAllowSleeping(true);
 
 	m_pContactListener = new ContactListener();
 	m_pContactFilter = new ContactFilter();
@@ -61,8 +66,24 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 
 }
 //////////////////////////////////////////////////////////////////////////
+void Box2DPhysicsSystem::initializeComponentsInQueue()
+{
+	m_ComponentQueueMutex.lock();
+	int queueToProcess = m_ActiveQueue;
+	m_ActiveQueue = (m_ActiveQueue + 1) % MAX_INITIALIZATION_QUEUES;
+	m_ComponentInitializationList[m_ActiveQueue].clear();
+	m_ComponentQueueMutex.unlock();	
+	
+	for( auto& c : m_ComponentInitializationList[queueToProcess] )
+	{
+		c->internalInit();
+	}	
+}
+//////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
+	std::lock_guard<std::mutex> lock(m_ComponentQueueMutex);
+	m_ComponentInitializationList[m_ActiveQueue].push_back( c );	
 	return nullptr;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -97,6 +118,7 @@ inline void Box2DPhysicsSystem::disable()	{ m_pContactListener->Disable(); }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::doDebugDraw()
 {
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	if( m_pWorld) m_pWorld->DrawDebugData();
 }
 //////////////////////////////////////////////////////////////////////////
