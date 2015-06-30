@@ -28,7 +28,8 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	smgr(nullptr),
 	guienv(nullptr),
 	fpsText(nullptr),
-	m_renderInfo(nullptr)
+	m_renderInfo(nullptr),
+	m_ActiveQueue(0)
 {
 	m_showFps = false;
 	m_renderInfo = new RendererInfo();
@@ -141,10 +142,27 @@ void Pakal::IrrGraphicsSystem::setWindowCaption( const char * caption )
 
 bool Pakal::IrrGraphicsSystem::update()
 {
+	initializeComponentsInQueue();
+
 	beginScene();
 	bool isDrawing = draw();
 	endScene();
+
 	return isDrawing;
+}
+void IrrGraphicsSystem::initializeComponentsInQueue()
+{
+	m_ComponentQueueMutex.lock();
+	int queueToProcess = m_ActiveQueue;
+	m_ActiveQueue = (m_ActiveQueue + 1) % MAX_INITIALIZATION_QUEUES;
+	m_ComponentInitializationList[m_ActiveQueue].clear();
+	m_ComponentQueueMutex.unlock();	
+	
+
+	for( auto& c : m_ComponentInitializationList[queueToProcess] )
+	{
+		c->internalInit();
+	}	
 }
 
 void Pakal::IrrGraphicsSystem::showFps( bool val )
@@ -172,20 +190,23 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
 BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
-{
-	c->internalInit();	// poner en la lista de inicializacion....
+{	
+	std::lock_guard<std::mutex> lock(m_ComponentQueueMutex);
+	m_ComponentInitializationList[m_ActiveQueue].push_back( c );	
+
+	// TODO: Implement the task
 	return nullptr;
 }
 BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
 {
+	// TODO: Implement the task
 	return nullptr;
 }
 
 void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)
 {	
 	debugDrawer->setDrawer( m_renderInfo );
-	m_debugRenderers.push_back( debugDrawer );
-	//delete debugDrawer;
+	m_debugRenderers.push_back( debugDrawer );	
 } 
 
 IrrGraphicsSystem::~IrrGraphicsSystem()

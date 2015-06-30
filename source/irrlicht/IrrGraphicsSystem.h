@@ -3,6 +3,7 @@
 
 #include <irrlicht.h>
 #include <string>
+#include <mutex>
 
 #ifdef _IRR_WINDOWS_
 	#pragma comment(lib, "Irrlicht.lib")
@@ -14,7 +15,7 @@ namespace Pakal
 	class BasicTask;
 	class IComponent;
 	class IDebugDrawerClient;
-	struct RendererInfo;
+	struct RendererInfo;	
 
 	class _PAKALExport IrrGraphicsSystem : public GraphicsSystem
 	{
@@ -42,6 +43,12 @@ namespace Pakal
 		RendererInfo				*m_renderInfo;
 		std::vector<IDebugDrawerClient*>	m_debugRenderers;
 
+		static const int MAX_INITIALIZATION_QUEUES = 2;
+		typedef std::vector<IComponent*> ComponentList;
+		ComponentList				m_ComponentInitializationList[MAX_INITIALIZATION_QUEUES];
+		int							m_ActiveQueue;
+		std::mutex					m_ComponentQueueMutex;
+
 		virtual ~IrrGraphicsSystem();
 
 		virtual bool initialize() override;
@@ -57,6 +64,8 @@ namespace Pakal
 		virtual void setWindowCaption( const char* caption ) override;
 
 		virtual bool update() override;
+
+		void initializeComponentsInQueue();
 
 		virtual void showFps( bool val ) override;
 
