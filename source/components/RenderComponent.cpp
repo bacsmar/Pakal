@@ -12,8 +12,8 @@
 
 namespace Pakal
 {
-	void RenderComponent::initAsync()
+	BasicTask * RenderComponent::init()
 	{
-		m_RenderSystem->initComponentAsync(this);
+		return m_RenderSystem->initComponentAsync(this);
 	}
 }

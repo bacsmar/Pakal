@@ -10,6 +10,7 @@
 #include "GenericEntity.h"
 #include "IComponent.h"
 #include "RTTI.h"
+#include "Task.h"
 
 namespace Pakal
 {
@@ -27,9 +28,11 @@ namespace Pakal
 	{
 		for( auto & component: m_Components)
 		{
-			component->setParentEntity(this);
-			component->initAsync();
+			component->setParentEntity(this);			
+			BasicTask * task = component->init();
+			//vectorDeInicializacion.push_back( task );
 		}
+		//return TaskUtils::whenAll( vectorDeInicializacion );
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	IComponent * GenericEntity::getComponentByName()

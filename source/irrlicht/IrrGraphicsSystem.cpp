@@ -160,7 +160,7 @@ void IrrGraphicsSystem::initializeComponentsInQueue()
 	
 	for( auto& c : m_ComponentInitializationList[queueToProcess] )
 	{
-		c->internalInit();
+		c->init();
 	}	
 }
 

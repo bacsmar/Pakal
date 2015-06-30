@@ -16,6 +16,7 @@
 namespace Pakal
 {	
 	class IEntity;	
+	class BasicTask;
 	//--------------------------------- IComponent ---------------------------------------------------
 	class _PAKALExport IComponent
 	{
@@ -29,14 +30,12 @@ namespace Pakal
 		{}		
 
 		inline const IEntity * getParentEntity() const		{ return m_ParentEntity; };
-
-		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };
-		
+		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };		
 		inline bool isInitialized()	const					{ return m_isInitialized; }
-
-		virtual void internalInit() = 0;		
+		
 		virtual const Pakal::RTTI &getType() = 0;
-		virtual void initAsync()							= 0;
+
+		virtual BasicTask * init()	= 0;
 
 	protected:		
 

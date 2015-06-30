@@ -19,6 +19,7 @@ namespace Pakal
 
 	class _PAKALExport PhysicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
+		//friend class PhysicComponent;
 	private:
 		void initialize();
 		void terminate();
@@ -27,12 +28,7 @@ namespace Pakal
 		Poco::Thread* m_PhysicsThread;
 		Poco::RunnableAdapter<PhysicsSystem>* m_entryPoint;	
 
-		void run();
-
-		// from IComponentProvicer
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
-		virtual BasicTask * initComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
+		void run();		
 
 		// virtual functions
 		virtual void update() {};
@@ -46,6 +42,10 @@ namespace Pakal
 		static PhysicsSystem* createPhysicsSystem();
 		virtual ~PhysicsSystem();
 		PhysicsSystem();
-
+	public:
+		// from IComponentProvicer
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
+		virtual BasicTask * initComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
+		virtual BasicTask * terminateComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
 	};
 }

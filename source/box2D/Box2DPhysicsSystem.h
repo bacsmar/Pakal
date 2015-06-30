@@ -31,16 +31,7 @@ namespace Pakal
 		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;
 		virtual BasicTask * initComponentAsync(IComponent *c) override ;
 		virtual BasicTask * terminateComponentAsync(IComponent *c) override ;
-
-		/*
-		// async Initialization of components
-		static const int MAX_INITIALIZATION_QUEUES = 2;
-		typedef std::vector<IComponent*> ComponentList;
-		ComponentList				m_ComponentInitializationList[MAX_INITIALIZATION_QUEUES];
-		int							m_ActiveQueue;
-		std::mutex					m_ComponentQueueMutex;
-		void						initializeComponentsInQueue();
-		*/
+		
 		// from IDebugDrawinfo
 		virtual IDebugDrawerClient * getDebugDrawer() override { return this; };		
 		virtual void doDebugDraw();
