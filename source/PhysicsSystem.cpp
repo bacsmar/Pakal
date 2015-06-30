@@ -38,7 +38,7 @@ void PhysicsSystem::run()
 	while (true)
 	{
 		update();
-		this->dispatchTasks(false);
+		this->dispatchTasks();
 	}
 }
 
