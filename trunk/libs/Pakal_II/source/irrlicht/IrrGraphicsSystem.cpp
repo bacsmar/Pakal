@@ -158,7 +158,6 @@ void IrrGraphicsSystem::initializeComponentsInQueue()
 	m_ComponentInitializationList[m_ActiveQueue].clear();
 	m_ComponentQueueMutex.unlock();	
 	
-
 	for( auto& c : m_ComponentInitializationList[queueToProcess] )
 	{
 		c->internalInit();

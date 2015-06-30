@@ -4,6 +4,7 @@
 #include <Box2D.h>
 
 #include "IDebugDrawer.h"
+#include <mutex>
 
 #ifdef PAKAL_WIN32_PLATFORM	
 	#pragma comment(lib, "Box2D.lib")
@@ -14,6 +15,7 @@ namespace Pakal
 	class ContactListener;
 	class ContactFilter;
 	class DestructionListener;
+	class IComponent;
 	//////////////////////////////////////////////////////////////////////////	
 
 	class _PAKALExport Box2DPhysicsSystem : public PhysicsSystem, IDebugDrawerClient
@@ -29,6 +31,14 @@ namespace Pakal
 		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;
 		virtual BasicTask * initComponentAsync(IComponent *c) override ;
 		virtual BasicTask * terminateComponentAsync(IComponent *c) override ;
+
+		// async Initialization of components
+		static const int MAX_INITIALIZATION_QUEUES = 2;
+		typedef std::vector<IComponent*> ComponentList;
+		ComponentList				m_ComponentInitializationList[MAX_INITIALIZATION_QUEUES];
+		int							m_ActiveQueue;
+		std::mutex					m_ComponentQueueMutex;
+		void						initializeComponentsInQueue();
 
 		// from IDebugDrawinfo
 		virtual IDebugDrawerClient * getDebugDrawer() override { return this; };		
@@ -59,6 +69,8 @@ namespace Pakal
 		ContactFilter		* m_pContactFilter;
 		DestructionListener	* m_pDestructionListener;
 		b2Draw				* m_pDebugDraw;
+
+		std::mutex			m_debugDrawMutex;
 
 		std::vector<std::pair<b2Body*, bool> > m_EnableQueue;
 	};
