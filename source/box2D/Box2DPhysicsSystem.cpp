@@ -28,9 +28,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem() :
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::update()
-{			
-	dispatchTasks();
-
+{				
 	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
 	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		

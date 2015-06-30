@@ -2,14 +2,20 @@
 #include "InboxQueue.h"
 #include "BasicTask.h"
 
+#include "EventScheduler.h"
+
 
 void Pakal::AsyncTaskDispatcher::dispatchTasks()
 {
-	auto inbox = getInbox();
-
-	while (!inbox->empty())
+	if( nullptr == m_inbox )
 	{
-		Poco::AutoPtr<BasicTask> task = inbox->popTask();
+		EventScheduler * eventScheduler = m_scheduler;
+		m_inbox = eventScheduler->getAnInboxForThisThread();
+	}	
+
+	while (!m_inbox->empty())
+	{
+		Poco::AutoPtr<BasicTask> task = m_inbox->popTask();
 		task->run();
 	}
 

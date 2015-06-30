@@ -5,24 +5,27 @@
 namespace Pakal 
 {
 	class InboxQueue;
+	class EventScheduler;
 
 	class _PAKALExport AsyncTaskDispatcher
 	{
 	private:
 		InboxQueue* m_inbox;
+		EventScheduler* m_scheduler;
 
 	public:
 		virtual ~AsyncTaskDispatcher() {}
-		AsyncTaskDispatcher() : m_inbox(nullptr) {}
+		AsyncTaskDispatcher() : m_inbox(nullptr), m_scheduler(nullptr) {}
 
 		inline InboxQueue* getInbox()
 		{
 			return m_inbox;
-		};
-		inline void setInbox(InboxQueue* inbox)
+		}
+
+		inline void setScheduler(EventScheduler* scheduler)
 		{
-			m_inbox = inbox;
-		};
+			m_scheduler = scheduler;
+		}
 
 		void dispatchTasks();
 	};
