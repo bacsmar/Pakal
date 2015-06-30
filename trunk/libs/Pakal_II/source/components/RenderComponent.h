@@ -22,8 +22,7 @@ namespace Pakal
 		RenderComponent(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }
 
-		virtual void internalInit() = 0;
-		virtual void initAsync();
+		virtual BasicTask * init();
 
 	protected:
 		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }				

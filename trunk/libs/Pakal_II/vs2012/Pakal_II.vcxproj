@@ -22,6 +22,7 @@
     <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
+    <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\RenderComponent.h" />
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
@@ -52,6 +53,7 @@
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
+    <ClCompile Include="..\source\components\PhysicComponent.cpp" />
     <ClCompile Include="..\source\components\RenderComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EntitySystem.cpp" />

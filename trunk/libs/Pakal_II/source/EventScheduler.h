@@ -22,7 +22,7 @@ namespace Pakal
 		InboxQueue* InboxForThread(Poco::Thread::TID tid);
 
 	public:
-		~EventScheduler();
+		virtual ~EventScheduler();
 		void registerDispatcher(AsyncTaskDispatcher* dispatcher);
 
 	};

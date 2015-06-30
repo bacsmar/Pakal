@@ -27,7 +27,10 @@ void Pakal::EventScheduler::registerDispatcher(AsyncTaskDispatcher* dispatcher)
 	InboxQueue* inbox =  InboxForThread(Poco::Thread::currentTid());
 
 	if (inbox == nullptr)
-		inbox = m_inboxes[Poco::Thread::currentTid()] = new InboxQueue(this);
+	{
+		inbox = new InboxQueue(this);
+		m_inboxes[Poco::Thread::currentTid()] =  inbox;
+	}
 
 	dispatcher->setInbox(inbox);
 }

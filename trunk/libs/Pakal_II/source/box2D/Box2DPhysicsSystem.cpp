@@ -75,7 +75,7 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 //////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
-	std::function<int()> lambdaInit = [&] (void) { c->internalInit(); return 0; };
+	std::function<int()> lambdaInit = [&] (void) { c->init(); return 0; };
 
 	return getInbox()->pushTask( lambdaInit );
 }

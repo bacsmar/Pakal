@@ -45,6 +45,9 @@
     <ClCompile Include="..\source\components\RenderComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\PhysicComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -134,6 +137,9 @@
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
       <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\PhysicComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
