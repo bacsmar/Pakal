@@ -34,7 +34,15 @@ namespace Pakal
 			m_inboxStore.enqueueNotification(task);
 			return task;
 		}
-		
+		/*
+		Poco::AutoPtr< Task<void> > pushTask( std::function<void(void)> & delegate)
+		{
+			Poco::AutoPtr< Task<void> > task = new Pakal::Task<void>( delegate, m_scheduler);
+
+			m_inboxStore.enqueueNotification(task);
+			return task;
+		}
+		*/
 		inline Poco::AutoPtr<BasicTask> popTask();
 		inline Poco::AutoPtr<BasicTask> waitPopTask();
 

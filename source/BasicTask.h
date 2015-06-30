@@ -15,6 +15,8 @@ public:
 	virtual bool isCompleted() = 0;
 	virtual void wait() = 0;
 
+	virtual ~BasicTask() {}
+
 protected:
 	virtual void run() = 0;
 
