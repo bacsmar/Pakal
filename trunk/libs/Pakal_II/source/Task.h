@@ -4,9 +4,8 @@
 
 #include <functional>
 
-#include <Poco/Condition.h>
-#include <Poco/Mutex.h>
-#include <Poco/AutoPtr.h>
+#include <vector>
+#include <atomic>
 
 #include "BasicTask.h"
 #include "Event.h"
@@ -14,40 +13,51 @@
 namespace Pakal
 {
 	class EventScheduler;
-	
+
 	template<class TArgs>
 	class _PAKALExport Task : public BasicTask
 	{
 		friend class InboxQueue;
+		friend class TaskUtils;
 
 		typedef std::function<TArgs(void)> FunctionDelegate;
 		typedef std::function<void(TArgs)> MethodDelegate;
+		typedef Poco::AutoPtr<Task<TArgs>> TaskPtr;
 
 	private:
-		Task(FunctionDelegate& job, EventScheduler* scheduler)
+
+
+		Task(const FunctionDelegate& job, EventScheduler* scheduler)
 		{
+			this->duplicate();
 			mJob = job;
-			Completed.connectWithScheduler(scheduler);			
+			m_isCompleted = false;
+			Completed.connectWithScheduler(scheduler);
+		}
+
+		Task(const TArgs& result)
+		{
+			mResult = result;
+			m_isCompleted = true;
 		}
 
 		FunctionDelegate		mJob;
 		TArgs					mResult;
 		Event<TArgs>			Completed;
-		bool					m_isCompleted;
+		volatile bool			m_isCompleted;
 
-		Poco::Condition		  m_Completed;
-		Poco::Mutex			  m_CompletedMutex;
 
 	protected:
 		void run() override
 		{
-			ASSERT(m_isCompleted);
+			ASSERT(m_isCompleted == false);
 
 			mResult = mJob();
 			m_isCompleted = true;
-			m_Completed.broadcast();
-
+			
 			Completed.notify(mResult);
+
+			this->release();
 		}
 
 	public:
@@ -64,7 +74,10 @@ namespace Pakal
 
 		void wait() override
 		{
-			m_Completed.wait(m_CompletedMutex);
+			if (m_isCompleted) 
+				return;
+			
+			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 
 		void OnCompletionDo(MethodDelegate& callBack)
@@ -77,5 +90,59 @@ namespace Pakal
 
 	};
 
+	
+	class TaskUtils
+	{
+	public:
 
+		template<class T>
+		static Poco::AutoPtr<Task<std::atomic_int>> whenAll(std::vector< Poco::AutoPtr< Task<T>>>& tasks, EventScheduler* scheduler)
+		{
+			static Task<std::atomic_int>::FunctionDelegate emptyDelegate = []()
+			{
+				std::atomic_int n;
+				n.store(0);
+				return n;
+			};
+
+			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate,scheduler);
+			task->mResult = tasks.size();
+
+			std::function<void(T)> onC = [task](T args)
+			{
+				--task->mResult;
+				if(task->mResult == 0)
+				{
+					task->run();
+				}
+			};
+
+			for(auto& t : tasks)
+			{
+				t->OnCompletionDo(onC);
+			}
+
+			return task;
+		}
+
+
+		template<class T>
+		static void waitAll(std::vector<Poco::AutoPtr< Task<T> >>& tasks)
+		{
+			for(auto & t : tasks)
+			{
+				t->wait();
+			}
+		}
+
+		template<class T>
+		static Poco::AutoPtr<Task<T>> fromResult(T& result)
+		{
+			return new Task<T>(result);
+		}
+
+
+
+	};
+	
 }

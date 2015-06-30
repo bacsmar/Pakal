@@ -4,15 +4,15 @@
 
 #include <vector>
 #include <functional>
+#include <mutex>
 
 #include <Poco/Thread.h>
-#include <Poco/Mutex.h>
 
 #include "InboxQueue.h"
 #include "EventScheduler.h"
 
 
-
+//TODO make them sharedptr
 namespace Pakal
 {
 	template <class TArgs>
@@ -32,9 +32,9 @@ namespace Pakal
 		};
 
 		EventScheduler* m_scheduler;
-		std::vector<DelegateData*> m_delegates;
+		std::vector<DelegateData> m_delegates;
 		bool m_isEnabled;
-		Poco::FastMutex m_mutex;
+		std::mutex m_mutex;
 
 	public:
 
@@ -49,10 +49,10 @@ namespace Pakal
 
 		inline void add(MethodDelegate& delegate)
 		{
-			DelegateData* data = new DelegateData(delegate, Poco::Thread::currentTid());
 
-			Poco::FastMutex::ScopedLock lock(m_mutex);
-			m_delegates.push_back(data);
+			std::lock_guard<std::mutex> lock(m_mutex);
+
+			m_delegates.push_back(DelegateData(delegate, Poco::Thread::currentTid()));
 		}
 
 		inline void disable()
@@ -72,13 +72,12 @@ namespace Pakal
 
 		void remove(MethodDelegate& delegate)
 		{
-			Poco::FastMutex::ScopedLock lock(m_mutex);
+			std::lock_guard<std::mutex> lock(m_mutex);
 
 			for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it)
 			{
 				if (delegate == (*it)->delegate)
 				{
-					delete *it;
 					m_delegates.erase(it);
 					return;
 				}
@@ -93,21 +92,20 @@ namespace Pakal
 			auto currentTid = Poco::Thread::currentTid();
 
 			m_mutex.lock();
-			std::vector<DelegateData*> copyDelegates(m_delegates);
+			std::vector<DelegateData> copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			for (DelegateData* dd : copyDelegates)
+			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler && dd->tid != currentTid)
+				if (m_scheduler && dd.tid != currentTid)
 				{
-					InboxQueue* inbox = m_scheduler->InboxForThread(dd->tid);
+					InboxQueue* inbox = m_scheduler->InboxForThread(dd.tid);
 
 					if (inbox)
 					{
-						
 						std::function<int()> lambda = [dd,arguments]()
 						{
-							dd->delegate(arguments);
+							dd.delegate(arguments);
 							return 0;
 						};
 
@@ -116,7 +114,7 @@ namespace Pakal
 					}
 				}
 
-				dd->delegate(arguments);
+				dd.delegate(arguments);
 			}
 		}
 	};

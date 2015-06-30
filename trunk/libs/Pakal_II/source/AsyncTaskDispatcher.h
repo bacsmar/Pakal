@@ -24,7 +24,7 @@ namespace Pakal
 			m_inbox = inbox;
 		};
 
-		void dispatchTasks(bool waitForTasks = false);
+		void dispatchTasks();
 	};
 
 }
