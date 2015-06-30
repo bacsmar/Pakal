@@ -8,7 +8,7 @@
 
 namespace Pakal
 {
-	class IDebugDrawer;
+	class IDebugDrawerClient;
 
 	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
@@ -24,7 +24,8 @@ namespace Pakal
 		virtual void beginScene();
 		virtual bool draw(  );
 		virtual void endScene();
-		virtual void addDebugDrawer(IDebugDrawer * debugDrawer) {}
+
+		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) {}
 
 		void run();		
 

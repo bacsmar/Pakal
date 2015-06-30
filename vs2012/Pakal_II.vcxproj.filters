@@ -126,6 +126,15 @@
     <ClInclude Include="..\source\components\RenderComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IDebugDrawer.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">

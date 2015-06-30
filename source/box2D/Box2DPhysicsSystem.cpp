@@ -1,16 +1,10 @@
-#include "Box2DPhysicsSystem.h"
-
 #include "Config.h"
+#include "Box2DPhysicsSystem.h"
+#include "Box2DPhysicsListeners.h"
 
 // TODO: Encontrar una mejor forma de hacer esta mierda.. un componente?
 #if PAKAL_USE_IRRLICHT
-	#include "box2d/B2DebugDrawIrr.h"
-	#include "irrlicht/IrrGraphicsSystem.h"
-// from IrrGraphicsSystem.h
-namespace Pakal
-{
-	const IrrGraphicsSystem *getIrrlicht();
-}
+	#include "box2d/B2DebugDrawIrr.h"	
 #endif
 
 using namespace Pakal;
@@ -28,9 +22,7 @@ void Box2DPhysicsSystem::update()
 {		
 	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
 		
-	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);	
-
-	m_pWorld->DrawDebugData();
+	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -49,8 +41,9 @@ void Box2DPhysicsSystem::initWorld()
 	m_pWorld->SetContactFilter(m_pContactFilter);
 	m_pWorld->SetDestructionListener(m_pDestructionListener);
 
-	m_pDebugDraw = nullptr;	
+	m_pDebugDraw = nullptr;
 
+	m_pWorld->SetDebugDraw(m_pDebugDraw);
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -97,3 +90,20 @@ void Box2DPhysicsSystem::destroyJoint(b2Joint* joint)
 {
 	return m_pWorld->DestroyJoint(joint);
 }
+//////////////////////////////////////////////////////////////////////////
+inline void Box2DPhysicsSystem::enable()	{ m_pContactListener->Enable(); }
+//////////////////////////////////////////////////////////////////////////
+inline void Box2DPhysicsSystem::disable()	{ m_pContactListener->Disable(); }
+//////////////////////////////////////////////////////////////////////////
+void Box2DPhysicsSystem::doDebugDraw()
+{
+	if( m_pWorld) m_pWorld->DrawDebugData();
+}
+//////////////////////////////////////////////////////////////////////////
+void Box2DPhysicsSystem::setDrawer(const RendererInfo *renderInfo)
+{	
+#if PAKAL_USE_IRRLICHT
+	m_pDebugDraw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
+#endif
+}
+//////////////////////////////////////////////////////////////////////////

@@ -71,9 +71,10 @@ void Engine::start( IPakalApplication *application )
 	m_LogicThread->start(logic_entry_point);
 
 	// TODO
-	m_GraphicsSystem->addDebugDrawer( m_PhysicsSystem->getDebugDrawer() );
+	m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
 	m_GraphicsSystem->showFps(true);
 	//m_GraphicsSystem->addDebugDrawer( DebugDrawerDelegate );
+	//m_PhysicsSystem->setDebugDrawerClient( m_GraphicsSystem );
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
 
@@ -113,13 +114,3 @@ Engine::Engine() :
 	m_LogicThread = new Poco::Thread();
 }
 //////////////////////////////////////////////////////////////////////////
-
-// TODO: DELETE THIS SHIT
-namespace Pakal
-{
-	class IrrGraphicsSystem;
-	const IrrGraphicsSystem * getIrrlicht()
-	{	
-		return reinterpret_cast<IrrGraphicsSystem*>( Engine::instance().getGraphicsSystem() );		
-	}
-}
