@@ -15,7 +15,7 @@ namespace Poco
 namespace Pakal
 {
 	class Engine;
-	class IDebugDrawer;
+	class IDebugDrawerClient;
 
 	class _PAKALExport PhysicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
@@ -38,7 +38,8 @@ namespace Pakal
 		virtual void update() {};
 		virtual void initWorld() {};
 		virtual void clearWorld() {};
-		virtual IDebugDrawer * getDebugDrawer(){  return nullptr; };
+
+		virtual IDebugDrawerClient * getDebugDrawer(){  return nullptr; };
 
 		// initialization ^ destruction
 		friend class Engine;

@@ -13,6 +13,8 @@ namespace Pakal
 {
 	class BasicTask;
 	class IComponent;
+	class IDebugDrawerClient;
+	struct RendererInfo;
 
 	class _PAKALExport IrrGraphicsSystem : public GraphicsSystem
 	{
@@ -37,7 +39,10 @@ namespace Pakal
 
 		irr::gui::IGUIStaticText	* fpsText;
 
-		virtual ~IrrGraphicsSystem(){}
+		RendererInfo				*m_renderInfo;
+		std::vector<IDebugDrawerClient*>	m_debugRenderers;
+
+		virtual ~IrrGraphicsSystem();
 
 		virtual bool initialize() override;
 
@@ -56,11 +61,11 @@ namespace Pakal
 		virtual void showFps( bool val ) override;
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
+
+		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);
 		
 	public:
 		virtual BasicTask * initComponentAsync(IComponent *c) override;
 		virtual BasicTask * terminateComponentAsync(IComponent *c) override;
-	};
-
-	const IrrGraphicsSystem *getIrrlicht();
+	};	
 }

@@ -8,6 +8,9 @@
 #include "IComponent.h"
 #include "components/RenderComponent.h"
 
+
+#include "IDebugDrawer.h"
+
 using namespace irr;
 using namespace core;
 using namespace scene;
@@ -24,9 +27,11 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	driver(nullptr),
 	smgr(nullptr),
 	guienv(nullptr),
-	fpsText(nullptr)
+	fpsText(nullptr),
+	m_renderInfo(nullptr)
 {
 	m_showFps = false;
+	m_renderInfo = new RendererInfo();
 }
 
 bool IrrGraphicsSystem::initialize()
@@ -45,6 +50,9 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
+
+	m_renderInfo->m_Device = device;
+	m_renderInfo->m_Driver = driver;
 
 	fpsText = guienv->addStaticText(L"",
 		rect<s32>(10,10,260,22), true);
@@ -93,6 +101,11 @@ bool Pakal::IrrGraphicsSystem::draw()
 {
 	smgr->drawAll();
 	guienv->drawAll();
+
+	for( auto &r : m_debugRenderers)
+	{
+		r->doDebugDraw();
+	}
 
 	bool isRunning = device->run();
 
@@ -166,4 +179,19 @@ BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
 BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
 {
 	return nullptr;
+}
+
+void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)
+{	
+	debugDrawer->setDrawer( m_renderInfo );
+	m_debugRenderers.push_back( debugDrawer );
+	//delete debugDrawer;
+} 
+
+IrrGraphicsSystem::~IrrGraphicsSystem()
+{
+	for( auto &r : m_debugRenderers)
+	{
+		delete r;
+	}
 }

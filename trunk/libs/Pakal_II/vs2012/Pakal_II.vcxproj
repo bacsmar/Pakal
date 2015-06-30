@@ -19,6 +19,7 @@
     <ClInclude Include="..\source\BaseGameState.h" />
     <ClInclude Include="..\source\BasicTask.h" />
     <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h" />
+    <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
     <ClInclude Include="..\source\components\RenderComponent.h" />
@@ -33,10 +34,12 @@
     <ClInclude Include="..\source\IComponent.h" />
     <ClInclude Include="..\source\IComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
+    <ClInclude Include="..\source\IDebugDrawer.h" />
     <ClInclude Include="..\source\IEntity.h" />
     <ClInclude Include="..\source\InboxQueue.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
+    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h" />
     <ClInclude Include="..\source\LogMgr.h" />
     <ClInclude Include="..\source\PhysicsSystem.h" />
     <ClInclude Include="..\source\Platform.h" />
