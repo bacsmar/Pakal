@@ -15,7 +15,7 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 
 	while (!m_inbox->empty())
 	{
-		Poco::AutoPtr<BasicTask> task = m_inbox->popTask();
+		BasicTaskPtr task = m_inbox->popTask();
 		task->run();
 	}
 

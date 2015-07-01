@@ -3,9 +3,10 @@
 #include "Config.h"
 
 #include <functional>
-
 #include <vector>
 #include <atomic>
+
+#include <Poco/Notification.h>
 
 #include "BasicTask.h"
 #include "Event.h"
@@ -15,7 +16,7 @@ namespace Pakal
 	class EventScheduler;
 
 	template<class TArgs>
-	class _PAKALExport Task : public BasicTask
+	class _PAKALExport Task : public Poco::Notification, public BasicTask
 	{
 		friend class InboxQueue;
 		friend class TaskUtils;
@@ -25,7 +26,7 @@ namespace Pakal
 
 	private:
 
-		Task(const FunctionDelegate& job, EventScheduler* scheduler)
+		Task(const FunctionDelegate& job, EventScheduler* scheduler) : BasicTask(this)
 		{				
 			this->duplicate();
 			m_Job = job;
@@ -33,7 +34,7 @@ namespace Pakal
 			m_EventCompleted.connectWithScheduler(scheduler);			
 		}
 
-		Task(const TArgs& result)
+		Task(const TArgs& result) : BasicTask(this)
 		{			
 			m_Result = result;
 			m_isCompleted = true;			
@@ -146,7 +147,7 @@ namespace Pakal
 				t->onCompletionDo(onComplete);
 			}
 
-			return task;
+			return BasicTaskPtr(task);
 		}		
 		
 		static void waitAll(std::vector<BasicTaskPtr>& tasks)
