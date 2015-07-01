@@ -31,7 +31,7 @@ namespace Pakal
 		for( auto & component: m_Components)
 		{
 			component->setParentEntity(this);			
-			BasicTaskPtr task = component->init();
+			BasicTaskPtr task (component->init());
 			initializationTaskVector.push_back( task );
 		}
 		BasicTaskPtr onFinish = TaskUtils::whenAll( initializationTaskVector );

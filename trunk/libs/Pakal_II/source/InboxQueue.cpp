@@ -8,14 +8,14 @@ namespace Pakal
 			
 	}
 
-	Poco::AutoPtr<BasicTask> InboxQueue::popTask()
+	BasicTaskPtr InboxQueue::popTask()
 	{
-		return static_cast<BasicTask*>(m_inboxStore.dequeueNotification());
+		return BasicTaskPtr(reinterpret_cast<BasicTask*>(m_inboxStore.dequeueNotification()));
 	}
 
-	Poco::AutoPtr<BasicTask> InboxQueue::waitPopTask()
+	BasicTaskPtr InboxQueue::waitPopTask()
 	{
-		return static_cast<BasicTask*>(m_inboxStore.waitDequeueNotification());
+		return BasicTaskPtr(reinterpret_cast<BasicTask*>(m_inboxStore.waitDequeueNotification()));
 	}
 
 	bool InboxQueue::empty()

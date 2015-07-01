@@ -75,7 +75,7 @@ BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c)
 {
 	std::function<int()> lambdaInit = [&] (void) { c->init(); return 0; };
 
-	return getInbox()->pushTask( lambdaInit );
+	return getInbox()->pushTask( lambdaInit ).get();
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 

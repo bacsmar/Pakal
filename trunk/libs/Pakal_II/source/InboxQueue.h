@@ -5,6 +5,8 @@
 #include <functional>
 #include <Poco/NotificationQueue.h>
 
+#include "BasicTask.h"
+
 namespace Pakal
 {
 
@@ -35,8 +37,8 @@ namespace Pakal
 			return task;
 		}		
 
-		inline Poco::AutoPtr<BasicTask> popTask();
-		inline Poco::AutoPtr<BasicTask> waitPopTask();
+		inline BasicTaskPtr popTask();
+		inline BasicTaskPtr waitPopTask();
 
 		inline bool empty();
 
