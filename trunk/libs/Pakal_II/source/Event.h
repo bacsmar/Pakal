@@ -19,8 +19,8 @@ namespace Pakal
 	class
 		_PAKALExport Event
 	{
-		typedef std::function<void(TArgs)> MethodDelegate;
-
+	public:
+		typedef std::function<void(TArgs)> MethodDelegate;		
 	private:
 		struct DelegateData
 		{
@@ -38,6 +38,8 @@ namespace Pakal
 
 	public:
 
+		inline EventScheduler* getEventScheduler() { return m_scheduler; }
+
 		Event() : m_scheduler(nullptr), m_isEnabled(true)
 		{
 		}
@@ -47,7 +49,7 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline void add(MethodDelegate& delegate)
+		inline void addListener(MethodDelegate& delegate)
 		{
 
 			std::lock_guard<std::mutex> lock(m_mutex);
@@ -70,7 +72,7 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-		void remove(MethodDelegate& delegate)
+		void removeListener(MethodDelegate& delegate)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -99,7 +101,7 @@ namespace Pakal
 			{
 				if (m_scheduler && dd.tid != currentTid)
 				{
-					InboxQueue* inbox = m_scheduler->InboxForThread(dd.tid);
+					InboxQueue* inbox = m_scheduler->getInboxForThread(dd.tid);
 
 					if (inbox)
 					{

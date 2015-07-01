@@ -22,28 +22,26 @@ namespace Pakal
 
 		typedef std::function<TArgs(void)> FunctionDelegate;
 		typedef std::function<void(TArgs)> MethodDelegate;
-		typedef Poco::AutoPtr<Task<TArgs>> TaskPtr;
 
 	private:
 
-
 		Task(const FunctionDelegate& job, EventScheduler* scheduler)
-		{
+		{				
 			this->duplicate();
-			mJob = job;
+			m_Job = job;
 			m_isCompleted = false;
-			Completed.connectWithScheduler(scheduler);
+			m_EventCompleted.connectWithScheduler(scheduler);			
 		}
 
 		Task(const TArgs& result)
-		{
-			mResult = result;
-			m_isCompleted = true;
+		{			
+			m_Result = result;
+			m_isCompleted = true;			
 		}
 
-		FunctionDelegate		mJob;
-		TArgs					mResult;
-		Event<TArgs>			Completed;
+		FunctionDelegate		m_Job;
+		TArgs					m_Result;
+		Event<TArgs>			m_EventCompleted;
 		volatile bool			m_isCompleted;
 
 
@@ -52,10 +50,10 @@ namespace Pakal
 		{
 			ASSERT(m_isCompleted == false);
 
-			mResult = mJob();
+			m_Result = m_Job();
 			m_isCompleted = true;
 			
-			Completed.notify(mResult);
+			m_EventCompleted.notify(m_Result);
 
 			this->release();
 		}
@@ -64,7 +62,7 @@ namespace Pakal
 		TArgs Result()
 		{
 			wait();
-			return mResult;
+			return m_Result;
 		}
 
 		bool isCompleted() override
@@ -80,12 +78,36 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 
-		void OnCompletionDo(MethodDelegate& callBack)
+		// TODO: ponerlo en BasicTask
+		inline void OnCompletionDo(MethodDelegate& callBack)
 		{
 			if (m_isCompleted)
-				callBack(mResult);
+				callBack(m_Result);
 			else
-				Completed.add(callBack);			
+				m_EventCompleted.addListener(callBack);			
+		}		
+
+		virtual void onCompletionDo( std::function<void()> & callback ) override
+		{
+			
+			if (m_isCompleted)
+				callback();
+			else
+			{
+
+				Event<TArgs>::MethodDelegate callbackBridge = [callback](TArgs)
+				{	
+					callback();
+				};
+
+				m_EventCompleted.addListener(callbackBridge);
+			}
+			
+		}
+
+		EventScheduler* getEventScheduler() override
+		{
+			return m_EventCompleted.getEventScheduler();
 		}
 
 	};
@@ -94,10 +116,11 @@ namespace Pakal
 	class TaskUtils
 	{
 	public:
-
-		template<class T>
-		static Poco::AutoPtr<Task<std::atomic_int>> whenAll(std::vector< Poco::AutoPtr< Task<T>>>& tasks, EventScheduler* scheduler)
+		static BasicTaskPtr whenAll(std::vector< BasicTaskPtr >& tasks)
 		{
+			ASSERT(tasks.empty() == false);
+			EventScheduler* scheduler = tasks.at(0)->getEventScheduler();
+
 			static Task<std::atomic_int>::FunctionDelegate emptyDelegate = []()
 			{
 				std::atomic_int n;
@@ -105,29 +128,28 @@ namespace Pakal
 				return n;
 			};
 
-			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate,scheduler);
-			task->mResult = tasks.size();
+			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate, scheduler);
+			task->m_Result = tasks.size();
 
-			std::function<void(T)> onC = [task](T args)
+
+			std::function<void()> onComplete = [task]()
 			{
-				--task->mResult;
-				if(task->mResult == 0)
+				--task->m_Result;
+				if(task->m_Result == 0)
 				{
 					task->run();
 				}
-			};
+			};			
 
 			for(auto& t : tasks)
-			{
-				t->OnCompletionDo(onC);
+			{				
+				t->onCompletionDo(onComplete);
 			}
 
 			return task;
-		}
-
-
-		template<class T>
-		static void waitAll(std::vector<Poco::AutoPtr< Task<T> >>& tasks)
+		}		
+		
+		static void waitAll(std::vector<BasicTaskPtr>& tasks)
 		{
 			for(auto & t : tasks)
 			{

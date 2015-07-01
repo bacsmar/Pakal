@@ -19,7 +19,7 @@ namespace Pakal
 
 		std::map<Poco::Thread::TID,InboxQueue*> m_inboxes;
 
-		InboxQueue* InboxForThread(Poco::Thread::TID tid);		
+		InboxQueue* getInboxForThread(Poco::Thread::TID tid);		
 
 	public:
 		virtual ~EventScheduler();
