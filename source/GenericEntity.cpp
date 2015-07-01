@@ -26,13 +26,16 @@ namespace Pakal
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	void GenericEntity::initializeComponents()
 	{
+		std::vector<BasicTaskPtr> initializationTaskVector;
+
 		for( auto & component: m_Components)
 		{
 			component->setParentEntity(this);			
-			BasicTask * task = component->init();
-			//vectorDeInicializacion.push_back( task );
+			BasicTaskPtr task = component->init();
+			initializationTaskVector.push_back( task );
 		}
-		//return TaskUtils::whenAll( vectorDeInicializacion );
+		BasicTaskPtr onFinish = TaskUtils::whenAll( initializationTaskVector );
+		//onFinish->onCompletionDo();
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	IComponent * GenericEntity::getComponentByName()

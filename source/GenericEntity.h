@@ -11,6 +11,8 @@
 #include "IEntity.h"
 #include <vector>
 
+//#include "BasicTask.h"
+
 namespace Pakal
 {
 	class IComponent;
@@ -26,7 +28,6 @@ namespace Pakal
 		
 		virtual IComponent * getComponentByName();		
 		virtual IComponent * getComponentById(int id);
-
 
 		template <class T>
 		T * getComponent()
