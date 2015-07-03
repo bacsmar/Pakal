@@ -19,15 +19,15 @@ namespace Pakal
 	public:
 		virtual ~PhysicComponent(){}
 		PhysicComponent(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }		
-		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }		
-
-		BasicTask * init() override;
+		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }				
 
 		virtual void onInit(const PhysicsSystem &pSystem) = 0;
 
 	protected:
 		inline PhysicsSystem *getPhysicsSystem() { return m_PhysicsSystem; }				
 	private:		
+
 		PhysicsSystem *m_PhysicsSystem;		
+		BasicTask * init() override;	// hide init From derivated classes
 	};
 }
