@@ -19,15 +19,15 @@ namespace Pakal
 	public:
 		virtual ~RenderComponent(){}
 		RenderComponent(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
-		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }
-
-		BasicTask * init() override;
+		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 
 		virtual void onInit(const GraphicsSystem &pSystem) = 0;
 
 	protected:
 		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }				
 	private:		
+
 		GraphicsSystem *m_RenderSystem;		
+		BasicTask * init() override;	// hide init From derivated classes
 	};
 }
