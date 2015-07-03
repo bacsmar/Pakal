@@ -12,8 +12,7 @@
 
 namespace Pakal
 {
-	class GraphicsSystem;
-	class IrrGraphicsSystem;	
+	class GraphicsSystem;	
 
 	class _PAKALExport RenderComponent : public IComponent
 	{
@@ -22,7 +21,9 @@ namespace Pakal
 		RenderComponent(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }
 
-		virtual BasicTask * init();
+		BasicTask * init() override;
+
+		virtual void onInit(const GraphicsSystem &pSystem) = 0;
 
 	protected:
 		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }				

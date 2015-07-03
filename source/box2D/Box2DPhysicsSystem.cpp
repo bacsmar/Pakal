@@ -3,6 +3,8 @@
 #include "Box2DPhysicsListeners.h"
 #include "IComponent.h"
 
+#include "components/PhysicComponent.h"
+
 #include "InboxQueue.h"
 #include "Task.h"
 
@@ -68,12 +70,20 @@ void Box2DPhysicsSystem::clearWorld()
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {
-
+	class PhysicComponentTest : public Pakal::PhysicComponent
+	{
+		DECLARE_RTTI(PhysicComponentTest);
+		virtual void onInit(const PhysicsSystem &renderSystem) override{};		
+		PhysicComponentTest(Box2DPhysicsSystem * box2d) : PhysicComponent(box2d){}		
+	};
+	
+	factories.push_back( Pakal::CreateComponentFactory<PhysicComponentTest>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
-	std::function<int()> lambdaInit = [&] (void) { c->init(); return 0; };
+	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
+	std::function<int()> lambdaInit = [&] (void) { pComponent->onInit(*this); return 0; };
 
 	return getInbox()->pushTask( lambdaInit ).get();
 }
