@@ -1,5 +1,6 @@
 #include "InboxQueue.h"
 #include "BasicTask.h"
+#include "Task.h"
 
 namespace Pakal
 {
@@ -10,7 +11,9 @@ namespace Pakal
 
 	BasicTaskPtr InboxQueue::popTask()
 	{
-		return BasicTaskPtr(reinterpret_cast<BasicTask*>(m_inboxStore.dequeueNotification()));
+		Poco::Notification *notification = m_inboxStore.dequeueNotification();		
+		TaskBridge *t = reinterpret_cast<TaskBridge*>( notification );		
+		return BasicTaskPtr(t);
 	}
 
 	BasicTaskPtr InboxQueue::waitPopTask()

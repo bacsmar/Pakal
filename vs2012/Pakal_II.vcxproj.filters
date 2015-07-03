@@ -170,5 +170,8 @@
     <Filter Include="Components">
       <UniqueIdentifier>{90d31d91-eae7-4171-880a-b865ec374056}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Systems\Events">
+      <UniqueIdentifier>{fa87f344-b41f-4380-ad20-837e020826b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
