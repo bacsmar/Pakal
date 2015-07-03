@@ -8,9 +8,7 @@ namespace Poco { class Notification; }
 
 namespace Pakal
 {
-	class EventScheduler;	
-	template <class T>
-	class Task;
+	class EventScheduler;		
 
 	class _PAKALExport BasicTask 
 	{
@@ -24,12 +22,9 @@ namespace Pakal
 		virtual void onCompletionDo( std::function<void()> & callback ) = 0;
 
 		virtual EventScheduler* getEventScheduler() = 0;
-
-	protected:	
-		virtual void run() = 0;	
-
-		Poco::Notification *m_Notification;
-		BasicTask(Poco::Notification *Notification) : m_Notification( Notification) { }
+					
+	protected:					
+		virtual void run() = 0;		
 	};
 
 	typedef std::shared_ptr<BasicTask> BasicTaskPtr;

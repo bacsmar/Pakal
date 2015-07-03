@@ -83,7 +83,8 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
 	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
-	std::function<int()> lambdaInit = [&] (void) { pComponent->onInit(*this); return 0; };
+
+	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
 
 	return getInbox()->pushTask( lambdaInit ).get();
 }

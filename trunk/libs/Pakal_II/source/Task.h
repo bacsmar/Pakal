@@ -15,8 +15,14 @@ namespace Pakal
 {
 	class EventScheduler;
 
+	class TaskBridge : public Poco::Notification, public BasicTask
+	{
+	public:		
+		virtual ~TaskBridge(){}
+	};
+
 	template<class TArgs>
-	class _PAKALExport Task : public Poco::Notification, public BasicTask
+	class _PAKALExport Task : public TaskBridge
 	{
 		friend class InboxQueue;
 		friend class TaskUtils;
@@ -26,7 +32,7 @@ namespace Pakal
 
 	private:
 
-		Task(const FunctionDelegate& job, EventScheduler* scheduler) : BasicTask(this)
+		Task(const FunctionDelegate& job, EventScheduler* scheduler) 
 		{				
 			this->duplicate();
 			m_Job = job;
