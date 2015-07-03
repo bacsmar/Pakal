@@ -158,9 +158,9 @@ void IrrGraphicsSystem::initializeComponentsInQueue()
 	m_ComponentInitializationList[m_ActiveQueue].clear();
 	m_ComponentQueueMutex.unlock();	
 	
-	for( auto& c : m_ComponentInitializationList[queueToProcess] )
+	for( auto & c : m_ComponentInitializationList[queueToProcess] )
 	{
-		c->init();
+		(static_cast<RenderComponent*>( c) )-> onInit(*this);
 	}	
 }
 
@@ -176,16 +176,15 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
 
-	class TestComponent : public Pakal::RenderComponent
+	class RenderComponentTest : public Pakal::RenderComponent
 	{
-		DECLARE_RTTI(TestComponent);
-		void internalInit()	{}
+		DECLARE_RTTI(RenderComponentTest);
+		virtual void onInit(const GraphicsSystem &renderSystem) override{};
 		//TestComponent() : RenderComponent(nullptr){}
-		TestComponent(IrrGraphicsSystem * irr) : RenderComponent(irr){}
-		virtual void initAsync(){}
+		RenderComponentTest(IrrGraphicsSystem * irr) : RenderComponent(irr){}		
 	};
 	
-	factories.push_back( Pakal::CreateComponentFactory<TestComponent>(this) );
+	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
 BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
