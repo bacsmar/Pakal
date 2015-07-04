@@ -22,7 +22,7 @@ namespace Pakal
 	};
 
 	template<class TArgs>
-	class _PAKALExport Task : public TaskBridge
+	class _PAKALExport Task final : public TaskBridge
 	{
 		friend class InboxQueue;
 		friend class TaskUtils;
@@ -96,7 +96,6 @@ namespace Pakal
 
 		virtual void onCompletionDo( std::function<void()> & callback ) override
 		{
-			
 			if (m_isCompleted)
 				callback();
 			else

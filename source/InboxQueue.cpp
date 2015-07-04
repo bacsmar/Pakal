@@ -18,7 +18,9 @@ namespace Pakal
 
 	BasicTaskPtr InboxQueue::waitPopTask()
 	{
-		return BasicTaskPtr(reinterpret_cast<BasicTask*>(m_inboxStore.waitDequeueNotification()));
+		Poco::Notification *notification = m_inboxStore.waitDequeueNotification();		
+		TaskBridge *t = reinterpret_cast<TaskBridge*>( notification );		
+		return BasicTaskPtr(t);		
 	}
 
 	bool InboxQueue::empty()
