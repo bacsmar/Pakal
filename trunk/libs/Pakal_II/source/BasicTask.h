@@ -23,55 +23,56 @@ namespace Pakal
 
 		virtual void onCompletionDo( std::function<void()> & callback ) = 0;
 
-		struct IDelegate{ virtual ~IDelegate(){} };
+		struct IDelegate
+		{ 
+			virtual ~IDelegate(){} 
+
+			virtual int getType() = 0;
+			enum DELEGATE_TYPE
+			{
+				DELEGATE_NOARGS,
+				DELEGATE_ARGS,
+				DELEGATE_NOARGS_NOPARAM,
+			};
+		};
 
 		template <class ReturnType, class ArgType>
 		struct Delegate : public IDelegate
 		{
-			std::function<ReturnType(ArgType)> f;			
+			std::function<ReturnType(ArgType)> f;
+			int getType(){ return DELEGATE_ARGS; };
 		};
 
 		template <class ReturnType>
 		struct DelegateNoArgs : public IDelegate
 		{
 			std::function<ReturnType()> f;
+			int getType(){ return DELEGATE_NOARGS;}
 		};
 
-		template <class ReturnType, class ParamType>
-		IDelegate* createDelegate( ReturnType (*_method)(ParamType _params))
-		{			
-			Delegate<ReturnType, ParamType> *d = new Delegate<ReturnType, ParamType>();
-			d->f = _method;
-			onCompletionDo(d);
-			return d;
-		}		
-
-		IDelegate* createDelegate( void (*_method)() )
-		{			
-			DelegateNoArgs<void> *d = new DelegateNoArgs<void>();
-			d->f = _method;
-			onCompletionDo(d);
-			return d;
-		}
+		struct DelegateNoArgsNoParam : public IDelegate
+		{
+			std::function<void()> f;
+			int getType(){ return DELEGATE_NOARGS_NOPARAM;}
+		};
 		
 		template<class TRet,class TArgs>
-		IDelegate* createDelegate( std::function<TRet(TArgs)> & _method )
+		void createDelegate( std::function<TRet(TArgs)> & _method )
 		{			
 			Delegate<TRet, TArgs> *d = new Delegate<TRet, TArgs>();
 			d->f = _method;
-			onCompletionDo(d);
-			return d;
+			onCompletionDo(d);			
 		}
 
-		IDelegate* createDelegate( std::function<void()> & _method )
+		void createDelegate( std::function<void()> & _method )
 		{			
-			DelegateNoArgs<void> *d = new DelegateNoArgs<void>();
+			//DelegateNoArgs<void> *d = new DelegateNoArgs<void>();
+			DelegateNoArgsNoParam *d = new DelegateNoArgsNoParam();
 			d->f = _method;
-			onCompletionDo(d);
-			return d;
+			onCompletionDo(d);			
 		}
 		
-		virtual void onCompletionDo( IDelegate * callback ) {};		
+		virtual void onCompletionDo( IDelegate * delegate ) {};		
 					
 	protected:					
 		virtual void run() = 0;		
