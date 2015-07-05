@@ -13,6 +13,9 @@
 #include "Poco/Thread.h"
 #include "Poco/RunnableAdapter.h"
 
+#include <chrono>
+#include <thread>
+
 //#include <vld.h>
 
 //////////////////////////// BEGIN TESTS /////////////////////////////////
@@ -27,18 +30,26 @@ bool Engine::ms_Initialized = false;
 //////////////////////////////////////////////////////////////////////////
 void Engine::run()
 {
-	
+	// remember! it is running on a secondary thread, is NOT on main thread
+	std::chrono::milliseconds duration( 1 );    
+	while( false == m_shouldTerminate )
+	{
+		m_EntitySystem->updateSimulation();
+		m_GameStateSystem->peek_state();
+		std::this_thread::sleep_for( duration );
+		// TODO : condition_wait ?  wait for what?  something in entitySystem or GameStateSystem?
+	}
+	//	m_GameStateSystem->close();  TODO
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::init()
 {
-	ASSERT(ms_Initialized == false);	
+	ASSERT(ms_Initialized == false);
 
 	std::cout << "Hello, world! from engine" << std::endl;
 
-	m_Application->setUpGameStates(m_GameStateSystem);
-
-	// TODO: loop para el thread de logica, wait, sleep, wait for algo	
+	m_Application->setUpComponents(m_ComponentSystem);
+	m_Application->setUpGameStates(m_GameStateSystem);	
 
 	ms_Initialized = true;
 
@@ -53,33 +64,35 @@ void Engine::start( IPakalApplication *application )
 
 	m_Application = application;
 
-	m_GraphicsSystem = GraphicsSystem::createGraphicsSystem();
-	m_PhysicsSystem = PhysicsSystem::createPhysicsSystem();
-	m_EventScheduler = new EventScheduler();
-	m_GameStateSystem = new GameStateSystem();
-	m_ComponentSystem = new ComponentSystem();
+	m_GraphicsSystem	= GraphicsSystem::createGraphicsSystem();
+	m_PhysicsSystem		= PhysicsSystem::createPhysicsSystem();
+	m_EventScheduler	= new EventScheduler();
+	m_GameStateSystem	= new GameStateSystem();
+	m_ComponentSystem	= new ComponentSystem();
+	m_EntitySystem		= new EntitySystem();
 
 	m_ComponentSystem->registerFactories(m_GraphicsSystem);
 	m_ComponentSystem->registerFactories(m_PhysicsSystem);	
 
 	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
+	m_EventScheduler->registerDispatcher(m_EntitySystem);
 
-	m_GameStateSystem->initialize(this);
-	m_PhysicsSystem->initialize();	// it creates his own thread
-	m_GraphicsSystem->initialize();	
+	m_GameStateSystem->initialize(this);	// executed in diferent thread
+	m_PhysicsSystem->initialize();			// it creates his own thread
+	m_GraphicsSystem->initialize();			// it uses this very thread
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
-
-	// TODO
+	
 	m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
 	m_GraphicsSystem->showFps(true);	
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
 
 	m_PhysicsSystem->terminate();
+	m_shouldTerminate = true;
 	m_LogicThread->join();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +124,8 @@ Engine::Engine() :
 	m_GameStateSystem(nullptr),
 	m_ComponentSystem(nullptr),
 	m_EntitySystem(nullptr),
-	m_LogicThread(nullptr)
+	m_LogicThread(nullptr),
+	m_shouldTerminate(false)
 {
 	m_LogicThread = new Poco::Thread();
 }
