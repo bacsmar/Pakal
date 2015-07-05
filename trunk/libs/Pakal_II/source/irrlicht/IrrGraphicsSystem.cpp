@@ -8,9 +8,6 @@
 #include "IComponent.h"
 #include "components/RenderComponent.h"
 
-#include "InboxQueue.h"
-#include "Task.h"
-
 #include "IDebugDrawer.h"
 
 using namespace irr;

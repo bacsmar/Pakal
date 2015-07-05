@@ -3,7 +3,6 @@
 
 #include <irrlicht.h>
 #include <string>
-#include <mutex>
 
 #ifdef _IRR_WINDOWS_
 	#pragma comment(lib, "Irrlicht.lib")
