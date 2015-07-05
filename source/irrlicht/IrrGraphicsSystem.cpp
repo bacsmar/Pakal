@@ -211,6 +211,10 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 {
 	for( auto &r : m_debugRenderers)
 	{
-		delete r;
+		//delete r;
 	}
+	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
+	device->closeDevice();
+	device->drop();
+	delete m_renderInfo;
 }

@@ -13,6 +13,8 @@
 #include "Poco/Thread.h"
 #include "Poco/RunnableAdapter.h"
 
+//#include <vld.h>
+
 //////////////////////////// BEGIN TESTS /////////////////////////////////
 
 
@@ -97,6 +99,7 @@ Engine::~Engine()
 
 	SAFE_DEL(m_Application);
 	SAFE_DEL(m_LogicThread);
+	LogMgr::stop();
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine() :

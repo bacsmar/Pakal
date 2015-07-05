@@ -52,6 +52,7 @@ namespace Pakal{
 		void _PAKALExport setLogLevel(int level);
 
 		bool _PAKALExport init();
+		bool _PAKALExport stop();
 	};
 }
 
