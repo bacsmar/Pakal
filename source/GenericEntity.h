@@ -11,8 +11,6 @@
 #include "IEntity.h"
 #include <vector>
 
-//#include "BasicTask.h"
-
 namespace Pakal
 {
 	class IComponent;
@@ -20,11 +18,11 @@ namespace Pakal
 	class _PAKALExport GenericEntity : public IEntity
 	{
 	public:	
-		virtual ~GenericEntity(){}
+		virtual ~GenericEntity();
 
 		virtual void initialize() 				override;
 		virtual int addComponent(IComponent *c) override;
-		virtual void initializeComponents() 	override;
+		virtual BasicTaskPtr initializeComponents() 	override;		
 		
 		virtual IComponent * getComponentByName();		
 		virtual IComponent * getComponentById(int id);
