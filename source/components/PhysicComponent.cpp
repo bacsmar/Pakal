@@ -15,4 +15,8 @@ namespace Pakal
 	{
 		return m_PhysicsSystem->initComponentAsync(this);
 	}
+	BasicTaskPtr PhysicComponent::destroy()
+	{
+		return m_PhysicsSystem->terminateComponentAsync(this);
+	}
 }

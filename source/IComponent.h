@@ -12,7 +12,7 @@
 
 #include "RTTI.h"
 #include "IComponentFactory.h"
-#include "TaskFwd.h"
+#include "BasicTask.h"
 
 namespace Pakal
 {	
@@ -33,10 +33,12 @@ namespace Pakal
 		inline const IEntity * getParentEntity() const		{ return m_ParentEntity; };
 		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };		
 		inline bool isInitialized()	const					{ return m_isInitialized; }
+		inline void setIsInitialized(bool val)				{ m_isInitialized = val; }
 		
 		virtual const Pakal::RTTI &getType() = 0;
 
 		virtual BasicTaskPtr init()	= 0;
+		virtual BasicTaskPtr destroy()	= 0;
 
 	protected:		
 

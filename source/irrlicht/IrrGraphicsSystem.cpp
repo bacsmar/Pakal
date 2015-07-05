@@ -25,8 +25,7 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	device(nullptr),
 	driver(nullptr),
 	smgr(nullptr),
-	guienv(nullptr),
-	fpsText(nullptr),
+	guienv(nullptr),	
 	m_renderInfo(nullptr)	
 {
 	m_showFps = false;
@@ -53,19 +52,16 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	m_renderInfo->m_Device = device;
 	m_renderInfo->m_Driver = driver;
 
-	fpsText = guienv->addStaticText(L"",
-		rect<s32>(10,10,260,22), true);
-	fpsText->setOverrideColor( video::SColor(255,255,255,255));
 	showFps(m_showFps);
 
 	smgr->addCameraSceneNode();	
-		
+
 #ifdef PAKAL_WIN32_PLATFORM
 	m_Window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
 #else
 	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
 #endif	
-	
+
 	LOG_INFO("[Graphic System] done");
 }
 //////////////////////////////////////////////////////////////////////////
@@ -93,8 +89,13 @@ bool Pakal::IrrGraphicsSystem::draw()
 	}	
 
 	if( m_showFps)
-	{
-		fpsText->setText( core::stringw(driver->getFPS()).c_str());
+	{		
+		core::stringw str = L"FPS [";
+		str += driver->getName();
+		str += "] FPS:";
+		str += driver->getFPS();
+
+		device->setWindowCaption(str.c_str());            
 	}
 
 	return isRunning;
@@ -121,10 +122,8 @@ bool Pakal::IrrGraphicsSystem::update()
 }
 //////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::showFps( bool val )
-{
-	ASSERT(fpsText);
-	m_showFps = val;
-	fpsText->setVisible(val);
+{	
+	m_showFps = val;	
 }
 //////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
@@ -139,7 +138,7 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 		//TestComponent() : RenderComponent(nullptr){}
 		RenderComponentTest(IrrGraphicsSystem * irr) : RenderComponent(irr){}		
 	};
-	
+
 	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
@@ -162,3 +161,40 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	delete m_renderInfo;
 }
 //////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::processComponentUpdateList(std::unordered_set<RenderComponent*> &list)
+{
+	for( auto & renderComponent : list)
+	{
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::processComponentInitList(std::unordered_set<RenderComponent*> &list)
+{
+	for( auto & renderComponent : list)
+	{
+		auto switch_on = renderComponent->getRenderType();
+
+		switch ( switch_on )
+		{
+		case RenderComponent::RCT_NONE:
+		case RenderComponent::RCT_SPECIAL:
+			renderComponent->onInit(*this);
+			break;
+		case RenderComponent::RCT_MESH:
+			// do things with mesh!
+			// renderComponent->mesh = SceneManager->addMesh( renderComponent->meshName );
+			break;		
+		case RenderComponent::RCT_ANIMATED_MESH:
+			break;
+		case RenderComponent::RCT_CAMERA:
+			break;
+		case RenderComponent::RCT_LIGHT:
+			break;
+		case RenderComponent::RCT_BILLBOARD:
+			break;			
+		default:
+			break;
+		}
+	}
+	list.clear();
+}

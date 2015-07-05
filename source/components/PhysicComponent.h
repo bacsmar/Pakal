@@ -29,6 +29,7 @@ namespace Pakal
 	private:		
 
 		PhysicsSystem *m_PhysicsSystem;		
-		BasicTaskPtr init() override;	// hide init From derivated classes
+		BasicTaskPtr init() override final; 	// hide init From derivated classes
+		BasicTaskPtr destroy() override final;	// hide init From derivated classes
 	};
 }
