@@ -141,6 +141,9 @@
     <ClInclude Include="..\source\components\PhysicComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\TaskFwd.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">

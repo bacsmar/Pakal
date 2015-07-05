@@ -27,13 +27,14 @@ bool Engine::ms_Initialized = false;
 //////////////////////////////////////////////////////////////////////////
 void Engine::run()
 {
-	std::cout << "Hello, world! from engine" << std::endl;
-
+	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::init()
 {
 	ASSERT(ms_Initialized == false);	
+
+	std::cout << "Hello, world! from engine" << std::endl;
 
 	m_Application->setUpGameStates(m_GameStateSystem);
 

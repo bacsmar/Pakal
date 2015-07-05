@@ -12,7 +12,7 @@
 
 #include "RTTI.h"
 #include "IComponentFactory.h"
-#include "BasicTask.h"
+#include "TaskFwd.h"
 
 namespace Pakal
 {	

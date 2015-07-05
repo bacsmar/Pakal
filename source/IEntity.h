@@ -8,7 +8,7 @@
 
 #pragma once
 #include "Config.h"
-#include "BasicTask.h"
+#include "TaskFwd.h"
 
 namespace Pakal
 {

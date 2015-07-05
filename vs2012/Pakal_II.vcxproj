@@ -46,6 +46,7 @@
     <ClInclude Include="..\source\Platform.h" />
     <ClInclude Include="..\source\RTTI.h" />
     <ClInclude Include="..\source\Task.h" />
+    <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
