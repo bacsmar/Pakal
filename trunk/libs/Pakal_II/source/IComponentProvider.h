@@ -2,7 +2,7 @@
 
 #include "Config.h"
 #include <vector>
-#include "TaskFwd.h"
+#include "BasicTask.h"
 
 namespace Pakal
 {

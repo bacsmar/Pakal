@@ -1,8 +1,8 @@
 #include "Config.h"
 #include "Box2DPhysicsSystem.h"
 #include "Box2DPhysicsListeners.h"
-#include "IComponent.h"
 
+#include "IComponent.h"
 #include "components/PhysicComponent.h"
 
 #include "InboxQueue.h"
@@ -79,20 +79,6 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 	};
 	
 	factories.push_back( Pakal::CreateComponentFactory<PhysicComponentTest>(this) );
-}
-//////////////////////////////////////////////////////////////////////////
-BasicTaskPtr Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
-{
-	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
-
-	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
-
-	return getInbox()->pushTask( lambdaInit );
-}
-//////////////////////////////////////////////////////////////////////////
-BasicTaskPtr Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 
-{
-	return nullptr;
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)

@@ -4,8 +4,6 @@
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
 
-
-
 namespace Pakal
 {
 	class IDebugDrawerClient;
