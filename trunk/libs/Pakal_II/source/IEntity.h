@@ -8,6 +8,7 @@
 
 #pragma once
 #include "Config.h"
+#include "BasicTask.h"
 
 namespace Pakal
 {
@@ -18,9 +19,9 @@ namespace Pakal
 	public:	
 		virtual ~IEntity(){}
 
-		virtual void	initialize() = 0;		
-		virtual int		addComponent(IComponent *c) = 0;
-		virtual void	initializeComponents() = 0;
+		virtual void			initialize() = 0;		
+		virtual int				addComponent(IComponent *c) = 0;
+		virtual BasicTaskPtr	initializeComponents() = 0;
 		//virtual void getComponentByName() = 0;
 		//virtual void getComponentById() = 0;
 	};
