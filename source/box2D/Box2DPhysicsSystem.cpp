@@ -5,9 +5,6 @@
 #include "IComponent.h"
 #include "components/PhysicComponent.h"
 
-#include "InboxQueue.h"
-#include "Task.h"
-
 // TODO: Encontrar una mejor forma de hacer esta mierda.. un componente?
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
