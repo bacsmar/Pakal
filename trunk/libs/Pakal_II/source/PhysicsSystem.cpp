@@ -27,18 +27,27 @@ PhysicsSystem::~PhysicsSystem()
 
 PhysicsSystem::PhysicsSystem()
 {
+	m_State = SE_STARTING;
 	m_PhysicsThread = new Poco::Thread();
 	m_entryPoint = new Poco::RunnableAdapter<PhysicsSystem>(*this, &PhysicsSystem::run);
 }
 
 void PhysicsSystem::run()
 {
+
 	initWorld();
 	std::cout << "Hello, world! from Physics" << std::endl;
+	m_State = SE_RUNNING;
+
 	while (true)
 	{
 		update();
-		this->dispatchTasks();
+		dispatchTasks();
+		if( SE_WAITING_STOP == m_State )
+		{
+			m_State  = SE_STOPING;
+			break;
+		}
 	}
 }
 
@@ -50,5 +59,6 @@ void PhysicsSystem::initialize()
 
 void PhysicsSystem::terminate()
 {
+	m_State = SE_WAITING_STOP;
 	m_PhysicsThread->join();
 }

@@ -19,7 +19,6 @@ namespace Pakal
 
 	class _PAKALExport PhysicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
-		//friend class PhysicComponent;
 	private:
 		void initialize();
 		void terminate();
@@ -27,6 +26,16 @@ namespace Pakal
 
 		Poco::Thread* m_PhysicsThread;
 		Poco::RunnableAdapter<PhysicsSystem>* m_entryPoint;	
+
+		enum SystemState
+		{
+			SE_STARTING,
+			SE_RUNNING,
+			SE_WAITING_STOP,
+			SE_STOPING,
+		};
+
+		SystemState m_State;
 
 		void run();		
 

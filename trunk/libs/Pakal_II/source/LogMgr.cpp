@@ -102,6 +102,14 @@ bool Pakal::LogMgr::init()
 #else
 	Poco::Logger::root().setChannel( new Poco::ColorConsoleChannel() );
 #endif
-	Poco::Logger::root().information("Initializing Pakal LogManager" );
+	Poco::Logger::root().information("Initializing Pakal LogManager" );	
+	return true;
+}
+
+
+bool Pakal::LogMgr::stop()
+{
+	Poco::Logger::root().getChannel()->close();
+	Poco::Logger::root().getChannel()->release();
 	return true;
 }
