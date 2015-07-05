@@ -22,7 +22,7 @@ namespace Pakal
 			enum DELEGATE_TYPE
 			{
 				DELEGATE_NOARGS_RETURNS_T,
-				DELEGATE_ARGS_RETURNS_VOID,
+				DELEGATE_ARGS_RETURNS_T,
 				DELEGATE_NOARGS_RETURNS_VOID,
 			};
 		};
@@ -31,7 +31,7 @@ namespace Pakal
 		struct Delegate : public IDelegate
 		{
 			std::function<ReturnType(ArgType)> f;
-			int getType(){ return DELEGATE_ARGS_RETURNS_VOID; };
+			int getType(){ return DELEGATE_ARGS_RETURNS_T; };
 		};
 
 		template <class ReturnType>

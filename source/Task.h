@@ -112,7 +112,7 @@ namespace Pakal
 
 		virtual void onCompletionDo( IDelegate * delegate ) 
 		{
-			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS_RETURNS_VOID )
+			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS_RETURNS_T )
 			{
 				Delegate<void,TArgs> *d = static_cast<Delegate<void,TArgs>*>( delegate );
 				MethodDelegate  _method = d->f;
