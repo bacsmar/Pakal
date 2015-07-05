@@ -46,7 +46,7 @@ void GraphicsSystem::run()
 			DispatchMessage(&msg);
 		}
 #endif
-		this->dispatchTasks();
+		dispatchTasks();
 		bool running = update();
 
 		if (msg.message == WM_QUIT || !running)

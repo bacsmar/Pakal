@@ -8,6 +8,8 @@
 #include "IComponent.h"
 #include "components/RenderComponent.h"
 
+#include "InboxQueue.h"
+#include "Task.h"
 
 #include "IDebugDrawer.h"
 
@@ -28,8 +30,7 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	smgr(nullptr),
 	guienv(nullptr),
 	fpsText(nullptr),
-	m_renderInfo(nullptr),
-	m_ActiveQueue(0)
+	m_renderInfo(nullptr)	
 {
 	m_showFps = false;
 	m_renderInfo = new RendererInfo();
@@ -61,36 +62,15 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	showFps(m_showFps);
 
 	smgr->addCameraSceneNode();	
-
-	//
-
-	LOG_INFO("[Graphic System] Sending message");
-	/*
-	SystemEvent *evt = EVENT_MANAGER->createEvent<SystemEvent>();
-	evt->action = SystemEvent::ET_DISPLAY_CREATED;
-	evt->displayEvent.width = driver->getScreenSize().Width;
-	evt->displayEvent.height = driver->getScreenSize().Height;
-	*/
+		
 #ifdef PAKAL_WIN32_PLATFORM
 	m_Window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
 #else
 	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
 #endif	
-
-	//evt->displayEvent.windowHwnd = mWindow;
-	//EVENT_MANAGER->raiseEvent(evt);
-
-	//registerIrrComponents(this);
-	//Engine::instance().getComponentSystem()->registerFactory( new ComponentFactory<MeshComponent, IrrGraphicsSystem>(this) );
-
+	
 	LOG_INFO("[Graphic System] done");
 }
-/*
-void Pakal::IrrGraphicsSystem::registerYourFuckingComponentsFuckingSystem( ve)
-{
-
-}
-*/
 
 void Pakal::IrrGraphicsSystem::beginScene()
 {
@@ -112,13 +92,7 @@ bool Pakal::IrrGraphicsSystem::draw()
 
 	if( false == isRunning )
 	{
-		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");
-		/*
-		SystemEvent *evt = EVENT_MANAGER->createEvent<SystemEvent>();
-		evt->action = SystemEvent::ET_DISPLAY_DESTROYED;				
-		evt->displayEvent.windowHwnd = mWindow;;
-		EVENT_MANAGER->raiseEvent(evt);
-		*/
+		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");		
 	}	
 
 	if( m_showFps)
@@ -142,26 +116,11 @@ void Pakal::IrrGraphicsSystem::setWindowCaption( const char * caption )
 
 bool Pakal::IrrGraphicsSystem::update()
 {
-	initializeComponentsInQueue();
-
 	beginScene();
 	bool isDrawing = draw();
 	endScene();
 
 	return isDrawing;
-}
-void IrrGraphicsSystem::initializeComponentsInQueue()
-{
-	m_ComponentQueueMutex.lock();
-	int queueToProcess = m_ActiveQueue;
-	m_ActiveQueue = (m_ActiveQueue + 1) % MAX_INITIALIZATION_QUEUES;
-	m_ComponentInitializationList[m_ActiveQueue].clear();
-	m_ComponentQueueMutex.unlock();	
-	
-	for( auto & c : m_ComponentInitializationList[queueToProcess] )
-	{
-		(static_cast<RenderComponent*>( c) )-> onInit(*this);
-	}	
 }
 
 void Pakal::IrrGraphicsSystem::showFps( bool val )
@@ -175,7 +134,6 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-
 	class RenderComponentTest : public Pakal::RenderComponent
 	{
 		DECLARE_RTTI(RenderComponentTest);
@@ -188,16 +146,15 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
 BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
-{	
-	std::lock_guard<std::mutex> lock(m_ComponentQueueMutex);
-	m_ComponentInitializationList[m_ActiveQueue].push_back( c );	
+{		
+	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
 
-	// TODO: Implement the task
-	return nullptr;
+	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
+
+	return getInbox()->pushTask( lambdaInit ).get();
 }
 BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
-{
-	// TODO: Implement the task
+{	
 	return nullptr;
 }
 
@@ -211,7 +168,7 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 {
 	for( auto &r : m_debugRenderers)
 	{
-		//delete r;
+		//delete r;	// do not delete debugRenderers, we only listen to these...
 	}
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 	device->closeDevice();

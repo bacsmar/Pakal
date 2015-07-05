@@ -41,13 +41,7 @@ namespace Pakal
 		irr::gui::IGUIStaticText	* fpsText;
 
 		RendererInfo				*m_renderInfo;
-		std::vector<IDebugDrawerClient*>	m_debugRenderers;
-
-		static const int MAX_INITIALIZATION_QUEUES = 2;
-		typedef std::vector<IComponent*> ComponentList;
-		ComponentList				m_ComponentInitializationList[MAX_INITIALIZATION_QUEUES];
-		int							m_ActiveQueue;
-		std::mutex					m_ComponentQueueMutex;
+		std::vector<IDebugDrawerClient*>	m_debugRenderers;		
 
 		virtual ~IrrGraphicsSystem();
 
@@ -63,9 +57,7 @@ namespace Pakal
 
 		virtual void setWindowCaption( const char* caption ) override;
 
-		virtual bool update() override;
-
-		void initializeComponentsInQueue();
+		virtual bool update() override;		
 
 		virtual void showFps( bool val ) override;
 
