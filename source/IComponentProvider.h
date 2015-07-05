@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include <vector>
+#include "BasicTask.h"
 
 namespace Pakal
 {
@@ -16,7 +17,7 @@ namespace Pakal
 		virtual ~IComponentProvider(){}
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) = 0;
-		virtual BasicTask * initComponentAsync(IComponent *c) = 0;
-		virtual BasicTask * terminateComponentAsync(IComponent *c) = 0;
+		virtual BasicTaskPtr initComponentAsync(IComponent *c) = 0;
+		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) = 0;
 	};
 }

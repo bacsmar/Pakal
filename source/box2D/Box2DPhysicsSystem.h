@@ -29,8 +29,8 @@ namespace Pakal
 
 		// from IComponentProvider
 		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;
-		virtual BasicTask * initComponentAsync(IComponent *c) override ;
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override ;
+		virtual BasicTaskPtr initComponentAsync(IComponent *c) override ;
+		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override ;
 		
 		// from IDebugDrawinfo
 		virtual IDebugDrawerClient * getDebugDrawer() override { return this; };		

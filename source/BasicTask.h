@@ -53,7 +53,7 @@ namespace Pakal
 	public:
 
 		template<class TRet,class TArgs>
-		void onCompletionDo( std::function<TRet(TArgs)> & _method )
+		inline void onCompletionDo( std::function<TRet(TArgs)> & _method )
 		{			
 			Delegate<TRet, TArgs> *d = new Delegate<TRet, TArgs>();
 			d->f = _method;
@@ -61,7 +61,7 @@ namespace Pakal
 			delete d;
 		}
 
-		void onCompletionDo( std::function<void()> & _method )
+		inline void onCompletionDo( std::function<void()> & _method )
 		{						
 			DelegateNoArgsNoParam *d = new DelegateNoArgsNoParam();
 			d->f = _method;
@@ -69,7 +69,7 @@ namespace Pakal
 			delete d;
 		}
 		template<class TReturn>
-		void onCompletionDo( std::function<TReturn()> & _method )
+		inline void onCompletionDo( std::function<TReturn()> & _method )
 		{			
 			DelegateNoArgs<TReturn> *d = new DelegateNoArgs<TReturn>();
 			d->f = _method;

@@ -30,8 +30,8 @@ namespace Pakal
 		void run();		
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override {};
-		virtual BasicTask * initComponentAsync(IComponent *c) override { return nullptr; };
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override { return nullptr; };
+		virtual BasicTaskPtr initComponentAsync(IComponent *c) override { return nullptr; };
+		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override { return nullptr; };
 
 	protected:
 		bool m_Initialized;

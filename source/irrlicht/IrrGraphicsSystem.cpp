@@ -145,15 +145,15 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
-BasicTask * IrrGraphicsSystem::initComponentAsync(IComponent *c)
+BasicTaskPtr IrrGraphicsSystem::initComponentAsync(IComponent *c)
 {		
 	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
 
 	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
 
-	return getInbox()->pushTask( lambdaInit ).get();
+	return getInbox()->pushTask( lambdaInit );
 }
-BasicTask * IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
+BasicTaskPtr IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
 {	
 	return nullptr;
 }

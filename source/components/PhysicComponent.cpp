@@ -11,7 +11,7 @@
 
 namespace Pakal
 {
-	BasicTask * PhysicComponent::init()
+	BasicTaskPtr PhysicComponent::init()
 	{
 		return m_PhysicsSystem->initComponentAsync(this);
 	}

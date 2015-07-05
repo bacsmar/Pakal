@@ -66,7 +66,7 @@ namespace Pakal
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);
 		
 	public:
-		virtual BasicTask * initComponentAsync(IComponent *c) override;
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override;
+		virtual BasicTaskPtr initComponentAsync(IComponent *c) override;
+		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override;
 	};	
 }

@@ -33,24 +33,22 @@ namespace Pakal
 	private:
 
 		Task(const FunctionDelegate& job, EventScheduler* scheduler) 
-		{				
-			this->duplicate();
+		{
 			m_Job = job;
 			m_isCompleted = false;
-			m_EventCompleted.connectWithScheduler(scheduler);			
+			m_EventCompleted.connectWithScheduler(scheduler);
 		}
 
 		Task(const TArgs& result) : BasicTask(this)
-		{			
+		{
 			m_Result = result;
-			m_isCompleted = true;			
+			m_isCompleted = true;
 		}
 
 		FunctionDelegate		m_Job;
 		TArgs					m_Result;
 		Event<TArgs>			m_EventCompleted;
 		volatile bool			m_isCompleted;
-
 
 	protected:
 		void run() override
@@ -61,11 +59,11 @@ namespace Pakal
 			m_isCompleted = true;
 			
 			m_EventCompleted.notify(m_Result);
-
-			this->release();
 		}
 
 	public:
+		~Task(){}
+
 		TArgs Result()
 		{
 			wait();
@@ -85,7 +83,7 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		inline void onCompletionDo(MethodDelegate callBack)
+		inline void onCompletionDo(MethodDelegate &callBack)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
@@ -93,7 +91,7 @@ namespace Pakal
 				m_EventCompleted.addListener(callBack);
 		}
 
-		inline void onCompletionDo( std::function<void()>  callback )
+		inline void onCompletionDo( std::function<void()>  &callback )
 		{
 			if (m_isCompleted)
 				callback();
