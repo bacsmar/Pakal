@@ -35,13 +35,13 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	m_showFps = false;
 	m_renderInfo = new RendererInfo();
 }
-
+//////////////////////////////////////////////////////////////////////////
 bool IrrGraphicsSystem::initialize()
 {
 	initWindow();
 	return true;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::initWindow()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
@@ -71,13 +71,13 @@ void Pakal::IrrGraphicsSystem::initWindow()
 	
 	LOG_INFO("[Graphic System] done");
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::beginScene()
 {
 	ASSERT(driver);
 	driver->beginScene(true, true, SColor(255,0,0,0));
 }
-
+//////////////////////////////////////////////////////////////////////////
 bool Pakal::IrrGraphicsSystem::draw()
 {
 	smgr->drawAll();
@@ -102,18 +102,18 @@ bool Pakal::IrrGraphicsSystem::draw()
 
 	return isRunning;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::endScene()
 {
 	driver->endScene();
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::setWindowCaption( const char * caption )
 {
 	ASSERT(device);
 	device->setWindowCaption(L"");
 }
-
+//////////////////////////////////////////////////////////////////////////
 bool Pakal::IrrGraphicsSystem::update()
 {
 	beginScene();
@@ -122,14 +122,14 @@ bool Pakal::IrrGraphicsSystem::update()
 
 	return isDrawing;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::showFps( bool val )
 {
 	ASSERT(fpsText);
 	m_showFps = val;
 	fpsText->setVisible(val);
 }
-
+//////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
@@ -138,6 +138,7 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	{
 		DECLARE_RTTI(RenderComponentTest);
 		virtual void onInit(const GraphicsSystem &renderSystem) override{};
+		virtual void onDestroy(const GraphicsSystem &pSystem) override {};
 		//TestComponent() : RenderComponent(nullptr){}
 		RenderComponentTest(IrrGraphicsSystem * irr) : RenderComponent(irr){}		
 	};
@@ -145,33 +146,22 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
-BasicTaskPtr IrrGraphicsSystem::initComponentAsync(IComponent *c)
-{		
-	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
-
-	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
-
-	return getInbox()->pushTask( lambdaInit );
-}
-BasicTaskPtr IrrGraphicsSystem::terminateComponentAsync(IComponent *c)
-{	
-	return nullptr;
-}
-
+//////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)
 {	
 	debugDrawer->setDrawer( m_renderInfo );
 	m_debugRenderers.push_back( debugDrawer );	
 } 
-
+//////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
 {
 	for( auto &r : m_debugRenderers)
 	{
-		//delete r;	// do not delete debugRenderers, we only listen to these...
+		//delete r;	// do not delete debugRenderers, they're read only
 	}
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 	device->closeDevice();
 	device->drop();
 	delete m_renderInfo;
 }
+//////////////////////////////////////////////////////////////////////////

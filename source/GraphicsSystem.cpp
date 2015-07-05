@@ -1,6 +1,10 @@
 #include "GraphicsSystem.h"
 #include "Poco/Foundation.h"
 
+#include "IComponent.h"
+#include "components/RenderComponent.h"
+#include "Task.h"
+
 using namespace Pakal;
 
 #if PAKAL_USE_IRRLICHT == 1
@@ -15,24 +19,23 @@ GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 	return new GraphicsSystem();
 #endif
 }
-
-
+//////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::update() { return true; }
-
+//////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::beginScene() {}
-
+//////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::draw()
 {
 	return true;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::endScene() {}
-
+//////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::initialize()
 {
 	return true;
 }
-
+//////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::run()
 {
 
@@ -56,3 +59,27 @@ void GraphicsSystem::run()
 		}
 	}
 }
+//////////////////////////////////////////////////////////////////////////
+BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 
+{
+	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+
+	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
+
+	return getInbox()->pushTask( lambdaInit );
+}
+//////////////////////////////////////////////////////////////////////////
+BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
+{
+	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+
+	std::function<int()> lamdaDestroy = [=] (void) 
+	{		
+		pComponent->onDestroy(*this);
+		delete pComponent;
+		return 0;
+	};
+
+	return getInbox()->pushTask( lamdaDestroy );
+}
+//////////////////////////////////////////////////////////////////////////

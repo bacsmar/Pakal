@@ -63,10 +63,6 @@ namespace Pakal
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
 
-		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);
-		
-	public:
-		virtual BasicTaskPtr initComponentAsync(IComponent *c) override;
-		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override;
+		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);	
 	};	
 }
