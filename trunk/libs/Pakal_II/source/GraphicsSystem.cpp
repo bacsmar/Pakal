@@ -49,7 +49,12 @@ void GraphicsSystem::run()
 			DispatchMessage(&msg);
 		}
 #endif
+		// dispatch all task, to fill the two below lists
 		dispatchTasks();
+		// then process the filled lists
+		processComponentInitList(m_initList);
+		processComponentUpdateList(m_updateList);
+
 		bool running = update();
 
 		if (msg.message == WM_QUIT || !running)
@@ -59,12 +64,35 @@ void GraphicsSystem::run()
 		}
 	}
 }
+void GraphicsSystem::processComponentUpdateList(std::unordered_set<RenderComponent*> &list)
+{
+	list.clear();
+}
+void GraphicsSystem::processComponentInitList(std::unordered_set<RenderComponent*> &list)
+{
+	list.clear();
+}
+//////////////////////////////////////////////////////////////////////////
+BasicTaskPtr GraphicsSystem::addToUpdateList(RenderComponent *c)
+{
+	std::function<int()> lambda = [=] (void) 
+	{ 
+		m_updateList.insert(c);
+		return 0;
+	};
+
+	return getInbox()->pushTask( lambda );
+}
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 
 {
 	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
 
-	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
+	std::function<int()> lambdaInit = [=] (void) 
+	{ 
+		m_initList.insert(pComponent);		
+		return 0; 
+	};
 
 	return getInbox()->pushTask( lambdaInit );
 }

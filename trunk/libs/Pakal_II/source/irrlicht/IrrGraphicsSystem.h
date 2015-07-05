@@ -35,9 +35,7 @@ namespace Pakal
 		irr::IrrlichtDevice			* device;		
 		irr::video::IVideoDriver	* driver;		
 		irr::scene::ISceneManager	* smgr;		
-		irr::gui::IGUIEnvironment	* guienv;
-
-		irr::gui::IGUIStaticText	* fpsText;
+		irr::gui::IGUIEnvironment	* guienv;		
 
 		RendererInfo				*m_renderInfo;
 		std::vector<IDebugDrawerClient*>	m_debugRenderers;		
@@ -63,5 +61,8 @@ namespace Pakal
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);	
+
+		virtual void processComponentUpdateList(std::unordered_set<RenderComponent*> &list);
+		virtual void processComponentInitList(std::unordered_set<RenderComponent*> &list);
 	};	
 }

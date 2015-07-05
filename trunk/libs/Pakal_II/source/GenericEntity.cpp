@@ -42,7 +42,9 @@ namespace Pakal
 	{
 		for( auto & component: m_Components)
 		{
-			delete component;
+			// TODO: como eliminar el componente?, dejarlo en cola para que lo elimine su system?, o lo elimino directamente y notifico al system
+			//delete component;
+			component->destroy();
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
