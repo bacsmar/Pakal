@@ -3,6 +3,7 @@
 #include "Config.h"
 #include <memory>
 #include <functional>
+#include "TaskFwd.h"
 
 namespace Poco { class Notification; }
 
@@ -87,14 +88,5 @@ namespace Pakal
 	protected:		
 	
 	};
-	//struct  TaskDeleter
-	//{
-	//	void operator()(BasicTask* p) const
-	//	{
-	//		p->removeReference();
-	//	}
-	//};
-	//typedef std::unique_ptr<BasicTask, TaskDeleter> BasicTaskPtr;
-	typedef std::shared_ptr<BasicTask> BasicTaskPtr;
 
 }
