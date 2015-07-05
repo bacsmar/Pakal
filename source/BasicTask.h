@@ -57,7 +57,8 @@ namespace Pakal
 		{			
 			Delegate<TRet, TArgs> *d = new Delegate<TRet, TArgs>();
 			d->f = _method;
-			onCompletionDo(d);			
+			onCompletionDo(d);
+			delete d;
 		}
 
 		void onCompletionDo( std::function<void()> & _method )
@@ -65,6 +66,7 @@ namespace Pakal
 			DelegateNoArgsNoParam *d = new DelegateNoArgsNoParam();
 			d->f = _method;
 			onCompletionDo(d);
+			delete d;
 		}
 		template<class TReturn>
 		void onCompletionDo( std::function<TReturn()> & _method )
@@ -72,6 +74,7 @@ namespace Pakal
 			DelegateNoArgs<TReturn> *d = new DelegateNoArgs<TReturn>();
 			d->f = _method;
 			onCompletionDo(d);
+			delete d;
 		}
 
 		virtual bool isCompleted() = 0;
