@@ -15,7 +15,7 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 
 	while (!m_inbox->empty())
 	{
-		BasicTaskPtr task = m_inbox->popTask();
+		BasicTask* task = m_inbox->popTask();
 		task->run();
 	}
 

@@ -81,16 +81,16 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 	factories.push_back( Pakal::CreateComponentFactory<PhysicComponentTest>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
-BasicTask * Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
+BasicTaskPtr Box2DPhysicsSystem::initComponentAsync(IComponent *c) 
 {
 	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
 
 	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
 
-	return getInbox()->pushTask( lambdaInit ).get();
+	return getInbox()->pushTask( lambdaInit );
 }
 //////////////////////////////////////////////////////////////////////////
-BasicTask * Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 
+BasicTaskPtr Box2DPhysicsSystem::terminateComponentAsync(IComponent *c) 
 {
 	return nullptr;
 }

@@ -12,6 +12,7 @@
 
 #include "RTTI.h"
 #include "IComponentFactory.h"
+#include "BasicTask.h"
 
 namespace Pakal
 {	
@@ -35,7 +36,7 @@ namespace Pakal
 		
 		virtual const Pakal::RTTI &getType() = 0;
 
-		virtual BasicTask * init()	= 0;
+		virtual BasicTaskPtr init()	= 0;
 
 	protected:		
 

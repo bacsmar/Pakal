@@ -15,9 +15,6 @@ namespace Pakal
 	template <class T>
 	class Task;
 
-	//typedef typename 
-
-
 	class _PAKALExport InboxQueue
 	{
 		friend class EventScheduler;
@@ -31,16 +28,16 @@ namespace Pakal
 	public:
 		
 		template<class TOut>
-		Poco::AutoPtr< Task<TOut> > pushTask( std::function<TOut(void)> & jobDelegate)
+		BasicTaskPtr pushTask( std::function<TOut(void)> & jobDelegate)
 		{
-			Poco::AutoPtr< Task<TOut> > task = new Task<TOut>( jobDelegate, m_scheduler);
+			Poco::AutoPtr< Task<TOut> > task (new Task<TOut>( jobDelegate, m_scheduler));
 
 			m_inboxStore.enqueueNotification(task);
-			return task;
+			return BasicTaskPtr(task.get());
 		}		
 
-		inline BasicTaskPtr popTask();
-		inline BasicTaskPtr waitPopTask();
+		inline BasicTask* popTask();
+		inline BasicTask* waitPopTask();
 
 		inline bool empty();
 

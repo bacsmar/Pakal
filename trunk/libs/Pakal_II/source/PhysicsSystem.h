@@ -54,7 +54,7 @@ namespace Pakal
 	public:
 		// from IComponentProvicer
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
-		virtual BasicTask * initComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
-		virtual BasicTask * terminateComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
+		virtual BasicTaskPtr initComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
+		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override { ASSERT(false); return nullptr; };
 	};
 }

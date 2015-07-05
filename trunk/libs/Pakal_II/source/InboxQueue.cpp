@@ -9,18 +9,18 @@ namespace Pakal
 			
 	}
 
-	BasicTaskPtr InboxQueue::popTask()
+	BasicTask* InboxQueue::popTask()
 	{
-		Poco::Notification *notification = m_inboxStore.dequeueNotification();		
-		BasicTask *t = reinterpret_cast<TaskBridge*>( notification );		
-		return BasicTaskPtr(t);
+		Poco::Notification *notification = m_inboxStore.dequeueNotification();
+		BasicTask *t = reinterpret_cast<TaskBridge*>( notification );
+		return (t);
 	}
 
-	BasicTaskPtr InboxQueue::waitPopTask()
+	BasicTask* InboxQueue::waitPopTask()
 	{
 		Poco::Notification *notification = m_inboxStore.waitDequeueNotification();		
 		BasicTask *t = reinterpret_cast<TaskBridge*>( notification );		
-		return BasicTaskPtr(t);		
+		return (t);		
 	}
 
 	bool InboxQueue::empty()

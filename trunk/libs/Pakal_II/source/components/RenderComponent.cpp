@@ -12,7 +12,7 @@
 
 namespace Pakal
 {
-	BasicTask * RenderComponent::init()
+	BasicTaskPtr RenderComponent::init()
 	{
 		return m_RenderSystem->initComponentAsync(this);
 	}
