@@ -84,6 +84,7 @@ BasicTaskPtr PhysicsSystem::terminateComponentAsync(IComponent *c)
 
 	std::function<int()> lamdaDestroy = [=] (void) 
 	{		
+		//m_updateList.erase(pComponent);
 		pComponent->onDestroy(*this);
 		delete pComponent;
 		return 0;

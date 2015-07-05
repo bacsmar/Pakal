@@ -100,9 +100,10 @@ BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c)
 BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
 {
 	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
-
 	std::function<int()> lamdaDestroy = [=] (void) 
-	{		
+	{
+		m_updateList.erase(pComponent);
+		m_initList.erase(pComponent);
 		pComponent->onDestroy(*this);
 		delete pComponent;
 		return 0;
