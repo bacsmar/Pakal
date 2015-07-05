@@ -381,7 +381,11 @@ void B2DebugDrawIrr::DrawString(int x, int y, const char *string, ...)
     char buffer[128];
     va_list arg;
     va_start(arg, string);
-    _vsnprintf(buffer, 128, string, arg);
+#ifdef _MSC_VER
+	_vsnprintf_s(buffer,128,string, arg);
+#else
+	_vsnprintf(buffer, 128, string, arg);
+#endif    
     va_end(arg);
     core::stringw str(buffer);
     font->draw(str, core::recti((int)((x + translation.X) * scale + screenCenter.X), (int)((y + translation.Y) * scale + screenCenter.Y), 1000, 1000), video::SColor(255, 230, 154, 154), false, false, 0);
