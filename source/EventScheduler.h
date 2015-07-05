@@ -2,7 +2,7 @@
 
 #include "Config.h"
 #include "Poco/Thread.h"
-#include <map>
+#include <unordered_map>
 
 
 
@@ -17,7 +17,7 @@ namespace Pakal
 	{
 		template <class T> friend class Event;
 
-		std::map<Poco::Thread::TID,InboxQueue*> m_inboxes;
+		std::unordered_map<Poco::Thread::TID,InboxQueue*> m_inboxes;
 
 		InboxQueue* getInboxForThread(Poco::Thread::TID tid);		
 
