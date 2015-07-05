@@ -28,9 +28,7 @@ namespace Pakal
 		friend class Engine;
 
 		// from IComponentProvider
-		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;
-		virtual BasicTaskPtr initComponentAsync(IComponent *c) override ;
-		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override ;
+		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;		
 		
 		// from IDebugDrawinfo
 		virtual IDebugDrawerClient * getDebugDrawer() override { return this; };		

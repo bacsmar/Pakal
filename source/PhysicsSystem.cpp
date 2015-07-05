@@ -2,6 +2,11 @@
 #include "Poco/Thread.h"
 #include "Poco/RunnableAdapter.h"
 
+#include "IComponent.h"
+#include "components/PhysicComponent.h"
+
+#include "Task.h"
+
 
 #if PAKAL_USE_BOX2D == 1
 	#include "Box2D/Box2DPhysicsSystem.h"
@@ -61,4 +66,19 @@ void PhysicsSystem::terminate()
 {
 	m_State = SE_WAITING_STOP;
 	m_PhysicsThread->join();
+}
+
+//////////////////////////////////////////////////////////////////////////
+BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c) 
+{
+	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
+
+	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
+
+	return getInbox()->pushTask( lambdaInit );
+}
+//////////////////////////////////////////////////////////////////////////
+BasicTaskPtr PhysicsSystem::terminateComponentAsync(IComponent *c) 
+{
+	return nullptr;
 }
