@@ -17,7 +17,7 @@ namespace Pakal
 
 	class TaskBridge : public Poco::Notification, public BasicTask
 	{
-	public:		
+	protected:		
 		virtual ~TaskBridge(){}
 	};
 
@@ -84,38 +84,16 @@ namespace Pakal
 			
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
-
-		// TODO: ponerlo en BasicTask
-		inline void OnCompletionDo(MethodDelegate& callBack)
+		
+		inline void onCompletionDo(MethodDelegate& callBack)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
 			else
 				m_EventCompleted.addListener(callBack);			
-		}		
+		}	
 
-		virtual void onCompletionDo( IDelegate * delegate ) 
-		{			
-			MethodDelegate _method;
-			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS )
-			{
-				Delegate<void,TArgs> *d = static_cast<Delegate<void,TArgs>*>( delegate );
-				_method = d->f;
-				OnCompletionDo(_method);
-			}
-			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_NOPARAM )
-			{
-				DelegateNoArgsNoParam *d = static_cast<DelegateNoArgsNoParam*>( delegate );
-				onCompletionDo(d->f);
-			}
-			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS )
-			{
-				DelegateNoArgs<TArgs> *d = static_cast<DelegateNoArgs<TArgs>*>( delegate );
-				// "this Function only Supports MethodDelegate ->  void(TArgs) & void()");
-			}
-		}
-
-		virtual void onCompletionDo( std::function<void()> & callback ) override
+		inline void onCompletionDo( std::function<void()> & callback )
 		{
 			if (m_isCompleted)
 				callback();
@@ -129,8 +107,29 @@ namespace Pakal
 
 				m_EventCompleted.addListener(callbackBridge);
 			}
-			
+
 		}
+
+		virtual void onCompletionDo( IDelegate * delegate ) 
+		{			
+			MethodDelegate _method;
+			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS_RETURNS_VOID )
+			{
+				Delegate<void,TArgs> *d = static_cast<Delegate<void,TArgs>*>( delegate );
+				_method = d->f;
+				onCompletionDo(_method);				
+			}
+			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_VOID)
+			{
+				DelegateNoArgsNoParam *d = static_cast<DelegateNoArgsNoParam*>( delegate );
+				onCompletionDo(d->f);
+			}
+			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_T )
+			{
+				DelegateNoArgs<TArgs> *d = static_cast<DelegateNoArgs<TArgs>*>( delegate );
+				// "this Function only Supports MethodDelegate ->  void(TArgs) & void()");
+			}
+		}		
 
 		EventScheduler* getEventScheduler() override
 		{
