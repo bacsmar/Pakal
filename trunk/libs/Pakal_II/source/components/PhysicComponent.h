@@ -22,6 +22,7 @@ namespace Pakal
 		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }				
 
 		virtual void onInit(const PhysicsSystem &pSystem) = 0;
+		virtual void onDestroy(const PhysicsSystem &pSystem) = 0;
 
 	protected:
 		inline PhysicsSystem *getPhysicsSystem() { return m_PhysicsSystem; }				

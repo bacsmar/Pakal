@@ -22,6 +22,7 @@ namespace Pakal
 		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 
 		virtual void onInit(const GraphicsSystem &pSystem) = 0;
+		virtual void onDestroy(const GraphicsSystem &pSystem) = 0;
 
 	protected:
 		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }				

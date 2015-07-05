@@ -80,5 +80,14 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr PhysicsSystem::terminateComponentAsync(IComponent *c) 
 {
-	return nullptr;
+	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
+
+	std::function<int()> lamdaDestroy = [=] (void) 
+	{		
+		pComponent->onDestroy(*this);
+		delete pComponent;
+		return 0;
+	};
+
+	return getInbox()->pushTask( lamdaDestroy );
 }
