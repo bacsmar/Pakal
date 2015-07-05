@@ -111,13 +111,12 @@ namespace Pakal
 		}
 
 		virtual void onCompletionDo( IDelegate * delegate ) 
-		{			
-			MethodDelegate _method;
+		{
 			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS_RETURNS_VOID )
 			{
 				Delegate<void,TArgs> *d = static_cast<Delegate<void,TArgs>*>( delegate );
-				_method = d->f;
-				onCompletionDo(_method);				
+				MethodDelegate  _method = d->f;
+				onCompletionDo(_method);
 			}
 			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_VOID)
 			{
@@ -126,8 +125,10 @@ namespace Pakal
 			}
 			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_T )
 			{
+				// -------------- IMPORTANT NOTE -----------------------
+				// "this Function is not supported by Task::MethodDelegate which is void(TArgs) & void()";
+				// so for the moment, we are ignoring it
 				DelegateNoArgs<TArgs> *d = static_cast<DelegateNoArgs<TArgs>*>( delegate );
-				// "this Function only Supports MethodDelegate ->  void(TArgs) & void()");
 			}
 		}		
 
