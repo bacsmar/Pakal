@@ -79,35 +79,33 @@ namespace Pakal
 
 		void wait() override
 		{
-			if (m_isCompleted) 
+			if (m_isCompleted)
 				return;
 			
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		inline void onCompletionDo(MethodDelegate& callBack)
+		inline void onCompletionDo(MethodDelegate callBack)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
 			else
-				m_EventCompleted.addListener(callBack);			
-		}	
+				m_EventCompleted.addListener(callBack);
+		}
 
-		inline void onCompletionDo( std::function<void()> & callback )
+		inline void onCompletionDo( std::function<void()>  callback )
 		{
 			if (m_isCompleted)
 				callback();
 			else
 			{
-
 				Event<TArgs>::MethodDelegate callbackBridge = [callback](TArgs)
-				{	
+				{
 					callback();
 				};
 
 				m_EventCompleted.addListener(callbackBridge);
 			}
-
 		}
 
 		virtual void onCompletionDo( IDelegate * delegate ) 
