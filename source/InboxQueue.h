@@ -32,8 +32,8 @@ namespace Pakal
 		{
 			Poco::AutoPtr< Task<TOut> > task (new Task<TOut>( jobDelegate, m_scheduler));
 
-			m_inboxStore.enqueueNotification(task);
-			return BasicTaskPtr(task.get());
+			m_inboxStore.enqueueNotification(task);			
+			return BasicTaskPtr(task.get(), TaskDeleter() );
 		}		
 
 		inline BasicTask* popTask();

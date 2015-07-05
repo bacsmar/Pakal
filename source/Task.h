@@ -18,7 +18,16 @@ namespace Pakal
 	class TaskBridge : public Poco::Notification, public BasicTask
 	{
 	protected:		
-		virtual ~TaskBridge(){}
+		virtual ~TaskBridge(){ }		
+	};
+
+	//struct used to link std::shared_ptr & poco::auto_ptr
+	struct  TaskDeleter
+	{
+		void operator()(Poco::Notification* p) const 
+		{			
+			p->release();
+		}
 	};
 
 	template<class TArgs>
@@ -29,20 +38,22 @@ namespace Pakal
 
 		typedef std::function<TArgs(void)> FunctionDelegate;
 		typedef std::function<void(TArgs)> MethodDelegate;
-
+		
 	private:
 
-		Task(const FunctionDelegate& job, EventScheduler* scheduler) 
+		Task(const FunctionDelegate& job, EventScheduler* scheduler)
 		{
+			this->duplicate();
 			m_Job = job;
 			m_isCompleted = false;
-			m_EventCompleted.connectWithScheduler(scheduler);
+			m_EventCompleted.connectWithScheduler(scheduler);			
 		}
 
-		Task(const TArgs& result) : BasicTask(this)
+		Task(const TArgs& result) 
 		{
+			this->duplicate();
 			m_Result = result;
-			m_isCompleted = true;
+			m_isCompleted = true;			
 		}
 
 		FunctionDelegate		m_Job;
@@ -59,10 +70,11 @@ namespace Pakal
 			m_isCompleted = true;
 			
 			m_EventCompleted.notify(m_Result);
+			this->release();
 		}
 
 	public:
-		~Task(){}
+		~Task(){}		
 
 		TArgs Result()
 		{
