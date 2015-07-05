@@ -15,6 +15,8 @@ namespace Pakal
 	template <class T>
 	class Task;
 
+	//typedef typename 
+
 
 	class _PAKALExport InboxQueue
 	{

@@ -57,7 +57,7 @@ namespace Pakal
 		{			
 			Delegate<TRet, TArgs> *d = new Delegate<TRet, TArgs>();
 			d->f = _method;
-			onCompletionDo(d);
+			onCompletionDo( (IDelegate*)d );
 			delete d;
 		}
 
@@ -65,7 +65,7 @@ namespace Pakal
 		{						
 			DelegateNoArgsNoParam *d = new DelegateNoArgsNoParam();
 			d->f = _method;
-			onCompletionDo(d);
+			onCompletionDo( (IDelegate*)d  );
 			delete d;
 		}
 		template<class TReturn>
@@ -73,7 +73,7 @@ namespace Pakal
 		{			
 			DelegateNoArgs<TReturn> *d = new DelegateNoArgs<TReturn>();
 			d->f = _method;
-			onCompletionDo(d);
+			onCompletionDo( (IDelegate*)d );
 			delete d;
 		}
 
