@@ -11,8 +11,6 @@
 #include "InboxQueue.h"
 #include "EventScheduler.h"
 
-
-//TODO make them sharedptr
 namespace Pakal
 {
 	template <class TArgs>

@@ -5,7 +5,7 @@ namespace Poco
 {
 	class Thread;
 }
-//TODO shutdown of engine
+
 namespace Pakal
 {
 	class IPakalApplication;
@@ -33,16 +33,19 @@ namespace Pakal
 	protected:
 		IPakalApplication	*m_Application;
 		EventScheduler		*m_EventScheduler;
+
 		GraphicsSystem		*m_GraphicsSystem;
 		PhysicsSystem		*m_PhysicsSystem;
-		GameStateSystem		*m_GameStateSystem;
 
-		ComponentSystem		*m_ComponentSystem;		
-		EntitySystem		*m_EntitySystem;		
+		GameStateSystem		*m_GameStateSystem;
+		ComponentSystem		*m_ComponentSystem;
+		EntitySystem		*m_EntitySystem;
 
 		Poco::Thread		*m_LogicThread;
 
 		static bool			ms_Initialized;
+
+		bool				m_shouldTerminate;
 
 		void run();
 		void init();

@@ -1,13 +1,21 @@
 #pragma once
 #include "Config.h"
+#include "AsyncTaskDispatcher.h"
+#include <list>
 
 namespace Pakal
 {
-	
-	class _PAKALExport EntitySystem
+	class IEntity;
+
+	class _PAKALExport EntitySystem : protected AsyncTaskDispatcher
 	{
+		friend class Engine;
 	public:		
-		virtual ~EntitySystem(){}
+		void updateSimulation();
+		void addEntityToSimulation( IEntity *);
+		void removeEntityFromSimulation( IEntity *);
 	protected:				
+		virtual ~EntitySystem(){}
+		std::list<IEntity*> m_SimulatedEntities;
 	};
 }
