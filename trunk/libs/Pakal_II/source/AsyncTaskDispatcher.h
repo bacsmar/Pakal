@@ -25,7 +25,6 @@ namespace Pakal
 		inline void setScheduler(EventScheduler* scheduler)
 		{
 			m_scheduler = scheduler;
-			dispatchTasks();	// to get an getAnInboxForThisThread
 		}
 
 		void dispatchTasks();

@@ -7,8 +7,6 @@
 #include <mutex>
 
 #include <Poco/Thread.h>
-
-#include "InboxQueue.h"
 #include "EventScheduler.h"
 
 namespace Pakal
@@ -89,32 +87,19 @@ namespace Pakal
 			if (!m_isEnabled)
 				return;
 
-			auto currentTid = Poco::Thread::currentTid();
-
 			m_mutex.lock();
 			std::vector<DelegateData> copyDelegates(m_delegates);
 			m_mutex.unlock();
 
 			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler && dd.tid != currentTid)
+				if (m_scheduler)
 				{
-					InboxQueue* inbox = m_scheduler->getInboxForThread(dd.tid);
-
-					if (inbox)
-					{
-						std::function<int()> lambda = [dd,arguments]()
-						{
-							dd.delegate(arguments);
-							return 0;
-						};
-
-						inbox->pushTask(lambda);
-						continue;
-					}
+					std::function<void()> bridge = [dd,arguments]() { dd.delegate(arguments); };
+					m_scheduler->executeInThread(dd.tid,bridge);
 				}
-
-				dd.delegate(arguments);
+				else
+					dd.delegate(arguments);
 			}
 		}
 	};

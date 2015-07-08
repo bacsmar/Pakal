@@ -63,6 +63,13 @@ void Pakal::IrrGraphicsSystem::initWindow()
 #endif	
 
 	LOG_INFO("[Graphic System] done");
+
+	ISceneNode* cube = smgr->addCubeSceneNode();
+
+	 cube->setPosition(vector3df(0,0,5));
+	 
+	//  cube->setScale(vector3df(25,1,1));
+
 }
 //////////////////////////////////////////////////////////////////////////
 void Pakal::IrrGraphicsSystem::beginScene()
@@ -97,6 +104,7 @@ bool Pakal::IrrGraphicsSystem::draw()
 
 		device->setWindowCaption(str.c_str());            
 	}
+
 
 	return isRunning;
 }

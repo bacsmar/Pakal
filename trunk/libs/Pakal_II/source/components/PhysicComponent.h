@@ -9,6 +9,7 @@
 #pragma once
 #include "IComponent.h"
 #include "RTTI.h"
+#include "TaskFwd.h"
 
 namespace Pakal
 {

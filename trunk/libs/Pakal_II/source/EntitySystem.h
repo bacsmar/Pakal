@@ -1,13 +1,12 @@
 #pragma once
 #include "Config.h"
-#include "AsyncTaskDispatcher.h"
 #include <list>
 
 namespace Pakal
 {
 	class IEntity;
 
-	class _PAKALExport EntitySystem : protected AsyncTaskDispatcher
+	class _PAKALExport EntitySystem
 	{
 		friend class Engine;
 	public:		

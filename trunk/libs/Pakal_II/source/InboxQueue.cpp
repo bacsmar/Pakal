@@ -1,27 +1,37 @@
 #include "InboxQueue.h"
 #include "BasicTask.h"
 #include "Task.h"
+#include <memory>
 
 namespace Pakal
 {
 	InboxQueue::InboxQueue(EventScheduler* dispatcher): m_scheduler(dispatcher)
 	{
-			
 	}
 
-	BasicTask* InboxQueue::popTask()
+	BasicTaskPtr InboxQueue::pushTask(std::function<void()>& jobDelegate)
 	{
-		Poco::Notification *notification = m_inboxStore.dequeueNotification();
-		BasicTask *t = reinterpret_cast<TaskBridge*>( notification );
-		return (t);
+		std::function<int(void)> delegate = [jobDelegate]()
+			{
+				jobDelegate();
+				return 0;
+			};
+
+		Task<int>* ptr = new Task<int>(delegate, m_scheduler);
+		BasicTaskPtr taskPtr(ptr);
+
+		m_inboxStore.push(taskPtr);
+
+		return taskPtr;
 	}
 
-	BasicTask* InboxQueue::waitPopTask()
+	BasicTaskPtr InboxQueue::popTask()
 	{
-		Poco::Notification *notification = m_inboxStore.waitDequeueNotification();		
-		BasicTask *t = reinterpret_cast<TaskBridge*>( notification );		
-		return (t);		
+		BasicTaskPtr task = m_inboxStore.front();
+		m_inboxStore.pop();
+		return task;
 	}
+
 
 	bool InboxQueue::empty()
 	{
@@ -32,6 +42,4 @@ namespace Pakal
 	{
 		return m_inboxStore.size();
 	}
-
-
 }
