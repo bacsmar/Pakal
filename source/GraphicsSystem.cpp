@@ -4,6 +4,8 @@
 #include "IComponent.h"
 #include "components/RenderComponent.h"
 #include "Task.h"
+#include "InboxQueue.h"
+
 
 using namespace Pakal;
 

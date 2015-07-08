@@ -3,45 +3,46 @@
 #include "Config.h"
 
 #include <functional>
-#include <Poco/NotificationQueue.h>
 
-#include "BasicTask.h"
+#include <queue>
+#include "Task.h"
 
 namespace Pakal
 {
-
 	class EventScheduler;
-	class BasicTask;
-	template <class T>
-	class Task;
 
-	class _PAKALExport InboxQueue
+	//TODO doble cola y mutexes
+	class
+		_PAKALExport InboxQueue
 	{
 		friend class EventScheduler;
 
 	private:
-		Poco::NotificationQueue m_inboxStore;
-		EventScheduler*			m_scheduler;
+		std::queue<BasicTaskPtr> m_inboxStore;
+		EventScheduler* m_scheduler;
 
 		explicit InboxQueue(EventScheduler* dispatcher);
 
 	public:
-		
-		template<class TOut>
-		BasicTaskPtr pushTask( std::function<TOut(void)> & jobDelegate)
+
+		template <class TOut>
+		std::shared_ptr<Task<TOut>> pushTask(std::function<TOut(void)>& jobDelegate)
 		{
-			Poco::AutoPtr< Task<TOut> > task (new Task<TOut>( jobDelegate, m_scheduler));
+			Task<TOut>* ptr = new Task<TOut>(jobDelegate, m_scheduler);
 
-			m_inboxStore.enqueueNotification(task);			
-			return BasicTaskPtr(task.get(), TaskDeleter() );
-		}		
+			std::shared_ptr<Task<TOut>> taskPtr(ptr);
 
-		inline BasicTask* popTask();
-		inline BasicTask* waitPopTask();
+			m_inboxStore.push(taskPtr);
+
+			return taskPtr;
+		}
+
+		BasicTaskPtr pushTask(std::function<void()>& jobDelegate);	
+
+		inline BasicTaskPtr popTask();
 
 		inline bool empty();
 
 		inline int size();
 	};
-
 }

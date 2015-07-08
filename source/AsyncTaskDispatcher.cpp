@@ -10,12 +10,12 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 	if( nullptr == m_inbox )
 	{
 		EventScheduler * eventScheduler = m_scheduler;
-		m_inbox = eventScheduler->getAnInboxForThisThread();
+		m_inbox = eventScheduler->InboxForThisThread();
 	}	
 
 	while (!m_inbox->empty())
 	{
-		BasicTask* task = m_inbox->popTask();
+		BasicTaskPtr task = m_inbox->popTask();
 		task->run();
 	}
 

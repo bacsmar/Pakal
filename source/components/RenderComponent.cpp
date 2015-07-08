@@ -10,6 +10,7 @@
 #include "RenderComponent.h"
 #include "GraphicsSystem.h"
 
+
 namespace Pakal
 {
 	BasicTaskPtr RenderComponent::init()

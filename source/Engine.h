@@ -15,6 +15,7 @@ namespace Pakal
 	class GameStateSystem;
 	class ComponentSystem;
 	class EntitySystem;
+	class AsyncTaskDispatcher;
 
 	class _PAKALExport Engine 
 	{
@@ -42,6 +43,7 @@ namespace Pakal
 		EntitySystem		*m_EntitySystem;
 
 		Poco::Thread		*m_LogicThread;
+		AsyncTaskDispatcher* m_logicDispatcher; 
 
 		static bool			ms_Initialized;
 

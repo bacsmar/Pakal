@@ -6,6 +6,7 @@
 #include "components/PhysicComponent.h"
 
 #include "Task.h"
+#include "InboxQueue.h"
 
 
 #if PAKAL_USE_BOX2D == 1
@@ -46,8 +47,8 @@ void PhysicsSystem::run()
 
 	while (true)
 	{
-		update();
 		dispatchTasks();
+		update();
 		if( SE_WAITING_STOP == m_State )
 		{
 			m_State  = SE_STOPING;

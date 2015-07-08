@@ -1,4 +1,5 @@
 #include "EventScheduler.h"
+
 #include "InboxQueue.h"
 #include "AsyncTaskDispatcher.h"
 
@@ -12,7 +13,7 @@ Pakal::EventScheduler::~EventScheduler()
 	m_inboxes.clear();
 }
 
-Pakal::InboxQueue* Pakal::EventScheduler::getInboxForThread(Poco::Thread::TID currentTid)
+Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(Poco::Thread::TID currentTid)
 {	
 	auto position = m_inboxes.find(currentTid);
 
@@ -22,11 +23,11 @@ Pakal::InboxQueue* Pakal::EventScheduler::getInboxForThread(Poco::Thread::TID cu
 	return inbox;
 }
 
-Pakal::InboxQueue* Pakal::EventScheduler::getAnInboxForThisThread()
+Pakal::InboxQueue* Pakal::EventScheduler::InboxForThisThread()
 {
 	auto currentTid = Poco::Thread::currentTid();
 
-	auto inbox = getInboxForThread(currentTid);
+	auto inbox = findInboxForThread(currentTid);
 		
 	if (inbox == nullptr)
 	{
@@ -34,6 +35,17 @@ Pakal::InboxQueue* Pakal::EventScheduler::getAnInboxForThisThread()
 		m_inboxes[currentTid] =  inbox;
 	}
 	return inbox;
+}
+
+void Pakal::EventScheduler::executeInThread(Poco::Thread::TID tid,std::function<void()>& fn)
+{
+	auto currentTid = Poco::Thread::currentTid();
+
+	if (currentTid == tid)
+		fn();
+	else
+		findInboxForThread(tid)->pushTask(fn);
+
 }
 
 void Pakal::EventScheduler::registerDispatcher(AsyncTaskDispatcher* dispatcher)

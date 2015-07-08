@@ -34,10 +34,10 @@ void Engine::run()
 	std::chrono::milliseconds duration( 1 );    
 	while( false == m_shouldTerminate )
 	{
+		m_logicDispatcher->dispatchTasks();
 		m_EntitySystem->updateSimulation();
 		m_GameStateSystem->peek_state();
 		std::this_thread::sleep_for( duration );
-		// TODO : condition_wait ?  wait for what?  something in entitySystem or GameStateSystem?
 	}
 	//	m_GameStateSystem->close();  TODO
 }
@@ -47,6 +47,9 @@ void Engine::init()
 	ASSERT(ms_Initialized == false);
 
 	std::cout << "Hello, world! from engine" << std::endl;
+
+	//because salvador is working with tasks in setup game states
+	m_logicDispatcher->dispatchTasks();
 
 	m_Application->setUpComponents(m_ComponentSystem);
 	m_Application->setUpGameStates(m_GameStateSystem);	
@@ -64,6 +67,8 @@ void Engine::start( IPakalApplication *application )
 
 	m_Application = application;
 
+	
+	m_logicDispatcher   = new AsyncTaskDispatcher();
 	m_GraphicsSystem	= GraphicsSystem::createGraphicsSystem();
 	m_PhysicsSystem		= PhysicsSystem::createPhysicsSystem();
 	m_EventScheduler	= new EventScheduler();
@@ -76,7 +81,7 @@ void Engine::start( IPakalApplication *application )
 
 	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
-	m_EventScheduler->registerDispatcher(m_EntitySystem);
+	m_EventScheduler->registerDispatcher(m_logicDispatcher);
 
 	m_GameStateSystem->initialize(this);	// executed in diferent thread
 	m_PhysicsSystem->initialize();			// it creates his own thread
@@ -109,6 +114,7 @@ Engine::~Engine()
 	SAFE_DEL(m_GameStateSystem);
 	SAFE_DEL(m_EventScheduler)
 	SAFE_DEL(m_ComponentSystem)
+	SAFE_DEL(m_logicDispatcher)
 	SAFE_DEL(m_EntitySystem)
 
 	SAFE_DEL(m_Application);
@@ -125,7 +131,8 @@ Engine::Engine() :
 	m_ComponentSystem(nullptr),
 	m_EntitySystem(nullptr),
 	m_LogicThread(nullptr),
-	m_shouldTerminate(false)
+	m_shouldTerminate(false),
+	m_logicDispatcher(nullptr)
 {
 	m_LogicThread = new Poco::Thread();
 }

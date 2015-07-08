@@ -6,32 +6,16 @@
 #include <vector>
 #include <atomic>
 
-#include <Poco/Notification.h>
-
 #include "BasicTask.h"
 #include "Event.h"
+
 
 namespace Pakal
 {
 	class EventScheduler;
 
-	class TaskBridge : public Poco::Notification, public BasicTask
-	{
-	protected:		
-		virtual ~TaskBridge(){ }		
-	};
-
-	//struct used to link std::shared_ptr & poco::auto_ptr
-	struct  TaskDeleter
-	{
-		void operator()(Poco::Notification* p) const 
-		{			
-			p->release();
-		}
-	};
-
 	template<class TArgs>
-	class _PAKALExport Task final : public TaskBridge
+	class _PAKALExport Task final : public BasicTask
 	{
 		friend class InboxQueue;
 		friend class TaskUtils;
@@ -43,15 +27,13 @@ namespace Pakal
 
 		Task(const FunctionDelegate& job, EventScheduler* scheduler)
 		{
-			this->duplicate();
 			m_Job = job;
 			m_isCompleted = false;
-			m_EventCompleted.connectWithScheduler(scheduler);			
+			m_EventCompleted.connectWithScheduler(scheduler);		
 		}
 
 		Task(const TArgs& result) 
 		{
-			this->duplicate();
 			m_Result = result;
 			m_isCompleted = true;			
 		}
@@ -70,7 +52,6 @@ namespace Pakal
 			m_isCompleted = true;
 			
 			m_EventCompleted.notify(m_Result);
-			this->release();
 		}
 
 	public:
@@ -95,7 +76,7 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		inline void onCompletionDo(MethodDelegate &callBack)
+		void onCompletionDo(MethodDelegate &callBack)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
@@ -103,41 +84,16 @@ namespace Pakal
 				m_EventCompleted.addListener(callBack);
 		}
 
-		inline void onCompletionDo( std::function<void()>  &callback )
+		void onCompletionDo( std::function<void()>  &callback ) override
 		{
 			if (m_isCompleted)
 				callback();
 			else
 			{
-				Event<TArgs>::MethodDelegate callbackBridge = [callback](TArgs)
-				{
-					callback();
-				};
-
+				MethodDelegate callbackBridge = [callback](TArgs) { callback(); };
 				m_EventCompleted.addListener(callbackBridge);
 			}
 		}
-
-		virtual void onCompletionDo( IDelegate * delegate ) 
-		{
-			if( delegate->getType() == BasicTask::IDelegate::DELEGATE_ARGS_RETURNS_T )
-			{
-				Delegate<void,TArgs> *d = static_cast<Delegate<void,TArgs>*>( delegate );				
-				onCompletionDo(d->f);
-			}
-			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_VOID)
-			{
-				DelegateNoArgsNoParam *d = static_cast<DelegateNoArgsNoParam*>( delegate );
-				onCompletionDo(d->f);
-			}
-			else if( delegate->getType() == BasicTask::IDelegate::DELEGATE_NOARGS_RETURNS_T )
-			{
-				// -------------- IMPORTANT NOTE -----------------------
-				// "this Function is not supported by Task::MethodDelegate which is void(TArgs) & void()";
-				// so for the moment, we are ignoring it
-				DelegateNoArgs<TArgs> *d = static_cast<DelegateNoArgs<TArgs>*>( delegate );
-			}
-		}		
 
 		EventScheduler* getEventScheduler() override
 		{
@@ -192,7 +148,7 @@ namespace Pakal
 		}
 
 		template<class T>
-		static Poco::AutoPtr<Task<T>> fromResult(T& result)
+		static std::shared_ptr<Task<T>> fromResult(T& result)
 		{
 			return new Task<T>(result);
 		}

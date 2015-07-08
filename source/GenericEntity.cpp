@@ -9,7 +9,6 @@
 #pragma once
 #include "GenericEntity.h"
 #include "IComponent.h"
-#include "RTTI.h"
 #include "Task.h"
 
 namespace Pakal
@@ -32,8 +31,10 @@ namespace Pakal
 		{
 			component->setParentEntity(this);			
 			BasicTaskPtr task = component->init();
+
 			initializationTaskVector.push_back( task );
 		}
+
 		BasicTaskPtr onFinish = TaskUtils::whenAll( initializationTaskVector );
 		return onFinish;		
 	}	
