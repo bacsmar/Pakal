@@ -9,7 +9,6 @@
 #include "BasicTask.h"
 #include "Event.h"
 
-
 namespace Pakal
 {
 	class EventScheduler;
@@ -55,7 +54,9 @@ namespace Pakal
 		}
 
 	public:
-		~Task(){}		
+		~Task()
+		{
+		}		
 
 		TArgs Result()
 		{
@@ -121,22 +122,28 @@ namespace Pakal
 			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate, scheduler);
 			task->m_Result = tasks.size();
 
+			BasicTaskPtr myTask(task);
 
-			std::function<void()> onComplete = [task]()
+			// situaciones: si los task a esperar, terminan antes que se libere "task" todo funcionará de maravilla
+			// sin embargo, si se terminan después de que task se elimine, el event se va a eliminar, y jamas se ejecutará la notificacion.. o en su caso, el callback			
+			// y eso sucede porque no podemos estar seguros del tiempo de vida del TaskPtr "mytask" que regresamos, entonces.
+			// para solucionar eso, guardo una copia del puntero en el lamda, asi, al terminar el lamda, eliminará una referencia, y al no haber mas referencias, es decir
+			// cuando el onComplete, se haya ejecutado realmente, se liberará
+
+			std::function<void()> onComplete = [task, myTask]()
 			{
 				--task->m_Result;
 				if(task->m_Result == 0)
 				{
 					task->run();
 				}
-			};			
+			};
 
 			for(auto& t : tasks)
-			{				
+			{
 				t->onCompletionDo(onComplete);
 			}
-
-			return BasicTaskPtr(task);
+			return myTask;
 		}		
 		
 		static void waitAll(std::vector<BasicTaskPtr>& tasks)
