@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <queue>
+#include <list>
 #include <mutex>
 
 #include "BasicTask.h"
@@ -20,7 +21,7 @@ namespace Pakal
 	{
 		friend class EventScheduler;		
 	public: 
-		typedef std::queue<BasicTaskPtr> TaskQueue;
+		typedef std::queue<BasicTaskPtr,std::list<BasicTaskPtr>> TaskQueue;
 	private:		
 		EventScheduler*			m_scheduler;
 
@@ -49,7 +50,7 @@ namespace Pakal
 
 		inline BasicTaskPtr popTask();
 
-		inline TaskQueue& popAllTasks();
+		inline TaskQueue& popAllTasks();		
 
 		inline bool empty();
 

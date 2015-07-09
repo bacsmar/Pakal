@@ -11,12 +11,13 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 	{
 		EventScheduler * eventScheduler = m_scheduler;
 		m_inbox = eventScheduler->InboxForThisThread();
-	}	
-
-	while (!m_inbox->empty())
-	{
-		BasicTaskPtr task = m_inbox->popTask();
-		task->run();
 	}
-
+	
+	auto & tasks = m_inbox->popAllTasks();
+	while ( tasks.empty() == false)
+	{
+		BasicTaskPtr t = tasks.front();
+		tasks.pop();
+		t->run();
+	}
 }

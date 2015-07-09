@@ -46,7 +46,6 @@ namespace Pakal
 		return m_inboxStores[queueToProcess];
 	}
 
-
 	bool InboxQueue::empty()
 	{
 		return m_inboxStore->empty();
