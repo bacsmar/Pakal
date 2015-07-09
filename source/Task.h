@@ -47,9 +47,8 @@ namespace Pakal
 		{
 			ASSERT(m_isCompleted == false);
 
-			m_Result = m_Job();
+			m_Result = m_Job();			
 			m_isCompleted = true;
-			
 			m_EventCompleted.notify(m_Result);
 		}
 
@@ -77,20 +76,27 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		void onCompletionDo(MethodDelegate &callBack)
+		void onCompletionDo(MethodDelegate &callBack,bool executeInCallerThread = true)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
 			else
+			{
+				if (!executeInCallerThread)
+					m_EventCompleted.connectWithScheduler(nullptr);
 				m_EventCompleted.addListener(callBack);
+			}
+
 		}
 
 		void onCompletionDo( std::function<void()>  &callback, bool executeInCallerThread ) override
 		{
-			if (m_isCompleted || !executeInCallerThread)
+			if (m_isCompleted)
 				callback();
 			else
 			{
+				if (!executeInCallerThread)
+					m_EventCompleted.connectWithScheduler(nullptr);
 				MethodDelegate callbackBridge = [callback](TArgs) { callback(); };
 				m_EventCompleted.addListener(callbackBridge);
 			}
@@ -126,11 +132,11 @@ namespace Pakal
 
 			std::function<void()> onComplete = [myTask]()
 			{
-				Task<std::atomic_int>* task = static_cast<Task<std::atomic_int>*> (myTask.get());
-				--task->m_Result;
-				if(task->m_Result == 0)
+				Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*> (myTask.get());
+				--t->m_Result;
+				if(t->m_Result == 0)
 				{
-					task->run();
+					t->run();
 				}
 			};
 
