@@ -85,9 +85,9 @@ namespace Pakal
 				m_EventCompleted.addListener(callBack);
 		}
 
-		void onCompletionDo( std::function<void()>  &callback ) override
+		void onCompletionDo( std::function<void()>  &callback, bool executeInCallerThread ) override
 		{
-			if (m_isCompleted)
+			if (m_isCompleted || !executeInCallerThread)
 				callback();
 			else
 			{
@@ -122,16 +122,11 @@ namespace Pakal
 			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate, scheduler);
 			task->m_Result = tasks.size();
 
-			BasicTaskPtr myTask(task);
+			BasicTaskPtr myTask(task);			
 
-			// situaciones: si los task a esperar, terminan antes que se libere "task" todo funcionará de maravilla
-			// sin embargo, si se terminan después de que task se elimine, el event se va a eliminar, y jamas se ejecutará la notificacion.. o en su caso, el callback			
-			// y eso sucede porque no podemos estar seguros del tiempo de vida del TaskPtr "mytask" que regresamos, entonces.
-			// para solucionar eso, guardo una copia del puntero en el lamda, asi, al terminar el lamda, eliminará una referencia, y al no haber mas referencias, es decir
-			// cuando el onComplete, se haya ejecutado realmente, se liberará
-
-			std::function<void()> onComplete = [task, myTask]()
+			std::function<void()> onComplete = [myTask]()
 			{
+				Task<std::atomic_int>* task = static_cast<Task<std::atomic_int>*> (myTask.get());
 				--task->m_Result;
 				if(task->m_Result == 0)
 				{
@@ -141,7 +136,7 @@ namespace Pakal
 
 			for(auto& t : tasks)
 			{
-				t->onCompletionDo(onComplete);
+				t->onCompletionDo(onComplete, false);
 			}
 			return myTask;
 		}		
@@ -159,9 +154,6 @@ namespace Pakal
 		{
 			return new Task<T>(result);
 		}
-
-
-
 	};
 	
 }

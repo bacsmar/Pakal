@@ -15,7 +15,7 @@ namespace Pakal
 
 	public:
 
-		virtual void onCompletionDo( std::function<void()>  &callback) = 0;
+		virtual void onCompletionDo( std::function<void()>  &callback, bool executeInCallerThread = true) = 0;
 		virtual bool isCompleted() = 0;
 		virtual void wait() = 0;
 
