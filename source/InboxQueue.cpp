@@ -21,6 +21,7 @@ namespace Pakal
 		Task<int>* ptr = new Task<int>(delegate, m_scheduler);
 		BasicTaskPtr taskPtr(ptr);
 
+		std::lock_guard<std::mutex> lock(m_TaskQueueMutex);
 		m_inboxStore->push(taskPtr);
 
 		return taskPtr;
@@ -28,6 +29,7 @@ namespace Pakal
 
 	BasicTaskPtr InboxQueue::popTask()
 	{
+		std::lock_guard<std::mutex> lock(m_TaskQueueMutex);
 		BasicTaskPtr task = m_inboxStore->front();
 		m_inboxStore->pop();
 		return task;

@@ -37,11 +37,10 @@ namespace Pakal
 		template<class TOut>
 		std::shared_ptr<Task<TOut>> pushTask( std::function<TOut(void)> & jobDelegate)
 		{
-			std::lock_guard<std::mutex> lock(m_TaskQueueMutex);
-
 			Task<TOut> * tPtr = new Task<TOut>( jobDelegate, m_scheduler);
-
 			std::shared_ptr< Task<TOut> > task(tPtr);
+
+			std::lock_guard<std::mutex> lock(m_TaskQueueMutex);
 			m_inboxStore->push(task);
 			return task;			
 		}		
