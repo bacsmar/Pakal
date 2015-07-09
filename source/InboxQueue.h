@@ -3,43 +3,54 @@
 #include "Config.h"
 
 #include <functional>
-
 #include <queue>
-#include "Task.h"
+#include <mutex>
+
+#include "BasicTask.h"
 
 namespace Pakal
 {
 	class EventScheduler;
-
-	//TODO doble cola y mutexes
+	class BasicTask;
+	template <class T>
+	class Task;
+	
 	class
 		_PAKALExport InboxQueue
 	{
-		friend class EventScheduler;
+		friend class EventScheduler;		
+	public: 
+		typedef std::queue<BasicTaskPtr> TaskQueue;
+	private:		
+		EventScheduler*			m_scheduler;
 
-	private:
-		std::queue<BasicTaskPtr> m_inboxStore;
-		EventScheduler* m_scheduler;
+		static const int MAX_INITIALIZATION_QUEUES = 2;		
+		TaskQueue				m_inboxStores[MAX_INITIALIZATION_QUEUES];
+		int						m_ActiveQueue;
+		std::mutex				m_TaskQueueMutex;
+		TaskQueue*				m_inboxStore;
 
 		explicit InboxQueue(EventScheduler* dispatcher);
 
 	public:
-
-		template <class TOut>
-		std::shared_ptr<Task<TOut>> pushTask(std::function<TOut(void)>& jobDelegate)
+		
+		template<class TOut>
+		std::shared_ptr<Task<TOut>> pushTask( std::function<TOut(void)> & jobDelegate)
 		{
-			Task<TOut>* ptr = new Task<TOut>(jobDelegate, m_scheduler);
+			std::lock_guard<std::mutex> lock(m_TaskQueueMutex);
 
-			std::shared_ptr<Task<TOut>> taskPtr(ptr);
+			Task<TOut> * tPtr = new Task<TOut>( jobDelegate, m_scheduler);
 
-			m_inboxStore.push(taskPtr);
-
-			return taskPtr;
-		}
+			std::shared_ptr< Task<TOut> > task(tPtr);
+			m_inboxStore->push(task);
+			return task;			
+		}		
 
 		BasicTaskPtr pushTask(std::function<void()>& jobDelegate);	
 
 		inline BasicTaskPtr popTask();
+
+		inline TaskQueue& popAllTasks();
 
 		inline bool empty();
 

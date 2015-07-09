@@ -42,7 +42,7 @@ void PhysicsSystem::run()
 {
 
 	initWorld();
-	std::cout << "Hello, world! from Physics" << std::endl;
+	//std::cout << "Hello, world! from Physics" << std::endl;
 	m_State = SE_RUNNING;
 
 	while (true)
@@ -74,7 +74,11 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 {
 	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
 
-	std::function<int()> lambdaInit = [=] (void) { pComponent->onInit(*this); return 0; };
+	std::function<int()> lambdaInit = [=] (void) 
+	{
+		pComponent->onInit(*this);
+		return 0;
+	};
 
 	return getInbox()->pushTask( lambdaInit );
 }
