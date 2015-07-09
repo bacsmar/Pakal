@@ -36,7 +36,7 @@ void Engine::run()
 	{
 		m_logicDispatcher->dispatchTasks();
 		m_EntitySystem->updateSimulation();
-		m_GameStateSystem->peek_state();
+//		m_GameStateSystem->peek_state();
 		std::this_thread::sleep_for( duration );
 	}
 	//	m_GameStateSystem->close();  TODO
@@ -46,7 +46,7 @@ void Engine::init()
 {
 	ASSERT(ms_Initialized == false);
 
-	std::cout << "Hello, world! from engine" << std::endl;
+	//std::cout << "Hello, world! from engine" << std::endl;
 
 	//because salvador is working with tasks in setup game states
 	m_logicDispatcher->dispatchTasks();

@@ -51,7 +51,7 @@ namespace Pakal
 	{
 		for( auto & component: m_Components)
 		{
-			component->getType();			
+			component->getType();
 		}
 		return nullptr;
 	}	

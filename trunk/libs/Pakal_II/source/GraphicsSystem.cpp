@@ -35,6 +35,7 @@ void GraphicsSystem::endScene() {}
 //////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::initialize()
 {
+	this->dispatchTasks();
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ BasicTaskPtr GraphicsSystem::addToUpdateList(RenderComponent *c)
 {
 	std::function<int()> lambda = [=] (void) 
 	{ 
-		m_updateList.insert(c);
+		this->m_updateList.insert(c);
 		return 0;
 	};
 
@@ -87,25 +88,24 @@ BasicTaskPtr GraphicsSystem::addToUpdateList(RenderComponent *c)
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 
-{
-	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
-
+{	
 	std::function<int()> lambdaInit = [=] (void) 
 	{ 
-		m_initList.insert(pComponent);		
+		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+		this->m_initList.insert(pComponent);		
 		return 0; 
 	};
-
-	return getInbox()->pushTask( lambdaInit );
+	InboxQueue *inbox = getInbox();
+	return inbox->pushTask( lambdaInit );
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
-{
-	RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+{	
 	std::function<int()> lamdaDestroy = [=] (void) 
 	{
-		m_updateList.erase(pComponent);
-		m_initList.erase(pComponent);
+		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+		this->m_updateList.erase(pComponent);
+		this->m_initList.erase(pComponent);
 		pComponent->onDestroy(*this);
 		delete pComponent;
 		return 0;

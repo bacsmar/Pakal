@@ -34,6 +34,7 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 //////////////////////////////////////////////////////////////////////////
 bool IrrGraphicsSystem::initialize()
 {
+	this->dispatchTasks();
 	initWindow();
 	return true;
 }
