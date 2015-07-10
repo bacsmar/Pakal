@@ -20,10 +20,11 @@ namespace Pakal
 	private:
 		struct DelegateData
 		{
-			MethodDelegate delegate;
-			Poco::Thread::TID tid;
+			const MethodDelegate delegate;
+			const Poco::Thread::TID tid;
+			const bool useScheduler;
 
-			DelegateData(MethodDelegate& d, Poco::Thread::TID td) : delegate(d), tid(td) {}
+			DelegateData(MethodDelegate& d, Poco::Thread::TID td, bool use_Scheduler) : delegate(d), tid(td), useScheduler(use_Scheduler) {}
 
 		};
 
@@ -45,12 +46,12 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline void addListener(MethodDelegate& delegate)
+		inline void addListener(MethodDelegate& delegate, bool executeInThisThread = true)
 		{
 
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			m_delegates.push_back(DelegateData(delegate, Poco::Thread::currentTid()));
+			m_delegates.push_back(DelegateData(delegate, Poco::Thread::currentTid(),executeInThisThread));
 		}
 
 		inline void disable()
@@ -93,7 +94,7 @@ namespace Pakal
 
 			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler)
+				if (m_scheduler && dd.useScheduler)
 				{
 					std::function<void()> bridge = [dd,arguments]() { dd.delegate(arguments); };
 					m_scheduler->executeInThread(dd.tid,bridge);

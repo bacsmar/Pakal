@@ -76,29 +76,22 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		void onCompletionDo(MethodDelegate &callBack,bool executeInCallerThread = true)
+		void onCompletionDo(MethodDelegate &callBack,bool executeInThisThread = true)
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
 			else
-			{
-				if (!executeInCallerThread)
-					m_EventCompleted.connectWithScheduler(nullptr);
-				m_EventCompleted.addListener(callBack);
-			}
-
+				m_EventCompleted.addListener(callBack,executeInThisThread);
 		}
 
-		void onCompletionDo( std::function<void()>  &callback, bool executeInCallerThread ) override
+		void onCompletionDo( std::function<void()>  &callback, bool executeInThisThread ) override
 		{
 			if (m_isCompleted)
 				callback();
 			else
 			{
-				if (!executeInCallerThread)
-					m_EventCompleted.connectWithScheduler(nullptr);
 				MethodDelegate callbackBridge = [callback](TArgs) { callback(); };
-				m_EventCompleted.addListener(callbackBridge);
+				m_EventCompleted.addListener(callbackBridge,executeInThisThread);
 			}
 		}
 
