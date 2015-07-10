@@ -13,11 +13,14 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 		m_inbox = eventScheduler->InboxForThisThread();
 	}
 	
-	auto & tasks = m_inbox->popAllTasks();
-	while ( tasks.empty() == false)
+	if( m_inbox->size() )
 	{
-		BasicTaskPtr t = tasks.front();
-		tasks.pop();
-		t->run();
+		auto & tasks = m_inbox->popAllTasks();
+		while ( tasks.empty() == false)
+		{
+			BasicTaskPtr t = tasks.front();
+			tasks.pop();
+			t->run();
+		}
 	}
 }

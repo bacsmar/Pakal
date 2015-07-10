@@ -91,7 +91,7 @@ void Engine::start( IPakalApplication *application )
 	m_LogicThread->setName("Logic");
 	m_LogicThread->start(logic_entry_point);
 	
-	m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
+	//m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
 	m_GraphicsSystem->showFps(true);	
 
 	m_GraphicsSystem->run();	// runs in this (main) thread
