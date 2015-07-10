@@ -29,14 +29,14 @@ namespace Pakal
 
 		for( auto & component: m_Components)
 		{
-			component->setParentEntity(this);			
+			component->setParentEntity(this);
 			BasicTaskPtr task = component->init();
 
 			initializationTaskVector.push_back( task );
 		}
 
 		BasicTaskPtr onFinish = TaskUtils::whenAll( initializationTaskVector );
-		return onFinish;		
+		return onFinish;
 	}	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GenericEntity::~GenericEntity() 

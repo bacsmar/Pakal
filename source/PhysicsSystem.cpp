@@ -45,16 +45,12 @@ void PhysicsSystem::run()
 	//std::cout << "Hello, world! from Physics" << std::endl;
 	m_State = SE_RUNNING;
 
-	while (true)
+	while (SE_WAITING_STOP != m_State)
 	{
 		dispatchTasks();
-		update();
-		if( SE_WAITING_STOP == m_State )
-		{
-			m_State  = SE_STOPING;
-			break;
-		}
+		update();		
 	}
+	m_State  = SE_STOPING;
 }
 
 void PhysicsSystem::initialize()
@@ -77,6 +73,7 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 	std::function<int()> lambdaInit = [=] (void) 
 	{
 		pComponent->onInit(*this);
+		//Poco::Thread::sleep(5000);
 		return 0;
 	};
 

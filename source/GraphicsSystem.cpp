@@ -92,7 +92,7 @@ BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c)
 	std::function<void()> lambdaInit = [=] (void) 
 	{ 
 		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
-		this->m_initList.insert(pComponent);				
+		this->m_initList.insert(pComponent);
 	};
 	InboxQueue *inbox = getInbox();
 	return inbox->pushTask( lambdaInit );
