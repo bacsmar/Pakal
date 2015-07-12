@@ -32,9 +32,8 @@ Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
 	m_renderInfo = new RendererInfo();
 }
 //////////////////////////////////////////////////////////////////////////
-bool IrrGraphicsSystem::initialize()
+bool IrrGraphicsSystem::onInitialize()
 {
-	this->dispatchTasks();
 	initWindow();
 	return true;
 }
@@ -170,13 +169,22 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	delete m_renderInfo;
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::processComponentUpdateList(std::unordered_set<RenderComponent*> &list)
+void IrrGraphicsSystem::onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list)
 {
 	for( auto & renderComponent : list)
 	{
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::onInitComponent(RenderComponent*) 
+{
+}
+//////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::onDestroyComponent(RenderComponent*) 
+{
+}
+//////////////////////////////////////////////////////////////////////////
+/*
 void IrrGraphicsSystem::processComponentInitList(std::unordered_set<RenderComponent*> &list)
 {
 	for( auto & renderComponent : list)
@@ -207,3 +215,4 @@ void IrrGraphicsSystem::processComponentInitList(std::unordered_set<RenderCompon
 	}
 	list.clear();
 }
+*/

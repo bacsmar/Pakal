@@ -42,27 +42,22 @@ namespace Pakal
 
 		virtual ~IrrGraphicsSystem();
 
-		virtual bool initialize() override;
-
 		void initWindow();
 
+		virtual bool onInitialize() override;		
 		virtual void beginScene() override;
-
 		virtual bool draw(  ) override;
-
 		virtual void endScene() override;
-
 		virtual void setWindowCaption( const char* caption ) override;
-
 		virtual bool update() override;		
-
 		virtual void showFps( bool val ) override;
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
+		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) override;
+		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) override;
+		virtual void onInitComponent(RenderComponent*) override;
+		virtual void onDestroyComponent(RenderComponent*) override;
 
-		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer);	
-
-		virtual void processComponentUpdateList(std::unordered_set<RenderComponent*> &list);
-		virtual void processComponentInitList(std::unordered_set<RenderComponent*> &list);
+		bool m_showFps;
 	};	
 }
