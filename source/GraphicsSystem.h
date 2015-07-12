@@ -14,22 +14,43 @@ namespace Pakal
 	{
 		friend class Engine;
 
+		//TODO Doble cola
 		std::unordered_set<RenderComponent*> m_updateList;
-		std::unordered_set<RenderComponent*> m_initList;
+
 	public:
-		virtual void setWindowCaption(const char* caption){}
-		virtual void showFps(bool val) { m_showFps = val; }
 		inline bool isInitialized() const { return m_Initialized; }
-		// from IComponentProvider
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override {};
+		
+		virtual void setWindowCaption(const char* caption) {};
+		virtual void showFps(bool val) {};		
+	
+		BasicTaskPtr addToUpdateList(RenderComponent *c);
+
+	protected:
+		bool m_Initialized;
+
+		static GraphicsSystem* createGraphicsSystem();
+		virtual ~GraphicsSystem(){}
+
+		bool initialize();
+		void run();
+
+		virtual bool update() = 0;
+		virtual void beginScene() = 0;
+		virtual bool draw() = 0;
+		virtual void endScene() = 0;
+
+		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) = 0;
+		virtual bool onInitialize() = 0;
+		virtual void onInitComponent(RenderComponent*) = 0;
+		virtual void onDestroyComponent(RenderComponent*) = 0;
+
+		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
+		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override = 0;
+
+	public:		// render component...
 		BasicTaskPtr initComponentAsync(IComponent *c) override final;
 		BasicTaskPtr terminateComponentAsync(IComponent *c) override final;
 
-
-		virtual BasicTaskPtr addToUpdateList(RenderComponent *c);
-		//
-		virtual void processComponentUpdateList(std::unordered_set<RenderComponent*> &list);
-		virtual void processComponentInitList(std::unordered_set<RenderComponent*> &list);
 		// TODO: esas funciones podrian ser de tipos especializados... es decir algo como...
 		// de esa forma, se delega mas trabajo de "ifs" al logic_thread en lugar del graphcis
 		// virtual void processMeshComponents();
@@ -37,22 +58,5 @@ namespace Pakal
 		// virtual void processLightMeshComponents();
 		// etc
 
-	protected:
-		bool m_Initialized;
-		bool m_showFps;
-		friend class Engine;
-		static GraphicsSystem* createGraphicsSystem();
-		virtual ~GraphicsSystem(){}
-
-		virtual bool initialize();
-		virtual bool update();		
-
-		virtual void beginScene();
-		virtual bool draw(  );
-		virtual void endScene();
-
-		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) {}
-
-		void run();
 	};
 }
