@@ -147,13 +147,13 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	class RenderComponentTest : public Pakal::RenderComponent
+	class RenderComponentTest : public Pakal::GraphicComponent
 	{
 		DECLARE_RTTI(RenderComponentTest);
 		virtual void onInit(const GraphicsSystem &renderSystem) override{};
 		virtual void onDestroy(const GraphicsSystem &pSystem) override {};
 		//TestComponent() : RenderComponent(nullptr){}
-		RenderComponentTest(IrrGraphicsSystem * irr) : RenderComponent(irr){}		
+		RenderComponentTest(IrrGraphicsSystem * irr) : GraphicComponent(irr){}		
 	};
 
 	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
@@ -178,7 +178,7 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	delete m_renderInfo;
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list)
+void IrrGraphicsSystem::onProcessComponentUpdateList(std::unordered_set<GraphicComponent*> &list)
 {
 	for( auto & renderComponent : list)
 	{

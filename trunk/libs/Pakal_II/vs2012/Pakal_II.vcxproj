@@ -27,7 +27,7 @@
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
-    <ClInclude Include="..\source\components\RenderComponent.h" />
+    <ClInclude Include="..\source\components\GraphicComponent.h" />
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\EntitySystem.h" />
@@ -59,7 +59,7 @@
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
     <ClCompile Include="..\source\components\PhysicComponent.cpp" />
-    <ClCompile Include="..\source\components\RenderComponent.cpp" />
+    <ClCompile Include="..\source\components\GraphicComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EntitySystem.cpp" />
     <ClCompile Include="..\source\EventScheduler.cpp" />
