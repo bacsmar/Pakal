@@ -24,7 +24,7 @@ namespace Pakal
 		void registerFactory( IComponentFactory *factory);
 		void registerFactory( IComponentFactory* factory, const std::string & name );
 
-		void registerFactories( IComponentProvider *provider);
+		void registerFactories( IComponentProvider &provider);
 
 		IComponent * createComponent(const char * componentName);
 

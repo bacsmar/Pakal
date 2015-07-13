@@ -12,11 +12,11 @@ void Pakal::ComponentSystem::registerFactory( IComponentFactory *factory )
 	registerFactory(factory, factory->getTypeName() );
 }
 
-void Pakal::ComponentSystem::registerFactories( IComponentProvider *provider )
+void Pakal::ComponentSystem::registerFactories( IComponentProvider &provider )
 {
 
 	std::vector<IComponentFactory*> factories;
-	provider->registerComponentFactories(factories);
+	provider.registerComponentFactories(factories);
 
 	for (auto & factory : factories)
 	{

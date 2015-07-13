@@ -76,8 +76,8 @@ void Engine::start( IPakalApplication *application )
 	m_ComponentSystem	= new ComponentSystem();
 	m_EntitySystem		= new EntitySystem();
 
-	m_ComponentSystem->registerFactories(m_GraphicsSystem);
-	m_ComponentSystem->registerFactories(m_PhysicsSystem);	
+	m_ComponentSystem->registerFactories(*m_GraphicsSystem);
+	m_ComponentSystem->registerFactories(*m_PhysicsSystem);	
 
 	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);

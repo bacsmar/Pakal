@@ -28,8 +28,33 @@ namespace Pakal
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	void RenderComponent::notify()
 	{
-		ASSERT( isInitialized() );
+		ASSERT( isInitialized() );		
 		m_RenderSystem->addToUpdateList(this);
 	}
+	/*
+	void RenderComponent::notify(std::function<void()> lambda)
+	{
+		ASSERT( isInitialized() );		
+		m_RenderSystem->addToUpdateList(this, lamda);
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	BasicTaskPtr LoadMesh( std::string meshName)
+	{
+		auto lambda = [=]()
+		{
+			//load mesh
+		}
+
+		notify(lambda);
+	}
+
+	void update()
+	{
+		 for ( auto l : m_lamdas)
+		 {
+			l(); 
+		}
+	}
+	*/
 }

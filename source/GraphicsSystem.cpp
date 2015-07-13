@@ -22,17 +22,6 @@ GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-bool GraphicsSystem::update() { return true; }
-//////////////////////////////////////////////////////////////////////////
-void GraphicsSystem::beginScene() {}
-//////////////////////////////////////////////////////////////////////////
-bool GraphicsSystem::draw()
-{
-	return true;
-}
-//////////////////////////////////////////////////////////////////////////
-void GraphicsSystem::endScene() {}
-//////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::initialize()
 {
 	this->dispatchTasks();
@@ -68,27 +57,28 @@ void GraphicsSystem::run()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BasicTaskPtr GraphicsSystem::addToUpdateList(RenderComponent *c)
+void GraphicsSystem::addToUpdateList(RenderComponent *c)
 {
 	// TODO: 
+	/*
 	std::function<int()> lambda = [=] (void) 
 	{ 
 		this->m_updateList.insert(c);
 		return 0;
-	};
-
+	};	
 	return getInbox()->pushTask( lambda );
+	*/
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 
 {	
 	std::function<void()> lambdaInit = [=] (void) 
 	{ 
-		RenderComponent *pComponent = static_cast<RenderComponent*> (c);		
-		onInitComponent( pComponent );
+		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+		pComponent->onInit(*this);
 	};
-	InboxQueue *inbox = getInbox();
-	return inbox->pushTask( lambdaInit );
+
+	return getInbox()->pushTask( lambdaInit );
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
@@ -96,7 +86,8 @@ BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c)
 	std::function<int()> lamdaDestroy = [=] (void) 
 	{
 		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
-		this->m_updateList.erase(pComponent);
+
+		this->m_updateList.erase(pComponent);		
 		pComponent->onDestroy(*this);
 		delete pComponent;
 		return 0;
