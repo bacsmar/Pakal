@@ -63,7 +63,7 @@ void Pakal::IrrGraphicsSystem::initWindow()
 #endif	
 
 	LOG_INFO("[Graphic System] done");
-	
+	/*
 	IAnimatedMesh* mesh = smgr->getMesh("sydney.md2");
 	if (!mesh)
 	{		
@@ -76,7 +76,15 @@ void Pakal::IrrGraphicsSystem::initWindow()
 		node->setMD2Animation(scene::EMAT_STAND);
 		node->setMaterialTexture( 0, driver->getTexture("sydney.bmp") );
 	}
-	
+
+	IMesh *meshs = smgr->getMesh("sphere.irrmesh");
+	IMeshSceneNode *nodes = smgr->addMeshSceneNode( meshs );
+	if( nodes)
+	{
+		nodes->setMaterialFlag(EMF_LIGHTING, false);
+		nodes->setMaterialTexture( 0, driver->getTexture("concretewall.jpg") );
+	}
+	*/
 	smgr->addCameraSceneNode(0, vector3df(0,0,-100), vector3df(0,0,0));		
 
 }

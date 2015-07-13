@@ -17,8 +17,7 @@ namespace Pakal
 		friend class Engine;
 		friend class GraphicComponent;
 		
-		DoubleBufferedSet<GraphicComponent*> m_updateList;
-		//std::unordered_set<GraphicComponent*> m_updateList;
+		DoubleBufferedSet<GraphicComponent*> m_updateList;		
 
 	public:
 		inline bool isInitialized() const { return m_Initialized; }

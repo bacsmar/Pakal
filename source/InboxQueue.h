@@ -21,10 +21,7 @@ namespace Pakal
 		typedef std::queue<BasicTaskPtr,std::list<BasicTaskPtr>> TaskQueue;		
 	private:		
 		EventScheduler*			m_scheduler;
-		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inboxStore;
-
-		//typedef std::queue<BasicTaskPtr> TaskQueue;
-		//DoubleBufferedQueue<BasicTaskPtr> m_inboxStore;
+		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inboxStore;		
 
 		explicit InboxQueue(EventScheduler* dispatcher);
 
