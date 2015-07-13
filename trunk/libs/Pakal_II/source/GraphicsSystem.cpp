@@ -2,10 +2,10 @@
 #include "Poco/Foundation.h"
 
 #include "IComponent.h"
-#include "components/RenderComponent.h"
+#include "components/GraphicComponent.h"
 #include "Task.h"
 #include "InboxQueue.h"
-
+#include <mutex>
 
 using namespace Pakal;
 
@@ -43,8 +43,16 @@ void GraphicsSystem::run()
 #endif
 		// dispatch all task, to fill the two below lists
 		dispatchTasks();
+
+		{
+			//std::lock_guard<std::mutex> lock( m_UpdateMutex );
+			for( auto component : m_updateList)
+			{
+				
+			}
+		}
 		// then process the filled lists
-		onProcessComponentUpdateList(m_updateList);
+		//onProcessComponentUpdateList(m_updateList);
 
 		bool running = update();
 
@@ -58,16 +66,9 @@ void GraphicsSystem::run()
 
 //////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::addToUpdateList(GraphicComponent *c)
-{
-	// TODO: 
-	/*
-	std::function<int()> lambda = [=] (void) 
-	{ 
-		this->m_updateList.insert(c);
-		return 0;
-	};	
-	return getInbox()->pushTask( lambda );
-	*/
+{	
+	//std::lock_guard<std::mutex> lock( m_UpdateMutex ); 
+	m_updateList.insert(c);
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 

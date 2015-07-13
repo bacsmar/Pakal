@@ -6,7 +6,7 @@
 #include "ComponentSystem.h"
 #include "IComponentFactory.h"
 #include "IComponent.h"
-#include "components/RenderComponent.h"
+#include "components/GraphicComponent.h"
 
 #include "IDebugDrawer.h"
 
