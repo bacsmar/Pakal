@@ -7,26 +7,26 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "RenderComponent.h"
+#include "GraphicComponent.h"
 #include "GraphicsSystem.h"
 
 
 namespace Pakal
 {
-	BasicTaskPtr RenderComponent::init()
+	BasicTaskPtr GraphicComponent::init()
 	{
 		return m_RenderSystem->initComponentAsync(this);
 	}
-	BasicTaskPtr RenderComponent::destroy()
+	BasicTaskPtr GraphicComponent::destroy()
 	{
 		return m_RenderSystem->terminateComponentAsync(this);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	RenderComponent::~RenderComponent()
+	GraphicComponent::~GraphicComponent()
 	{
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	void RenderComponent::notify()
+	void GraphicComponent::notify()
 	{
 		ASSERT( isInitialized() );		
 		m_RenderSystem->addToUpdateList(this);
