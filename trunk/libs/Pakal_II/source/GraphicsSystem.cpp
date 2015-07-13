@@ -3,9 +3,9 @@
 
 #include "IComponent.h"
 #include "components/GraphicComponent.h"
-#include "Task.h"
+#include "BasicTask.h"
 #include "InboxQueue.h"
-#include <mutex>
+
 
 using namespace Pakal;
 
@@ -18,7 +18,7 @@ GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 #if PAKAL_USE_IRRLICHT == 1
 	return new IrrGraphicsSystem();
 #else
-	return new GraphicsSystem();
+	return new NullGraphicSystem();
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
@@ -44,16 +44,6 @@ void GraphicsSystem::run()
 		// dispatch all task, to fill the two below lists
 		dispatchTasks();
 
-		{
-			//std::lock_guard<std::mutex> lock( m_UpdateMutex );
-			for( auto component : m_updateList)
-			{
-				
-			}
-		}
-		// then process the filled lists
-		//onProcessComponentUpdateList(m_updateList);
-
 		bool running = update();
 
 		if (msg.message == WM_QUIT || !running)
@@ -66,8 +56,7 @@ void GraphicsSystem::run()
 
 //////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::addToUpdateList(GraphicComponent *c)
-{	
-	//std::lock_guard<std::mutex> lock( m_UpdateMutex ); 
+{
 	m_updateList.insert(c);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -84,16 +73,25 @@ BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c)
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
 {	
-	std::function<int()> lamdaDestroy = [=] (void) 
+	std::function<void()> lamdaDestroy = [=] (void) 
 	{
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 
-		this->m_updateList.erase(pComponent);		
+		m_updateList.erase(pComponent);		
 		pComponent->onDestroy(*this);
-		delete pComponent;
-		return 0;
+		delete pComponent; //te odioo
 	};
 
 	return getInbox()->pushTask( lamdaDestroy );
 }
+//////////////////////////////////////////////////////////////////////////
+
+void GraphicsSystem::updateComponents()
+{
+	for (GraphicComponent* c : m_updateList)
+	{
+		c->onUpdate();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////

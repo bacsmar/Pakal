@@ -15,11 +15,11 @@ namespace Pakal
 {
 	BasicTaskPtr GraphicComponent::init()
 	{
-		return m_RenderSystem->initComponentAsync(this);
+		return m_GraphicSystem->initComponentAsync(this);
 	}
 	BasicTaskPtr GraphicComponent::destroy()
 	{
-		return m_RenderSystem->terminateComponentAsync(this);
+		return m_GraphicSystem->terminateComponentAsync(this);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GraphicComponent::~GraphicComponent()
@@ -29,32 +29,12 @@ namespace Pakal
 	void GraphicComponent::notify()
 	{
 		ASSERT( isInitialized() );		
-		m_RenderSystem->addToUpdateList(this);
-	}
-	/*
-	void RenderComponent::notify(std::function<void()> lambda)
-	{
-		ASSERT( isInitialized() );		
-		m_RenderSystem->addToUpdateList(this, lamda);
-	}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	BasicTaskPtr LoadMesh( std::string meshName)
-	{
-		auto lambda = [=]()
-		{
-			//load mesh
-		}
-
-		notify(lambda);
+		m_GraphicSystem->addToUpdateList(this);
 	}
 
-	void update()
+	void GraphicComponent::onUpdate()
 	{
-		 for ( auto l : m_lamdas)
-		 {
-			l(); 
-		}
+
 	}
-	*/
+
 }

@@ -178,10 +178,3 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	delete m_renderInfo;
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::onProcessComponentUpdateList(std::unordered_set<GraphicComponent*> &list)
-{
-	for( auto & renderComponent : list)
-	{
-
-	}
-}

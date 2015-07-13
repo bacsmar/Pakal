@@ -22,24 +22,28 @@ namespace Pakal
 	public:
 
 		virtual ~GraphicComponent();
-		GraphicComponent(GraphicsSystem *renderSystem) : m_RenderSystem(renderSystem)	{}		
-		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
+		GraphicComponent(GraphicsSystem *graphicSystem) : m_GraphicSystem(graphicSystem)	{}		
+		void setSystem(GraphicsSystem *graphicSystem)	{ m_GraphicSystem = graphicSystem; }		
 
 		BasicTaskPtr init() override final;	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes	
 
 
 	protected:
-		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }
+		inline GraphicsSystem *getGraphicSystem() { return m_GraphicSystem; }
 		// is called when the component was initialized by the parent System
 		virtual void onInit(const GraphicsSystem &pSystem) = 0;
 		// is called when the component was destroyed by the parent System
 		virtual void onDestroy(const GraphicsSystem &pSystem) = 0;
+
+		virtual void onUpdate();
+
 		// notifies the parent System of work to do
 		virtual void notify();
+
 	private:		
 
-		GraphicsSystem *m_RenderSystem;		
+		GraphicsSystem *m_GraphicSystem;		
 	
 	};
 }

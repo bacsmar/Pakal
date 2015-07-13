@@ -13,6 +13,7 @@ namespace Pakal
 	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
 		friend class Engine;
+		friend class GraphicComponent;
 
 		//TODO Doble cola
 		std::unordered_set<GraphicComponent*> m_updateList;
@@ -39,22 +40,15 @@ namespace Pakal
 		virtual bool draw() = 0;
 		virtual void endScene() = 0;
 
-		virtual void onProcessComponentUpdateList(std::unordered_set<GraphicComponent*> &list) = 0;
 		virtual bool onInitialize() = 0;		
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override = 0;
 
-	public:		// render component...
+	private:
 		BasicTaskPtr initComponentAsync(IComponent *c) override final;
 		BasicTaskPtr terminateComponentAsync(IComponent *c) override final;
-
-		// TODO: esas funciones podrian ser de tipos especializados... es decir algo como...
-		// de esa forma, se delega mas trabajo de "ifs" al logic_thread en lugar del graphcis
-		// virtual void processMeshComponents();
-		// virtual void processAnimatedMeshComponents();
-		// virtual void processLightMeshComponents();
-		// etc
+		void updateComponents();
 
 	};
 }
