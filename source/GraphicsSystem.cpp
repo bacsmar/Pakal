@@ -43,6 +43,7 @@ void GraphicsSystem::run()
 #endif
 		// dispatch all task, to fill the two below lists
 		dispatchTasks();
+		updateComponents();
 
 		bool running = update();
 
@@ -88,7 +89,7 @@ BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c)
 
 void GraphicsSystem::updateComponents()
 {
-	for (GraphicComponent* c : m_updateList)
+	for (GraphicComponent* c : m_updateList.getListToProcess() )
 	{
 		c->onUpdate();
 	}

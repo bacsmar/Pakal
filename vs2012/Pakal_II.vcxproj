@@ -29,6 +29,7 @@
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\GraphicComponent.h" />
     <ClInclude Include="..\source\Config.h" />
+    <ClInclude Include="..\source\DoubleBufferedList.h" />
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\EntitySystem.h" />
     <ClInclude Include="..\source\Event.h" />
