@@ -22,7 +22,7 @@ namespace Pakal
 	public:
 
 		virtual ~GraphicComponent();
-		GraphicComponent(GraphicsSystem *renderSystem) : m_RenderSystem(renderSystem))	{}		
+		GraphicComponent(GraphicsSystem *renderSystem) : m_RenderSystem(renderSystem)	{}		
 		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 
 		BasicTaskPtr init() override final;	// hide init From derivated classes
