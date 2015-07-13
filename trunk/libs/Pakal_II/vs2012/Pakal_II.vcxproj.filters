@@ -144,6 +144,9 @@
     <ClInclude Include="..\source\components\GraphicComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DoubleBufferedList.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">

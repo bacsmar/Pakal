@@ -3,7 +3,9 @@
 
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
-#include <unordered_set>
+#include "DoubleBufferedList.h"
+
+//#include <unordered_set>
 
 namespace Pakal
 {
@@ -14,9 +16,9 @@ namespace Pakal
 	{
 		friend class Engine;
 		friend class GraphicComponent;
-
-		//TODO Doble cola
-		std::unordered_set<GraphicComponent*> m_updateList;
+		
+		DoubleBufferedSet<GraphicComponent*> m_updateList;
+		//std::unordered_set<GraphicComponent*> m_updateList;
 
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
