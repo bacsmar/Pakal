@@ -42,10 +42,10 @@
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\RenderComponent.cpp">
+    <ClCompile Include="..\source\components\PhysicComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\PhysicComponent.cpp">
+    <ClCompile Include="..\source\components\GraphicComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -126,9 +126,6 @@
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\RenderComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClInclude>
@@ -143,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="..\source\TaskFwd.h">
       <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GraphicComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

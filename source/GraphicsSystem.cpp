@@ -57,7 +57,7 @@ void GraphicsSystem::run()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void GraphicsSystem::addToUpdateList(RenderComponent *c)
+void GraphicsSystem::addToUpdateList(GraphicComponent *c)
 {
 	// TODO: 
 	/*
@@ -74,7 +74,7 @@ BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c)
 {	
 	std::function<void()> lambdaInit = [=] (void) 
 	{ 
-		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 		pComponent->onInit(*this);
 	};
 
@@ -85,7 +85,7 @@ BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c)
 {	
 	std::function<int()> lamdaDestroy = [=] (void) 
 	{
-		RenderComponent *pComponent = static_cast<RenderComponent*> (c);
+		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 
 		this->m_updateList.erase(pComponent);		
 		pComponent->onDestroy(*this);

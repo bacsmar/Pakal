@@ -8,14 +8,14 @@
 namespace Pakal
 {
 	class IDebugDrawerClient;
-	class RenderComponent;
+	class GraphicComponent;
 
 	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
 	{
 		friend class Engine;
 
 		//TODO Doble cola
-		std::unordered_set<RenderComponent*> m_updateList;
+		std::unordered_set<GraphicComponent*> m_updateList;
 
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
@@ -23,7 +23,7 @@ namespace Pakal
 		virtual void setWindowCaption(const char* caption) {};
 		virtual void showFps(bool val) {};		
 	
-		void addToUpdateList(RenderComponent *c);
+		void addToUpdateList(GraphicComponent *c);
 
 	protected:
 		bool m_Initialized;
@@ -39,7 +39,7 @@ namespace Pakal
 		virtual bool draw() = 0;
 		virtual void endScene() = 0;
 
-		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) = 0;
+		virtual void onProcessComponentUpdateList(std::unordered_set<GraphicComponent*> &list) = 0;
 		virtual bool onInitialize() = 0;		
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
