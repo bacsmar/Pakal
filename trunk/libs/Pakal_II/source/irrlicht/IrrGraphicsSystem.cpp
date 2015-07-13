@@ -63,12 +63,21 @@ void Pakal::IrrGraphicsSystem::initWindow()
 #endif	
 
 	LOG_INFO("[Graphic System] done");
-
-	ISceneNode* cube = smgr->addCubeSceneNode();
-
-	 cube->setPosition(vector3df(0,0,5));
-	 
-	//  cube->setScale(vector3df(25,1,1));
+	
+	IAnimatedMesh* mesh = smgr->getMesh("sydney.md2");
+	if (!mesh)
+	{		
+		return ;
+	}
+	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
+	if (node)
+	{
+		node->setMaterialFlag(EMF_LIGHTING, false);
+		node->setMD2Animation(scene::EMAT_STAND);
+		node->setMaterialTexture( 0, driver->getTexture("sydney.bmp") );
+	}
+	
+	smgr->addCameraSceneNode(0, vector3df(0,0,-100), vector3df(0,0,0));		
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -173,46 +182,6 @@ void IrrGraphicsSystem::onProcessComponentUpdateList(std::unordered_set<RenderCo
 {
 	for( auto & renderComponent : list)
 	{
-	}
-}
-//////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::onInitComponent(RenderComponent*) 
-{
-}
-//////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::onDestroyComponent(RenderComponent*) 
-{
-}
-//////////////////////////////////////////////////////////////////////////
-/*
-void IrrGraphicsSystem::processComponentInitList(std::unordered_set<RenderComponent*> &list)
-{
-	for( auto & renderComponent : list)
-	{
-		auto switch_on = renderComponent->getRenderType();
 
-		switch ( switch_on )
-		{
-		case RenderComponent::RCT_NONE:
-		case RenderComponent::RCT_SPECIAL:
-			renderComponent->onInit(*this);
-			break;
-		case RenderComponent::RCT_MESH:
-			// do things with mesh!
-			// renderComponent->mesh = SceneManager->addMesh( renderComponent->meshName );
-			break;		
-		case RenderComponent::RCT_ANIMATED_MESH:
-			break;
-		case RenderComponent::RCT_CAMERA:
-			break;
-		case RenderComponent::RCT_LIGHT:
-			break;
-		case RenderComponent::RCT_BILLBOARD:
-			break;			
-		default:
-			break;
-		}
 	}
-	list.clear();
 }
-*/

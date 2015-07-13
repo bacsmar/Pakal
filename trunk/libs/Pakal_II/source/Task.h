@@ -17,11 +17,13 @@ namespace Pakal
 	class _PAKALExport Task final : public BasicTask
 	{
 		friend class InboxQueue;
-		friend class TaskUtils;
+		friend class TaskUtils;	
+
+		template <class T> friend class std::shared_ptr;
 
 		typedef std::function<TArgs(void)> FunctionDelegate;
 		typedef std::function<void(TArgs)> MethodDelegate;
-		
+				
 	private:
 
 		Task(const FunctionDelegate& job, EventScheduler* scheduler)
@@ -118,11 +120,16 @@ namespace Pakal
 				return n;
 			};
 
+			
 			Task<std::atomic_int>* task  = new Task<std::atomic_int>(emptyDelegate, scheduler);
 			task->m_Result = tasks.size();
 
 			BasicTaskPtr myTask(task);			
-
+			
+			/*
+			std::shared_ptr< Task<std::atomic_int> > myTask = std::make_shared< Task<std::atomic_int> > (emptyDelegate, scheduler) ;
+			myTask->m_Result = tasks.size();
+			*/
 			std::function<void()> onComplete = [myTask]()
 			{
 				Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*> (myTask.get());

@@ -45,7 +45,7 @@ namespace Pakal
 
 	public:
 
-		ComponentFactory(ComponentInitializer *s) : m_System(s) {}
+		ComponentFactory(ComponentInitializer *s) : m_System(s) {} 
 
 		virtual ~ComponentFactory(){}
 

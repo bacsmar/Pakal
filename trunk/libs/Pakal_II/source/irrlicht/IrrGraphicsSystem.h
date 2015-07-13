@@ -54,9 +54,7 @@ namespace Pakal
 
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) override;
-		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) override;
-		virtual void onInitComponent(RenderComponent*) override;
-		virtual void onDestroyComponent(RenderComponent*) override;
+		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) override;		
 
 		bool m_showFps;
 	};	

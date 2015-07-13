@@ -23,7 +23,7 @@ namespace Pakal
 		virtual void setWindowCaption(const char* caption) {};
 		virtual void showFps(bool val) {};		
 	
-		BasicTaskPtr addToUpdateList(RenderComponent *c);
+		void addToUpdateList(RenderComponent *c);
 
 	protected:
 		bool m_Initialized;
@@ -40,9 +40,7 @@ namespace Pakal
 		virtual void endScene() = 0;
 
 		virtual void onProcessComponentUpdateList(std::unordered_set<RenderComponent*> &list) = 0;
-		virtual bool onInitialize() = 0;
-		virtual void onInitComponent(RenderComponent*) = 0;
-		virtual void onDestroyComponent(RenderComponent*) = 0;
+		virtual bool onInitialize() = 0;		
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override = 0;
