@@ -16,33 +16,21 @@ namespace Pakal
 {
 	class GraphicsSystem;	
 
-	class _PAKALExport RenderComponent : public IComponent
+	class _PAKALExport GraphicComponent : public IComponent
 	{
 		friend class GraphicsSystem;
 	public:
-		enum RenderComponentType
-		{
-			RCT_NONE,
-			RCT_ANIMATED_MESH,
-			RCT_MESH,
-			RCT_CAMERA,
-			RCT_LIGHT,
-			RCT_BILLBOARD,
-			RCT_SPECIAL,
-		};
 
-		virtual ~RenderComponent();
-		RenderComponent(GraphicsSystem *renderSystem) : m_RenderSystem(renderSystem), m_type(RCT_NONE)	{}		
+		virtual ~GraphicComponent();
+		GraphicComponent(GraphicsSystem *renderSystem) : m_RenderSystem(renderSystem))	{}		
 		void setSystem(GraphicsSystem *renderSystem)	{ m_RenderSystem = renderSystem; }		
 
 		BasicTaskPtr init() override final;	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes	
 
-		inline RenderComponentType getRenderType(){ return m_type; }
 
 	protected:
 		inline GraphicsSystem *getRenderSystem() { return m_RenderSystem; }
-		RenderComponentType m_type;
 		// is called when the component was initialized by the parent System
 		virtual void onInit(const GraphicsSystem &pSystem) = 0;
 		// is called when the component was destroyed by the parent System
