@@ -30,11 +30,5 @@ namespace Pakal
 	{
 		ASSERT( isInitialized() );		
 		m_GraphicSystem->addToUpdateList(this);
-	}
-
-	void GraphicComponent::onUpdate()
-	{
-
-	}
-
+	}	
 }

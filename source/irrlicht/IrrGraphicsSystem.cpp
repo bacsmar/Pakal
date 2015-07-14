@@ -10,6 +10,8 @@
 
 #include "IDebugDrawer.h"
 
+#include "StaticMeshComponent.h"
+
 using namespace irr;
 using namespace core;
 using namespace scene;
@@ -76,7 +78,8 @@ void Pakal::IrrGraphicsSystem::initWindow()
 		node->setMD2Animation(scene::EMAT_STAND);
 		node->setMaterialTexture( 0, driver->getTexture("sydney.bmp") );
 	}
-
+	*/
+	/*
 	IMesh *meshs = smgr->getMesh("sphere.irrmesh");
 	IMeshSceneNode *nodes = smgr->addMeshSceneNode( meshs );
 	if( nodes)
@@ -155,16 +158,7 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	class RenderComponentTest : public Pakal::GraphicComponent
-	{
-		DECLARE_RTTI(RenderComponentTest);
-		virtual void onInit(const GraphicsSystem &renderSystem) override{};
-		virtual void onDestroy(const GraphicsSystem &pSystem) override {};
-		//TestComponent() : RenderComponent(nullptr){}
-		RenderComponentTest(IrrGraphicsSystem * irr) : GraphicComponent(irr){}		
-	};
-
-	factories.push_back( Pakal::CreateComponentFactory<RenderComponentTest>(this) );
+	factories.push_back( Pakal::CreateComponentFactory<StaticMeshComponent>(this) );
 	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
 }
 //////////////////////////////////////////////////////////////////////////

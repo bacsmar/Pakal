@@ -48,6 +48,9 @@
     <ClCompile Include="..\source\components\GraphicComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\irrlicht\StaticMeshComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -146,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\StaticMeshComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
