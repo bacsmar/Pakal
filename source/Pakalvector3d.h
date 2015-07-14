@@ -7,7 +7,7 @@
 
 #include "PakalMath.h"
 
-namespace irr
+namespace Pakal
 {
 namespace core
 {
@@ -454,7 +454,7 @@ namespace core
 	vector3d<T> operator*(const S scalar, const vector3d<T>& vector) { return vector*scalar; }
 
 } // end namespace core
-} // end namespace irr
+} // end namespace Pakal
 
 #endif
 
