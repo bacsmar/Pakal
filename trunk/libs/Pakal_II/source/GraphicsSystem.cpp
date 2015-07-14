@@ -66,7 +66,7 @@ BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c)
 	std::function<void()> lambdaInit = [=] (void) 
 	{ 
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
-		pComponent->onInit(*this);
+		pComponent->onInit();
 	};
 
 	return getInbox()->pushTask( lambdaInit );
@@ -78,9 +78,9 @@ BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c)
 	{
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 
-		m_updateList.erase(pComponent);		
-		pComponent->onDestroy(*this);
-		delete pComponent; //te odioo
+		m_updateList.erase(pComponent);
+		pComponent->onDestroy();
+		delete pComponent;
 	};
 
 	return getInbox()->pushTask( lamdaDestroy );

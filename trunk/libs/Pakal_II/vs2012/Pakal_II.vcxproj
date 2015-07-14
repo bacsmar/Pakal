@@ -46,6 +46,7 @@
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h" />
+    <ClInclude Include="..\source\irrlicht\StaticMeshComponent.h" />
     <ClInclude Include="..\source\LogMgr.h" />
     <ClInclude Include="..\source\PhysicsSystem.h" />
     <ClInclude Include="..\source\Platform.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
+    <ClCompile Include="..\source\irrlicht\StaticMeshComponent.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
   </ItemGroup>

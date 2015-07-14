@@ -73,7 +73,7 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 	std::function<int()> lambdaInit = [=] (void) 
 	{
 		pComponent->onInit(*this);
-		//Poco::Thread::sleep(5000);
+		Poco::Thread::sleep(2000);
 		return 0;
 	};
 

@@ -32,16 +32,14 @@ namespace Pakal
 	protected:
 		inline GraphicsSystem *getGraphicSystem() { return m_GraphicSystem; }
 		// is called when the component was initialized by the parent System
-		virtual void onInit(const GraphicsSystem &pSystem) = 0;
+		virtual void onInit() = 0;
 		// is called when the component was destroyed by the parent System
-		virtual void onDestroy(const GraphicsSystem &pSystem) = 0;
+		virtual void onDestroy() = 0;
 
-		virtual void onUpdate();
+		virtual void onUpdate() = 0;
 
 		// notifies the parent System of work to do
 		virtual void notify();
-
-	private:		
 
 		GraphicsSystem *m_GraphicSystem;		
 	
