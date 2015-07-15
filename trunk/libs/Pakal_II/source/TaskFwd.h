@@ -2,6 +2,7 @@
 #include "Config.h"
 
 #include <memory>
+#include <thread>
 
 namespace Pakal
 {
@@ -9,5 +10,7 @@ namespace Pakal
 	class _PAKALExport Task;
 
 	class BasicTask;	
-	typedef std::shared_ptr<BasicTask> BasicTaskPtr;	
+	typedef std::shared_ptr<BasicTask> BasicTaskPtr;
+
+	const std::thread::id NULL_THREAD = std::thread::id();
 }
