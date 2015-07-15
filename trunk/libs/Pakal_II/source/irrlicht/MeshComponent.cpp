@@ -55,15 +55,19 @@ Pakal::BasicTaskPtr Pakal::MeshComponent::LoadTextureAsync(const std::string& te
 
 		m_node->setMaterialFlag(EMF_LIGHTING, false);
 		m_node->setMaterialTexture(0, m_texture);
+		m_node->setVisible(true);
 	}, m_GraphicSystem->threadId());
 }
 
-void Pakal::MeshComponent::setPosition(const vector3df& position)
+void Pakal::MeshComponent::setPosition(const Pakal::core::vector3df& position)
 {
-	m_node->setPosition(position);
+	irr::core::vector3df v(position.X, position.Y, position.Z);
+	m_node->setPosition( v );
 }
 
-const vector3df& Pakal::MeshComponent::getPosition()
+const Pakal::core::vector3df Pakal::MeshComponent::getPosition()
 {
-	return m_node->getPosition();
+	const vector3df vector3D = m_node->getPosition();
+
+	return core::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }

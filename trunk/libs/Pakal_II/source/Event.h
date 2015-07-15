@@ -6,7 +6,7 @@
 #include <functional>
 #include <mutex>
 
-#include <Poco/Thread.h>
+#include <thread>
 #include "EventScheduler.h"
 
 namespace Pakal
@@ -21,9 +21,9 @@ namespace Pakal
 		struct DelegateData
 		{
 			const MethodDelegate delegate;
-			const unsigned long tid;
+			const std::thread::id tid;
 
-			DelegateData(MethodDelegate& d, unsigned long td) : delegate(d), tid(td) {}
+			DelegateData(MethodDelegate& d, std::thread::id td) : delegate(d), tid(td) {}
 
 		};
 
@@ -46,7 +46,7 @@ namespace Pakal
 		}
 
 		/// pass 0 if you want it to be executed in the caller thread
-		inline void addListener(MethodDelegate& delegate, unsigned long callBackThread = Poco::Thread::currentTid())
+		inline void addListener(MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
 		{
 
 			std::lock_guard<std::mutex> lock(m_mutex);
@@ -94,7 +94,7 @@ namespace Pakal
 
 			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.tid == 0)
+				if (m_scheduler == nullptr || dd.tid == std::thread::id() )
 					dd.delegate(arguments);
 				else
 				{

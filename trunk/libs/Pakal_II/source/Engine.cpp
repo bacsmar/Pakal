@@ -136,6 +136,6 @@ Engine::Engine() :
 	m_shouldTerminate(false),
 	m_logicDispatcher(nullptr)
 {
-	m_LogicThread = new Poco::Thread();
+	m_LogicThread = new Poco::Thread();	
 }
 //////////////////////////////////////////////////////////////////////////

@@ -2,11 +2,11 @@
 
 #include <functional>
 #include "TaskFwd.h"
-#include <Poco/Thread.h>
+#include <thread>		
 
 namespace Pakal
 {
-	class EventScheduler;		
+	class EventScheduler;
 
 	class _PAKALExport BasicTask 
 	{
@@ -14,9 +14,9 @@ namespace Pakal
 	protected:
 		virtual void run() = 0;			
 
-	public:
+	public:		
 
-		virtual void onCompletionDo(const std::function<void()>  &callback, unsigned long callBackThread = Poco::Thread::currentTid() ) = 0;
+		virtual void onCompletionDo(const std::function<void()>  &callback, std::thread::id callBackThread = std::this_thread::get_id() ) = 0;
 		virtual bool isCompleted() = 0;
 		virtual void wait() = 0;
 
@@ -24,6 +24,5 @@ namespace Pakal
 
 		virtual EventScheduler* getEventScheduler() = 0;
 	
-	};
-
+	};	
 }

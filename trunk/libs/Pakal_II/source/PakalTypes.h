@@ -236,10 +236,11 @@ virtual void somefunc() _IRR_OVERRIDE_;
 //! creates four CC codes used in Irrlicht for simple ids
 /** some compilers can create those by directly writing the
 code like 'code', but some generate warnings so we use this macro here */
+/*
 #define MAKE_IRR_ID(c0, c1, c2, c3) \
 		((Pakal::u32)(Pakal::u8)(c0) | ((Pakal::u32)(Pakal::u8)(c1) << 8) | \
 		((Pakal::u32)(Pakal::u8)(c2) << 16) | ((Pakal::u32)(Pakal::u8)(c3) << 24 ))
-
+*/
 #if defined(__BORLANDC__) || defined (__BCPLUSPLUS__)
 #define _strcmpi(a,b) strcmpi(a,b)
 #endif

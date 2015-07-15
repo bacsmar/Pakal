@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Config.h"
+#include <thread>
 
 namespace Pakal 
 {
@@ -17,7 +18,7 @@ namespace Pakal
 		virtual ~AsyncTaskDispatcher() {}
 		AsyncTaskDispatcher() : m_inbox(nullptr), m_scheduler(nullptr) {}
 
-		inline unsigned long threadId();
+		inline std::thread::id threadId();
 
 		inline EventScheduler* getScheduler()
 		{
