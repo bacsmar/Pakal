@@ -4,6 +4,7 @@
 
 #include "IComponent.h"
 #include "components/PhysicComponent.h"
+#include "components/BodyComponent.h"
 
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
@@ -67,6 +68,7 @@ void Box2DPhysicsSystem::clearWorld()
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {
+	/*
 	class PhysicComponentTest : public Pakal::PhysicComponent
 	{
 		DECLARE_RTTI(PhysicComponentTest);
@@ -74,10 +76,10 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 		virtual void onInit() override{};		
 		virtual void onDestroy() override {};
 	
-		PhysicComponentTest(Box2DPhysicsSystem * box2d) : PhysicComponent(box2d){}		
+		PhysicComponentTest(Box2DPhysicsSystem * box2d) : PhysicComponent(box2d){}
 	};
-	
-	factories.push_back( Pakal::CreateComponentFactory<PhysicComponentTest>(this) );
+	*/
+	factories.push_back( Pakal::CreateComponentFactory<BodyComponent>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)
