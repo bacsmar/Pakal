@@ -35,6 +35,6 @@ namespace Pakal
 		BasicTaskPtr LoadMeshAsync(const std::string& meshName);
 		BasicTaskPtr LoadTextureAsync(const std::string& textureName);
 		inline void setPosition(const Pakal::core::vector3df& position);
-		inline const Pakal::core::vector3df getPosition();
+		inline  Pakal::core::vector3df getPosition();
 	};	
 }

@@ -12,25 +12,22 @@ using namespace irr::video;
 
 void Pakal::MeshComponent::onInit()
 {
-	vector3df zero(0, 0, 0);
-
-	m_node = getSystem()
-		->getSmgr()
-		->addMeshSceneNode(nullptr, nullptr, -1, zero, zero, zero, true);
 }
 
 void Pakal::MeshComponent::onDestroy()
 {
-	m_node->remove();
+	if (m_node)
+	{
+		m_node->remove();
+	}
 }
 
 Pakal::MeshComponent::~MeshComponent()
 {
 }
 
-Pakal::MeshComponent::MeshComponent(IrrGraphicsSystem* irr): GraphicComponent(irr)
+Pakal::MeshComponent::MeshComponent(IrrGraphicsSystem* irr): GraphicComponent(irr), m_node(nullptr)
 {
-	
 }
 
 Pakal::IrrGraphicsSystem* Pakal::MeshComponent::getSystem()
@@ -43,7 +40,11 @@ Pakal::BasicTaskPtr Pakal::MeshComponent::LoadMeshAsync(const std::string& meshN
 	return m_GraphicSystem->getScheduler()->executeInThread([=]()
 	{
 		m_mesh = getSystem()->getSmgr()->getMesh(meshName.c_str());
-		m_node->setMesh(m_mesh);
+		if ( m_node )
+		{
+			m_node->remove();
+		}
+		m_node = getSystem()->getSmgr()->addMeshSceneNode(m_mesh);
 	}, m_GraphicSystem->threadId());
 }
 
@@ -65,7 +66,7 @@ void Pakal::MeshComponent::setPosition(const Pakal::core::vector3df& position)
 	m_node->setPosition( v );
 }
 
-const Pakal::core::vector3df Pakal::MeshComponent::getPosition()
+Pakal::core::vector3df Pakal::MeshComponent::getPosition()
 {
 	const vector3df vector3D = m_node->getPosition();
 
