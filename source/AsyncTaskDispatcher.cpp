@@ -6,7 +6,7 @@
 
 
 
-unsigned long Pakal::AsyncTaskDispatcher::threadId()
+std::thread::id Pakal::AsyncTaskDispatcher::threadId()
 {
 	return m_inbox->getTid();
 }

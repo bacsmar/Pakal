@@ -95,7 +95,7 @@ bool Pakal::IrrGraphicsSystem::draw()
 
 	if( m_showFps)
 	{		
-		core::stringw str = L"FPS [";
+		irr::core::stringw str = L"FPS [";
 		str += driver->getName();
 		str += "] FPS:";
 		str += driver->getFPS();

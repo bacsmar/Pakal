@@ -5,6 +5,7 @@
 #include <functional>
 #include "DoubleBufferedList.h"
 #include "BasicTask.h"
+#include <thread>
 
 namespace Pakal
 {
@@ -24,9 +25,9 @@ namespace Pakal
 	private:		
 		EventScheduler*			m_scheduler;
 		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inboxStore;
-		unsigned long m_tid;
+		std::thread::id m_tid;
 
-		explicit InboxQueue(EventScheduler* dispatcher,unsigned long tid);
+		explicit InboxQueue(EventScheduler* dispatcher, std::thread::id tid);
 		
 
 		template<class TOut>
@@ -63,7 +64,7 @@ namespace Pakal
 			return m_inboxStore.size();
 		}
 		
-		inline unsigned long getTid();
+		inline std::thread::id getTid();
 
 	};
 }

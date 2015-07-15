@@ -75,11 +75,11 @@ namespace Pakal
 			if (m_isCompleted)
 				return;
 			
-			while(!m_isCompleted) Poco::Thread::sleep(1);
+			while(!m_isCompleted) std::this_thread::sleep_for( std::chrono::milliseconds(1) );
 		}
 		
 		/// pass 0 if you want it to be executed in the caller thread
-		void onCompletionDo(const MethodDelegate &callBack,unsigned long callBackThread = Poco::Thread::currentTid())
+		void onCompletionDo(const MethodDelegate &callBack, std::thread::id callBackThread = std::this_thread::get_id())
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
@@ -88,7 +88,7 @@ namespace Pakal
 		}
 
 		/// pass 0 if you want it to be executed in the caller thread
-		void onCompletionDo(const std::function<void()>  &callback, unsigned long callBackThread = Poco::Thread::currentTid()  ) override
+		void onCompletionDo(const std::function<void()>  &callback, std::thread::id callBackThread = std::this_thread::get_id()  ) override
 		{
 			if (m_isCompleted)
 				callback();
@@ -144,7 +144,7 @@ namespace Pakal
 
 			for(auto& t : tasks)
 			{
-				t->onCompletionDo(onComplete, 0);
+				t->onCompletionDo(onComplete, std::thread::id() );
 			}
 			return myTask;
 		}		

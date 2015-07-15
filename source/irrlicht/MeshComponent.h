@@ -1,6 +1,6 @@
 #pragma once
 #include "config.h"
-#include <vector3d.h>
+#include <Pakalvector3d.h>
 #include "components/GraphicComponent.h"
 
 #include "TaskFwd.h"
@@ -34,7 +34,7 @@ namespace Pakal
 
 		BasicTaskPtr LoadMeshAsync(const std::string& meshName);
 		BasicTaskPtr LoadTextureAsync(const std::string& textureName);
-		inline void setPosition(const irr::core::vector3df& position);
-		inline const irr::core::vector3df& getPosition();
+		inline void setPosition(const Pakal::core::vector3df& position);
+		inline const Pakal::core::vector3df getPosition();
 	};	
 }

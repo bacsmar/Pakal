@@ -14,7 +14,7 @@ Pakal::EventScheduler::~EventScheduler()
 	m_inboxes.clear();
 }
 
-Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(Poco::Thread::TID currentTid)
+Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(std::thread::id currentTid)
 {	
 	auto position = m_inboxes.find(currentTid);
 
@@ -26,7 +26,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(Poco::Thread::TID c
 
 Pakal::InboxQueue* Pakal::EventScheduler::InboxForThisThread()
 {
-	auto currentTid = Poco::Thread::currentTid();
+	auto currentTid = std::this_thread::get_id();
 
 	auto inbox = findInboxForThread(currentTid);
 		
@@ -38,9 +38,9 @@ Pakal::InboxQueue* Pakal::EventScheduler::InboxForThisThread()
 	return inbox;
 }
 
-Pakal::BasicTaskPtr Pakal::EventScheduler::executeInThread(const std::function<void()>& fn,Poco::Thread::TID tid)
+Pakal::BasicTaskPtr Pakal::EventScheduler::executeInThread(const std::function<void()>& fn,std::thread::id tid)
 {
-	auto currentTid = Poco::Thread::currentTid();
+	auto currentTid = std::this_thread::get_id();
 
 	if (currentTid == tid)
 	{

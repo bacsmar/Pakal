@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Config.h"
-#include "Poco/Thread.h"
+#include <thread>
 #include <unordered_map>
 #include <functional>
 #include "Task.h"
@@ -19,19 +19,19 @@ namespace Pakal
 	{
 		template <class T> friend class Event;
 
-		std::unordered_map<Poco::Thread::TID,InboxQueue*> m_inboxes;
+		std::unordered_map<std::thread::id, InboxQueue*> m_inboxes;
 
-		InboxQueue* findInboxForThread(Poco::Thread::TID tid);		
+		InboxQueue* findInboxForThread(std::thread::id tid);		
 
 	public:
 		virtual ~EventScheduler();
 		void registerDispatcher(AsyncTaskDispatcher* dispatcher);
 		InboxQueue* InboxForThisThread();
-		BasicTaskPtr executeInThread(const std::function<void()>& fn,Poco::Thread::TID tid);
+		BasicTaskPtr executeInThread(const std::function<void()>& fn, std::thread::id tid);
 		template<typename TArgs>
-		std::shared_ptr<Task<TArgs>> executeInThread(const std::function<TArgs()>& fn,Poco::Thread::TID tid)
+		std::shared_ptr<Task<TArgs>> executeInThread(const std::function<TArgs()>& fn, std::thread::id tid)
 		{
-			auto currentTid = Poco::Thread::currentTid();
+			auto currentTid = std::this_thread::get_id();
 
 			if (currentTid == tid)
 				return TaskUtils::fromResult(fn());

@@ -5,12 +5,12 @@
 
 namespace Pakal
 {
-	unsigned long InboxQueue::getTid()
+	std::thread::id InboxQueue::getTid()
 	{
 		return m_tid;
 	}
 
-	InboxQueue::InboxQueue(EventScheduler* dispatcher,Poco::Thread::TID tid): m_scheduler(dispatcher), m_tid(tid)
+	InboxQueue::InboxQueue(EventScheduler* dispatcher, std::thread::id tid): m_scheduler(dispatcher), m_tid(tid)
 	{		
 	}
 
