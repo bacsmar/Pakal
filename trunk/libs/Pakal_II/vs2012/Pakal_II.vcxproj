@@ -19,18 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\EventSchedulerUtils.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h" />
+    <ClInclude Include="..\source\BasicTask.h" />
     <ClInclude Include="..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
-    <ClInclude Include="..\source\BasicTask.h" />
     <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
-    <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\GraphicComponent.h" />
@@ -59,12 +59,13 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\EventSchedulerUtils.cpp" />
+    <ClCompile Include="..\source\BasicTask.cpp" />
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
     <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
-    <ClCompile Include="..\source\components\BodyComponent.cpp" />
     <ClCompile Include="..\source\components\MeshComponent.cpp" />
     <ClCompile Include="..\source\components\PhysicComponent.cpp" />
     <ClCompile Include="..\source\components\GraphicComponent.cpp" />

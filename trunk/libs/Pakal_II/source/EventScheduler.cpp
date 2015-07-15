@@ -4,6 +4,7 @@
 #include "AsyncTaskDispatcher.h"
 #include "Task.h"
 
+
 Pakal::EventScheduler::~EventScheduler()
 {
 	for(auto& item : m_inboxes)
@@ -45,7 +46,7 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::executeInThread(const std::function<v
 	if (currentTid == tid)
 	{
 		fn();
-		return TaskUtils::fromResult(0);
+		return TaskUtils::completedTask();
 	}
 	else
 		return findInboxForThread(tid)->pushTask(fn);

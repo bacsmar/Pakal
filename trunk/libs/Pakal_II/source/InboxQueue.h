@@ -3,16 +3,16 @@
 #include "Config.h"
 
 #include <functional>
+#include <thread>
+
 #include "DoubleBufferedList.h"
 #include "BasicTask.h"
-#include <thread>
 
 namespace Pakal
 {
 	class EventScheduler;
 	class BasicTask;
-	template <class T>
-	class Task;
+
 
 	class
 		_PAKALExport InboxQueue
@@ -33,8 +33,7 @@ namespace Pakal
 		template<class TOut>
 		std::shared_ptr<Task<TOut>> pushTask(const std::function<TOut(void)> & jobDelegate)
 		{
-			Task<TOut> * tPtr = new Task<TOut>( jobDelegate, m_scheduler);
-			std::shared_ptr< Task<TOut> > task(tPtr);
+			auto task = std::make_shared<Task<TOut>>(jobDelegate, m_scheduler);
 
 			m_inboxStore.push(task);
 			return task;			

@@ -4,9 +4,10 @@
 #include <thread>
 #include <unordered_map>
 #include <functional>
+
+#include <TaskFwd.h>
 #include "Task.h"
 #include "InboxQueue.h"
-
 
 namespace Pakal
 {

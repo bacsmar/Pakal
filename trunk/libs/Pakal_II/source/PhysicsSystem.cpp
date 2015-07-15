@@ -5,8 +5,7 @@
 #include "IComponent.h"
 #include "components/PhysicComponent.h"
 
-#include "Task.h"
-#include "InboxQueue.h"
+#include "EventScheduler.h"
 
 
 #if PAKAL_USE_BOX2D == 1
@@ -72,6 +71,7 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 
 	std::function<void()> lambdaInit = [=] (void) 
 	{
+		std::this_thread::sleep_for(std::chrono::seconds(2));
 		pComponent->onInit();		
 	};
 
