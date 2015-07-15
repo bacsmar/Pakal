@@ -17,20 +17,20 @@ namespace Pakal
 
 	class _PAKALExport PhysicComponent : public IComponent
 	{
+		friend class PhysicsSystem;
 	public:
 		virtual ~PhysicComponent(){}
-		PhysicComponent(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }		
-		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }				
+		PhysicComponent(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }
+		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }
 
-		virtual void onInit(const PhysicsSystem &pSystem) = 0;
-		virtual void onDestroy(const PhysicsSystem &pSystem) = 0;
-
-	protected:
-		inline PhysicsSystem *getPhysicsSystem() { return m_PhysicsSystem; }				
-	private:		
-
-		PhysicsSystem *m_PhysicsSystem;		
 		BasicTaskPtr init() override final; 	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes
+
+	protected:
+		inline PhysicsSystem *getPhysicsSystem() { return m_PhysicsSystem; }
+		virtual void onInit() = 0;
+		virtual void onDestroy() = 0;
+	private:		
+		PhysicsSystem *m_PhysicsSystem;				
 	};
 }

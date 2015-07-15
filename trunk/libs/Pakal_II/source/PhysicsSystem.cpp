@@ -72,8 +72,7 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 
 	std::function<void()> lambdaInit = [=] (void) 
 	{
-		pComponent->onInit(*this);
-		Poco::Thread::sleep(2000);
+		pComponent->onInit();		
 	};
 
 	return getScheduler()->executeInThread(lambdaInit,threadId());
@@ -85,7 +84,7 @@ BasicTaskPtr PhysicsSystem::terminateComponentAsync(IComponent *c)
 
 	std::function<void()> lamdaDestroy = [=] (void) 
 	{		
-		pComponent->onDestroy(*this);
+		pComponent->onDestroy();
 		delete pComponent;
 	};
 

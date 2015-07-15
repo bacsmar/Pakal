@@ -17,9 +17,7 @@ namespace Pakal
 	class _PAKALExport MeshComponent : public GraphicComponent
 	{
 		DECLARE_RTTI(MeshComponent);
-	public:
-		void onInit() override;
-		void onDestroy() override;
+	public:		
 		~MeshComponent() override;
 
 		MeshComponent(IrrGraphicsSystem* irr);
@@ -29,7 +27,8 @@ namespace Pakal
 		irr::video::ITexture		*m_texture;
 		irr::scene::IMesh			*m_mesh;
 		irr::scene::IMeshSceneNode	*m_node;
-
+		void onInit() override;
+		void onDestroy() override;
 	public:
 
 		BasicTaskPtr LoadMeshAsync(const std::string& meshName);

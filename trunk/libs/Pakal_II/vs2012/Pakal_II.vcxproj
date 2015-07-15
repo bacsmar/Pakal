@@ -30,6 +30,8 @@
     <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentSystem.h" />
+    <ClInclude Include="..\source\components\BodyComponent.h" />
+    <ClInclude Include="..\source\components\MeshComponent.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\GraphicComponent.h" />
     <ClInclude Include="..\source\Config.h" />
@@ -49,7 +51,6 @@
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h" />
-    <ClInclude Include="..\source\irrlicht\MeshComponent.h" />
     <ClInclude Include="..\source\LogMgr.h" />
     <ClInclude Include="..\source\PhysicsSystem.h" />
     <ClInclude Include="..\source\Platform.h" />
@@ -63,6 +64,8 @@
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentSystem.cpp" />
+    <ClCompile Include="..\source\components\BodyComponent.cpp" />
+    <ClCompile Include="..\source\components\MeshComponent.cpp" />
     <ClCompile Include="..\source\components\PhysicComponent.cpp" />
     <ClCompile Include="..\source\components\GraphicComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
@@ -73,7 +76,6 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
-    <ClCompile Include="..\source\irrlicht\MeshComponent.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
   </ItemGroup>
@@ -199,6 +201,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">

@@ -71,8 +71,8 @@ void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFacto
 	{
 		DECLARE_RTTI(PhysicComponentTest);
 
-		virtual void onInit(const PhysicsSystem &renderSystem) override{};		
-		virtual void onDestroy(const PhysicsSystem &pSystem) override {};
+		virtual void onInit() override{};		
+		virtual void onDestroy() override {};
 	
 		PhysicComponentTest(Box2DPhysicsSystem * box2d) : PhysicComponent(box2d){}		
 	};
