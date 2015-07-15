@@ -94,7 +94,7 @@ namespace Pakal
 
 			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.tid == std::thread::id() )
+				if (m_scheduler == nullptr || dd.tid == NULL_THREAD )
 					dd.delegate(arguments);
 				else
 				{

@@ -40,7 +40,7 @@ void Pakal::ComponentSystem::registerFactory( IComponentFactory* factory, const 
 
 IComponent * Pakal::ComponentSystem::createComponent( const char * typeName )
 {
-	auto &it = m_ComponentFactories.find(typeName);
+	const auto &it = m_ComponentFactories.find(typeName);
 	if(it == m_ComponentFactories.end())
 	{
 		LOG_ERROR("[ComponentManager] error: '%s' unknown component type.", typeName );
@@ -52,7 +52,7 @@ IComponent * Pakal::ComponentSystem::createComponent( const char * typeName )
 
 Pakal::ComponentSystem::~ComponentSystem()
 {
-	for(  auto & it = m_ComponentFactories.begin() ; it != m_ComponentFactories.end() ; )
+	for( auto it = m_ComponentFactories.begin() ; it != m_ComponentFactories.end() ; )
 	{
 		delete it->second;
 		m_ComponentFactories.erase(it++);	

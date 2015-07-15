@@ -144,7 +144,7 @@ namespace Pakal
 
 			for(auto& t : tasks)
 			{
-				t->onCompletionDo(onComplete, std::thread::id() );
+				t->onCompletionDo(onComplete, NULL_THREAD );
 			}
 			return myTask;
 		}		

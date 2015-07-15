@@ -48,7 +48,10 @@
     <ClCompile Include="..\source\components\GraphicComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\MeshComponent.cpp">
+    <ClCompile Include="..\source\components\MeshComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\BodyComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -147,9 +150,6 @@
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\MeshComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
@@ -161,6 +161,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h">
       <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MeshComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\BodyComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

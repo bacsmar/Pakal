@@ -24,16 +24,13 @@ namespace Pakal
 		
 		BasicTaskPtr init() override final;	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes
-
+	protected:
 		// is called when the component was initialized by the parent System
 		virtual void onInit() = 0;
 		// is called when the component was destroyed by the parent System
 		virtual void onDestroy() = 0;
 
-
-
 	protected:
-
 		GraphicsSystem *m_GraphicSystem;		
 	
 	};
