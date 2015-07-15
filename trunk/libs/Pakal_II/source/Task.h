@@ -78,22 +78,24 @@ namespace Pakal
 			while(!m_isCompleted) Poco::Thread::sleep(1);
 		}
 		
-		void onCompletionDo(MethodDelegate &callBack,bool executeInThisThread = true)
+		/// pass 0 if you want it to be executed in the caller thread
+		void onCompletionDo(const MethodDelegate &callBack,unsigned long callBackThread = Poco::Thread::currentTid())
 		{
 			if (m_isCompleted)
 				callBack(m_Result);
 			else
-				m_EventCompleted.addListener(callBack,executeInThisThread);
+				m_EventCompleted.addListener(callBack,callBackThread);
 		}
 
-		void onCompletionDo( std::function<void()>  &callback, bool executeInThisThread ) override
+		/// pass 0 if you want it to be executed in the caller thread
+		void onCompletionDo(const std::function<void()>  &callback, unsigned long callBackThread = Poco::Thread::currentTid()  ) override
 		{
 			if (m_isCompleted)
 				callback();
 			else
 			{
 				MethodDelegate callbackBridge = [callback](TArgs) { callback(); };
-				m_EventCompleted.addListener(callbackBridge,executeInThisThread);
+				m_EventCompleted.addListener(callbackBridge,callBackThread);
 			}
 		}
 
@@ -108,7 +110,7 @@ namespace Pakal
 	class TaskUtils
 	{
 	public:
-		static BasicTaskPtr whenAll(std::vector< BasicTaskPtr >& tasks)
+		static BasicTaskPtr whenAll(const std::vector< BasicTaskPtr >& tasks)
 		{
 			ASSERT(tasks.empty() == false);
 			EventScheduler* scheduler = tasks.at(0)->getEventScheduler();
@@ -142,12 +144,12 @@ namespace Pakal
 
 			for(auto& t : tasks)
 			{
-				t->onCompletionDo(onComplete, false);
+				t->onCompletionDo(onComplete, 0);
 			}
 			return myTask;
 		}		
 		
-		static void waitAll(std::vector<BasicTaskPtr>& tasks)
+		static void waitAll(const std::vector<BasicTaskPtr>& tasks)
 		{
 			for(auto & t : tasks)
 			{
@@ -156,9 +158,9 @@ namespace Pakal
 		}
 
 		template<class T>
-		static std::shared_ptr<Task<T>> fromResult(T& result)
+		static std::shared_ptr<Task<T>> fromResult(const T& result)
 		{
-			return new Task<T>(result);
+			return  std::shared_ptr<Task<T>>(new Task<T>(result));
 		}
 	};
 	

@@ -48,7 +48,7 @@
     <ClCompile Include="..\source\components\GraphicComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\StaticMeshComponent.cpp">
+    <ClCompile Include="..\source\irrlicht\MeshComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,9 +59,6 @@
     </ClInclude>
     <ClInclude Include="..\source\GameStateSystem.h">
       <Filter>Systems\GameStateSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\GraphicsSystem.h">
-      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
@@ -150,8 +147,20 @@
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\StaticMeshComponent.h">
+    <ClInclude Include="..\source\irrlicht\MeshComponent.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h">
+      <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

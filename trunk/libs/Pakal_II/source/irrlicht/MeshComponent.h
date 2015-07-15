@@ -1,0 +1,40 @@
+#pragma once
+#include "config.h"
+#include <vector3d.h>
+#include "components/GraphicComponent.h"
+
+#include "TaskFwd.h"
+
+namespace irr { namespace video { class ITexture; } }
+namespace irr { namespace scene { class IMeshSceneNode; } }
+namespace irr { namespace scene { class IMesh; } }
+
+namespace Pakal
+{
+	class IrrGraphicsSystem;
+
+
+	class _PAKALExport MeshComponent : public GraphicComponent
+	{
+		DECLARE_RTTI(MeshComponent);
+	public:
+		void onInit() override;
+		void onDestroy() override;
+		~MeshComponent() override;
+
+		MeshComponent(IrrGraphicsSystem* irr);
+	protected:
+		inline IrrGraphicsSystem* getSystem();
+
+		irr::video::ITexture		*m_texture;
+		irr::scene::IMesh			*m_mesh;
+		irr::scene::IMeshSceneNode	*m_node;
+
+	public:
+
+		BasicTaskPtr LoadMeshAsync(const std::string& meshName);
+		BasicTaskPtr LoadTextureAsync(const std::string& textureName);
+		inline void setPosition(const irr::core::vector3df& position);
+		inline const irr::core::vector3df& getPosition();
+	};	
+}

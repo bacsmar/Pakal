@@ -5,6 +5,12 @@
 #include "EventScheduler.h"
 
 
+
+unsigned long Pakal::AsyncTaskDispatcher::threadId()
+{
+	return m_inbox->getTid();
+}
+
 void Pakal::AsyncTaskDispatcher::dispatchTasks()
 {
 	if( nullptr == m_inbox )
@@ -15,8 +21,8 @@ void Pakal::AsyncTaskDispatcher::dispatchTasks()
 	
 	if( m_inbox->size() )
 	{
-		auto & tasks = m_inbox->popAllTasks();
-		while ( tasks.empty() == false)
+		InboxQueue::TaskQueue& tasks = m_inbox->popAllTasks();
+		while (!tasks.empty())
 		{
 			BasicTaskPtr t = tasks.front();
 			tasks.pop();

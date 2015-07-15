@@ -5,17 +5,22 @@
 
 namespace Pakal
 {
-	InboxQueue::InboxQueue(EventScheduler* dispatcher): m_scheduler(dispatcher)
+	unsigned long InboxQueue::getTid()
+	{
+		return m_tid;
+	}
+
+	InboxQueue::InboxQueue(EventScheduler* dispatcher,Poco::Thread::TID tid): m_scheduler(dispatcher), m_tid(tid)
 	{		
 	}
 
-	BasicTaskPtr InboxQueue::pushTask(std::function<void()>& jobDelegate)
+	BasicTaskPtr InboxQueue::pushTask(const std::function<void()>& jobDelegate)
 	{
 		std::function<int(void)> delegate = [jobDelegate]()
-			{
-				jobDelegate();
-				return 0;
-			};
+		{
+			jobDelegate();
+			return 0;
+		};
 
 		Task<int>* ptr = new Task<int>(delegate, m_scheduler);
 		BasicTaskPtr taskPtr(ptr);

@@ -17,9 +17,11 @@ namespace Pakal
 		virtual ~AsyncTaskDispatcher() {}
 		AsyncTaskDispatcher() : m_inbox(nullptr), m_scheduler(nullptr) {}
 
-		inline InboxQueue* getInbox()
+		inline unsigned long threadId();
+
+		inline EventScheduler* getScheduler()
 		{
-			return m_inbox;
+			return m_scheduler;
 		}
 
 		inline void setScheduler(EventScheduler* scheduler)
