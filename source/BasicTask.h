@@ -1,28 +1,42 @@
 #pragma once
+#include "Config.h"
 
 #include <functional>
+#include <thread>
+
 #include "TaskFwd.h"
-#include <thread>		
+#include "Event.h"
 
 namespace Pakal
 {
 	class EventScheduler;
 
-	class _PAKALExport BasicTask 
+	class _PAKALExport BasicTask
 	{
+		friend class InboxQueue;
 		friend class AsyncTaskDispatcher;
+
+	private:
+		std::function<void()> m_Job;
+
 	protected:
-		virtual void run() = 0;			
 
-	public:		
+		Event<void>			  m_EventCompleted;
+		volatile bool		  m_isCompleted;
 
-		virtual void onCompletionDo(const std::function<void()>  &callback, std::thread::id callBackThread = std::this_thread::get_id() ) = 0;
-		virtual bool isCompleted() = 0;
-		virtual void wait() = 0;
+		virtual void run();
 
-		virtual ~BasicTask() {}	
+	public:
 
-		virtual EventScheduler* getEventScheduler() = 0;
-	
-	};	
-}
+		BasicTask(const std::function<void()>& job, EventScheduler* scheduler);
+		BasicTask();
+
+		virtual ~BasicTask();
+
+		inline bool isCompleted();
+		inline void wait();
+		void onCompletionDo(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
+		inline EventScheduler* getEventScheduler();
+	};
+
+	}

@@ -51,8 +51,11 @@
     <ClCompile Include="..\source\components\MeshComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\BodyComponent.cpp">
-      <Filter>Components</Filter>
+    <ClCompile Include="..\source\BasicTask.cpp">
+      <Filter>Systems\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EventSchedulerUtils.cpp">
+      <Filter>Systems\EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,9 +117,6 @@
     <ClInclude Include="..\source\InboxQueue.h">
       <Filter>Systems\EventSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\BasicTask.h">
-      <Filter>Systems\EventSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\Event.h">
       <Filter>Systems\EventSystem</Filter>
     </ClInclude>
@@ -165,8 +165,11 @@
     <ClInclude Include="..\source\components\MeshComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components</Filter>
+    <ClInclude Include="..\source\BasicTask.h">
+      <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventSchedulerUtils.h">
+      <Filter>Systems\EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

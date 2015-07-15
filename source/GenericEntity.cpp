@@ -34,9 +34,7 @@ namespace Pakal
 
 			initializationTaskVector.push_back( task );
 		}
-
-		BasicTaskPtr onFinish = TaskUtils::whenAll( initializationTaskVector );
-		return onFinish;
+		return TaskUtils::whenAll( initializationTaskVector );
 	}	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GenericEntity::~GenericEntity() 

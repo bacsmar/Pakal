@@ -2,36 +2,38 @@
 
 #include "Config.h"
 
-#include <vector>
+#include <list>
 #include <functional>
 #include <mutex>
-
 #include <thread>
-#include "EventScheduler.h"
+
+#include "EventSchedulerUtils.h"
 
 namespace Pakal
 {
 	template <class TArgs>
+	struct DelegateData
+	{
+		const std::function<void(TArgs)> delegate;
+		const std::thread::id tid;
+
+		DelegateData(const std::function<void(TArgs)>& d, std::thread::id td) : delegate(d), tid(td)
+		{
+		}
+	};
+
+
+	template <class TArgs>
 	class
 		_PAKALExport Event
 	{
-	public:
-		typedef std::function<void(TArgs)> MethodDelegate;		
 	private:
-		struct DelegateData
-		{
-			const MethodDelegate delegate;
-			const std::thread::id tid;
-
-			DelegateData(MethodDelegate& d, std::thread::id td) : delegate(d), tid(td) {}
-
-		};
-
 		EventScheduler* m_scheduler;
-		std::vector<DelegateData> m_delegates;
+		std::list<DelegateData<TArgs>> m_delegates;
 		bool m_isEnabled;
 		std::mutex m_mutex;
 
+		typedef std::function<void(TArgs)> MethodDelegate;
 	public:
 
 		inline EventScheduler* getEventScheduler() { return m_scheduler; }
@@ -45,13 +47,12 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		/// pass 0 if you want it to be executed in the caller thread
-		inline void addListener(MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		inline void addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
 		{
 
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			m_delegates.push_back(DelegateData(delegate, callBackThread));
+			m_delegates.push_back(DelegateData<TArgs>(delegate, callBackThread));
 		}
 
 		inline void disable()
@@ -69,19 +70,11 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-		void removeListener(MethodDelegate& delegate)
-		{
-			std::lock_guard<std::mutex> lock(m_mutex);
-
-			for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it)
-			{
-				if (delegate == (*it)->delegate)
-				{
-					m_delegates.erase(it);
-					return;
-				}
-			}
-		}
+	/*	inline void removeListener(const MethodDelegate& delegate)
+		{		
+			auto t = std::find(m_delegates.begin(),m_delegates.end(),delegate);
+			m_delegates.erase(t);
+		}*/
 
 		void notify(const TArgs& arguments)
 		{
@@ -89,19 +82,94 @@ namespace Pakal
 				return;
 
 			m_mutex.lock();
-			std::vector<DelegateData> copyDelegates(m_delegates);
+			std::list<DelegateData<TArgs>> copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			for (DelegateData& dd : copyDelegates)
+			for (DelegateData<TArgs>& dd : copyDelegates)
 			{
 				if (m_scheduler == nullptr || dd.tid == NULL_THREAD )
 					dd.delegate(arguments);
 				else
-				{
-					std::function<void()> bridge = [dd,arguments]() { dd.delegate(arguments); };
-					m_scheduler->executeInThread(bridge,dd.tid);
-				}
+					EventSchedulerUtils::executeInThread(m_scheduler,[dd,arguments]() { dd.delegate(arguments); },dd.tid);
 			}
 		}
+
 	};
+
+	template<>
+	class _PAKALExport Event<void>
+	{
+	public:
+		typedef std::function<void(void)> MethodDelegate;		
+	private:
+
+		EventScheduler* m_scheduler;
+		std::list<DelegateData<void>> m_delegates;
+		bool m_isEnabled;
+		std::mutex m_mutex;
+
+	public:
+
+		inline EventScheduler* getEventScheduler() { return m_scheduler; }
+
+		Event() : m_scheduler(nullptr), m_isEnabled(true)
+		{
+		}
+
+		inline void connectWithScheduler(EventScheduler* scheduler)
+		{
+			m_scheduler = scheduler;
+		}
+
+		inline void addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+
+
+			m_delegates.push_back(DelegateData<void>(delegate, callBackThread));
+		}
+
+		inline void disable()
+		{
+			m_isEnabled = false;
+		}
+
+		inline void enable()
+		{
+			m_isEnabled = true;
+		}
+
+		inline bool empty() const
+		{
+			return m_delegates.empty();
+		}
+
+		//inline void removeListener(const MethodDelegate& delegate)
+		//{		
+		//	auto t = std::find(m_delegates.begin(),m_delegates.end(),delegate);
+		//	m_delegates.erase(t);
+		//}
+
+		void notify()
+		{
+			if (!m_isEnabled)
+				return;
+
+			m_mutex.lock();
+			std::list<DelegateData<void>> copyDelegates(m_delegates);
+			m_mutex.unlock();
+
+			for (DelegateData<void>& dd : copyDelegates)
+			{
+				if (m_scheduler == nullptr || dd.tid == NULL_THREAD )
+					dd.delegate();
+				else
+					EventSchedulerUtils::executeInThread(m_scheduler,dd.delegate,dd.tid);
+			}
+		}
+
+	};
+
+
+
 }

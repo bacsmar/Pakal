@@ -1,6 +1,5 @@
 #include "InboxQueue.h"
 #include "BasicTask.h"
-#include "Task.h"
 #include <memory>
 
 namespace Pakal
@@ -16,14 +15,7 @@ namespace Pakal
 
 	BasicTaskPtr InboxQueue::pushTask(const std::function<void()>& jobDelegate)
 	{
-		std::function<int(void)> delegate = [jobDelegate]()
-		{
-			jobDelegate();
-			return 0;
-		};
-
-		Task<int>* ptr = new Task<int>(delegate, m_scheduler);
-		BasicTaskPtr taskPtr(ptr);
+		BasicTaskPtr taskPtr = std::make_shared<BasicTask>(jobDelegate,m_scheduler);
 
 		m_inboxStore.push(taskPtr);
 
