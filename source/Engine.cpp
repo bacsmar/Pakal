@@ -69,7 +69,7 @@ void Engine::start( IPakalApplication *application )
 
 	
 	m_logicDispatcher   = new AsyncTaskDispatcher();
-	m_GraphicsSystem	= GraphicsSystem::createGraphicsSystem();
+	m_GraphicsSystem	= GraphicsSystem::createInstance();
 	m_PhysicsSystem		= PhysicsSystem::createPhysicsSystem();
 	m_EventScheduler	= new EventScheduler();
 	m_GameStateSystem	= new GameStateSystem();
@@ -85,7 +85,9 @@ void Engine::start( IPakalApplication *application )
 
 	m_GameStateSystem->initialize(this);	// executed in diferent thread
 	m_PhysicsSystem->initialize();			// it creates his own thread
+
 	m_GraphicsSystem->initialize();			// it uses this very thread
+	m_GraphicsSystem->dispatchTasks();      //have ready the inbox and the id
 
 	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
 	m_LogicThread->setName("Logic");

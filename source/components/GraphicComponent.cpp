@@ -13,22 +13,19 @@
 
 namespace Pakal
 {
-	BasicTaskPtr GraphicComponent::init()
-	{
-		return m_GraphicSystem->initComponentAsync(this);
-	}
-	BasicTaskPtr GraphicComponent::destroy()
-	{
-		return m_GraphicSystem->terminateComponentAsync(this);
-	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GraphicComponent::~GraphicComponent()
 	{
 	}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	void GraphicComponent::notify()
+
+	BasicTaskPtr GraphicComponent::init()
 	{
-		ASSERT( isInitialized() );		
-		m_GraphicSystem->addToUpdateList(this);
-	}	
+		return m_GraphicSystem->initComponentAsync(this);
+	}
+
+	BasicTaskPtr GraphicComponent::destroy()
+	{
+		return m_GraphicSystem->terminateComponentAsync(this);
+	}
+
 }

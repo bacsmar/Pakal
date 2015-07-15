@@ -70,27 +70,24 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 {
 	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
 
-	std::function<int()> lambdaInit = [=] (void) 
+	std::function<void()> lambdaInit = [=] (void) 
 	{
 		pComponent->onInit(*this);
 		Poco::Thread::sleep(2000);
-		return 0;
 	};
 
-	return getInbox()->pushTask( lambdaInit );
+	return getScheduler()->executeInThread(lambdaInit,threadId());
 }
 //////////////////////////////////////////////////////////////////////////
 BasicTaskPtr PhysicsSystem::terminateComponentAsync(IComponent *c) 
 {
 	PhysicComponent *pComponent = static_cast<PhysicComponent*> (c);
 
-	std::function<int()> lamdaDestroy = [=] (void) 
+	std::function<void()> lamdaDestroy = [=] (void) 
 	{		
-		//m_updateList.erase(pComponent);
 		pComponent->onDestroy(*this);
 		delete pComponent;
-		return 0;
 	};
 
-	return getInbox()->pushTask( lamdaDestroy );
+	return getScheduler()->executeInThread(lamdaDestroy,threadId());
 }

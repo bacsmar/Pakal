@@ -2,6 +2,7 @@
 
 #include "InboxQueue.h"
 #include "AsyncTaskDispatcher.h"
+#include "Task.h"
 
 Pakal::EventScheduler::~EventScheduler()
 {
@@ -31,22 +32,25 @@ Pakal::InboxQueue* Pakal::EventScheduler::InboxForThisThread()
 		
 	if (inbox == nullptr)
 	{
-		inbox = new InboxQueue(this);
+		inbox = new InboxQueue(this,currentTid);
 		m_inboxes[currentTid] =  inbox;
 	}
 	return inbox;
 }
 
-void Pakal::EventScheduler::executeInThread(Poco::Thread::TID tid,std::function<void()>& fn)
+Pakal::BasicTaskPtr Pakal::EventScheduler::executeInThread(const std::function<void()>& fn,Poco::Thread::TID tid)
 {
 	auto currentTid = Poco::Thread::currentTid();
 
 	if (currentTid == tid)
+	{
 		fn();
+		return TaskUtils::fromResult(0);
+	}
 	else
-		findInboxForThread(tid)->pushTask(fn);
-
+		return findInboxForThread(tid)->pushTask(fn);
 }
+
 
 void Pakal::EventScheduler::registerDispatcher(AsyncTaskDispatcher* dispatcher)
 {

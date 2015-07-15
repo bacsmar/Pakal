@@ -21,10 +21,9 @@ namespace Pakal
 		struct DelegateData
 		{
 			const MethodDelegate delegate;
-			const Poco::Thread::TID tid;
-			const bool useScheduler;
+			const unsigned long tid;
 
-			DelegateData(MethodDelegate& d, Poco::Thread::TID td, bool use_Scheduler) : delegate(d), tid(td), useScheduler(use_Scheduler) {}
+			DelegateData(MethodDelegate& d, unsigned long td) : delegate(d), tid(td) {}
 
 		};
 
@@ -46,12 +45,13 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline void addListener(MethodDelegate& delegate, bool executeInThisThread = true)
+		/// pass 0 if you want it to be executed in the caller thread
+		inline void addListener(MethodDelegate& delegate, unsigned long callBackThread = Poco::Thread::currentTid())
 		{
 
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			m_delegates.push_back(DelegateData(delegate, Poco::Thread::currentTid(),executeInThisThread));
+			m_delegates.push_back(DelegateData(delegate, callBackThread));
 		}
 
 		inline void disable()
@@ -94,13 +94,13 @@ namespace Pakal
 
 			for (DelegateData& dd : copyDelegates)
 			{
-				if (m_scheduler && dd.useScheduler)
+				if (m_scheduler == nullptr || dd.tid == 0)
+					dd.delegate(arguments);
+				else
 				{
 					std::function<void()> bridge = [dd,arguments]() { dd.delegate(arguments); };
-					m_scheduler->executeInThread(dd.tid,bridge);
+					m_scheduler->executeInThread(bridge,dd.tid);
 				}
-				else
-					dd.delegate(arguments);
 			}
 		}
 	};

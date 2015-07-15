@@ -2,10 +2,9 @@
 #include "Poco/Foundation.h"
 
 #include "IComponent.h"
-#include "components/GraphicComponent.h"
-#include "BasicTask.h"
-#include "InboxQueue.h"
+#include "EventScheduler.h"
 
+#include "components/GraphicComponent.h"
 
 using namespace Pakal;
 
@@ -13,7 +12,7 @@ using namespace Pakal;
 #include "irrlicht/IrrGraphicsSystem.h"
 #endif
 
-GraphicsSystem* GraphicsSystem::createGraphicsSystem()
+GraphicsSystem* GraphicsSystem::createInstance()
 {
 #if PAKAL_USE_IRRLICHT == 1
 	return new IrrGraphicsSystem();
@@ -24,7 +23,6 @@ GraphicsSystem* GraphicsSystem::createGraphicsSystem()
 //////////////////////////////////////////////////////////////////////////
 bool GraphicsSystem::initialize()
 {
-	this->dispatchTasks();
 	return onInitialize();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -43,7 +41,6 @@ void GraphicsSystem::run()
 #endif
 		// dispatch all task, to fill the two below lists
 		dispatchTasks();
-		updateComponents();
 
 		bool running = update();
 
@@ -55,44 +52,21 @@ void GraphicsSystem::run()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
-void GraphicsSystem::addToUpdateList(GraphicComponent *c)
+BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent* c)
 {
-	m_updateList.insert(c);
-}
-//////////////////////////////////////////////////////////////////////////
-BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent *c) 
-{	
-	std::function<void()> lambdaInit = [=] (void) 
-	{ 
+	return getScheduler()->executeInThread([c]()
+	{
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 		pComponent->onInit();
-	};
-
-	return getInbox()->pushTask( lambdaInit );
+	},this->threadId());
 }
-//////////////////////////////////////////////////////////////////////////
-BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent *c) 
-{	
-	std::function<void()> lamdaDestroy = [=] (void) 
+
+BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent* c)
+{
+	return getScheduler()->executeInThread([c]()
 	{
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
-
-		m_updateList.erase(pComponent);
 		pComponent->onDestroy();
 		delete pComponent;
-	};
-
-	return getInbox()->pushTask( lamdaDestroy );
+	},this->threadId());
 }
-//////////////////////////////////////////////////////////////////////////
-
-void GraphicsSystem::updateComponents()
-{
-	for (GraphicComponent* c : m_updateList.getListToProcess() )
-	{
-		c->onUpdate();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////

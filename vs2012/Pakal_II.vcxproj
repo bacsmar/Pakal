@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h" />
     <ClInclude Include="..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
     <ClInclude Include="..\source\BasicTask.h" />
@@ -36,7 +40,6 @@
     <ClInclude Include="..\source\EventScheduler.h" />
     <ClInclude Include="..\source\GameStateSystem.h" />
     <ClInclude Include="..\source\GenericEntity.h" />
-    <ClInclude Include="..\source\GraphicsSystem.h" />
     <ClInclude Include="..\source\IComponent.h" />
     <ClInclude Include="..\source\IComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
@@ -46,7 +49,7 @@
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h" />
-    <ClInclude Include="..\source\irrlicht\StaticMeshComponent.h" />
+    <ClInclude Include="..\source\irrlicht\MeshComponent.h" />
     <ClInclude Include="..\source\LogMgr.h" />
     <ClInclude Include="..\source\PhysicsSystem.h" />
     <ClInclude Include="..\source\Platform.h" />
@@ -70,7 +73,7 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
-    <ClCompile Include="..\source\irrlicht\StaticMeshComponent.cpp" />
+    <ClCompile Include="..\source\irrlicht\MeshComponent.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
   </ItemGroup>

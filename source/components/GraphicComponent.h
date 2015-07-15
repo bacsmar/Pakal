@@ -8,8 +8,6 @@
 
 #pragma once
 #include "IComponent.h"
-#include "RTTI.h"
-#include "TaskFwd.h"
 
 
 namespace Pakal
@@ -22,24 +20,19 @@ namespace Pakal
 	public:
 
 		virtual ~GraphicComponent();
-		GraphicComponent(GraphicsSystem *graphicSystem) : m_GraphicSystem(graphicSystem)	{}		
-		void setSystem(GraphicsSystem *graphicSystem)	{ m_GraphicSystem = graphicSystem; }		
-
+		GraphicComponent(GraphicsSystem *graphicSystem) : m_GraphicSystem(graphicSystem) {}
+		
 		BasicTaskPtr init() override final;	// hide init From derivated classes
-		BasicTaskPtr destroy() override final;	// hide init From derivated classes	
+		BasicTaskPtr destroy() override final;	// hide init From derivated classes
 
-
-	protected:
-		inline GraphicsSystem *getGraphicSystem() { return m_GraphicSystem; }
 		// is called when the component was initialized by the parent System
 		virtual void onInit() = 0;
 		// is called when the component was destroyed by the parent System
 		virtual void onDestroy() = 0;
 
-		virtual void onUpdate() = 0;
 
-		// notifies the parent System of work to do
-		virtual void notify();
+
+	protected:
 
 		GraphicsSystem *m_GraphicSystem;		
 	

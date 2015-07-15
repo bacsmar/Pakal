@@ -3,9 +3,7 @@
 
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
-#include "DoubleBufferedList.h"
 
-//#include <unordered_set>
 
 namespace Pakal
 {
@@ -17,20 +15,17 @@ namespace Pakal
 		friend class Engine;
 		friend class GraphicComponent;
 		
-		DoubleBufferedSet<GraphicComponent*> m_updateList;		
-
 	public:
 		inline bool isInitialized() const { return m_Initialized; }
 		
 		virtual void setWindowCaption(const char* caption) {};
 		virtual void showFps(bool val) {};		
 	
-		void addToUpdateList(GraphicComponent *c);
 
 	protected:
 		bool m_Initialized;
 
-		static GraphicsSystem* createGraphicsSystem();
+		static GraphicsSystem* createInstance();
 		virtual ~GraphicsSystem(){}
 
 		bool initialize();
@@ -45,11 +40,8 @@ namespace Pakal
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override = 0;
-
-	private:
 		BasicTaskPtr initComponentAsync(IComponent *c) override final;
 		BasicTaskPtr terminateComponentAsync(IComponent *c) override final;
-		void updateComponents();
 
 	};
 }

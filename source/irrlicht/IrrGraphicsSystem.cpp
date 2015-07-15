@@ -10,7 +10,7 @@
 
 #include "IDebugDrawer.h"
 
-#include "StaticMeshComponent.h"
+#include "MeshComponent.h"
 
 using namespace irr;
 using namespace core;
@@ -65,30 +65,8 @@ void Pakal::IrrGraphicsSystem::initWindow()
 #endif	
 
 	LOG_INFO("[Graphic System] done");
-	/*
-	IAnimatedMesh* mesh = smgr->getMesh("sydney.md2");
-	if (!mesh)
-	{		
-		return ;
-	}
-	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
-	if (node)
-	{
-		node->setMaterialFlag(EMF_LIGHTING, false);
-		node->setMD2Animation(scene::EMAT_STAND);
-		node->setMaterialTexture( 0, driver->getTexture("sydney.bmp") );
-	}
-	*/
-	/*
-	IMesh *meshs = smgr->getMesh("sphere.irrmesh");
-	IMeshSceneNode *nodes = smgr->addMeshSceneNode( meshs );
-	if( nodes)
-	{
-		nodes->setMaterialFlag(EMF_LIGHTING, false);
-		nodes->setMaterialTexture( 0, driver->getTexture("concretewall.jpg") );
-	}
-	*/
-	smgr->addCameraSceneNode(0, vector3df(0,0,-100), vector3df(0,0,0));		
+
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-100), vector3df(0,0,0));		
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -158,8 +136,7 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.push_back( Pakal::CreateComponentFactory<StaticMeshComponent>(this) );
-	//factories.push_back( Pakal::CreateComponentFactory<TestComponent>() );
+	factories.push_back( Pakal::CreateComponentFactory<MeshComponent>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)

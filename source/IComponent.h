@@ -26,8 +26,8 @@ namespace Pakal
 		virtual ~IComponent(void){}	
 		
 		IComponent() : 
-			m_isInitialized(0),
-			m_ParentEntity(0)
+			m_ParentEntity(nullptr),
+			m_isInitialized(0)
 		{}		
 
 		inline const IEntity * getParentEntity() const		{ return m_ParentEntity; };
@@ -35,7 +35,7 @@ namespace Pakal
 		inline bool isInitialized()	const					{ return m_isInitialized; }
 		inline void setIsInitialized(bool val)				{ m_isInitialized = val; }
 		
-		virtual const Pakal::RTTI &getType() = 0;
+		virtual const RTTI &getType() = 0;
 
 		virtual BasicTaskPtr init()	= 0;
 		virtual BasicTaskPtr destroy()	= 0;
