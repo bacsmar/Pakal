@@ -54,7 +54,10 @@
     <ClCompile Include="..\source\BasicTask.cpp">
       <Filter>Systems\EventSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\EventSchedulerUtils.cpp">
+    <ClCompile Include="..\source\components\BodyComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EventSystemUtils.cpp">
       <Filter>Systems\EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
@@ -168,7 +171,10 @@
     <ClInclude Include="..\source\BasicTask.h">
       <Filter>Systems\EventSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\EventSchedulerUtils.h">
+    <ClInclude Include="..\source\components\BodyComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventSystemUtils.h">
       <Filter>Systems\EventSystem</Filter>
     </ClInclude>
   </ItemGroup>

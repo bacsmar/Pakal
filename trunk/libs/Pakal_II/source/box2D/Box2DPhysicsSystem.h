@@ -23,6 +23,16 @@ namespace Pakal
 	public:	
 		virtual ~Box2DPhysicsSystem();
 		Box2DPhysicsSystem();
+
+		inline b2World* getWorld() const
+		{
+			return m_pWorld;
+		}
+
+		b2Body	* createBody(const b2BodyDef* def);
+		b2Joint * createJoint(const b2JointDef* def);
+		void destroyBody(b2Body* body);
+		void destroyJoint(b2Joint* joint);
 	protected:
 
 		friend class Engine;
@@ -41,17 +51,7 @@ namespace Pakal
 		virtual void clearWorld() override;
 		
 		inline void enable();
-		inline void disable();
-
-		inline b2World* getWorld() const
-		{
-			return m_pWorld;
-		}
-
-		b2Body	* createBody(const b2BodyDef* def);
-		b2Joint * createJoint(const b2JointDef* def);
-		void destroyBody(b2Body* body);
-		void destroyJoint(b2Joint* joint);
+		inline void disable();		
 
 	private:
 		b2World				* m_pWorld;

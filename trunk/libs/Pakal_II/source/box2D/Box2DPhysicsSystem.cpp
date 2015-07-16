@@ -67,18 +67,7 @@ void Box2DPhysicsSystem::clearWorld()
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
-{
-	/*
-	class PhysicComponentTest : public Pakal::PhysicComponent
-	{
-		DECLARE_RTTI(PhysicComponentTest);
-
-		virtual void onInit() override{};		
-		virtual void onDestroy() override {};
-	
-		PhysicComponentTest(Box2DPhysicsSystem * box2d) : PhysicComponent(box2d){}
-	};
-	*/
+{	
 	factories.push_back( Pakal::CreateComponentFactory<BodyComponent>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
@@ -89,6 +78,7 @@ b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroyBody(b2Body* body)
 {
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	return m_pWorld->DestroyBody(body);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -99,6 +89,7 @@ b2Joint* Box2DPhysicsSystem::createJoint(const b2JointDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroyJoint(b2Joint* joint)
 {
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	return m_pWorld->DestroyJoint(joint);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -117,5 +108,7 @@ void Box2DPhysicsSystem::setDrawer(const RendererInfo *renderInfo)
 #if PAKAL_USE_IRRLICHT
 	m_pDebugDraw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
 #endif
+	m_pWorld->SetDebugDraw(m_pDebugDraw);
+	m_pDebugDraw->SetFlags(b2Draw::e_shapeBit);
 }
 //////////////////////////////////////////////////////////////////////////
