@@ -19,7 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\EventSchedulerUtils.h" />
+    <ClInclude Include="..\source\components\BodyComponent.h" />
+    <ClInclude Include="..\source\EventSystemUtils.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h" />
@@ -59,7 +60,8 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\EventSchedulerUtils.cpp" />
+    <ClCompile Include="..\source\components\BodyComponent.cpp" />
+    <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
     <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp" />

@@ -4,6 +4,8 @@
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
 
+#include "Event.h"
+
 namespace Poco
 {
 	class Thread;
@@ -56,5 +58,7 @@ namespace Pakal
 		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
 		virtual BasicTaskPtr initComponentAsync(IComponent *c) override ;
 		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override ;
+
+		Event<bool> m_updatEvent;
 	};
 }

@@ -6,6 +6,8 @@
 #include "components/PhysicComponent.h"
 
 #include "EventScheduler.h"
+#include "Task.h"
+#include "InboxQueue.h"
 
 
 #if PAKAL_USE_BOX2D == 1
@@ -41,13 +43,14 @@ void PhysicsSystem::run()
 {
 
 	initWorld();
-	//std::cout << "Hello, world! from Physics" << std::endl;
+
 	m_State = SE_RUNNING;
 
 	while (SE_WAITING_STOP != m_State)
 	{
 		dispatchTasks();
-		update();		
+		update();
+		m_updatEvent.notify(true);
 	}
 	m_State  = SE_STOPING;
 }
@@ -71,8 +74,8 @@ BasicTaskPtr PhysicsSystem::initComponentAsync(IComponent *c)
 
 	std::function<void()> lambdaInit = [=] (void) 
 	{
-		std::this_thread::sleep_for(std::chrono::seconds(2));
-		pComponent->onInit();		
+		pComponent->onInit();
+		Sleep(1000);
 	};
 
 	return getScheduler()->executeInThread(lambdaInit,threadId());

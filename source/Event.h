@@ -2,12 +2,16 @@
 
 #include "Config.h"
 
-#include <list>
+#include <set>
+
+#include <unordered_map>
+
 #include <functional>
 #include <mutex>
 #include <thread>
 
-#include "EventSchedulerUtils.h"
+#include "EventSystemUtils.h"
+
 
 namespace Pakal
 {
@@ -15,13 +19,13 @@ namespace Pakal
 	struct DelegateData
 	{
 		const std::function<void(TArgs)> delegate;
-		const std::thread::id tid;
+		const std::thread::id tid;		
 
-		DelegateData(const std::function<void(TArgs)>& d, std::thread::id td) : delegate(d), tid(td)
+		DelegateData(const std::function<void(TArgs)>& d, const std::thread::id &td) : delegate(d), tid(td) 
 		{
 		}
-	};
-
+		
+	};	
 
 	template <class TArgs>
 	class
@@ -29,7 +33,7 @@ namespace Pakal
 	{
 	private:
 		EventScheduler* m_scheduler;
-		std::list<DelegateData<TArgs>> m_delegates;
+		std::unordered_map<unsigned int, DelegateData<TArgs>> m_delegates;
 		bool m_isEnabled;
 		std::mutex m_mutex;
 
@@ -47,12 +51,14 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline void addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
-		{
-
+		inline unsigned int addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		{			
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			m_delegates.push_back(DelegateData<TArgs>(delegate, callBackThread));
+			unsigned int hash = EventSystemUtils::hashFunction((int)& delegate + (int)& callBackThread);
+			m_delegates.emplace(hash, DelegateData<TArgs>(delegate, callBackThread) );
+
+			return hash;
 		}
 
 		inline void disable()
@@ -70,11 +76,10 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-	/*	inline void removeListener(const MethodDelegate& delegate)
-		{		
-			auto t = std::find(m_delegates.begin(),m_delegates.end(),delegate);
-			m_delegates.erase(t);
-		}*/
+		inline void removeListener(unsigned int key)
+		{					
+			m_delegates.erase(key);
+		}
 
 		void notify(const TArgs& arguments)
 		{
@@ -82,15 +87,15 @@ namespace Pakal
 				return;
 
 			m_mutex.lock();
-			std::list<DelegateData<TArgs>> copyDelegates(m_delegates);
+			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			for (DelegateData<TArgs>& dd : copyDelegates)
+			for (const auto& dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.tid == NULL_THREAD )
-					dd.delegate(arguments);
+				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
+					dd.second.delegate(arguments);
 				else
-					EventSchedulerUtils::executeInThread(m_scheduler,[dd,arguments]() { dd.delegate(arguments); },dd.tid);
+					EventSystemUtils::executeInThread(m_scheduler,[dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
 			}
 		}
 
@@ -104,7 +109,7 @@ namespace Pakal
 	private:
 
 		EventScheduler* m_scheduler;
-		std::list<DelegateData<void>> m_delegates;
+		std::unordered_map<unsigned int, DelegateData<void>> m_delegates;
 		bool m_isEnabled;
 		std::mutex m_mutex;
 
@@ -121,12 +126,13 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline void addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		inline unsigned int addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-
-			m_delegates.push_back(DelegateData<void>(delegate, callBackThread));
+			unsigned int hash = EventSystemUtils::hashFunction((int)& delegate + (int)& callBackThread);
+			m_delegates.emplace(hash, DelegateData<void>(delegate, callBackThread) );
+			return hash;
 		}
 
 		inline void disable()
@@ -144,11 +150,10 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-		//inline void removeListener(const MethodDelegate& delegate)
-		//{		
-		//	auto t = std::find(m_delegates.begin(),m_delegates.end(),delegate);
-		//	m_delegates.erase(t);
-		//}
+		inline void removeListener(unsigned int key)
+		{					
+			m_delegates.erase(key);
+		}
 
 		void notify()
 		{
@@ -156,15 +161,15 @@ namespace Pakal
 				return;
 
 			m_mutex.lock();
-			std::list<DelegateData<void>> copyDelegates(m_delegates);
+			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			for (DelegateData<void>& dd : copyDelegates)
+			for (const auto &dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.tid == NULL_THREAD )
-					dd.delegate();
+				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
+					dd.second.delegate();
 				else
-					EventSchedulerUtils::executeInThread(m_scheduler,dd.delegate,dd.tid);
+					EventSystemUtils::executeInThread(m_scheduler,dd.second.delegate,dd.second.tid);
 			}
 		}
 
