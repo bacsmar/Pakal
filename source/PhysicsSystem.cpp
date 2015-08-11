@@ -50,7 +50,7 @@ void PhysicsSystem::run()
 	{
 		dispatchTasks();
 		update();
-		m_updatEvent.notify(true);
+		updatEvent.notify(true);
 	}
 	m_State  = SE_STOPING;
 }

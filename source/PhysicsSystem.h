@@ -59,6 +59,6 @@ namespace Pakal
 		virtual BasicTaskPtr initComponentAsync(IComponent *c) override ;
 		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override ;
 
-		Event<bool> m_updatEvent;
+		Event<bool> updatEvent;
 	};
 }

@@ -18,11 +18,9 @@ namespace Pakal
 	class _PAKALExport BodyComponent : public PhysicComponent
 	{
 		DECLARE_RTTI(BodyComponent);
-	public:
-		void onInit() override;
-		void onDestroy() override;
-		~BodyComponent() override;
 
+	public:
+		~BodyComponent() override;
 		BodyComponent(Box2DPhysicsSystem* sys);
 
 		b2Body	*	createBody(b2BodyDef &bodyDef);
@@ -33,6 +31,8 @@ namespace Pakal
 
 	protected:
 		inline Box2DPhysicsSystem* getSystem();
+		void onInit() override;
+		void onDestroy() override;
 
 		b2Body *m_body;
 		b2Fixture *m_fixture;
