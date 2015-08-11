@@ -1,29 +1,8 @@
-#pragma once
-
 #include "BodyComponent.h"
 #include "box2D/Box2DPhysicsSystem.h"
-//#include "EventScheduler.h"
-//#include "TaskFwd.h"
-//#include <Box2D.h>
 
 #include <functional>
-#include <type_traits>
-#include <memory>
 #include <iostream>
-
-template<class T = int>
-struct C
-{
-  void print() { std::cout << "I am generic\n"; }
-  void joder() { std::cout << "I am generic\n"; }
-};
- 
-// Specialization for T=int
-template<>
-struct C<int>
-{
-  void print() { std::cout << "I am specialized for int\n"; }
-};
 
 void Pakal::BodyComponent::onInit()
 {	
@@ -41,23 +20,19 @@ void Pakal::BodyComponent::onInit()
 	fixtureDef.restitution = 0.82f;
 
 	m_body = getSystem()->createBody(&bodyDef);
-	m_fixture =  m_body->CreateFixture(&fixtureDef);
-	//m_body->DestroyFixture(m_fixture);	
+	m_fixture =  m_body->CreateFixture(&fixtureDef);	
 
 	std::function<void(bool)> f = [=](bool)
 	{
 		std::cout << "Joder:"<< this->m_body->GetPosition().y<<std::endl;
 	};
 	
-	listenerId = getSystem()->m_updatEvent.addListener(f);
-	//getSystem()->m_updatEvent.removeListener(f);
-	//C<> c;
-	//c.print();
+	listenerId = getSystem()->updatEvent.addListener(f);	
 }
 
 void Pakal::BodyComponent::onDestroy()
 {
-	getSystem()->m_updatEvent.removeListener(listenerId);
+	getSystem()->updatEvent.removeListener(listenerId);
 	getSystem()->destroyBody(m_body);
 	m_body = 0;
 	std::cout << "eliminando:"<<std::endl;
