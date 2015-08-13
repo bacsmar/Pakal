@@ -10,63 +10,58 @@
 
 #pragma once
 //#include <type_traits>
+#include "IComponent.h"
+#include "LogMgr.h"
+
 
 namespace Pakal
 {
-	class IComponent;	
-
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	class IComponentFactory
 	{
 	public:
 		virtual IComponent* create() = 0;
 
-		virtual const char* getTypeName() = 0;
+		virtual const RTTI& getComponentType() = 0;
 
 		virtual ~IComponentFactory() {}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class componentType, class ComponentInitializer = void>
+	template <class TComponent, class TInitializer = void>
 	class ComponentFactory : public IComponentFactory
 	{
 	protected:
 		
 		template<class T>
-		inline IComponent *  _create (T * system)	
-		{
-			componentType * c = new componentType(system); 
-			//componentType * c = new componentType(); 
-			//c->setSystem(m_System);
-			//m_system->addToUpdateList( c );
-			return c;
-		}
+		inline IComponent *  _create (T* initializer) { return new TComponent(initializer); }
 		
-		inline IComponent *  _create (void * dummy) { return new componentType(); }
+		inline IComponent *  _create (void*) { return new TComponent(); }
 
 	public:
 
-		ComponentFactory(ComponentInitializer *s) : m_System(s) {} 
+		ComponentFactory(TInitializer* intializer) : m_Initializer(intializer) {} 
 
 		virtual ~ComponentFactory(){}
 
-		virtual IComponent* create() override //const override
+		virtual IComponent* create() override
 		{
-			return _create(m_System);			
+			return nullptr;
 		}
 
-		virtual const char* getTypeName() override
+		virtual const RTTI& getComponentType() override
 		{
-			return componentType::getRTTI().getName();
+			return TComponent::getRTTI();
 		}
 				
 	protected:
-		ComponentInitializer *m_System;
+		TInitializer* m_Initializer;
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class componentType, class T>
-	IComponentFactory * CreateComponentFactory(T *t)
+	template <class TComponent, class TInitializer>
+	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
-		return new ComponentFactory<componentType, T>(t);		
+		return new ComponentFactory<TComponent, TInitializer>(initializer);		
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class componentType>

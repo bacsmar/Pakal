@@ -52,6 +52,7 @@ void GraphicsSystem::run()
 	}
 }
 
+
 BasicTaskPtr GraphicsSystem::initComponentAsync(IComponent* c)
 {
 	return getScheduler()->executeInThread([c]()
@@ -67,6 +68,5 @@ BasicTaskPtr GraphicsSystem::terminateComponentAsync(IComponent* c)
 	{
 		GraphicComponent *pComponent = static_cast<GraphicComponent*> (c);
 		pComponent->onDestroy();
-		delete pComponent;
 	},this->threadId());
 }

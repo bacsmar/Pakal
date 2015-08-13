@@ -17,9 +17,9 @@ namespace Pakal
 
 	class _PAKALExport BodyComponent : public PhysicComponent
 	{
+	public:
 		DECLARE_RTTI(BodyComponent);
 
-	public:
 		~BodyComponent() override;
 		BodyComponent(Box2DPhysicsSystem* sys);
 

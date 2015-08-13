@@ -19,7 +19,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(std::thread::id cur
 {	
 	auto position = m_inboxes.find(currentTid);
 
-	InboxQueue* inbox = position == m_inboxes.end() 
+	auto inbox = position == m_inboxes.end() 
 		       ? nullptr
 		       : position->second;	
 	return inbox;
@@ -48,8 +48,8 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::executeInThread(const std::function<v
 		fn();
 		return TaskUtils::completedTask();
 	}
-	else
-		return findInboxForThread(tid)->pushTask(fn);
+
+	return findInboxForThread(tid)->pushTask(fn);
 }
 
 

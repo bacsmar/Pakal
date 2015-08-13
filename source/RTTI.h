@@ -9,34 +9,26 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "config.h"
-#include "Platform.h"
 
 namespace Pakal{
 
 	class RTTI
 	{
 	public:
-		RTTI(const char* name) : m_name(name), m_parent(0){}
+		RTTI(const char* name) : m_name(name), m_parent(nullptr){}
 		RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti){}
 
 		inline const char * getName() const { return m_name; }
 
-		// usage  object.isType( ClassToCompare::getRTTI() )
-		inline bool isType(const RTTI &rtti) const
-		{
-			return &rtti == this;
-		}
-		// usage  object.isType<ClassToCompare>(  )
+		inline bool isType(const RTTI &rtti) const { return &rtti == this; }
+
 		template <class T>
-		bool isType() const
-		{
-			return &T::getRTTI() == this;
-		}
+		bool isType() const { return isType(T::getRTTI()); }
 
 		bool isDerivedFrom(const RTTI &from) const
 		{
 			const RTTI *base = this;
-			while ( base != 0)
+			while ( base != nullptr)
 			{
 				if( base == &from)
 					return true;
@@ -45,10 +37,9 @@ namespace Pakal{
 			return false;
 		}
 
-		inline bool operator==(const RTTI &other)
-		{
-			return isDerivedFrom(other);
-		}
+		template <class T>
+		bool isDerivedFrom() const { return isDerivedFrom(T::getRTTI()); }
+
 
 		friend bool operator==(const RTTI &left, const RTTI &right);
 		
@@ -66,10 +57,9 @@ namespace Pakal{
 	}
 }
 
-#define DECLARE_RTTI(x) public: \
+#define DECLARE_RTTI(x)  \
 	static const Pakal::RTTI &getRTTI()\
 	{\
-		x *_##x = 0;\
 		static Pakal::RTTI s_RTTI_Info(#x);\
 		return s_RTTI_Info;\
 	}\
@@ -78,10 +68,10 @@ namespace Pakal{
 		return x::getRTTI();\
 	}
 
-#define DECLARE_RTTI_WITH_BASE(x,base) public: \
+
+#define DECLARE_RTTI_WITH_BASE(x,base)  \
 	static const Pakal::RTTI &getRTTI()\
 	{\
-		x *_##x = 0;\
 		static Pakal::RTTI s_RTTI_Info(#x,base::getRTTI());\
 		return s_RTTI_Info;\
 	}\
@@ -90,3 +80,8 @@ namespace Pakal{
 		return x::getRTTI();\
 	}
  
+
+
+#define REQUIRE_RTTI() \
+	virtual const Pakal::RTTI &getType() = 0;\
+	static const Pakal::RTTI &getRTTI();

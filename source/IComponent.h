@@ -11,7 +11,6 @@
 #include "config.h"
 
 #include "RTTI.h"
-#include "IComponentFactory.h"
 #include "BasicTask.h"
 
 namespace Pakal
@@ -23,29 +22,28 @@ namespace Pakal
 	{
 		friend class IEntity;
 	public:
+		REQUIRE_RTTI()
+
 		virtual ~IComponent(void){}	
 		
 		IComponent() : 
 			m_ParentEntity(nullptr),
-			m_isInitialized(0)
+			m_isInitialized(false)
 		{}		
 
-		inline const IEntity * getParentEntity() const		{ return m_ParentEntity; };
-		inline void setParentEntity(const IEntity *parent )	{ m_ParentEntity = parent; };		
+		inline const IEntity* getParentEntity() const		{ return m_ParentEntity; };
+		inline void setParentEntity(const IEntity *parent)	{ m_ParentEntity = parent; };		
 		inline bool isInitialized()	const					{ return m_isInitialized; }
-		inline void setIsInitialized(bool val)				{ m_isInitialized = val; }
 		
-		virtual const RTTI &getType() = 0;
 
 		virtual BasicTaskPtr init()	= 0;
 		virtual BasicTaskPtr destroy()	= 0;
 
 	protected:		
 
-		const IEntity			*m_ParentEntity;		
-		bool m_isInitialized;		
+		const IEntity* m_ParentEntity;		
+		bool		   m_isInitialized;		
 
-		//virtual void showYourSelfClass() = 0;
 	};
 }
 

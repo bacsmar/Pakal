@@ -27,7 +27,7 @@ namespace Pakal
 		~Engine();
 		Engine();
 
-		inline EntitySystem		* getEntitySystem() const { return m_EntitySystem; }
+	//	inline EntitySystem		* getEntitySystem() const { return m_EntitySystem; }
 		inline ComponentSystem	* getComponentSystem() const { return m_ComponentSystem; }
 		inline GraphicsSystem	* getGraphicsSystem() const { return m_GraphicsSystem; }
 
@@ -40,7 +40,7 @@ namespace Pakal
 
 		GameStateSystem		*m_GameStateSystem;
 		ComponentSystem		*m_ComponentSystem;
-		EntitySystem		*m_EntitySystem;
+	//	EntitySystem		*m_EntitySystem;
 
 		Poco::Thread		*m_LogicThread;
 		AsyncTaskDispatcher* m_logicDispatcher; 

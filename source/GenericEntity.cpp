@@ -10,18 +10,25 @@
 #include "GenericEntity.h"
 #include "IComponent.h"
 #include "Task.h"
+#include <string>
 
 namespace Pakal
 {
-	void GenericEntity::initialize()
+	BasicTaskPtr GenericEntity::initialize()
 	{
+		return initializeComponents();
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	int GenericEntity::addComponent(IComponent *c) 
+	void GenericEntity::addComponent(IComponent *c) 
 	{
 		m_Components.push_back(c);
-		return m_Components.size();
 	}
+
+	void GenericEntity::removeComponent(IComponent* c)
+	{
+		m_Components.erase(find(m_Components.begin(),m_Components.end(),c));
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	BasicTaskPtr GenericEntity::initializeComponents()
 	{
@@ -29,13 +36,15 @@ namespace Pakal
 
 		for( auto & component: m_Components)
 		{
-			component->setParentEntity(this);
-			BasicTaskPtr task = component->init();
-
-			initializationTaskVector.push_back( task );
+			if (!component->isInitialized())
+			{
+				component->setParentEntity(this);
+				initializationTaskVector.push_back(component->init());
+			}
 		}
-		return TaskUtils::whenAll( initializationTaskVector );
-	}	
+		return TaskUtils::whenAll(initializationTaskVector);
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GenericEntity::~GenericEntity() 
 	{
@@ -44,18 +53,18 @@ namespace Pakal
 			component->destroy();
 		}
 	}
+
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	IComponent * GenericEntity::getComponentByName()
+	IComponent * GenericEntity::getComponentByName(const std::string& name)
 	{
 		for( auto & component: m_Components)
 		{
-			component->getType();
+			if (component->getType().getName() == name)
+				return component;
 		}
 		return nullptr;
 	}	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	IComponent * GenericEntity::getComponentById(int id)
-	{
-		return m_Components[id];
-	}
+
 }
