@@ -31,11 +31,12 @@ bool Engine::ms_Initialized = false;
 void Engine::run()
 {
 	// remember! it is running on a secondary thread, is NOT on main thread
-	std::chrono::milliseconds duration( 1 );    
+	std::chrono::milliseconds duration(1);
+
 	while( false == m_shouldTerminate )
 	{
 		m_logicDispatcher->dispatchTasks();
-		m_EntitySystem->updateSimulation();
+		//m_EntitySystem->updateSimulation();
 //		m_GameStateSystem->peek_state();
 		std::this_thread::sleep_for( duration );
 	}
@@ -74,10 +75,10 @@ void Engine::start( IPakalApplication *application )
 	m_EventScheduler	= new EventScheduler();
 	m_GameStateSystem	= new GameStateSystem();
 	m_ComponentSystem	= new ComponentSystem();
-	m_EntitySystem		= new EntitySystem();
+//	m_EntitySystem		= new EntitySystem();
 
-	m_ComponentSystem->registerFactories(*m_GraphicsSystem);
-	m_ComponentSystem->registerFactories(*m_PhysicsSystem);	
+	m_ComponentSystem->registerProvider(*m_GraphicsSystem);
+	m_ComponentSystem->registerProvider(*m_PhysicsSystem);	
 
 	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
 	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
@@ -117,7 +118,7 @@ Engine::~Engine()
 	SAFE_DEL(m_EventScheduler)
 	SAFE_DEL(m_ComponentSystem)
 	SAFE_DEL(m_logicDispatcher)
-	SAFE_DEL(m_EntitySystem)
+//	SAFE_DEL(m_EntitySystem)
 
 	SAFE_DEL(m_Application);
 	SAFE_DEL(m_LogicThread);
@@ -131,7 +132,7 @@ Engine::Engine() :
 	m_PhysicsSystem(nullptr),
 	m_GameStateSystem(nullptr),
 	m_ComponentSystem(nullptr),
-	m_EntitySystem(nullptr),
+//	m_EntitySystem(nullptr),
 	m_LogicThread(nullptr),
 	m_shouldTerminate(false),
 	m_logicDispatcher(nullptr)

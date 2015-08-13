@@ -9,6 +9,7 @@
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
 #endif
+#include <Pakal_II/Source/IComponentFactory.h>
 
 using namespace Pakal;
 
@@ -68,7 +69,7 @@ void Box2DPhysicsSystem::clearWorld()
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
 {	
-	factories.push_back( Pakal::CreateComponentFactory<BodyComponent>(this) );
+	factories.push_back( CreateComponentFactory<BodyComponent>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)

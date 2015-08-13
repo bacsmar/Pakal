@@ -25,10 +25,14 @@ namespace Pakal
 		InboxQueue* findInboxForThread(std::thread::id tid);		
 
 	public:
-		virtual ~EventScheduler();
-		void registerDispatcher(AsyncTaskDispatcher* dispatcher);
-		InboxQueue* InboxForThisThread();
-		BasicTaskPtr executeInThread(const std::function<void()>& fn, std::thread::id tid);
+		virtual			~EventScheduler();
+
+		void			registerDispatcher(AsyncTaskDispatcher* dispatcher);
+
+		InboxQueue*		InboxForThisThread();
+
+		BasicTaskPtr	executeInThread(const std::function<void()>& fn, std::thread::id tid);
+
 		template<typename TArgs>
 		std::shared_ptr<Task<TArgs>> executeInThread(const std::function<TArgs()>& fn, std::thread::id tid)
 		{

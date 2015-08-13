@@ -136,7 +136,7 @@ void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponen
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.push_back( Pakal::CreateComponentFactory<MeshComponent>(this));
+	factories.push_back( CreateComponentFactory<MeshComponent>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)

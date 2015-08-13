@@ -21,18 +21,16 @@ namespace Pakal
 	class _PAKALExport ComponentSystem
 	{
 	public:
-		void registerFactory( IComponentFactory *factory);
-		void registerFactory( IComponentFactory* factory, const std::string & name );
+		void registerFactory(IComponentFactory* factory, const std::string& name = "");
+		void registerProvider(IComponentProvider &provider);
 
-		void registerFactories( IComponentProvider &provider);
-
-		IComponent * createComponent(const char * componentName);
+		IComponent* createComponent(const char* componentName);
+		void dropComponent(IComponent* component);
 
 		template <class T>
-		T * createComponent()
+		T* createComponent()
 		{
- 			const char * componentTypeName = T::getRTTI().getName();
- 			IComponent * ic = createComponent(componentTypeName);
+ 			IComponent* ic = createComponent(T::getRTTI().getName());
 			return static_cast<T*>(ic);
 		}
 

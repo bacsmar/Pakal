@@ -16,8 +16,10 @@ namespace Pakal
 
 	class _PAKALExport MeshComponent : public GraphicComponent
 	{
-		DECLARE_RTTI(MeshComponent);
 	public:		
+
+		DECLARE_RTTI(MeshComponent);
+
 		~MeshComponent() override;
 
 		MeshComponent(IrrGraphicsSystem* irr);

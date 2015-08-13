@@ -39,7 +39,7 @@ namespace Pakal
 		virtual bool onInitialize() = 0;		
 
 		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &componentVector) override = 0;
+		virtual void registerComponentFactories(std::vector<IComponentFactory*>& factories) override = 0;
 		BasicTaskPtr initComponentAsync(IComponent *c) override final;
 		BasicTaskPtr terminateComponentAsync(IComponent *c) override final;
 

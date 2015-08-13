@@ -102,9 +102,6 @@
     <ClInclude Include="..\source\IComponentFactory.h">
       <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IComponentProvider.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\IEntity.h">
       <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
@@ -176,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="..\source\EventSystemUtils.h">
       <Filter>Systems\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IComponentProvider.h">
+      <Filter>Systems\ComponentSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -81,15 +81,19 @@ namespace Pakal
 	public:
 		static BasicTaskPtr whenAll(const std::vector<BasicTaskPtr>& tasks)
 		{
-			ASSERT(tasks.empty() == false);
+			if (tasks.empty())
+			{
+				return completedTask();
+			}
+
 			EventScheduler* scheduler = tasks.at(0)->getEventScheduler();
 
 			static auto emptyDelegate = []()
-				{
-					std::atomic_int n;
-					n.store(0);
-					return n;
-				};
+			{
+				std::atomic_int n;
+				n.store(0);
+				return n;
+			};
 
 			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate, scheduler);
 			task->m_Result = tasks.size();
@@ -97,14 +101,14 @@ namespace Pakal
 			BasicTaskPtr myTask(task);
 
 			std::function<void()> onComplete = [myTask]()
+			{
+				Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*>(myTask.get());
+				--t->m_Result;
+				if (t->m_Result == 0)
 				{
-					Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*>(myTask.get());
-					--t->m_Result;
-					if (t->m_Result == 0)
-					{
-						t->run();
-					}
-				};
+					t->run();
+				}
+			};
 
 			for (auto& t : tasks)
 			{

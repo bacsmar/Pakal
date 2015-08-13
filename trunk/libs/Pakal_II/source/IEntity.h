@@ -18,12 +18,7 @@ namespace Pakal
 	{
 	public:	
 		virtual ~IEntity(){}
-
-		virtual void			initialize() = 0;		
-		virtual int				addComponent(IComponent *c) = 0;
-		virtual BasicTaskPtr	initializeComponents() = 0;
-		//virtual void getComponentByName() = 0;
-		//virtual void getComponentById() = 0;
+		virtual BasicTaskPtr	initialize() = 0;
 	};
 
 	
