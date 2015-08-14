@@ -14,60 +14,16 @@
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::~Box2DPhysicsSystem()
-{
-	clearWorld();
-}
-//////////////////////////////////////////////////////////////////////////
 Box2DPhysicsSystem::Box2DPhysicsSystem() :
-		m_pWorld(0),
-		m_pContactListener(0),
-		m_pContactFilter(0),
-		m_pDestructionListener(0),
-		m_pDebugDraw(0)		
+		m_pWorld(nullptr),
+		m_pContactListener(nullptr),
+		m_pContactFilter(nullptr),
+		m_pDestructionListener(nullptr),
+		m_pDebugDraw(nullptr)		
 {	
 }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::update()
-{				
-	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
-	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
-
-}
-//////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::initWorld()
-{	
-	b2Vec2 gravity(0.0f, 0.0f);
-	m_pWorld = new b2World(gravity);
-	m_pWorld->SetWarmStarting(true);
-	m_pWorld->SetContinuousPhysics(false);	
-	m_pWorld->SetAllowSleeping(true);
-
-	m_pContactListener = new ContactListener();
-	m_pContactFilter = new ContactFilter();
-	m_pDestructionListener = new DestructionListener();	
-
-	m_pWorld->SetContactListener(m_pContactListener);
-	m_pWorld->SetContactFilter(m_pContactFilter);
-	m_pWorld->SetDestructionListener(m_pDestructionListener);
-
-	m_pDebugDraw = nullptr;
-
-	m_pWorld->SetDebugDraw(m_pDebugDraw);
-
-}
-//////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::clearWorld()
-{
-	SAFE_DEL(m_pDebugDraw);
-	SAFE_DEL(m_pContactListener);
-	SAFE_DEL(m_pContactFilter);
-	SAFE_DEL(m_pDestructionListener);
-	SAFE_DEL(m_pWorld);
-}
-//////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
+void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
 	factories.push_back( CreateComponentFactory<BodyComponent>(this) );
 }
@@ -98,13 +54,13 @@ inline void Box2DPhysicsSystem::enable()	{ m_pContactListener->Enable(); }
 //////////////////////////////////////////////////////////////////////////
 inline void Box2DPhysicsSystem::disable()	{ m_pContactListener->Disable(); }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::doDebugDraw()
+void Box2DPhysicsSystem::do_debug_draw()
 {
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	if( m_pWorld) m_pWorld->DrawDebugData();
 }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::setDrawer(const RendererInfo *renderInfo)
+void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 {	
 #if PAKAL_USE_IRRLICHT
 	m_pDebugDraw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
@@ -112,4 +68,44 @@ void Box2DPhysicsSystem::setDrawer(const RendererInfo *renderInfo)
 	m_pWorld->SetDebugDraw(m_pDebugDraw);
 	m_pDebugDraw->SetFlags(b2Draw::e_shapeBit);
 }
+
+void Box2DPhysicsSystem::on_update()
+{
+	PhysicsSystem::on_update();
+
+	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
+	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
+}
+
+void Box2DPhysicsSystem::init_world()
+{
+	b2Vec2 gravity(5.0f, 0.0f);
+	m_pWorld = new b2World(gravity);
+	m_pWorld->SetWarmStarting(true);
+	m_pWorld->SetContinuousPhysics(false);	
+	m_pWorld->SetAllowSleeping(true);
+
+	m_pContactListener = new ContactListener();
+	m_pContactFilter = new ContactFilter();
+	m_pDestructionListener = new DestructionListener();	
+
+	m_pWorld->SetContactListener(m_pContactListener);
+	m_pWorld->SetContactFilter(m_pContactFilter);
+	m_pWorld->SetDestructionListener(m_pDestructionListener);
+
+	m_pDebugDraw = nullptr;
+
+	m_pWorld->SetDebugDraw(m_pDebugDraw);
+}
+
+void Box2DPhysicsSystem::clear_world()
+{
+		SAFE_DEL(m_pDebugDraw);
+	SAFE_DEL(m_pContactListener);
+	SAFE_DEL(m_pContactFilter);
+	SAFE_DEL(m_pDestructionListener);
+	SAFE_DEL(m_pWorld);
+}
+
 //////////////////////////////////////////////////////////////////////////

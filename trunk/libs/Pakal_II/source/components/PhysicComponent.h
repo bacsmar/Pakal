@@ -20,17 +20,15 @@ namespace Pakal
 		friend class PhysicsSystem;
 	public:
 		virtual ~PhysicComponent(){}
-		PhysicComponent(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }
-		void setSystem(PhysicsSystem *pSystem)	{ m_PhysicsSystem = pSystem; }
+		PhysicComponent(PhysicsSystem* pSystem) : m_PhysicsSystem(pSystem)	{ }
 
 		BasicTaskPtr init() override final; 	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes
 
-	protected:
-		inline PhysicsSystem *getPhysicsSystem() { return m_PhysicsSystem; }
+	protected:		
 		virtual void onInit() = 0;
 		virtual void onDestroy() = 0;
-	private:		
-		PhysicsSystem *m_PhysicsSystem;				
+
+		PhysicsSystem* m_PhysicsSystem;				
 	};
 }

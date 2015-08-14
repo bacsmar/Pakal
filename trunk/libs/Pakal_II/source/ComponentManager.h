@@ -12,15 +12,20 @@
 #include <unordered_map>
 #include <string>
 
+#include "IManager.h"
+
 namespace Pakal
 {
 	class IComponentFactory;
 	class IComponent;
 	class IComponentProvider;
 
-	class _PAKALExport ComponentSystem
+	class _PAKALExport ComponentManager : IManager
 	{
 	public:
+		void initialize() override {};
+		void terminate() override {};
+
 		void registerFactory(IComponentFactory* factory, const std::string& name = "");
 		void registerProvider(IComponentProvider &provider);
 
@@ -36,8 +41,8 @@ namespace Pakal
 
 	protected:
 		friend class Engine;
-		virtual ~ComponentSystem();
-		ComponentSystem(){}
+		virtual ~ComponentManager();
+		ComponentManager(){}
 	private:
 		std::unordered_map<std::string, IComponentFactory*> m_ComponentFactories;
 	};

@@ -39,20 +39,21 @@ Pakal::BasicTaskPtr Pakal::MeshComponent::LoadMeshAsync(const std::string& meshN
 {
 	return m_GraphicSystem->getScheduler()->executeInThread([=]()
 	{
-		m_mesh = getSystem()->getSmgr()->getMesh(meshName.c_str());
+		m_mesh = getSystem()->get_smgr()->getMesh(meshName.c_str());
 		if ( m_node )
 		{
 			m_node->remove();
 		}
-		m_node = getSystem()->getSmgr()->addMeshSceneNode(m_mesh);
+		m_node = getSystem()->get_smgr()->addMeshSceneNode(m_mesh);
 	}, m_GraphicSystem->threadId());
+
 }
 
 Pakal::BasicTaskPtr Pakal::MeshComponent::LoadTextureAsync(const std::string& textureName)
 {
 	return m_GraphicSystem->getScheduler()->executeInThread([=]()
 	{
-		m_texture = getSystem()->getDriver()->getTexture(textureName.c_str());
+		m_texture = getSystem()->get_driver()->getTexture(textureName.c_str());
 
 		m_node->setMaterialFlag(EMF_LIGHTING, false);
 		m_node->setMaterialTexture(0, m_texture);

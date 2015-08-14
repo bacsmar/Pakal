@@ -2,141 +2,140 @@
 #include "LogMgr.h"
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
-#include "GameStateSystem.h"
+#include "GameStateManager.h"
 #include "IPakalApplication.h"
 #include "EventScheduler.h"
-#include "EntitySystem.h"
 
-#include "ComponentSystem.h"
+#include "ComponentManager.h"
+#include "SingletonHolder.h"
 
-#include "Poco/SingletonHolder.h"
-#include "Poco/Thread.h"
-#include "Poco/RunnableAdapter.h"
-
-#include <chrono>
-#include <thread>
-
-//#include <vld.h>
-
-//////////////////////////// BEGIN TESTS /////////////////////////////////
-
-
-//////////////////////////// END TESTS /////////////////////////////////
+#include "Poco/Foundation.h"
 
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-bool Engine::ms_Initialized = false;
-//////////////////////////////////////////////////////////////////////////
-void Engine::run()
+Engine& Engine::instance()
 {
-	// remember! it is running on a secondary thread, is NOT on main thread
-	std::chrono::milliseconds duration(1);
-
-	while( false == m_shouldTerminate )
-	{
-		m_logicDispatcher->dispatchTasks();
-		//m_EntitySystem->updateSimulation();
-//		m_GameStateSystem->peek_state();
-		std::this_thread::sleep_for( duration );
-	}
-	//	m_GameStateSystem->close();  TODO
-}
-//////////////////////////////////////////////////////////////////////////
-void Engine::init()
-{
-	ASSERT(ms_Initialized == false);
-
-	//std::cout << "Hello, world! from engine" << std::endl;
-
-	//because salvador is working with tasks in setup game states
-	m_logicDispatcher->dispatchTasks();
-
-	m_Application->setUpComponents(m_ComponentSystem);
-	m_Application->setUpGameStates(m_GameStateSystem);	
-
-	ms_Initialized = true;
-
-	run();
-}
-//////////////////////////////////////////////////////////////////////////
-void Engine::start( IPakalApplication *application )
-{
-	LogMgr::init();
-	LogMgr::setLogLevel(10);
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
-
-	m_Application = application;
-
-	
-	m_logicDispatcher   = new AsyncTaskDispatcher();
-	m_GraphicsSystem	= GraphicsSystem::createInstance();
-	m_PhysicsSystem		= PhysicsSystem::createPhysicsSystem();
-	m_EventScheduler	= new EventScheduler();
-	m_GameStateSystem	= new GameStateSystem();
-	m_ComponentSystem	= new ComponentSystem();
-//	m_EntitySystem		= new EntitySystem();
-
-	m_ComponentSystem->registerProvider(*m_GraphicsSystem);
-	m_ComponentSystem->registerProvider(*m_PhysicsSystem);	
-
-	m_EventScheduler->registerDispatcher(m_GraphicsSystem);
-	m_EventScheduler->registerDispatcher(m_PhysicsSystem);
-	m_EventScheduler->registerDispatcher(m_logicDispatcher);
-
-	m_GameStateSystem->initialize(this);	// executed in diferent thread
-	m_PhysicsSystem->initialize();			// it creates his own thread
-
-	m_GraphicsSystem->initialize();			// it uses this very thread
-	m_GraphicsSystem->dispatchTasks();      //have ready the inbox and the id
-
-	Poco::RunnableAdapter<Engine> logic_entry_point(*this, &Engine::init);
-	m_LogicThread->setName("Logic");
-	m_LogicThread->start(logic_entry_point);
-	
-	m_GraphicsSystem->addDebugDrawerClient( m_PhysicsSystem->getDebugDrawer() );
-	m_GraphicsSystem->showFps(true);	
-
-	m_GraphicsSystem->run();	// runs in this (main) thread
-
-	m_PhysicsSystem->terminate();
-	m_shouldTerminate = true;
-	m_LogicThread->join();
-}
-//////////////////////////////////////////////////////////////////////////
-Engine & Engine::instance()
-{
-	static Poco::SingletonHolder<Engine> sh;
+	static SingletonHolder<Engine> sh;
 	return *sh.get();
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
-	SAFE_DEL(m_GraphicsSystem);
-	SAFE_DEL(m_PhysicsSystem);
-	SAFE_DEL(m_GameStateSystem);
-	SAFE_DEL(m_EventScheduler)
-	SAFE_DEL(m_ComponentSystem)
-	SAFE_DEL(m_logicDispatcher)
-//	SAFE_DEL(m_EntitySystem)
+	SAFE_DEL(m_graphics_system);
+	SAFE_DEL(m_physics_system)
+	SAFE_DEL(m_component_manager)
+	SAFE_DEL(m_game_state_manager)
+	SAFE_DEL(m_event_scheduler);
 
-	SAFE_DEL(m_Application);
-	SAFE_DEL(m_LogicThread);
+	SAFE_DEL(m_application);
+	SAFE_DEL(m_dispatcher);
 	LogMgr::stop();
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine() :
-	m_Application(nullptr),
-	m_EventScheduler(nullptr),
-	m_GraphicsSystem(nullptr),
-	m_PhysicsSystem(nullptr),
-	m_GameStateSystem(nullptr),
-	m_ComponentSystem(nullptr),
-//	m_EntitySystem(nullptr),
-	m_LogicThread(nullptr),
-	m_shouldTerminate(false),
-	m_logicDispatcher(nullptr)
+	System(PAKAL_USE_THREADS == 1),
+	m_application(nullptr),
+	m_event_scheduler(nullptr),
+	m_graphics_system(nullptr),
+	m_physics_system(nullptr),
+	m_game_state_manager(nullptr),
+	m_component_manager(nullptr),
+	m_dispatcher(nullptr)
 {
-	m_LogicThread = new Poco::Thread();	
+	LogMgr::init();
+	LogMgr::setLogLevel(10);
+
+	m_graphics_system	= GraphicsSystem::create_instance();
+	m_physics_system	= PhysicsSystem::createInstance();
+	m_game_state_manager	= new GameStateManager(this);
+	m_component_manager	= new ComponentManager();
+	m_event_scheduler	= new EventScheduler();
+	m_dispatcher		= new AsyncTaskDispatcher();
+
+
+	m_component_manager->registerProvider(*m_graphics_system);
+	m_component_manager->registerProvider(*m_physics_system);	
+
+	m_event_scheduler->registerDispatcher(m_graphics_system);
+	m_event_scheduler->registerDispatcher(m_physics_system);
+	m_event_scheduler->registerDispatcher(m_dispatcher);
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::run(IPakalApplication* application)
+{
+	m_application = application;
+	initialize();
+
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::initialize()
+{
+	ASSERT(!m_running);
+
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
+	ASSERT(m_application != nullptr);
+
+
+	m_component_manager->initialize();
+	m_game_state_manager->initialize();
+	m_physics_system->initialize();
+	m_graphics_system->initialize();
+	m_graphics_system->dispatchTasks();
+	m_physics_system->dispatchTasks();
+
+	m_application->setup_environment(this);
+
+	System::initialize();
+
+	do
+	{
+#if PAKAL_USE_THREADS == 0
+		on_update();
+		m_physics_system->on_update();
+#endif
+		m_graphics_system->on_update();
+		procress_os_messages();
+	} 
+	while (m_running);
+
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::on_initialize()
+{
+	m_dispatcher->dispatchTasks();
+	m_application->setup_game_states(m_game_state_manager);	
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::on_terminate()
+{
+	m_component_manager->terminate();
+	m_game_state_manager->terminate();
+	m_physics_system->terminate();
+	m_graphics_system->terminate();
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::on_update()
+{
+	m_dispatcher->dispatchTasks();
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::procress_os_messages()
+{
+#ifdef PAKAL_WIN32_PLATFORM
+	MSG msg;
+	while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+		printf("Message received %u\n" ,  msg.message);
+		if (msg.message == WM_QUIT)
+		{
+			terminate();
+		}
+	}
+
+	
+#endif
 }
 //////////////////////////////////////////////////////////////////////////

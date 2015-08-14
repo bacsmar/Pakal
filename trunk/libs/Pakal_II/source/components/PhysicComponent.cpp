@@ -8,15 +8,16 @@
 #pragma once
 #include "PhysicComponent.h"
 #include "PhysicsSystem.h"
+#include "EventScheduler.h"
 
 namespace Pakal
 {
 	BasicTaskPtr PhysicComponent::init()
 	{
-		return m_PhysicsSystem->initComponentAsync(this);
+		return m_PhysicsSystem->getScheduler()->executeInThread(std::bind(&PhysicComponent::onInit,this),m_PhysicsSystem->threadId());
 	}
 	BasicTaskPtr PhysicComponent::destroy()
 	{
-		return m_PhysicsSystem->terminateComponentAsync(this);
+		return m_PhysicsSystem->getScheduler()->executeInThread(std::bind(&PhysicComponent::onDestroy,this),m_PhysicsSystem->threadId());
 	}
 }

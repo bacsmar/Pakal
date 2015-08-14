@@ -44,4 +44,4 @@
 #define PAKAL_USE_LOG_FILE 0
 
 //! compile with multithread
-#define PAKAL_USE_THREADS 0
+#define PAKAL_USE_THREADS 1

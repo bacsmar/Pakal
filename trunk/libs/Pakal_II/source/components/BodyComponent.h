@@ -23,21 +23,21 @@ namespace Pakal
 		~BodyComponent() override;
 		BodyComponent(Box2DPhysicsSystem* sys);
 
-		b2Body	*	createBody(b2BodyDef &bodyDef);
+		b2Body*		createBody(b2BodyDef &bodyDef);
 		b2Fixture*	addFixture(b2FixtureDef &fixtureDef);
 
-		Pakal::core::vector3df &	getPosition();
-		void						setPosition(Pakal::core::vector3df & newPosition);
+		core::vector3df&			getPosition();
+		void						setPosition(core::vector3df & newPosition);
 
 	protected:
 		inline Box2DPhysicsSystem* getSystem();
 		void onInit() override;
 		void onDestroy() override;
 
-		b2Body *m_body;
-		b2Fixture *m_fixture;
+		b2Body* m_body;
+		b2Fixture* m_fixture;
 	private:
-		Pakal::core::vector3df m_Position;
-		unsigned int listenerId ;
+		core::vector3df m_Position;
+		unsigned int listenerId;
 	};	
 }

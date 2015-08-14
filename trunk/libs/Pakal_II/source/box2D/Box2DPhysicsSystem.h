@@ -21,7 +21,7 @@ namespace Pakal
 	class _PAKALExport Box2DPhysicsSystem : public PhysicsSystem, IDebugDrawerClient
 	{
 	public:	
-		virtual ~Box2DPhysicsSystem();
+		virtual ~Box2DPhysicsSystem() {};
 		Box2DPhysicsSystem();
 
 		inline b2World* getWorld() const
@@ -38,17 +38,17 @@ namespace Pakal
 		friend class Engine;
 
 		// from IComponentProvider
-		virtual void		registerComponentFactories( std::vector<IComponentFactory*> &factories) override;		
+		virtual void		register_component_factories( std::vector<IComponentFactory*> &factories) override;		
 		
 		// from IDebugDrawinfo
-		virtual IDebugDrawerClient * getDebugDrawer() override { return this; };		
-		virtual void doDebugDraw();
-		virtual void setDrawer(const RendererInfo *renderInfo);
+		virtual IDebugDrawerClient * get_debug_drawer() override { return this; };		
+		virtual void do_debug_draw() override;
+		virtual void set_drawer(const RendererInfo *renderInfo) override;
 
 		// from PhysicsSystem
-		virtual void update() override;
-		virtual void initWorld() override;
-		virtual void clearWorld() override;
+		virtual void on_update() override;
+		virtual void init_world() override;
+		virtual void clear_world() override;
 		
 		inline void enable();
 		inline void disable();		

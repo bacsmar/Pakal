@@ -27,14 +27,14 @@ void Pakal::BodyComponent::onInit()
 		std::cout << "Joder:"<< this->m_body->GetPosition().y<<std::endl;
 	};
 	
-	listenerId = getSystem()->updatEvent.addListener(f);	
+	listenerId = getSystem()->update_event.addListener(f);	
 }
 
 void Pakal::BodyComponent::onDestroy()
 {
-	getSystem()->updatEvent.removeListener(listenerId);
+	getSystem()->update_event.removeListener(listenerId);
 	getSystem()->destroyBody(m_body);
-	m_body = 0;
+	m_body = nullptr;
 	std::cout << "eliminando:"<<std::endl;
 }
 
@@ -77,5 +77,5 @@ void Pakal::BodyComponent::setPosition(Pakal::core::vector3df & position)
 
 Pakal::Box2DPhysicsSystem* Pakal::BodyComponent::getSystem()
 {
-	return static_cast<Box2DPhysicsSystem*>( getPhysicsSystem() );
+	return static_cast<Box2DPhysicsSystem*>(m_PhysicsSystem);
 }

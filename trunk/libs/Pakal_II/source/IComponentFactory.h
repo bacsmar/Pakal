@@ -46,7 +46,7 @@ namespace Pakal
 
 		virtual IComponent* create() override
 		{
-			return nullptr;
+			return _create(m_Initializer);
 		}
 
 		virtual const RTTI& getComponentType() override

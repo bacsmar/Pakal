@@ -15,17 +15,15 @@ namespace Pakal
 {
 
 	class ComponentSystem;
-	class GameStateSystem;
+	class GameStateManager;
 	class Engine;
 
 	class IPakalApplication
 	{
 	public:
-		virtual bool setUpEnvironment( Engine * engine) = 0;
+		virtual void setup_environment( Engine * engine) = 0;
 
-		virtual bool setUpComponents( ComponentSystem * componentSystem) = 0;
-
-		virtual bool setUpGameStates( GameStateSystem * gameStateSystem) = 0;
+		virtual void setup_game_states( GameStateManager * gameStateSystem) = 0;
 
 		virtual ~IPakalApplication() {}
 	};

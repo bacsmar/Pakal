@@ -27,10 +27,10 @@ namespace Pakal
 	class _PAKALExport IDebugDrawerClient
 	{
 	public:
-		//virtual ~IDebugDrawerClient(void){}	
+		virtual ~IDebugDrawerClient(void){}	
 		IDebugDrawerClient(){}
 				
-		virtual void doDebugDraw()	= 0;
-		virtual void setDrawer(const RendererInfo *renderInfo)	= 0;
+		virtual void do_debug_draw()	= 0;
+		virtual void set_drawer(const RendererInfo* renderInfo)	= 0;
 	};			
 }
