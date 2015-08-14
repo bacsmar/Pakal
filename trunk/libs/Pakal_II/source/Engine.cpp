@@ -86,7 +86,11 @@ void Engine::initialize()
 
 	m_application->setup_environment(this);
 
-	System::initialize();
+	// Mensaje para LUIS GUDIÑO
+	// TODO LUIS: DO NOT CALL FUCKING SUPER!!! https://en.wikipedia.org/wiki/Call_super
+	// Que está pasando aqui?, está inicializando al engine en threads que no se deben.
+	// ademas, inicializa irrlicht, tambien en un thread secundario!!!!
+	System::initialize();	// <----- Esta linea asquerosa, necesita ser removida.
 
 	do
 	{
