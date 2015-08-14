@@ -9,6 +9,7 @@
 #pragma once
 #include "GraphicComponent.h"
 #include "GraphicsSystem.h"
+#include "EventScheduler.h"
 
 
 namespace Pakal
@@ -20,12 +21,12 @@ namespace Pakal
 
 	BasicTaskPtr GraphicComponent::init()
 	{
-		return m_GraphicSystem->initComponentAsync(this);
+		return m_GraphicSystem->getScheduler()->executeInThread(std::bind(&GraphicComponent::onInit,this),m_GraphicSystem->threadId());
 	}
 
 	BasicTaskPtr GraphicComponent::destroy()
 	{
-		return m_GraphicSystem->terminateComponentAsync(this);
+		return m_GraphicSystem->getScheduler()->executeInThread(std::bind(&GraphicComponent::onDestroy,this),m_GraphicSystem->threadId());
 	}
 
 }

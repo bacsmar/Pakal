@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\IManager.h" />
+    <ClInclude Include="..\source\System.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\SingletonHolder.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\EventSystemUtils.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h" />
@@ -31,7 +34,7 @@
     <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
     <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
-    <ClInclude Include="..\source\ComponentSystem.h" />
+    <ClInclude Include="..\source\ComponentManager.h" />
     <ClInclude Include="..\source\components\MeshComponent.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\GraphicComponent.h" />
@@ -41,7 +44,7 @@
     <ClInclude Include="..\source\EntitySystem.h" />
     <ClInclude Include="..\source\Event.h" />
     <ClInclude Include="..\source\EventScheduler.h" />
-    <ClInclude Include="..\source\GameStateSystem.h" />
+    <ClInclude Include="..\source\GameStateManager.h" />
     <ClInclude Include="..\source\GenericEntity.h" />
     <ClInclude Include="..\source\IComponent.h" />
     <ClInclude Include="..\source\IComponentFactory.h" />
@@ -67,14 +70,14 @@
     <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
-    <ClCompile Include="..\source\ComponentSystem.cpp" />
+    <ClCompile Include="..\source\ComponentManager.cpp" />
     <ClCompile Include="..\source\components\MeshComponent.cpp" />
     <ClCompile Include="..\source\components\PhysicComponent.cpp" />
     <ClCompile Include="..\source\components\GraphicComponent.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
     <ClCompile Include="..\source\EntitySystem.cpp" />
     <ClCompile Include="..\source\EventScheduler.cpp" />
-    <ClCompile Include="..\source\GameStateSystem.cpp" />
+    <ClCompile Include="..\source\GameStateManager.cpp" />
     <ClCompile Include="..\source\GenericEntity.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />

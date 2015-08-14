@@ -83,7 +83,7 @@ namespace Pakal
 
 		void notify(const TArgs& arguments)
 		{
-			if (!m_isEnabled)
+			if (!m_isEnabled || m_delegates.size() == 0)
 				return;
 
 			m_mutex.lock();
@@ -157,7 +157,7 @@ namespace Pakal
 
 		void notify()
 		{
-			if (!m_isEnabled)
+			if (!m_isEnabled || m_delegates.size() == 0)
 				return;
 
 			m_mutex.lock();

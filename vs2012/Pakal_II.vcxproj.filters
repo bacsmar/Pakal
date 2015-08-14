@@ -3,9 +3,6 @@
   <ItemGroup>
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
-    <ClCompile Include="..\source\GameStateSystem.cpp">
-      <Filter>Systems\GameStateSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\GraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
@@ -13,28 +10,19 @@
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\source\LogMgr.cpp">
-      <Filter>Systems\LogSystem</Filter>
+      <Filter>Managers\LogManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\PhysicsSystem.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\ComponentSystem.cpp">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\EntitySystem.cpp">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\GenericEntity.cpp">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EventScheduler.cpp">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\InboxQueue.cpp">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
@@ -52,28 +40,37 @@
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\source\BasicTask.cpp">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\BodyComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EventSystemUtils.cpp">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntitySystem.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GenericEntity.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GameStateManager.cpp">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ComponentManager.cpp">
+      <Filter>Managers\ComponentManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\BaseGameState.h">
-      <Filter>Systems\GameStateSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\GameStateSystem.h">
-      <Filter>Systems\GameStateSystem</Filter>
+      <Filter>Managers\GameStateManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\LogMgr.h">
-      <Filter>Systems\LogSystem</Filter>
+      <Filter>Managers\LogManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\PhysicsSystem.h">
       <Filter>Systems\PhysicsSystem</Filter>
@@ -90,38 +87,26 @@
     <ClInclude Include="..\source\Config.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\ComponentSystem.h">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\EntitySystem.h">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\IComponent.h">
-      <Filter>Systems\ComponentSystem</Filter>
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IComponentFactory.h">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IEntity.h">
-      <Filter>Systems\ComponentSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\GenericEntity.h">
-      <Filter>Systems\ComponentSystem</Filter>
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\AsyncTaskDispatcher.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\EventScheduler.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\InboxQueue.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Event.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Task.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h">
       <Filter>Systems\PhysicsSystem</Filter>
@@ -142,7 +127,7 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\TaskFwd.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\GraphicComponent.h">
       <Filter>Components</Filter>
@@ -166,33 +151,48 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\BasicTask.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\EventSystemUtils.h">
-      <Filter>Systems\EventSystem</Filter>
+      <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IComponentProvider.h">
-      <Filter>Systems\ComponentSystem</Filter>
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntitySystem.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IEntity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GenericEntity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\SingletonHolder.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\System.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GameStateManager.h">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\IManager.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ComponentManager.h">
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
       <UniqueIdentifier>{419fd1b0-3d43-44dd-ba4e-60d13d870417}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Systems\GameStateSystem">
-      <UniqueIdentifier>{a51f6029-8d1d-4e6f-9541-382654dee482}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Systems\GraphicsSystem">
       <UniqueIdentifier>{e84a9c28-03ec-4bc5-9cc2-3310f8f9b6c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Systems\EventSystem">
-      <UniqueIdentifier>{c8ecabd8-79e1-4f04-8a81-f385f1a316ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Systems\LogSystem">
-      <UniqueIdentifier>{1e5c0fce-70c0-4021-804e-7881f3ad741b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Systems\PhysicsSystem">
       <UniqueIdentifier>{d4b08ee1-65c9-4335-ab85-c8dbcff602ed}</UniqueIdentifier>
@@ -200,11 +200,26 @@
     <Filter Include="Foundation">
       <UniqueIdentifier>{3d9176a9-4c65-46ce-b0c5-98cfe337a95c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Systems\ComponentSystem">
-      <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components">
       <UniqueIdentifier>{90d31d91-eae7-4171-880a-b865ec374056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{82a3627d-01c5-4390-a9ce-6b06e7742a00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\GameStateManager">
+      <UniqueIdentifier>{a51f6029-8d1d-4e6f-9541-382654dee482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\LogManager">
+      <UniqueIdentifier>{1e5c0fce-70c0-4021-804e-7881f3ad741b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\EventManager">
+      <UniqueIdentifier>{c8ecabd8-79e1-4f04-8a81-f385f1a316ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\EntityManager">
+      <UniqueIdentifier>{9c757118-43e4-4239-9093-fed26c6c5505}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ComponentManager">
+      <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

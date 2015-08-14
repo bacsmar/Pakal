@@ -16,44 +16,47 @@ namespace Pakal
 	class IDebugDrawerClient;
 	struct RendererInfo;	
 
-	class _PAKALExport IrrGraphicsSystem : public GraphicsSystem
+	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem
 	{
 	public:
-		inline irr::IrrlichtDevice		* getDevice() const { return device;	}
-		inline irr::video::IVideoDriver	* getDriver() const { return driver;	}
-		inline irr::scene::ISceneManager* getSmgr() const	{ return smgr;		}
-		inline irr::gui::IGUIEnvironment* getGuienv() const { return guienv;	}
+		inline irr::IrrlichtDevice		* get_device() const { return device;	}
+		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
+		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
+		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		IrrGraphicsSystem();
 	protected:
 
-		bool mIsRendering;				
+		bool m_is_rendering;				
 
-		std::string m_HomePath;
-		std::string m_ConfigPath;
-		size_t		m_Window;
+		std::string m_home_path;
+		std::string m_config_path;
+		size_t		m_window;
 
 		irr::IrrlichtDevice			* device;		
 		irr::video::IVideoDriver	* driver;		
 		irr::scene::ISceneManager	* smgr;		
 		irr::gui::IGUIEnvironment	* guienv;		
 
-		RendererInfo				*m_renderInfo;
-		std::vector<IDebugDrawerClient*>	m_debugRenderers;		
+		RendererInfo				*m_render_info;
+		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
 
-		virtual ~IrrGraphicsSystem();
+		virtual ~IrrGraphicsSystem() {};
+
+		void on_initialize() override;
+		void on_terminate() override;
 
 		void initWindow();
 
-		virtual bool onInitialize() override;		
-		virtual void beginScene() override;
-		virtual bool draw(  ) override;
-		virtual void endScene() override;
-		virtual void setWindowCaption( const char* caption ) override;
-		virtual bool update() override;		
-		virtual void showFps( bool val ) override;
+		void beginScene();
+		bool draw();
+		void endScene();
 
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories ) override;
-		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) override;
+		virtual void set_window_caption(const wchar_t* caption) override;
+		virtual void on_update() override;		
+		virtual void show_fps( bool val ) override;
+
+		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;
+		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) override;
 
 		bool m_showFps;
 	};	

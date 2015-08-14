@@ -1,64 +1,40 @@
 #pragma once
 #include "Config.h"
 
+#include "System.h"
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
 
 #include "Event.h"
 
-namespace Poco
-{
-	class Thread;
-
-	template <class C>
-	class RunnableAdapter;
-}
 
 namespace Pakal
 {
 	class Engine;
 	class IDebugDrawerClient;
 
-	class _PAKALExport PhysicsSystem : public IComponentProvider, public AsyncTaskDispatcher
+	class _PAKALExport PhysicsSystem :  public System, public AsyncTaskDispatcher, public IComponentProvider
 	{
-	private:
-		void initialize();
-		void terminate();
-	protected:		
-
-		Poco::Thread* m_PhysicsThread;
-		Poco::RunnableAdapter<PhysicsSystem>* m_entryPoint;	
-
-		enum SystemState
-		{
-			SE_STARTING,
-			SE_RUNNING,
-			SE_WAITING_STOP,
-			SE_STOPING,
-		};
-
-		SystemState m_State;
-
-		void run();		
-
-		// virtual functions
-		virtual void update() {};
-		virtual void initWorld() {};
-		virtual void clearWorld() {};
-
-		virtual IDebugDrawerClient * getDebugDrawer(){  return nullptr; };
-
-		// initialization ^ destruction
 		friend class Engine;
-		static PhysicsSystem* createPhysicsSystem();
-		virtual ~PhysicsSystem();
-		PhysicsSystem();
 	public:
-		// from IComponentProvicer
-		virtual void registerComponentFactories( std::vector<IComponentFactory*> &factories) override {};
-		virtual BasicTaskPtr initComponentAsync(IComponent *c) override ;
-		virtual BasicTaskPtr terminateComponentAsync(IComponent *c) override ;
+		Event<bool> update_event;
 
-		Event<bool> updatEvent;
+		static PhysicsSystem* createInstance();
+
+		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
+		virtual void				register_component_factories( std::vector<IComponentFactory*> &factories) override {};
+
+	protected:
+
+		PhysicsSystem() : System(PAKAL_USE_THREADS == 1) {};
+		virtual ~PhysicsSystem() {};
+
+		virtual void on_initialize() override;
+		virtual void on_terminate() override;
+		virtual void on_update() override;
+		
+		virtual void init_world() {};
+		virtual void clear_world() {};
+		
 	};
 }

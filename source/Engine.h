@@ -1,56 +1,52 @@
 #pragma once
 #include "Config.h"
-
-namespace Poco
-{
-	class Thread;
-}
+#include "System.h"
 
 namespace Pakal
 {
+	class AsyncTaskDispatcher;
+
 	class IPakalApplication;
 	class GraphicsSystem;
 	class EventScheduler;
 	class PhysicsSystem;
-	class GameStateSystem;
-	class ComponentSystem;
-	class EntitySystem;
-	class AsyncTaskDispatcher;
+	class GameStateManager;
+	class ComponentManager;
 
-	class _PAKALExport Engine 
+	class _PAKALExport Engine : public System
 	{
 	public:
-		void start(IPakalApplication *application );
-
 		static Engine &instance();
 
-		~Engine();
+		void run(IPakalApplication* application);
+
+
+		inline ComponentManager*	get_component_manager() const { return m_component_manager; }
+		inline GraphicsSystem*		get_graphics_system() const { return m_graphics_system; }
+		inline PhysicsSystem*		get_physics_system() const { return m_physics_system; }
+		inline EventScheduler*		get_scheduler() const { return m_event_scheduler; }
+		inline IPakalApplication*	get_application() const { return m_application; }
+
 		Engine();
-
-	//	inline EntitySystem		* getEntitySystem() const { return m_EntitySystem; }
-		inline ComponentSystem	* getComponentSystem() const { return m_ComponentSystem; }
-		inline GraphicsSystem	* getGraphicsSystem() const { return m_GraphicsSystem; }
-
+		~Engine();
 	protected:
-		IPakalApplication	*m_Application;
-		EventScheduler		*m_EventScheduler;
 
-		GraphicsSystem		*m_GraphicsSystem;
-		PhysicsSystem		*m_PhysicsSystem;
+		void procress_os_messages();
+		void initialize()  override;
+		void on_update() override;
+		void on_initialize() override;
+		void on_terminate() override;
 
-		GameStateSystem		*m_GameStateSystem;
-		ComponentSystem		*m_ComponentSystem;
-	//	EntitySystem		*m_EntitySystem;
+		IPakalApplication*  m_application;
+		EventScheduler*		m_event_scheduler;
 
-		Poco::Thread		*m_LogicThread;
-		AsyncTaskDispatcher* m_logicDispatcher; 
+		GraphicsSystem*		m_graphics_system;
+		PhysicsSystem*		m_physics_system;
 
-		static bool			ms_Initialized;
+		GameStateManager*	m_game_state_manager;
+		ComponentManager*	m_component_manager;
 
-		bool				m_shouldTerminate;
+		AsyncTaskDispatcher* m_dispatcher; 
 
-		void run();
-		void init();
-		
 	};
 }

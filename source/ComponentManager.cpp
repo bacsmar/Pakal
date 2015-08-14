@@ -1,5 +1,4 @@
-#include "ComponentSystem.h"
-#include "Poco/Foundation.h"
+#include "ComponentManager.h"
 
 #include "IComponentFactory.h"
 #include "IComponentProvider.h"
@@ -8,10 +7,10 @@
 using namespace Pakal;
 
 
-void ComponentSystem::registerProvider(IComponentProvider& provider )
+void ComponentManager::registerProvider(IComponentProvider& provider )
 {
 	std::vector<IComponentFactory*> factories;
-	provider.registerComponentFactories(factories);
+	provider.register_component_factories(factories);
 
 	for (auto & factory : factories)
 	{
@@ -19,7 +18,7 @@ void ComponentSystem::registerProvider(IComponentProvider& provider )
 	}
 }
 
-void ComponentSystem::registerFactory( IComponentFactory* factory, const std::string& name)
+void ComponentManager::registerFactory( IComponentFactory* factory, const std::string& name)
 {
 	ASSERT(factory);
 
@@ -35,7 +34,7 @@ void ComponentSystem::registerFactory( IComponentFactory* factory, const std::st
 	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", factoryName.c_str() );
 }
 
-IComponent* ComponentSystem::createComponent(const char* typeName )
+IComponent* ComponentManager::createComponent(const char* typeName )
 {
 	const auto &it = m_ComponentFactories.find(typeName);
 
@@ -49,12 +48,12 @@ IComponent* ComponentSystem::createComponent(const char* typeName )
 	return newComponent;		
 }
 
-void ComponentSystem::dropComponent(IComponent* component)
+void ComponentManager::dropComponent(IComponent* component)
 {
 	delete component;
 }
 
-ComponentSystem::~ComponentSystem()
+ComponentManager::~ComponentManager()
 {
 	for( auto it = m_ComponentFactories.begin() ; it != m_ComponentFactories.end() ; )
 	{

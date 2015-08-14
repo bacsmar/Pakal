@@ -1,24 +1,25 @@
 #pragma once
 #include <stack>
 #include "Config.h"
+#include "IManager.h"
 
 namespace Pakal
 {
 	class BaseGameState;
 	class Engine;
 
-	class _PAKALExport GameStateSystem
+	class _PAKALExport GameStateManager final : IManager
 	{
-	private:
 		std::stack<BaseGameState*> states;
 		Engine* m_engine;
 
 	public:
 
-		GameStateSystem() {};
-		~GameStateSystem();
+		GameStateManager(Engine* engine) : m_engine(engine) {};
+		~GameStateManager();
 
-		void initialize(Engine* engine);
+		void initialize() override {};
+		void terminate() override;
 	
 		void transition_to_state(BaseGameState* new_state, bool deallocate_on_pop = true);
 		void push_state(BaseGameState* new_state, bool deallocate_on_pop = true);

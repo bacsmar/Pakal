@@ -3,6 +3,7 @@
 
 #include "IComponentProvider.h"
 #include "AsyncTaskDispatcher.h"
+#include "System.h"
 
 
 namespace Pakal
@@ -10,38 +11,28 @@ namespace Pakal
 	class IDebugDrawerClient;
 	class GraphicComponent;
 
-	class _PAKALExport GraphicsSystem : public IComponentProvider, public AsyncTaskDispatcher
+	class _PAKALExport GraphicsSystem : public System, public AsyncTaskDispatcher, public IComponentProvider
 	{
 		friend class Engine;
 		friend class GraphicComponent;
 		
 	public:
-		inline bool isInitialized() const { return m_Initialized; }
+		static GraphicsSystem* create_instance();
 		
-		virtual void setWindowCaption(const char* caption) {};
-		virtual void showFps(bool val) {};		
-	
+		virtual void set_window_caption(const wchar_t*) {};
+		virtual void show_fps(bool) {};		
+
+		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
 	protected:
-		bool m_Initialized;
 
-		static GraphicsSystem* createInstance();
+		GraphicsSystem() : System(false) {}
 		virtual ~GraphicsSystem(){}
 
-		bool initialize();
-		void run();
+		virtual void on_initialize() override = 0;
+		virtual void on_terminate() override = 0;
+		virtual void on_update() override;
 
-		virtual bool update() = 0;
-		virtual void beginScene() = 0;
-		virtual bool draw() = 0;
-		virtual void endScene() = 0;
-
-		virtual bool onInitialize() = 0;		
-
-		virtual void addDebugDrawerClient(IDebugDrawerClient * debugDrawer) = 0;
-		virtual void registerComponentFactories(std::vector<IComponentFactory*>& factories) override = 0;
-		BasicTaskPtr initComponentAsync(IComponent *c) override final;
-		BasicTaskPtr terminateComponentAsync(IComponent *c) override final;
-
+		void register_component_factories(std::vector<IComponentFactory*>& factories) override = 0;
 	};
 }

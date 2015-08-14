@@ -1,12 +1,7 @@
 #include "IrrGraphicsSystem.h"
 
-#include <memory>
-
 #include "LogMgr.h"
-#include "ComponentSystem.h"
 #include "IComponentFactory.h"
-#include "IComponent.h"
-#include "components/GraphicComponent.h"
 
 #include "IDebugDrawer.h"
 
@@ -21,45 +16,38 @@ using namespace gui;
 
 using namespace Pakal;
 
-Pakal::IrrGraphicsSystem::IrrGraphicsSystem()
-	: mIsRendering(false),
-	m_Window(0),
+//////////////////////////////////////////////////////////////////////////
+IrrGraphicsSystem::IrrGraphicsSystem()
+	: m_is_rendering(false),
+	m_window(0),
 	device(nullptr),
 	driver(nullptr),
 	smgr(nullptr),
 	guienv(nullptr),	
-	m_renderInfo(nullptr)	
-{
-	m_showFps = false;
-	m_renderInfo = new RendererInfo();
-}
+	m_render_info(new RendererInfo()),
+	m_showFps(false)
+{}
 //////////////////////////////////////////////////////////////////////////
-bool IrrGraphicsSystem::onInitialize()
-{
-	initWindow();
-	return true;
-}
-//////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::initWindow()
+void IrrGraphicsSystem::initWindow()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
 	device =
-		createDevice( video::EDT_OPENGL, dimension2d<u32>(640, 480), 32,
+		createDevice( EDT_OPENGL, dimension2d<u32>(640, 480), 32,
 		false, false, false, nullptr);
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
 
-	m_renderInfo->m_Device = device;
-	m_renderInfo->m_Driver = driver;
+	m_render_info->m_Device = device;
+	m_render_info->m_Driver = driver;
 
-	showFps(m_showFps);
+	show_fps(m_showFps);
 
 	smgr->addCameraSceneNode();	
 
 #ifdef PAKAL_WIN32_PLATFORM
-	m_Window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
+	m_window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
 #else
 	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
 #endif	
@@ -70,32 +58,46 @@ void Pakal::IrrGraphicsSystem::initWindow()
 
 }
 //////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::beginScene()
+void IrrGraphicsSystem::on_initialize()
+{
+	initWindow();
+}
+//////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::on_terminate()
+{
+	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
+	device->closeDevice();
+	device->drop();
+	device = nullptr;
+	delete m_render_info;
+}
+//////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::beginScene()
 {
 	ASSERT(driver);
 	driver->beginScene(true, true, SColor(255,0,0,0));
 }
 //////////////////////////////////////////////////////////////////////////
-bool Pakal::IrrGraphicsSystem::draw()
+bool IrrGraphicsSystem::draw()
 {
 	smgr->drawAll();
 	guienv->drawAll();
 
-	for( auto &r : m_debugRenderers)
+	for( auto &r : m_debug_renderers)
 	{
-		r->doDebugDraw();
+		r->do_debug_draw();
 	}
 
-	bool isRunning = device->run();
+	auto isRunning = device->run();
 
 	if( false == isRunning )
 	{
-		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");		
+//		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");		
 	}	
 
 	if( m_showFps)
 	{		
-		irr::core::stringw str = L"FPS [";
+		stringw str = L"FPS [";
 		str += driver->getName();
 		str += "] FPS:";
 		str += driver->getFPS();
@@ -103,57 +105,42 @@ bool Pakal::IrrGraphicsSystem::draw()
 		device->setWindowCaption(str.c_str());            
 	}
 
-
 	return isRunning;
 }
 //////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::endScene()
+void IrrGraphicsSystem::endScene()
 {
 	driver->endScene();
 }
 //////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::setWindowCaption( const char * caption )
+void IrrGraphicsSystem::on_update()
+{
+	GraphicsSystem::on_update();
+	beginScene();
+	draw();
+	endScene();
+}
+//////////////////////////////////////////////////////////////////////////
+void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 {
 	ASSERT(device);
-	device->setWindowCaption(L"");
+	device->setWindowCaption(caption);
 }
 //////////////////////////////////////////////////////////////////////////
-bool Pakal::IrrGraphicsSystem::update()
-{
-	beginScene();
-	bool isDrawing = draw();
-	endScene();
-
-	return isDrawing;
-}
-//////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::showFps( bool val )
+void IrrGraphicsSystem::show_fps( bool val )
 {	
 	m_showFps = val;	
 }
 //////////////////////////////////////////////////////////////////////////
-void Pakal::IrrGraphicsSystem::registerComponentFactories( std::vector<IComponentFactory*> &factories )
+void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFactory*>& factories)
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
 	factories.push_back( CreateComponentFactory<MeshComponent>(this));
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::addDebugDrawerClient(IDebugDrawerClient * debugDrawer)
-{	
-	debugDrawer->setDrawer( m_renderInfo );
-	m_debugRenderers.push_back( debugDrawer );	
-} 
-//////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::~IrrGraphicsSystem()
+void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)
 {
-	for( auto &r : m_debugRenderers)
-	{
-		//delete r;	// do not delete debugRenderers, they're read only
-	}
-	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
-	device->closeDevice();
-	device->drop();
-	delete m_renderInfo;
+		debugDrawer->set_drawer( m_render_info );
+	m_debug_renderers.push_back( debugDrawer );	
 }
-//////////////////////////////////////////////////////////////////////////
