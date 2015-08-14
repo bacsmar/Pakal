@@ -24,14 +24,14 @@ namespace Pakal
 
 		Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : m_Job(job)
 		{
-			m_isCompleted = false;
+			setIsCompleted ( false);
 			m_EventCompleted.connectWithScheduler(scheduler);
 			m_EventCompletedWithResult.connectWithScheduler(scheduler);
 		}
 
 		Task(const TArgs& result) : m_Result(result)
 		{
-			m_isCompleted = true;
+			setIsCompleted ( true);
 		}
 
 		~Task()
@@ -48,10 +48,10 @@ namespace Pakal
 	protected:
 		inline void run() override
 		{
-			ASSERT(m_isCompleted == false);
+			ASSERT(isCompleted() == false);
 
 			m_Result = m_Job();			
-			m_isCompleted = true;
+			setIsCompleted(true);
 			m_EventCompletedWithResult.notify(m_Result);
 			m_EventCompleted.notify();
 		}
@@ -66,7 +66,7 @@ namespace Pakal
 		
 		void onCompletionDo(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
 		{
-			if (m_isCompleted)
+			if (isCompleted())
 				callBack(m_Result);
 			else
 				m_EventCompletedWithResult.addListener(callBack,callBackThread);
