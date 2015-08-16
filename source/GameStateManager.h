@@ -18,8 +18,8 @@ namespace Pakal
 		GameStateManager(Engine* engine) : m_engine(engine) {};
 		~GameStateManager();
 
-		void initialize() override {};
-		void terminate() override;
+		virtual void initialize() override {};
+		virtual void terminate() override;
 	
 		void transition_to_state(BaseGameState* new_state, bool deallocate_on_pop = true);
 		void push_state(BaseGameState* new_state, bool deallocate_on_pop = true);

@@ -18,15 +18,20 @@ namespace Pakal
 	class IComponent;
 	//////////////////////////////////////////////////////////////////////////	
 
-	class _PAKALExport Box2DPhysicsSystem : public PhysicsSystem, IDebugDrawerClient
+	class _PAKALExport Box2DPhysicsSystem final : public PhysicsSystem, IDebugDrawerClient
 	{
 	public:	
 		virtual ~Box2DPhysicsSystem() {};
-		Box2DPhysicsSystem();
+		Box2DPhysicsSystem(EventScheduler* scheduler);
 
 		inline b2World* getWorld() const
 		{
 			return m_pWorld;
+		}
+
+		inline const char* get_system_name() override final
+		{
+			return "Box2DPhysicsSystem";
 		}
 
 		b2Body	* createBody(const b2BodyDef* def);
@@ -46,7 +51,7 @@ namespace Pakal
 		virtual void set_drawer(const RendererInfo *renderInfo) override;
 
 		// from PhysicsSystem
-		virtual void on_update() override;
+		virtual void update_world() override;
 		virtual void init_world() override;
 		virtual void clear_world() override;
 		

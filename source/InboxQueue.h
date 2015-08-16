@@ -33,6 +33,8 @@ namespace Pakal
 		template<class TOut>
 		std::shared_ptr<Task<TOut>> pushTask(const std::function<TOut(void)> & jobDelegate)
 		{
+			ASSERT(this);
+
 			auto task = std::make_shared<Task<TOut>>(jobDelegate, m_scheduler);
 
 			m_inboxStore.push(task);

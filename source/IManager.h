@@ -6,6 +6,7 @@ namespace  Pakal
 	class _PAKALExport IManager
 	{
 	public:
+
 		virtual ~IManager() { }
 
 		virtual void initialize() = 0;

@@ -14,10 +14,10 @@ namespace Pakal
 {
 	BasicTaskPtr PhysicComponent::init()
 	{
-		return m_PhysicsSystem->getScheduler()->executeInThread(std::bind(&PhysicComponent::onInit,this),m_PhysicsSystem->threadId());
+		return m_PhysicsSystem->get_scheduler()->execute_in_thread(std::bind(&PhysicComponent::onInit,this),m_PhysicsSystem->get_thread_id());
 	}
 	BasicTaskPtr PhysicComponent::destroy()
 	{
-		return m_PhysicsSystem->getScheduler()->executeInThread(std::bind(&PhysicComponent::onDestroy,this),m_PhysicsSystem->threadId());
+		return m_PhysicsSystem->get_scheduler()->execute_in_thread(std::bind(&PhysicComponent::onDestroy,this),m_PhysicsSystem->get_thread_id());
 	}
 }

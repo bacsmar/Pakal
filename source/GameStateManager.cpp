@@ -8,7 +8,7 @@ using namespace Pakal;
 
 GameStateManager::~GameStateManager() 
 {
-	terminate();
+	GameStateManager::terminate();
 	m_engine = nullptr;
 }
 

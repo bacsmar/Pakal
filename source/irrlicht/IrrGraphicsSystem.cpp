@@ -17,8 +17,9 @@ using namespace gui;
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem()
-	: m_is_rendering(false),
+IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler)
+	: GraphicsSystem(scheduler), 
+	m_is_rendering(false),
 	m_window(0),
 	device(nullptr),
 	driver(nullptr),
@@ -58,12 +59,12 @@ void IrrGraphicsSystem::initWindow()
 
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_initialize()
+void IrrGraphicsSystem::on_init_graphics()
 {
 	initWindow();
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_terminate()
+void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 	device->closeDevice();
@@ -92,7 +93,7 @@ bool IrrGraphicsSystem::draw()
 
 	if( false == isRunning )
 	{
-//		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");		
+		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");
 	}	
 
 	if( m_showFps)
@@ -113,13 +114,22 @@ void IrrGraphicsSystem::endScene()
 	driver->endScene();
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_update()
+void IrrGraphicsSystem::on_update_graphics()
 {
-	GraphicsSystem::on_update();
 	beginScene();
-	draw();
+	bool result = draw();
 	endScene();
+	if (result == false) terminate();
 }
+
+void IrrGraphicsSystem::on_pause_graphics()
+{
+}
+
+void IrrGraphicsSystem::on_resume_graphics()
+{
+}
+
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 {

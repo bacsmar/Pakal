@@ -11,7 +11,7 @@
 #include "config.h"
 
 #if PAKAL_USE_LOG == 1
-	#ifndef _DEBUG
+	#ifdef _DEBUG
 
 	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_DEBUG,"[DEBUG]\t"    format, ## __VA_ARGS__);
 	#define LOG_INFO(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_INFORMATION,"[INFO]\t"    format, ## __VA_ARGS__);

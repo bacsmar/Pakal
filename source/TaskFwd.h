@@ -13,4 +13,5 @@ namespace Pakal
 	typedef std::shared_ptr<BasicTask> BasicTaskPtr;
 
 	const std::thread::id NULL_THREAD = std::thread::id();
+
 }

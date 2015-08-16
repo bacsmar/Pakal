@@ -14,7 +14,8 @@
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::Box2DPhysicsSystem() :
+Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler) :
+		PhysicsSystem(scheduler),
 		m_pWorld(nullptr),
 		m_pContactListener(nullptr),
 		m_pContactFilter(nullptr),
@@ -69,15 +70,6 @@ void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 	m_pDebugDraw->SetFlags(b2Draw::e_shapeBit);
 }
 
-void Box2DPhysicsSystem::on_update()
-{
-	PhysicsSystem::on_update();
-
-	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
-	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
-}
-
 void Box2DPhysicsSystem::init_world()
 {
 	b2Vec2 gravity(5.0f, 0.0f);
@@ -101,11 +93,20 @@ void Box2DPhysicsSystem::init_world()
 
 void Box2DPhysicsSystem::clear_world()
 {
-		SAFE_DEL(m_pDebugDraw);
+	SAFE_DEL(m_pDebugDraw);
 	SAFE_DEL(m_pContactListener);
 	SAFE_DEL(m_pContactFilter);
 	SAFE_DEL(m_pDestructionListener);
 	SAFE_DEL(m_pWorld);
 }
+
+
+void Box2DPhysicsSystem::update_world()
+{
+	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
+	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
+	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
+}
+
 
 //////////////////////////////////////////////////////////////////////////

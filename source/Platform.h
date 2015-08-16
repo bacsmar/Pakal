@@ -90,9 +90,11 @@
 #define SAFE_DEL(x) {delete (x);x=nullptr;}
 
 #ifdef _DEBUG
-	#define ASSERT(x) assert (x);
+	#define ASSERT(x) assert (x)
+	#define ASSERT_IF(x) assert (!(x))
 	#include <cassert>
 #else
 	#define  ASSERT(x)
+	#define  BREAKIF(x)
 #endif
 

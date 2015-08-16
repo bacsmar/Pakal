@@ -6,17 +6,21 @@
 
 
 
-std::thread::id Pakal::AsyncTaskDispatcher::threadId()
+std::thread::id Pakal::AsyncTaskDispatcher::thread_id()
 {
-	return m_inbox->getTid();
+	return m_inbox == nullptr ? NULL_THREAD : m_inbox->getTid();
 }
 
-void Pakal::AsyncTaskDispatcher::dispatchTasks()
+Pakal::EventScheduler* Pakal::AsyncTaskDispatcher::get_scheduler()
+{
+	return m_scheduler;
+}
+
+void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 {
 	if( nullptr == m_inbox )
 	{
-		EventScheduler * eventScheduler = m_scheduler;
-		m_inbox = eventScheduler->InboxForThisThread();
+		m_inbox = m_scheduler->inbox_for_this_thread();
 	}
 	
 	if( m_inbox->size() )

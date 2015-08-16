@@ -3,71 +3,53 @@
 #include <thread>
 #include <atomic>
 
+#include "ISystem.h"
+#include "AsyncTaskDispatcher.h"
+
 namespace Pakal
 {
-	class _PAKALExport System
+	class EventScheduler;
+
+
+
+	class _PAKALExport System : public ISystem
 	{
-
-	public:
-		explicit System(bool useThread)
-		{
-			m_threaded = useThread;
-			m_thread = nullptr;
-			m_running = false;
-		}
-		virtual ~System()
-		{
-			if (m_running)
-				terminate();
-		}
-
-		virtual void initialize()
-		{
-			ASSERT(!m_running);
-
-			m_running = true;
-
-			if (m_threaded)
-			{
-				m_thread = new std::thread(&System::loop, this);
-			}
-			else
-			{
-				on_initialize();
-			}
-		};
-
-		void terminate()
-		{
-			ASSERT(m_running);
-			m_running = false;
-
-			if (m_threaded)
-			{
-				m_thread->join();
-				SAFE_DEL(m_thread);
-			}
-			else
-			{
-				on_terminate();
-			}
-		}
+		std::atomic<SystemState> m_state;
+		std::thread::id			 m_thread_id;
+		std::thread*             m_thread;
+		EventScheduler*			 m_scheduler;
+		bool					 m_threaded;
+		AsyncTaskDispatcher		 m_dispatcher;
 
 	protected:
+
 		virtual void on_initialize() = 0;
 		virtual void on_terminate() = 0;
 		virtual void on_update() = 0;
-	
-		volatile bool m_running;
-	private:
-		std::thread* m_thread;
-		std::atomic_bool m_threaded;
+		virtual void on_pause() = 0;
+		virtual void on_resume() = 0;
 
-		void loop()
-		{
-			on_initialize();
-			while(m_running){ on_update();}
-			on_terminate();
-		}
+	private:
+
+		void update_loop();
+
+	public:
+
+		virtual ~System();
+		explicit System(EventScheduler* scheduler, bool usesThread);
+
+		inline EventScheduler* get_scheduler();
+		inline std::thread::id get_thread_id();
+
+		inline bool is_threaded() override final;
+		inline SystemState get_state() override final;
+
+		void update() override final;
+
+		BasicTaskPtr initialize() override final;
+		BasicTaskPtr terminate() override final;
+		BasicTaskPtr pause() override final;
+		BasicTaskPtr resume() override final;
 	};
+
 }
