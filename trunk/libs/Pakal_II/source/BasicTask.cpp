@@ -36,17 +36,17 @@ namespace Pakal
 		if (m_completed)
 		{
 			m_event_completed.clear();
-			m_event_completed.addListener(callBack,callBackThread);
+			m_event_completed.add_listener(callBack,callBackThread);
 			m_event_completed.notify();
 		}
 		else
-			m_event_completed.addListener(callBack,callBackThread);
+			m_event_completed.add_listener(callBack,callBackThread);
 
 	}
 
 	EventScheduler* BasicTask::get_event_scheduler()
 	{
-		return m_event_completed.getEventScheduler();
+		return m_event_completed.get_event_scheduler();
 	}
 
 	void BasicTask::run()

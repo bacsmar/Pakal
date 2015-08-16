@@ -12,9 +12,9 @@ namespace Pakal
 
 	namespace EventSystemUtils
 	{
-		unsigned int hashFunction(unsigned int valueToHash);
+		unsigned int hash_function(unsigned int valueToHash);
 
-		BasicTaskPtr executeInThread(EventScheduler* scheduler, const std::function<void()>& fn, const std::thread::id& id);
+		BasicTaskPtr execute_in_thread(EventScheduler* scheduler, const std::function<void()>& fn, const std::thread::id& id);
 
 
 	};	

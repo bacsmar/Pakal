@@ -34,9 +34,9 @@ namespace Pakal
 		inline void add_system(ISystem* system)
 		{
 			ASSERT_IF(get_state() != SystemState::Created);
-			ASSERT_IF(m_systems.find(system) != m_systems.end());
+			ASSERT_IF(std::find(m_systems.begin(),m_systems.end(), system) != m_systems.end());
 
-			m_systems.insert(system);
+			m_systems.push_back(system);
 		}
 
 
@@ -60,7 +60,7 @@ namespace Pakal
 		ComponentManager*	m_component_manager;
 		EventScheduler*		m_scheduler;
 
-		std::unordered_set<ISystem*> m_systems;
+		std::vector<ISystem*> m_systems;
 
 	};
 }

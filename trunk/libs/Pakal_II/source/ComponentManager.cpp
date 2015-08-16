@@ -7,22 +7,22 @@
 using namespace Pakal;
 
 
-void ComponentManager::registerProvider(IComponentProvider& provider )
+void ComponentManager::register_provider(IComponentProvider& provider )
 {
 	std::vector<IComponentFactory*> factories;
 	provider.register_component_factories(factories);
 
 	for (auto & factory : factories)
 	{
-		registerFactory(factory);
+		register_factory(factory);
 	}
 }
 
-void ComponentManager::registerFactory( IComponentFactory* factory, const std::string& name)
+void ComponentManager::register_factory( IComponentFactory* factory, const std::string& name)
 {
 	ASSERT(factory);
 
-	std::string factoryName = name.empty() ? factory->getComponentType().getName() : name;
+	std::string factoryName = name.empty() ? factory->get_component_type().getName() : name;
 
 	if(m_ComponentFactories.find( factoryName ) != m_ComponentFactories.end())
 	{
@@ -34,7 +34,7 @@ void ComponentManager::registerFactory( IComponentFactory* factory, const std::s
 	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", factoryName.c_str() );
 }
 
-IComponent* ComponentManager::createComponent(const char* typeName )
+IComponent* ComponentManager::create_component(const char* typeName )
 {
 	const auto &it = m_ComponentFactories.find(typeName);
 
@@ -48,7 +48,7 @@ IComponent* ComponentManager::createComponent(const char* typeName )
 	return newComponent;		
 }
 
-void ComponentManager::dropComponent(IComponent* component)
+void ComponentManager::drop_component(IComponent* component)
 {
 	delete component;
 }

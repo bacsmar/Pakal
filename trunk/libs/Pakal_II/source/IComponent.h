@@ -31,9 +31,9 @@ namespace Pakal
 			m_isInitialized(false)
 		{}		
 
-		inline const IEntity* getParentEntity() const		{ return m_ParentEntity; };
-		inline void setParentEntity(const IEntity *parent)	{ m_ParentEntity = parent; };		
-		inline bool isInitialized()	const					{ return m_isInitialized; }
+		inline const IEntity* get_parent_entity() const		{ return m_ParentEntity; };
+		inline void set_parent_entity(const IEntity *parent)	{ m_ParentEntity = parent; };		
+		inline bool is_initialized()	const					{ return m_isInitialized; }
 		
 
 		virtual BasicTaskPtr init()	= 0;

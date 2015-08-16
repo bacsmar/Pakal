@@ -19,34 +19,34 @@ namespace Pakal
 {
 	BasicTaskPtr GenericEntity::initialize()
 	{
-		return initializeComponents();
+		return initialize_components();
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	void GenericEntity::addComponent(IComponent *c) 
+	void GenericEntity::add_component(IComponent *c) 
 	{
-		m_Components.push_back(c);
+		m_components.push_back(c);
 	}
 
-	void GenericEntity::removeComponent(IComponent* c)
+	void GenericEntity::remove_component(IComponent* c)
 	{
-		m_Components.erase(find(m_Components.begin(),m_Components.end(),c));
+		m_components.erase(find(m_components.begin(),m_components.end(),c));
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	BasicTaskPtr GenericEntity::initializeComponents()
+	BasicTaskPtr GenericEntity::initialize_components()
 	{
 		auto tasks = 
-				from(m_Components)
-			>>  select([this](IComponent* c){ c->setParentEntity(this);  return c->init(); })
-			>>  to_vector(m_Components.size());
+				from(m_components)
+			>>  select([this](IComponent* c){ c->set_parent_entity(this);  return c->init(); })
+			>>  to_vector(m_components.size());
 
-		return TaskUtils::whenAll(tasks);
+		return TaskUtils::when_all(tasks);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GenericEntity::~GenericEntity() 
 	{
-		for( auto & component: m_Components)
+		for( auto & component: m_components)
 		{			
 			component->destroy();
 		}
@@ -54,9 +54,9 @@ namespace Pakal
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	IComponent * GenericEntity::getComponentByName(const std::string& name)
+	IComponent * GenericEntity::get_component_by_name(const std::string& name)
 	{
-		for( auto & component: m_Components)
+		for( auto & component: m_components)
 		{
 			if (component->getType().getName() == name)
 				return component;

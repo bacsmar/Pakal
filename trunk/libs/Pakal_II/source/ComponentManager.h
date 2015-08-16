@@ -26,16 +26,16 @@ namespace Pakal
 		void initialize() override {};
 		void terminate() override {};
 
-		void registerFactory(IComponentFactory* factory, const std::string& name = "");
-		void registerProvider(IComponentProvider &provider);
+		void register_factory(IComponentFactory* factory, const std::string& name = "");
+		void register_provider(IComponentProvider &provider);
 
-		IComponent* createComponent(const char* componentName);
-		void dropComponent(IComponent* component);
+		IComponent* create_component(const char* componentName);
+		void drop_component(IComponent* component);
 
 		template <class T>
-		T* createComponent()
+		T* create_component()
 		{
- 			IComponent* ic = createComponent(T::getRTTI().getName());
+ 			IComponent* ic = create_component(T::getRTTI().getName());
 			return static_cast<T*>(ic);
 		}
 

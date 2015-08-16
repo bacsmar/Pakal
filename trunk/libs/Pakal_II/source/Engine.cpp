@@ -44,7 +44,7 @@ Engine::Engine() :
 	m_component_manager(nullptr)
 {
 	LogMgr::init();
-	LogMgr::setLogLevel(10);
+	LogMgr::set_log_level(10);
 
 	m_scheduler = get_scheduler();
 
@@ -54,8 +54,8 @@ Engine::Engine() :
 	m_game_state_manager	= new GameStateManager(this);
 	m_component_manager		= new ComponentManager();
 
-	m_component_manager->registerProvider(*m_graphics_system);
-	m_component_manager->registerProvider(*m_physics_system);
+	m_component_manager->register_provider(*m_graphics_system);
+	m_component_manager->register_provider(*m_physics_system);
 
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
@@ -83,11 +83,7 @@ void Engine::run(IPakalApplication* application)
 		>>  select([](ISystem* sys){ return sys->initialize();  }) 
 		>>  to_vector(m_systems.size());
 
-	TaskUtils::waitAll(initializationTasks);
-
-	//setup envirnment
-	m_application->setup_environment(this);
-
+	TaskUtils::wait_all(initializationTasks);
 
 	// Initialize engine
 	initialize();
@@ -95,18 +91,32 @@ void Engine::run(IPakalApplication* application)
 	//main loop
 	while(get_state() != SystemState::Terminated)
 	{
-		for(auto system : m_systems)
+		if (is_threaded() == false)
 		{
-			if (!system->is_threaded() && system->get_state() != SystemState::Terminated)
-				system->update();
+			update();
 		}
 
-		if (!this->is_threaded())
-			this->update();
-
-		if (m_graphics_system->get_state() == SystemState::Terminated) // we need to exit if the graphics_system ends
+		for(auto s = m_systems.begin(); s != m_systems.end();)
 		{
-			terminate()->wait();
+			ISystem* system = *s;
+			
+			if (system->get_state() == SystemState::Terminated)
+			{
+				s = m_systems.erase(s);
+
+				if (system == m_graphics_system) // we need to exit if the graphics_system ends
+				{
+					terminate()->wait();
+				}
+			}
+			else
+			{
+				++s;
+				if (system->is_threaded() == false)
+				{
+					system->update();
+				}
+			}
 		}
 
 		procress_os_messages();
@@ -115,11 +125,10 @@ void Engine::run(IPakalApplication* application)
 	//terminate systems
 	auto terminationTasks = 
 			from(m_systems)
-		>>  where([](ISystem* sys){ return sys->get_state() != SystemState::Terminated; })
 		>>  select([](ISystem* sys){ return sys->terminate();  }) 
 		>>  to_vector(m_systems.size());
 
-	TaskUtils::waitAll(terminationTasks);
+	TaskUtils::wait_all(terminationTasks);
 
 
 	//terminate managers
@@ -130,6 +139,7 @@ void Engine::run(IPakalApplication* application)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
+	m_application->setup_environment(this);
 	m_application->setup_game_states(m_game_state_manager);	
 }
 //////////////////////////////////////////////////////////////////////////
@@ -137,18 +147,16 @@ void Engine::on_terminate() {}
 
 void Engine::on_pause()
 {
-	for(auto s : m_systems)
-	{
-		s->pause();
-	}
+	auto tasks = from(m_systems) >> select([](ISystem* s) { return s->pause(); }) >> to_vector(m_systems.size());
+
+	TaskUtils::wait_all(tasks);
 }
 
 void Engine::on_resume()
 {
-	for(auto s : m_systems)
-	{
-		s->resume();
-	}
+	auto tasks = from(m_systems) >> select([](ISystem* s) { return s->resume(); }) >> to_vector(m_systems.size());
+
+	TaskUtils::wait_all(tasks);	
 }
 
 void Engine::on_update() {}
@@ -164,7 +172,7 @@ void Engine::procress_os_messages()
 		DispatchMessage(&msg);
 		if (msg.message == WM_QUIT)
 		{
-			terminate();
+			terminate()->wait();
 		}
 	}
 #endif

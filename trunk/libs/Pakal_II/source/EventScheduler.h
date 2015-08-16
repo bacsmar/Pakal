@@ -20,6 +20,8 @@ namespace Pakal
 
 	class _PAKALExport EventScheduler : IManager
 	{
+		friend AsyncTaskDispatcher;
+
 	public:
 		void initialize() override;
 		void terminate() override;
@@ -31,13 +33,13 @@ namespace Pakal
 		bool m_initialized;
 
 
-		InboxQueue* findInboxForThread(std::thread::id tid);	
+		InboxQueue* find_inbox_for_thread(std::thread::id tid);	
+		InboxQueue*	inbox_for_this_thread();
 
 	public:
 		EventScheduler() : m_initialized(false) {}
 		virtual			~EventScheduler();
 
-		InboxQueue*		inbox_for_this_thread();
 
 		BasicTaskPtr	execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 
@@ -51,9 +53,9 @@ namespace Pakal
 			auto currentTid = std::this_thread::get_id();
 
 			if (currentTid == tid)
-				return TaskUtils::fromResult(fn());
+				return TaskUtils::from_result(fn());
 			else
-				return findInboxForThread(tid)->pushTask(fn);			
+				return find_inbox_for_thread(tid)->push_task(fn);			
 		}
 
 	};

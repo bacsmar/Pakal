@@ -49,7 +49,7 @@ namespace Pakal{
 
 		void _PAKALExport log( int level, const char *format, ... );
 
-		void _PAKALExport setLogLevel(int level);
+		void _PAKALExport set_log_level(int level);
 
 		bool _PAKALExport init();
 		bool _PAKALExport stop();

@@ -33,15 +33,15 @@ namespace Pakal
 	private:
 		EventScheduler* m_scheduler;
 		std::unordered_map<unsigned int, DelegateData<TArgs>> m_delegates;
-		bool m_isEnabled;
+		bool m_enabled;
 		std::mutex m_mutex;
 
 		typedef std::function<void(TArgs)> MethodDelegate;
 	public:
 
-		inline EventScheduler* getEventScheduler() { return m_scheduler; }
+		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
 
-		Event() : m_scheduler(nullptr), m_isEnabled(true)
+		Event() : m_scheduler(nullptr), m_enabled(true)
 		{
 		}
 
@@ -50,24 +50,24 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline unsigned int addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = std::this_thread::get_id())
 		{			
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			unsigned int hash = EventSystemUtils::hashFunction((int)& delegate + (int)& callBackThread);
-			m_delegates.emplace(hash, DelegateData<TArgs>(delegate, callBackThread) );
+			unsigned int hash = EventSystemUtils::hash_function((int)& delegate + (int)& callbackThread);
+			m_delegates.emplace(hash, DelegateData<TArgs>(delegate, callbackThread) );
 
 			return hash;
 		}
 
 		inline void disable()
 		{
-			m_isEnabled = false;
+			m_enabled = false;
 		}
 
 		inline void enable()
 		{
-			m_isEnabled = true;
+			m_enabled = true;
 		}
 
 		inline bool empty() const
@@ -75,7 +75,7 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-		inline void removeListener(unsigned int key)
+		inline void remove_listener(unsigned int key)
 		{		
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_delegates.erase(key);
@@ -89,7 +89,7 @@ namespace Pakal
 
 		void notify(const TArgs& arguments)
 		{
-			if (!m_isEnabled || m_delegates.size() == 0)
+			if (!m_enabled || m_delegates.size() == 0)
 				return;
 
 			m_mutex.lock();
@@ -101,7 +101,7 @@ namespace Pakal
 				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
 					dd.second.delegate(arguments);
 				else
-					EventSystemUtils::executeInThread(m_scheduler,[dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
+					EventSystemUtils::execute_in_thread(m_scheduler,[dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
 			}
 		}
 
@@ -121,7 +121,7 @@ namespace Pakal
 
 	public:
 
-		inline EventScheduler* getEventScheduler() { return m_scheduler; }
+		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
 
 		Event() : m_scheduler(nullptr), m_isEnabled(true)
 		{
@@ -132,11 +132,11 @@ namespace Pakal
 			m_scheduler = scheduler;
 		}
 
-		inline unsigned int addListener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			unsigned int hash = EventSystemUtils::hashFunction((int)& delegate + (int)& callBackThread);
+			unsigned int hash = EventSystemUtils::hash_function((int)& delegate + (int)& callBackThread);
 			m_delegates.emplace(hash, DelegateData<void>(delegate, callBackThread) );
 			return hash;
 		}
@@ -156,7 +156,7 @@ namespace Pakal
 			return m_delegates.empty();
 		}
 
-		inline void removeListener(unsigned int key)
+		inline void remove_listener(unsigned int key)
 		{	
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_delegates.erase(key);
@@ -182,7 +182,7 @@ namespace Pakal
 				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
 					dd.second.delegate();
 				else
-					EventSystemUtils::executeInThread(m_scheduler,dd.second.delegate,dd.second.tid);
+					EventSystemUtils::execute_in_thread(m_scheduler,dd.second.delegate,dd.second.tid);
 			}
 		}
 

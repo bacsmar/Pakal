@@ -95,6 +95,6 @@
 	#include <cassert>
 #else
 	#define  ASSERT(x)
-	#define  BREAKIF(x)
+	#define  ASSERT_IF(x)
 #endif
 

@@ -24,48 +24,48 @@ namespace Pakal
 		typedef std::queue<BasicTaskPtr,std::list<BasicTaskPtr>> TaskQueue;		
 	private:		
 		EventScheduler*			m_scheduler;
-		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inboxStore;
+		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inbox;
 		std::thread::id m_tid;
 
 		explicit InboxQueue(EventScheduler* dispatcher, std::thread::id tid);
 		
 
 		template<class TOut>
-		std::shared_ptr<Task<TOut>> pushTask(const std::function<TOut(void)> & jobDelegate)
+		std::shared_ptr<Task<TOut>> push_task(const std::function<TOut(void)> & jobDelegate)
 		{
 			ASSERT(this);
 
 			auto task = std::make_shared<Task<TOut>>(jobDelegate, m_scheduler);
 
-			m_inboxStore.push(task);
+			m_inbox.push(task);
 			return task;			
 		}		
 
-		BasicTaskPtr pushTask(const std::function<void()>& jobDelegate);	
+		BasicTaskPtr push_task(const std::function<void()>& jobDelegate);	
 
-		inline BasicTaskPtr popTask()
+		inline BasicTaskPtr pop_task()
 		{
-			BasicTaskPtr task = m_inboxStore.front();
-			m_inboxStore.pop();
+			BasicTaskPtr task = m_inbox.front();
+			m_inbox.pop();
 			return task;
 		}
 
-		inline TaskQueue& popAllTasks()
+		inline TaskQueue& pop_all_tasks()
 		{
-			return m_inboxStore.getListToProcess();
+			return m_inbox.getListToProcess();
 		}
 
 		inline bool empty()
 		{
-			return m_inboxStore.empty();
+			return m_inbox.empty();
 		}
 
 		inline int size()
 		{
-			return m_inboxStore.size();
+			return m_inbox.size();
 		}
 		
-		inline std::thread::id getTid();
+		inline std::thread::id get_tid();
 
 	};
 }

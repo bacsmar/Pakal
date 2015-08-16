@@ -27,12 +27,12 @@ void Pakal::BodyComponent::onInit()
 		std::cout << "Joder:"<< this->m_body->GetPosition().y<<std::endl;
 	};
 	
-	listenerId = getSystem()->update_event.addListener(f);	
+	listenerId = getSystem()->update_event.add_listener(f);	
 }
 
 void Pakal::BodyComponent::onDestroy()
 {
-	getSystem()->update_event.removeListener(listenerId);
+	getSystem()->update_event.remove_listener(listenerId);
 	getSystem()->destroyBody(m_body);
 	m_body = nullptr;
 	std::cout << "eliminando:"<<std::endl;
