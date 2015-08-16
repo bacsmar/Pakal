@@ -8,29 +8,22 @@ namespace Pakal
 	class InboxQueue;
 	class EventScheduler;
 
-	class _PAKALExport AsyncTaskDispatcher
+	class _PAKALExport AsyncTaskDispatcher final
 	{
-	private:
+		friend class EventScheduler;
+
 		InboxQueue* m_inbox;
 		EventScheduler* m_scheduler;
 
 	public:
-		virtual ~AsyncTaskDispatcher() {}
+		~AsyncTaskDispatcher() {}
 		AsyncTaskDispatcher() : m_inbox(nullptr), m_scheduler(nullptr) {}
 
-		inline std::thread::id threadId();
+		inline std::thread::id thread_id();
 
-		inline EventScheduler* getScheduler()
-		{
-			return m_scheduler;
-		}
+		inline EventScheduler* get_scheduler();
 
-		inline void setScheduler(EventScheduler* scheduler)
-		{
-			m_scheduler = scheduler;
-		}
-
-		void dispatchTasks();
+		void dispatch_tasks();
 	};
 
 }

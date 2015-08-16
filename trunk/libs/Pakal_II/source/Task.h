@@ -7,6 +7,7 @@
 
 #include "BasicTask.h"
 #include "Event.h"
+#include "EventSystemUtils.h"
 
 namespace Pakal
 {
@@ -22,16 +23,16 @@ namespace Pakal
 
 	public:
 
-		Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : m_Job(job)
+		Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : m_job(job)
 		{
-			setIsCompleted ( false);
-			m_EventCompleted.connectWithScheduler(scheduler);
-			m_EventCompletedWithResult.connectWithScheduler(scheduler);
+			m_completed = false;
+			m_event_completed.connect_with_scheduler(scheduler);
+			m_event_completed_with_result.connect_with_scheduler(scheduler);
 		}
 
-		Task(const TArgs& result) : m_Result(result)
+		Task(const TArgs& result) : m_result(result)
 		{
-			setIsCompleted ( true);
+			m_completed = true;
 		}
 
 		~Task()
@@ -41,35 +42,39 @@ namespace Pakal
 
 	private:
 
-		std::function<TArgs(void)>		m_Job;
-		TArgs							m_Result;
-		Event<TArgs>					m_EventCompletedWithResult;
+		std::function<TArgs(void)>		m_job;
+		TArgs							m_result;
+		Event<TArgs>					m_event_completed_with_result;
 
 	protected:
 		inline void run() override
 		{
-			ASSERT(isCompleted() == false);
+			ASSERT(m_completed == false);
 
-			m_Result = m_Job();			
-			setIsCompleted(true);
-			m_EventCompletedWithResult.notify(m_Result);
-			m_EventCompleted.notify();
+			m_result = m_job();			
+			m_completed = true;
+			m_event_completed_with_result.notify(m_result);
+			m_event_completed.notify();
 		}
 
 	public:
 
-		inline TArgs Result()
+		inline TArgs result()
 		{
 			wait();
-			return m_Result;
+			return m_result;
 		}
 		
-		void onCompletionDo(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
+		void on_completion(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
 		{
-			if (isCompleted())
-				callBack(m_Result);
+			if (m_completed)
+			{
+				m_event_completed_with_result.clear();
+				m_event_completed_with_result.addListener(callBack,callBackThread);
+				m_event_completed_with_result.notify(m_result);
+			}
 			else
-				m_EventCompletedWithResult.addListener(callBack,callBackThread);
+				m_event_completed_with_result.addListener(callBack,callBackThread);
 		}
 	};
 
@@ -86,7 +91,7 @@ namespace Pakal
 				return completedTask();
 			}
 
-			EventScheduler* scheduler = tasks.at(0)->getEventScheduler();
+			EventScheduler* scheduler = tasks.at(0)->get_event_scheduler();
 
 			static auto emptyDelegate = []()
 			{
@@ -96,15 +101,15 @@ namespace Pakal
 			};
 
 			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate, scheduler);
-			task->m_Result = tasks.size();
+			task->m_result = tasks.size();
 
 			BasicTaskPtr myTask(task);
 
 			std::function<void()> onComplete = [myTask]()
 			{
 				Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*>(myTask.get());
-				--t->m_Result;
-				if (t->m_Result == 0)
+				--t->m_result;
+				if (t->m_result == 0)
 				{
 					t->run();
 				}
@@ -112,7 +117,7 @@ namespace Pakal
 
 			for (auto& t : tasks)
 			{
-				t->onCompletionDo(onComplete, NULL_THREAD);
+				t->on_completion(onComplete, NULL_THREAD);
 			}
 			return myTask;
 		}

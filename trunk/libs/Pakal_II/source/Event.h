@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Config.h"
-
 #include <set>
 
 #include <unordered_map>
@@ -46,7 +45,7 @@ namespace Pakal
 		{
 		}
 
-		inline void connectWithScheduler(EventScheduler* scheduler)
+		inline void connect_with_scheduler(EventScheduler* scheduler)
 		{
 			m_scheduler = scheduler;
 		}
@@ -77,8 +76,15 @@ namespace Pakal
 		}
 
 		inline void removeListener(unsigned int key)
-		{					
+		{		
+			std::lock_guard<std::mutex> lock(m_mutex);
 			m_delegates.erase(key);
+		}
+
+		inline void clear()
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_delegates.clear();
 		}
 
 		void notify(const TArgs& arguments)
@@ -121,7 +127,7 @@ namespace Pakal
 		{
 		}
 
-		inline void connectWithScheduler(EventScheduler* scheduler)
+		inline void connect_with_scheduler(EventScheduler* scheduler)
 		{
 			m_scheduler = scheduler;
 		}
@@ -151,8 +157,15 @@ namespace Pakal
 		}
 
 		inline void removeListener(unsigned int key)
-		{					
+		{	
+			std::lock_guard<std::mutex> lock(m_mutex);
 			m_delegates.erase(key);
+		}
+
+		inline void clear()
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_delegates.clear();
 		}
 
 		void notify()

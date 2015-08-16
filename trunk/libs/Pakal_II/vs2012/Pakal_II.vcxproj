@@ -19,7 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\cpplinq.hpp" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\IManager.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\ISystem.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\SingletonHolder.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
@@ -63,6 +66,8 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\System.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
@@ -236,6 +241,5 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

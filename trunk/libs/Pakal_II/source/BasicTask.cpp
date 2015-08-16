@@ -1,48 +1,60 @@
 #include "BasicTask.h"
+#include "EventSystemUtils.h"
 
 namespace Pakal
 {
-	BasicTask::BasicTask(const std::function<void()>& job, EventScheduler* scheduler): m_Job(job), m_isCompleted(false)
+	BasicTask::BasicTask(const std::function<void()>& job, EventScheduler* scheduler): m_job(job)
 	{
-		m_EventCompleted.connectWithScheduler(scheduler);
+		m_completed = false;
+		m_event_completed.connect_with_scheduler(scheduler);
 	}
 
-	BasicTask::BasicTask(): m_isCompleted(true)
+	BasicTask::BasicTask()
 	{
+		m_completed = true;
 	}
 
 	BasicTask::~BasicTask()
 	{
-	}	
+	}
+
+	bool BasicTask::is_completed()
+	{
+		return m_completed;
+	}
 
 	void BasicTask::wait()
 	{
-		if ( isCompleted() )
+		if (m_completed)
 			return;
-		
-		std::unique_lock<std::mutex> lock(m_cv_m);
-		m_cv.wait(lock, [&](){ return isCompleted();} );
+
+		while (!m_completed) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
-	void BasicTask::onCompletionDo(const std::function<void()>& callBack, std::thread::id callBackThread)
+	void BasicTask::on_completion(const std::function<void()>& callBack, std::thread::id callBackThread)
 	{
-		if (isCompleted())
-			callBack();
+		if (m_completed)
+		{
+			m_event_completed.clear();
+			m_event_completed.addListener(callBack,callBackThread);
+			m_event_completed.notify();
+		}
 		else
-			m_EventCompleted.addListener(callBack,callBackThread);
+			m_event_completed.addListener(callBack,callBackThread);
+
 	}
 
-	EventScheduler* BasicTask::getEventScheduler()
+	EventScheduler* BasicTask::get_event_scheduler()
 	{
-		return m_EventCompleted.getEventScheduler();
+		return m_event_completed.getEventScheduler();
 	}
 
 	void BasicTask::run()
 	{
-		ASSERT(m_isCompleted == false);
+		ASSERT(m_completed == false);
 
-		m_Job();
-		setIsCompleted(true);
-		m_EventCompleted.notify();
+		m_job();
+		m_completed = true;
+		m_event_completed.notify();
 	}
 }

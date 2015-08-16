@@ -37,7 +37,7 @@ Pakal::IrrGraphicsSystem* Pakal::MeshComponent::getSystem()
 
 Pakal::BasicTaskPtr Pakal::MeshComponent::LoadMeshAsync(const std::string& meshName)
 {
-	return m_GraphicSystem->getScheduler()->executeInThread([=]()
+	return m_GraphicSystem->get_scheduler()->execute_in_thread([=]()
 	{
 		m_mesh = getSystem()->get_smgr()->getMesh(meshName.c_str());
 		if ( m_node )
@@ -45,20 +45,20 @@ Pakal::BasicTaskPtr Pakal::MeshComponent::LoadMeshAsync(const std::string& meshN
 			m_node->remove();
 		}
 		m_node = getSystem()->get_smgr()->addMeshSceneNode(m_mesh);
-	}, m_GraphicSystem->threadId());
+	}, m_GraphicSystem->get_thread_id());
 
 }
 
 Pakal::BasicTaskPtr Pakal::MeshComponent::LoadTextureAsync(const std::string& textureName)
 {
-	return m_GraphicSystem->getScheduler()->executeInThread([=]()
+	return m_GraphicSystem->get_scheduler()->execute_in_thread([=]()
 	{
 		m_texture = getSystem()->get_driver()->getTexture(textureName.c_str());
 
 		m_node->setMaterialFlag(EMF_LIGHTING, false);
 		m_node->setMaterialTexture(0, m_texture);
 		m_node->setVisible(true);
-	}, m_GraphicSystem->threadId());
+	}, m_GraphicSystem->get_thread_id());
 }
 
 void Pakal::MeshComponent::setPosition(const Pakal::core::vector3df& position)

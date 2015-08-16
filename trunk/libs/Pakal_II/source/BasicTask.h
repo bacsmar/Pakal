@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <thread>
-#include <condition_variable>
+#include <atomic>
 
 #include "TaskFwd.h"
 #include "Event.h"
@@ -16,16 +16,15 @@ namespace Pakal
 	{
 		friend class InboxQueue;
 		friend class AsyncTaskDispatcher;
+		friend class TaskCompletionSource;
 
 	private:
-		std::function<void()> m_Job;
-		std::condition_variable m_cv;
-		std::mutex m_cv_m;
-		volatile bool		  m_isCompleted;
+		std::function<void()> m_job;
 
 	protected:
 
-		Event<void>			  m_EventCompleted;		
+		Event<void>			  m_event_completed;
+		std::atomic_bool	  m_completed;
 
 		virtual void run();
 
@@ -36,19 +35,10 @@ namespace Pakal
 
 		virtual ~BasicTask();
 
-		inline bool isCompleted()
-		{
-			return m_isCompleted;
-		}
-		inline void setIsCompleted(bool val)
-		{
-			m_isCompleted = val;
-			m_cv.notify_one();
-		}
-
+		inline bool is_completed();
 		inline void wait();
-		void onCompletionDo(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
-		inline EventScheduler* getEventScheduler();
+		void on_completion(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
+		inline EventScheduler* get_event_scheduler();
 	};
 
 	}

@@ -23,7 +23,10 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
-		IrrGraphicsSystem();
+		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };
+
+		IrrGraphicsSystem(EventScheduler* scheduler);
+
 	protected:
 
 		bool m_is_rendering;				
@@ -42,8 +45,12 @@ namespace Pakal
 
 		virtual ~IrrGraphicsSystem() {};
 
-		void on_initialize() override;
-		void on_terminate() override;
+		void on_init_graphics() override;
+		void on_terminate_graphics() override;
+		void on_update_graphics() override;
+		void on_pause_graphics() override;
+		void on_resume_graphics() override;
+
 
 		void initWindow();
 
@@ -52,7 +59,6 @@ namespace Pakal
 		void endScene();
 
 		virtual void set_window_caption(const wchar_t* caption) override;
-		virtual void on_update() override;		
 		virtual void show_fps( bool val ) override;
 
 		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;

@@ -5,7 +5,7 @@ namespace Pakal
 {
 	BasicTaskPtr EventSystemUtils::executeInThread(EventScheduler* scheduler, const std::function<void()>& fn, const std::thread::id& id)
 	{
-		return scheduler->executeInThread(fn, id);
+		return scheduler->execute_in_thread(fn, id);
 	}
 
 	unsigned EventSystemUtils::hashFunction(unsigned valueToHash) 
