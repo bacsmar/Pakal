@@ -52,11 +52,11 @@ namespace Pakal
 		void on_resume_graphics() override;
 
 
-		void initWindow();
+		void init_window();
 
-		void beginScene();
+		void begin_scene();
 		bool draw();
-		void endScene();
+		void end_scene();
 
 		virtual void set_window_caption(const wchar_t* caption) override;
 		virtual void show_fps( bool val ) override;

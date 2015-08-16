@@ -21,16 +21,16 @@ namespace Pakal
 		virtual ~GenericEntity();
 
 		virtual BasicTaskPtr initialize() 	override;
-				void		 addComponent(IComponent *c);
-				void		 removeComponent(IComponent *c);
-				BasicTaskPtr initializeComponents();		
+				void		 add_component(IComponent *c);
+				void		 remove_component(IComponent *c);
+				BasicTaskPtr initialize_components();		
 		
-		IComponent* getComponentByName(const std::string& name);		
+		IComponent* get_component_by_name(const std::string& name);		
 
 		template <class TComponent>
-		TComponent* getComponent()
+		TComponent* get_component()
 		{ 
-			for( auto & component: m_Components)
+			for( auto & component: m_components)
 			{
 				if( component->getType() == TComponent::getRTTI() )
 				{
@@ -41,7 +41,7 @@ namespace Pakal
 		}
 
 	protected:
-		std::vector<IComponent*> m_Components;
+		std::vector<IComponent*> m_components;
 	};
 
 

@@ -35,7 +35,7 @@ void Pakal::EventScheduler::terminate()
 	m_inboxes.clear();
 }
 
-Pakal::InboxQueue* Pakal::EventScheduler::findInboxForThread(std::thread::id currentTid)
+Pakal::InboxQueue* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id currentTid)
 {	
 	auto position = m_inboxes.find(currentTid);
 
@@ -51,7 +51,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::inbox_for_this_thread()
 
 	auto currentTid = std::this_thread::get_id();
 
-	auto inbox = findInboxForThread(currentTid);
+	auto inbox = find_inbox_for_thread(currentTid);
 		
 	if (inbox == nullptr)
 	{
@@ -70,10 +70,10 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 	if (currentTid == tid)
 	{
 		fn();
-		return TaskUtils::completedTask();
+		return TaskUtils::completed_task();
 	}
 
-	return findInboxForThread(tid)->pushTask(fn);
+	return find_inbox_for_thread(tid)->push_task(fn);
 }
 
 void Pakal::EventScheduler::register_dispatcher(AsyncTaskDispatcher* dispatcher)
@@ -89,6 +89,7 @@ void Pakal::EventScheduler::register_dispatcher(AsyncTaskDispatcher* dispatcher)
 void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatcher)
 {
 	ASSERT_IF(!m_initialized);
+	ASSERT_IF(dispatcher->m_inbox->size() > 0);
 
 	m_dispatchers.erase(dispatcher);
 

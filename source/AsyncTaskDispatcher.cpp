@@ -8,7 +8,7 @@
 
 std::thread::id Pakal::AsyncTaskDispatcher::thread_id()
 {
-	return m_inbox == nullptr ? NULL_THREAD : m_inbox->getTid();
+	return m_inbox == nullptr ? NULL_THREAD : m_inbox->get_tid();
 }
 
 Pakal::EventScheduler* Pakal::AsyncTaskDispatcher::get_scheduler()
@@ -25,7 +25,7 @@ void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 	
 	if( m_inbox->size() )
 	{
-		InboxQueue::TaskQueue& tasks = m_inbox->popAllTasks();
+		InboxQueue::TaskQueue& tasks = m_inbox->pop_all_tasks();
 		while (!tasks.empty())
 		{
 			BasicTaskPtr t = tasks.front();

@@ -15,7 +15,6 @@ namespace Pakal
 	class _PAKALExport System : public ISystem
 	{
 		std::atomic<SystemState> m_state;
-		std::thread::id			 m_thread_id;
 		std::thread*             m_thread;
 		EventScheduler*			 m_scheduler;
 		bool					 m_threaded;

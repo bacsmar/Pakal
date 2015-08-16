@@ -84,11 +84,11 @@ namespace Pakal
 	class TaskUtils
 	{
 	public:
-		static BasicTaskPtr whenAll(const std::vector<BasicTaskPtr>& tasks)
+		static BasicTaskPtr when_all(const std::vector<BasicTaskPtr>& tasks)
 		{
 			if (tasks.empty())
 			{
-				return completedTask();
+				return completed_task();
 			}
 
 			EventScheduler* scheduler = tasks.at(0)->get_event_scheduler();
@@ -122,7 +122,7 @@ namespace Pakal
 			return myTask;
 		}
 
-		static void waitAll(const std::vector<BasicTaskPtr>& tasks)
+		static void wait_all(const std::vector<BasicTaskPtr>& tasks)
 		{
 			for (auto& t : tasks)
 			{
@@ -130,13 +130,13 @@ namespace Pakal
 			}
 		}
 
-		static BasicTaskPtr completedTask()
+		static BasicTaskPtr completed_task()
 		{
 			return std::make_shared<BasicTask>();
 		};
 
 		template <class T>
-		static std::shared_ptr<Task<T>> fromResult(const T& result)
+		static std::shared_ptr<Task<T>> from_result(const T& result)
 		{
 			return std::make_shared<Task<T>>(result);
 		}

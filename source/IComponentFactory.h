@@ -23,7 +23,7 @@ namespace Pakal
 	public:
 		virtual IComponent* create() = 0;
 
-		virtual const RTTI& getComponentType() = 0;
+		virtual const RTTI& get_component_type() = 0;
 
 		virtual ~IComponentFactory() {}
 	};
@@ -49,7 +49,7 @@ namespace Pakal
 			return _create(m_Initializer);
 		}
 
-		virtual const RTTI& getComponentType() override
+		virtual const RTTI& get_component_type() override
 		{
 			return TComponent::getRTTI();
 		}
@@ -59,13 +59,13 @@ namespace Pakal
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TComponent, class TInitializer>
-	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
+	IComponentFactory * create_component_factory(TInitializer* initializer)
 	{
 		return new ComponentFactory<TComponent, TInitializer>(initializer);		
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class componentType>
-	IComponentFactory * CreateComponentFactory()
+	IComponentFactory * create_component_factory()
 	{
 		return new ComponentFactory<componentType, void>(nullptr);
 	};

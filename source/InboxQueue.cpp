@@ -3,7 +3,7 @@
 
 namespace Pakal
 {
-	std::thread::id InboxQueue::getTid()
+	std::thread::id InboxQueue::get_tid()
 	{
 		return m_tid;
 	}
@@ -12,13 +12,13 @@ namespace Pakal
 	{		
 	}
 
-	BasicTaskPtr InboxQueue::pushTask(const std::function<void()>& jobDelegate)
+	BasicTaskPtr InboxQueue::push_task(const std::function<void()>& jobDelegate)
 	{
 		ASSERT(this);
 
 		BasicTaskPtr taskPtr = std::make_shared<BasicTask>(jobDelegate,m_scheduler);
 
-		m_inboxStore.push(taskPtr);
+		m_inbox.push(taskPtr);
 
 		return taskPtr;
 	}

@@ -29,7 +29,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler)
 	m_showFps(false)
 {}
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::initWindow()
+void IrrGraphicsSystem::init_window()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
@@ -61,7 +61,7 @@ void IrrGraphicsSystem::initWindow()
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_init_graphics()
 {
-	initWindow();
+	init_window();
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_terminate_graphics()
@@ -73,7 +73,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	delete m_render_info;
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::beginScene()
+void IrrGraphicsSystem::begin_scene()
 {
 	ASSERT(driver);
 	driver->beginScene(true, true, SColor(255,0,0,0));
@@ -109,16 +109,16 @@ bool IrrGraphicsSystem::draw()
 	return isRunning;
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::endScene()
+void IrrGraphicsSystem::end_scene()
 {
 	driver->endScene();
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_update_graphics()
 {
-	beginScene();
+	begin_scene();
 	bool result = draw();
-	endScene();
+	end_scene();
 	if (result == false) terminate();
 }
 
@@ -146,7 +146,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.push_back( CreateComponentFactory<MeshComponent>(this));
+	factories.push_back( create_component_factory<MeshComponent>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

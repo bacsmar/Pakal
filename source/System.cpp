@@ -25,7 +25,6 @@ namespace Pakal
 	System::System(EventScheduler* scheduler, bool usesThread)
 	{
 		m_threaded = usesThread;
-		m_thread_id = NULL_THREAD;
 		m_thread = nullptr;
 		m_scheduler = scheduler;
 		m_state = SystemState::Created;
@@ -38,7 +37,7 @@ namespace Pakal
 
 	std::thread::id System::get_thread_id()
 	{
-		return m_thread_id;
+		return m_dispatcher.thread_id();
 	}
 
 	bool System::is_threaded()
@@ -74,20 +73,18 @@ namespace Pakal
 		if (m_threaded)
 		{
 			m_thread = new std::thread(&System::update_loop,this);
-			m_thread_id = m_thread->get_id();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		}
 		else
 		{
-			m_thread_id = std::this_thread::get_id();
 			m_dispatcher.dispatch_tasks();
 		}
 
 		return  m_scheduler->execute_in_thread([this]()
 		{
-			on_initialize();
 			m_state = SystemState::Running;
-		},m_thread_id);
+			on_initialize();
+		},m_dispatcher.thread_id());
 
 	}
 
@@ -97,19 +94,17 @@ namespace Pakal
 
 		return m_scheduler->execute_in_thread([this]()
 		{
-			m_state = SystemState::Terminated;
-
-			on_terminate();
-
 			m_scheduler->deregister_dispatcher(&m_dispatcher);
-			m_thread_id = NULL_THREAD;
+
+			m_state = SystemState::Terminated;
+			on_terminate();
 
 			if (m_threaded)
 			{
 				m_thread->detach();
 				SAFE_DEL(m_thread);
 			}
-		}, m_thread_id);
+		}, m_dispatcher.thread_id());
 	}
 
 	BasicTaskPtr System::pause()
@@ -118,7 +113,7 @@ namespace Pakal
 
 		m_state = SystemState::Paused;
 
-		return m_scheduler->execute_in_thread(std::bind(&System::on_pause,this),m_thread_id);
+		return m_scheduler->execute_in_thread(std::bind(&System::on_pause,this),m_dispatcher.thread_id());
 	}
 
 	BasicTaskPtr System::resume()
@@ -129,6 +124,6 @@ namespace Pakal
 		{
 			on_resume();
 			m_state = SystemState::Running;
-		},m_thread_id);
+		},m_dispatcher.thread_id());
 	}
 }
