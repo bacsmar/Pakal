@@ -41,7 +41,8 @@ Engine::Engine() :
 	m_graphics_system(nullptr),
 	m_physics_system(nullptr),
 	m_game_state_manager(nullptr),
-	m_component_manager(nullptr)
+	m_component_manager(nullptr),
+	m_running_loop(false)
 {
 	LogMgr::init();
 	LogMgr::set_log_level(10);
@@ -70,6 +71,12 @@ void Engine::run(IPakalApplication* application)
 
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 
+	ISystem* engine[] = {this};
+	m_running_loop = true;
+
+	//exit in case the graphics_system exits
+	auto listenerId = m_graphics_system->terminate_event.add_listener([this]() { m_running_loop = false;  });
+
 	m_application = application;
 
 	//Initialize managers
@@ -87,44 +94,33 @@ void Engine::run(IPakalApplication* application)
 
 	// Initialize engine
 	initialize();
+	
+	//get the systems we are gonna loop into
+	auto nonThreadedSystems = 
+			from(m_systems) 
+		>>	concat(from_array(engine))  
+		>>	where([](ISystem* s){ return !s->is_threaded(); }) 
+		>>	to_vector();
 
-	//main loop
-	while(get_state() != SystemState::Terminated)
+	//do the loop
+	while(m_running_loop)
 	{
-		if (is_threaded() == false)
+		for (auto s : nonThreadedSystems)
 		{
-			update();
+			if (s->get_state() != SystemState::Terminated)
+				s->update();
 		}
-
-		for(auto s = m_systems.begin(); s != m_systems.end();)
-		{
-			ISystem* system = *s;
-			
-			if (system->get_state() == SystemState::Terminated)
-			{
-				s = m_systems.erase(s);
-
-				if (system == m_graphics_system) // we need to exit if the graphics_system ends
-				{
-					terminate()->wait();
-				}
-			}
-			else
-			{
-				++s;
-				if (system->is_threaded() == false)
-				{
-					system->update();
-				}
-			}
-		}
-
 		procress_os_messages();
 	}
 
+	//unsubscribe from event
+	m_graphics_system->terminate_event.remove_listener(listenerId);
+	
 	//terminate systems
 	auto terminationTasks = 
 			from(m_systems)
+		>>	concat(from_array(engine))  
+		>>	where([](ISystem* s){ return  s->get_state() != SystemState::Terminated;  })
 		>>  select([](ISystem* sys){ return sys->terminate();  }) 
 		>>  to_vector(m_systems.size());
 
@@ -143,7 +139,11 @@ void Engine::on_initialize()
 	m_application->setup_game_states(m_game_state_manager);	
 }
 //////////////////////////////////////////////////////////////////////////
-void Engine::on_terminate() {}
+void Engine::on_terminate()
+{
+	m_running_loop = false;  
+}
+//////////////////////////////////////////////////////////////////////////
 
 void Engine::on_pause()
 {
@@ -151,6 +151,7 @@ void Engine::on_pause()
 
 	TaskUtils::wait_all(tasks);
 }
+//////////////////////////////////////////////////////////////////////////
 
 void Engine::on_resume()
 {
@@ -158,6 +159,7 @@ void Engine::on_resume()
 
 	TaskUtils::wait_all(tasks);	
 }
+//////////////////////////////////////////////////////////////////////////
 
 void Engine::on_update() {}
 
@@ -172,7 +174,7 @@ void Engine::procress_os_messages()
 		DispatchMessage(&msg);
 		if (msg.message == WM_QUIT)
 		{
-			terminate()->wait();
+			m_running_loop = false;
 		}
 	}
 #endif

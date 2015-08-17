@@ -3,6 +3,7 @@
 
 #include "IComponentProvider.h"
 #include "System.h"
+#include "Event.h"
 
 namespace Pakal
 {
@@ -28,9 +29,11 @@ namespace Pakal
 		virtual const char*			get_system_name() override = 0;
 
 		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
+
+		Event<void> terminate_event;
 	protected:
 
-		GraphicsSystem(EventScheduler* scheduler) : System(scheduler,false) {}
+		GraphicsSystem(EventScheduler* scheduler) : System(scheduler,false) { terminate_event.connect_with_scheduler(scheduler); }
 		virtual ~GraphicsSystem(){}
 
 
