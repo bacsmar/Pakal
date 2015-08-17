@@ -11,9 +11,6 @@
 #include "IComponent.h"
 #include "Task.h"
 #include <string>
-#include <cpplinq.hpp>
-
-using namespace cpplinq;
 
 namespace Pakal
 {
@@ -35,12 +32,15 @@ namespace Pakal
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	BasicTaskPtr GenericEntity::initialize_components()
 	{
-		auto tasks = 
-				from(m_components)
-			>>  select([this](IComponent* c){ c->set_parent_entity(this);  return c->init(); })
-			>>  to_vector(m_components.size());
+		std::vector<BasicTaskPtr> terminationTasks;
 
-		return TaskUtils::when_all(tasks);
+		for (auto c : m_components)
+		{
+			c->set_parent_entity(this);
+			terminationTasks.push_back(c->init());
+		}
+
+		return TaskUtils::when_all(terminationTasks);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////

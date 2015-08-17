@@ -60,10 +60,10 @@
     <ClCompile Include="..\source\ComponentManager.cpp">
       <Filter>Managers\ComponentManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.cpp">
+    <ClCompile Include="..\source\TaskCompletionSource.cpp">
       <Filter>Managers\EventManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\System.cpp">
+    <ClCompile Include="..\source\System.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -196,9 +196,6 @@
       <Filter>Managers\EventManager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\ISystem.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\cpplinq.hpp">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
