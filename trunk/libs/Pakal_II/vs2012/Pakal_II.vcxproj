@@ -19,18 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\cpplinq.hpp" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\IManager.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\ISystem.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.h" />
+    <ClInclude Include="..\source\IManager.h" />
+    <ClInclude Include="..\source\ISystem.h" />
+    <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\SingletonHolder.h" />
+    <ClInclude Include="..\source\SingletonHolder.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\EventSystemUtils.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h" />
+    <ClInclude Include="..\source\GraphicsSystem.h" />
+    <ClInclude Include="..\source\PakalMath.h" />
+    <ClInclude Include="..\source\PakalTypes.h" />
+    <ClInclude Include="..\source\Pakalvector3d.h" />
     <ClInclude Include="..\source\BasicTask.h" />
     <ClInclude Include="..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
@@ -66,8 +65,8 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\System.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.cpp" />
+    <ClCompile Include="..\source\System.cpp" />
+    <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
@@ -159,7 +158,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/sfml/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/pugixml/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/libs/irrlicht/include;$(SolutionDir)/libs/Pakal_II/source;$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/sfml/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/pugixml/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

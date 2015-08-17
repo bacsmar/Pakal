@@ -5,7 +5,6 @@
 #include "GameStateManager.h"
 #include "IPakalApplication.h"
 #include "EventScheduler.h"
-#include "cpplinq.hpp"
 
 #include "ComponentManager.h"
 #include "SingletonHolder.h"
@@ -15,7 +14,6 @@
 #endif
 
 using namespace Pakal;
-using namespace cpplinq;
 
 //////////////////////////////////////////////////////////////////////////
 Engine& Engine::instance()
@@ -37,12 +35,12 @@ Engine::~Engine()
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine() :
 	System(new EventScheduler(),PAKAL_USE_THREADS == 1),
+	m_running_loop(false),
 	m_application(nullptr),
 	m_graphics_system(nullptr),
 	m_physics_system(nullptr),
 	m_game_state_manager(nullptr),
-	m_component_manager(nullptr),
-	m_running_loop(false)
+	m_component_manager(nullptr)
 {
 	LogMgr::init();
 	LogMgr::set_log_level(10);
@@ -71,13 +69,13 @@ void Engine::run(IPakalApplication* application)
 
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 
-	ISystem* engine[] = {this};
-	m_running_loop = true;
+	m_application = application;
+
 
 	//exit in case the graphics_system exits
+	m_running_loop = true;
 	auto listenerId = m_graphics_system->terminate_event.add_listener([this]() { m_running_loop = false;  });
 
-	m_application = application;
 
 	//Initialize managers
 	m_scheduler->initialize();
@@ -85,22 +83,27 @@ void Engine::run(IPakalApplication* application)
 	m_game_state_manager->initialize();
 
 	//initialize systems
-	auto initializationTasks = 
-			from(m_systems) 
-		>>  select([](ISystem* sys){ return sys->initialize();  }) 
-		>>  to_vector(m_systems.size());
-
+	std::vector<BasicTaskPtr> initializationTasks;
+	for(auto s : m_systems)
+	{
+		initializationTasks.push_back(s->initialize());
+	}
 	TaskUtils::wait_all(initializationTasks);
 
 	// Initialize engine
 	initialize();
 	
 	//get the systems we are gonna loop into
-	auto nonThreadedSystems = 
-			from(m_systems) 
-		>>	concat(from_array(engine))  
-		>>	where([](ISystem* s){ return !s->is_threaded(); }) 
-		>>	to_vector();
+	std::vector<ISystem*> nonThreadedSystems;
+
+	if (!is_threaded())
+		nonThreadedSystems.push_back(this);
+
+	for (auto s : m_systems)
+	{
+		if (!s->is_threaded())
+			nonThreadedSystems.push_back(s);
+	}
 
 	//do the loop
 	while(m_running_loop)
@@ -112,25 +115,30 @@ void Engine::run(IPakalApplication* application)
 		}
 		procress_os_messages();
 	}
-
-	//unsubscribe from event
-	m_graphics_system->terminate_event.remove_listener(listenerId);
 	
+	//terminate engine
+	if (get_state() != SystemState::Terminated)
+		terminate()->wait();
+
 	//terminate systems
-	auto terminationTasks = 
-			from(m_systems)
-		>>	concat(from_array(engine))  
-		>>	where([](ISystem* s){ return  s->get_state() != SystemState::Terminated;  })
-		>>  select([](ISystem* sys){ return sys->terminate();  }) 
-		>>  to_vector(m_systems.size());
+	std::vector<BasicTaskPtr> terminationTasks;
+
+	for(auto s : m_systems)
+	{
+		if (s->get_state() != SystemState::Terminated)
+			terminationTasks.push_back(s->terminate());
+	}
 
 	TaskUtils::wait_all(terminationTasks);
-
 
 	//terminate managers
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
 	m_scheduler->terminate();
+
+	//unsubscribe from event
+	m_graphics_system->terminate_event.remove_listener(listenerId);
+
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
@@ -147,17 +155,29 @@ void Engine::on_terminate()
 
 void Engine::on_pause()
 {
-	auto tasks = from(m_systems) >> select([](ISystem* s) { return s->pause(); }) >> to_vector(m_systems.size());
+	std::vector<BasicTaskPtr> pauseTaks;
 
-	TaskUtils::wait_all(tasks);
+	for (auto s : m_systems)
+	{
+		if (s->get_state() == SystemState::Running)
+			pauseTaks.push_back(s->pause());
+	}
+
+	TaskUtils::wait_all(pauseTaks);
 }
 //////////////////////////////////////////////////////////////////////////
 
 void Engine::on_resume()
 {
-	auto tasks = from(m_systems) >> select([](ISystem* s) { return s->resume(); }) >> to_vector(m_systems.size());
+	std::vector<BasicTaskPtr> resumeTasks;
 
-	TaskUtils::wait_all(tasks);	
+	for (auto s : m_systems)
+	{
+		if (s->get_state() == SystemState::Paused)
+			resumeTasks.push_back(s->resume());
+	}
+
+	TaskUtils::wait_all(resumeTasks);
 }
 //////////////////////////////////////////////////////////////////////////
 
