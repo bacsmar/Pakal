@@ -19,6 +19,8 @@ namespace Pakal
 	private:
 		using System::initialize;
 
+		bool m_running_loop;
+
 	public:
 		static Engine &instance();
 
@@ -33,7 +35,7 @@ namespace Pakal
 
 		inline void add_system(ISystem* system)
 		{
-			ASSERT_IF(get_state() != SystemState::Created);
+			ASSERT_IF(get_state() != SystemState::Created && get_state() != SystemState::Terminated);
 			ASSERT_IF(std::find(m_systems.begin(),m_systems.end(), system) != m_systems.end());
 
 			m_systems.push_back(system);
