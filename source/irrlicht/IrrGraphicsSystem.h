@@ -43,7 +43,7 @@ namespace Pakal
 		RendererInfo				*m_render_info;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
 
-		virtual ~IrrGraphicsSystem() {};
+		virtual ~IrrGraphicsSystem();
 
 		void on_init_graphics() override;
 		void on_terminate_graphics() override;
