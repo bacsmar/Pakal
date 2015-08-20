@@ -18,22 +18,18 @@ namespace Pakal
 	{
 	}
 
-	bool BasicTask::is_completed()
-	{
-		return m_completed;
-	}
-
 	void BasicTask::wait()
 	{
-		if (m_completed)
+		if (is_completed())
 			return;
-
-		while (!m_completed) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		
+		std::unique_lock<std::mutex> lock(m_cv_m);
+		m_cv.wait(lock, [=](){ return is_completed();} );
 	}
 
 	void BasicTask::on_completion(const std::function<void()>& callBack, std::thread::id callBackThread)
 	{
-		if (m_completed)
+		if (is_completed())
 		{
 			m_event_completed.clear();
 			m_event_completed.add_listener(callBack,callBackThread);
@@ -51,10 +47,10 @@ namespace Pakal
 
 	void BasicTask::run()
 	{
-		ASSERT(m_completed == false);
+		ASSERT(is_completed() == false);
 
 		m_job();
-		m_completed = true;
+		set_completed( true);
 		m_event_completed.notify();
 	}
 }
