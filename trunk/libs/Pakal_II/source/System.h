@@ -2,6 +2,7 @@
 #include "Config.h"
 #include <thread>
 #include <atomic>
+#include <condition_variable>
 
 #include "ISystem.h"
 #include "AsyncTaskDispatcher.h"
@@ -15,10 +16,13 @@ namespace Pakal
 	class _PAKALExport System : public ISystem
 	{
 		std::atomic<SystemState> m_state;
-		std::thread*             m_thread;
-		EventScheduler*			 m_scheduler;
-		bool					 m_threaded;
-		AsyncTaskDispatcher		 m_dispatcher;
+		std::thread*			m_thread;
+		EventScheduler*			m_scheduler;
+		bool					m_threaded;
+		AsyncTaskDispatcher		m_dispatcher;
+		std::condition_variable	m_cv;
+		std::mutex				m_cv_m;
+		std::atomic_bool		m_is_initialized;
 
 	protected:
 
@@ -30,7 +34,7 @@ namespace Pakal
 
 	private:
 
-		void update_loop();
+		void update_loop();		
 
 	public:
 
