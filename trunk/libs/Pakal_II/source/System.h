@@ -20,9 +20,11 @@ namespace Pakal
 		EventScheduler*			m_scheduler;
 		bool					m_threaded;
 		AsyncTaskDispatcher		m_dispatcher;
-		std::condition_variable	m_cv;
-		std::mutex				m_cv_m;
-		std::atomic_bool		m_is_initialized;
+
+
+		std::condition_variable	m_wait_condition;
+		std::mutex				m_wait_mutex;
+		std::atomic_bool		m_thread_ready;
 
 	protected:
 

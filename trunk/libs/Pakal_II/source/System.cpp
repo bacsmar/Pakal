@@ -6,11 +6,14 @@ namespace Pakal
 {
 	void System::update_loop()
 	{
-		m_dispatcher.dispatch_tasks();
-		m_is_initialized = true;
-		m_cv.notify_one();
+		ASSERT(m_threaded);
 
-		do
+		m_dispatcher.dispatch_tasks();
+
+		m_thread_ready = true;
+		m_wait_condition.notify_one();
+
+		while(m_state != SystemState::Terminated)
 		{
 			m_dispatcher.dispatch_tasks();
 			if (m_state == SystemState::Running)
@@ -18,16 +21,18 @@ namespace Pakal
 				on_update();
 			}
 
-		} while(m_threaded &&  m_state != SystemState::Terminated);
+		} 
 	}
 
 	System::~System()
 	{
-		ASSERT_IF(m_state != SystemState::Terminated);
+		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
 	}
 
 	System::System(EventScheduler* scheduler, bool usesThread)
 	{
+		ASSERT(scheduler);
+
 		m_threaded = usesThread;
 		m_thread = nullptr;
 		m_scheduler = scheduler;
@@ -57,7 +62,7 @@ namespace Pakal
 
 	void System::update()
 	{
-		ASSERT_IF(m_threaded || m_state == SystemState::Terminated);
+		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
 		m_dispatcher.dispatch_tasks();
 		if (m_state == SystemState::Running)
@@ -68,20 +73,19 @@ namespace Pakal
 
 	BasicTaskPtr System::initialize()
 	{
-		ASSERT_IF(m_state != SystemState::Created && m_state != SystemState::Terminated);
+		ASSERT(m_state == SystemState::Created || m_state == SystemState::Terminated);
 
 		m_state = SystemState::Created;
-		m_is_initialized = false;
-
 		m_scheduler->register_dispatcher(&m_dispatcher);
 			
 		if (m_threaded)
 		{
+			m_thread_ready = false;
+			std::unique_lock<std::mutex> lock(m_wait_mutex);
+
 			m_thread = new std::thread(&System::update_loop,this);
 
-			// wait	until the system has dispatched his first tasks in update_loop
-			std::unique_lock<std::mutex> lock(m_cv_m);
-			m_cv.wait(lock, [=](){ return m_is_initialized;} );
+			m_wait_condition.wait(lock, [=](){ return m_thread_ready;} );
 		}
 		else
 		{
@@ -98,7 +102,7 @@ namespace Pakal
 
 	BasicTaskPtr System::terminate()
 	{
-		ASSERT_IF(m_state != SystemState::Running && m_state != SystemState::Paused );
+		ASSERT(m_state == SystemState::Running || m_state == SystemState::Paused );
 
 		return m_scheduler->execute_in_thread([this]()
 		{
@@ -117,7 +121,7 @@ namespace Pakal
 
 	BasicTaskPtr System::pause()
 	{
-		ASSERT_IF(m_state != SystemState::Running);
+		ASSERT(m_state == SystemState::Running);
 
 		m_state = SystemState::Paused;
 
@@ -126,7 +130,7 @@ namespace Pakal
 
 	BasicTaskPtr System::resume()
 	{
-		ASSERT_IF(m_state != SystemState::Paused);
+		ASSERT(m_state == SystemState::Paused);
 
 		return m_scheduler->execute_in_thread([this]()
 		{

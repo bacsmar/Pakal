@@ -35,8 +35,8 @@ namespace Pakal
 
 		inline void add_system(ISystem* system)
 		{
-			ASSERT_IF(get_state() != SystemState::Created && get_state() != SystemState::Terminated);
-			ASSERT_IF(std::find(m_systems.begin(),m_systems.end(), system) != m_systems.end());
+			ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
+			ASSERT(std::find(m_systems.begin(),m_systems.end(), system) == m_systems.end());
 
 			m_systems.push_back(system);
 		}
