@@ -79,7 +79,7 @@ namespace Pakal
 		{
 			m_thread = new std::thread(&System::update_loop,this);
 
-			// wait	until the system dispatch his first tasks in the update_loop
+			// wait	until the system has dispatched his first tasks in update_loop
 			std::unique_lock<std::mutex> lock(m_cv_m);
 			m_cv.wait(lock, [=](){ return m_is_initialized;} );
 		}
