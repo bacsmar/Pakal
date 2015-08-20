@@ -64,8 +64,8 @@ Engine::Engine() :
 //////////////////////////////////////////////////////////////////////////
 void Engine::run(IPakalApplication* application)
 {
-	ASSERT_IF(get_state() != SystemState::Created &&  get_state() != SystemState::Terminated);
-	ASSERT_IF(application == nullptr);
+	ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
+	ASSERT(application);
 
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 

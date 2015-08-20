@@ -1,5 +1,4 @@
 #include "BasicTask.h"
-#include "EventSystemUtils.h"
 
 namespace Pakal
 {
@@ -14,17 +13,15 @@ namespace Pakal
 		m_completed = true;
 	}
 
-	BasicTask::~BasicTask()
+	bool BasicTask::is_completed()
 	{
+		return m_completed;
 	}
 
 	void BasicTask::wait()
-	{
-		if (is_completed())
-			return;
-		
-		std::unique_lock<std::mutex> lock(m_cv_m);
-		m_cv.wait(lock, [=](){ return is_completed();} );
+	{				
+		std::unique_lock<std::mutex> lock(m_wait_mutex);
+		m_wait_condition.wait(lock, [=](){ return is_completed();} );
 	}
 
 	void BasicTask::on_completion(const std::function<void()>& callBack, std::thread::id callBackThread)
@@ -45,12 +42,18 @@ namespace Pakal
 		return m_event_completed.get_event_scheduler();
 	}
 
+	void BasicTask::set_completed(bool val)
+	{
+		m_completed = val;
+		m_wait_condition.notify_one();
+	}
+
 	void BasicTask::run()
 	{
 		ASSERT(is_completed() == false);
 
 		m_job();
-		set_completed( true);
+		set_completed(true);
 		m_event_completed.notify();
 	}
 }

@@ -6,18 +6,18 @@
 
 Pakal::EventScheduler::~EventScheduler()
 {
-	ASSERT_IF(m_initialized);
+	ASSERT(!m_initialized);
 }
 
 void Pakal::EventScheduler::initialize()
 {
-	ASSERT_IF(m_initialized);
+	ASSERT(!m_initialized);
 	m_initialized = true;
 }
 
 void Pakal::EventScheduler::terminate()
 {
-	ASSERT_IF(!m_initialized);
+	ASSERT(m_initialized);
 
 	m_initialized = false;
 	for(auto& item : m_inboxes)
@@ -47,7 +47,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id 
 
 Pakal::InboxQueue* Pakal::EventScheduler::inbox_for_this_thread()
 {
-	ASSERT_IF(!m_initialized);
+	ASSERT(m_initialized);
 
 	auto currentTid = std::this_thread::get_id();
 
@@ -63,7 +63,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::inbox_for_this_thread()
 
 Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function<void()>& fn,std::thread::id tid)
 {
-	ASSERT_IF(!m_initialized);
+	ASSERT(m_initialized);
 
 	auto currentTid = std::this_thread::get_id();
 
@@ -78,8 +78,8 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 
 void Pakal::EventScheduler::register_dispatcher(AsyncTaskDispatcher* dispatcher)
 {
-	ASSERT_IF(!m_initialized);
-	ASSERT_IF(m_dispatchers.find(dispatcher) != m_dispatchers.end());
+	ASSERT(m_initialized);
+	ASSERT(m_dispatchers.find(dispatcher) == m_dispatchers.end());
 
 	dispatcher->m_scheduler = this;
 			
@@ -88,8 +88,8 @@ void Pakal::EventScheduler::register_dispatcher(AsyncTaskDispatcher* dispatcher)
 
 void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatcher)
 {
-	ASSERT_IF(!m_initialized);
-	ASSERT_IF(dispatcher->m_inbox->size() > 0);
+	ASSERT(m_initialized);
+	ASSERT(dispatcher->m_inbox->size() == 0);
 
 	m_dispatchers.erase(dispatcher);
 

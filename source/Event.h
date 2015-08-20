@@ -96,9 +96,11 @@ namespace Pakal
 			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
+			auto thisThread = std::this_thread::get_id();
+
 			for (const auto& dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
+				if (thisThread == dd.second.tid || dd.second.tid == NULL_THREAD )
 					dd.second.delegate(arguments);
 				else
 					EventSystemUtils::execute_in_thread(m_scheduler,[dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
@@ -177,9 +179,11 @@ namespace Pakal
 			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
+			auto thisThread = std::this_thread::get_id();
+
 			for (const auto &dd : copyDelegates)
 			{
-				if (m_scheduler == nullptr || dd.second.tid == NULL_THREAD )
+				if (thisThread == dd.second.tid || dd.second.tid == NULL_THREAD )
 					dd.second.delegate();
 				else
 					EventSystemUtils::execute_in_thread(m_scheduler,dd.second.delegate,dd.second.tid);

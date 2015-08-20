@@ -91,7 +91,6 @@
 
 #ifdef _DEBUG
 	#define ASSERT(x) assert (x)
-	#define ASSERT_IF(x) assert (!(x))
 	#include <cassert>
 #else
 	#define  ASSERT(x)
