@@ -9,28 +9,33 @@
 
 #pragma once
 #include "config.h"
+#include <string>
 
 #if PAKAL_USE_LOG == 1
-	#ifdef _DEBUG
+	#ifndef _DEBUG
 
-	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_DEBUG,"[DEBUG]\t"    format, ## __VA_ARGS__);
-	#define LOG_INFO(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_INFORMATION,"[INFO]\t"    format, ## __VA_ARGS__);
-	#define LOG_WARNING(format, ...)	Pakal::LogMgr::log(Pakal::LogMgr::LOG_WARNING,"[WARNING]\t" format, ## __VA_ARGS__);
-	#define LOG_ERROR(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_ERROR,"[ERROR]\t"   format, ## __VA_ARGS__);
-	#define LOG_FATAL(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_FATAL,"[FATAL]\t"   format, ## __VA_ARGS__);
+	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_DEBUG,"[DEBUG]\t"    format, ## __VA_ARGS__);
+	#define LOG_INFO(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_INFO,"[INFO]\t"    format, ## __VA_ARGS__);
+	#define LOG_WARNING(format, ...)	Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_WARNING,"[WARNING]\t" format, ## __VA_ARGS__);
+	#define LOG_ERROR(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_ERROR,"[ERROR]\t"   format, ## __VA_ARGS__);
+	#define LOG_FATAL(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_FATAL,"[FATAL]\t"   format, ## __VA_ARGS__);
 
 	#else /* Not NDEBUG */
-
+#if PAKAL_LOG_SHOW_FILE_INFO == 1
 	#define _LOG_QUOTE_AUX_(x) #x
 	#define _LOG_QUOTE_(x) _LOG_QUOTE_AUX_(x)
 	#define __LOG_INFO_FORMAT__ "%-80s"
 	#define __LOG_INFO__ "[" __FILE__ ":" _LOG_QUOTE_(__LINE__) "]: "
+#else
+	#define __LOG_INFO_FORMAT__ "%s"
+	#define __LOG_INFO__ ""
+#endif
 
-	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_DEBUG, "[DEBUG]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_INFO(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_INFORMATION, "[INFO]\t"    __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_WARNING(format, ...)	Pakal::LogMgr::log(Pakal::LogMgr::LOG_WARNING, "[WARNING]\t" __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_ERROR(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_ERROR, "[ERROR]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
-	#define LOG_FATAL(format, ...)		Pakal::LogMgr::log(Pakal::LogMgr::LOG_FATAL, "[FATAL]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_DEBUG(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_DEBUG, "[DEBUG]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_INFO(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_INFO, "[INFO]\t"    __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_WARNING(format, ...)	Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_WARNING, "[WARNING]\t" __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_ERROR(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_ERROR, "[ERROR]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
+	#define LOG_FATAL(format, ...)		Pakal::LogMgr::instance().log(Pakal::LogMgr::LOG_FATAL, "[FATAL]\t"   __LOG_INFO_FORMAT__ format, __LOG_INFO__, ## __VA_ARGS__);
 
 	#endif // NDEBUG
 #else
@@ -41,18 +46,41 @@
 	#define LOG_FATAL(format, ...)		
 #endif
 
+// forward declaration
+
+#ifdef PAKAL_IPHONE_PLATFORM
+typedef	struct __sFILE FILE;
+#elif defined(PAKAL_ANDROID_PLATFORM)
+//typedef struct _sFILE FILE;
+#elif defined(PAKAL_LINUX_PLATFORM)
+//*nothing*//
+#else
+typedef struct _iobuf FILE;
+#endif
+
 namespace Pakal{	
 
-	namespace LogMgr 
+	class _PAKALExport LogMgr
 	{
-		enum LogLevel{ LOG_NONE, LOG_FATAL, LOG_CRITICAL, LOG_ERROR, LOG_WARNING, LOG_NOTICE, LOG_INFORMATION, LOG_DEBUG, LOG_TRACE};
+		template <typename T>
+		friend class SingletonHolder;
 
-		void _PAKALExport log( int level, const char *format, ... );
+		FILE    *m_log;
+		std::string mFileName;
+	protected:		
+		LogMgr();
+		~LogMgr(void);
 
-		void _PAKALExport set_log_level(int level);
+	public:				
+		void setFile(const std::string &_filename);
 
-		bool _PAKALExport init();
-		bool _PAKALExport stop();
+		void operator<<(const std::string& val);		
+
+		static LogMgr& instance();
+
+		enum LogLevel{ LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL};
+		
+		void log( int level, const char *format, ... );
 	};
 }
 
@@ -60,10 +88,9 @@ namespace Pakal{
 
 class  TLog
 {
-	//Pakal::LogMgr *pManager;
+	Pakal::LogMgr *pManager;
 public:	
-	TLog() { //pManager = Pakal::LogMgr::instance(); 
-			 }
+	TLog() { pManager = Pakal::LogMgr::instance(); }
 	// funciones miembro de las clases huesped
 	inline void log(const std::string& msg) { LOG_INFO("[Script] %s", msg.c_str()); }
 };

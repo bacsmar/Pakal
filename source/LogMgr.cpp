@@ -1,123 +1,153 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2011 The ZombieWar Engine Open Source Project
-// File: LogMgr.h
-// Original Author: Salvador Noel Romo Garcia.
-//
-// Purpose: Tool used for log output
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#pragma once
 #include "LogMgr.h"
-//#include "Poco/Logger.h"
-#ifdef PAKAL_WIN32_PLATFORM
-	/*#include "Poco/WindowsConsoleChannel.h"*/
+#include <iostream>
+#include <stdarg.h>
+#include <cstdio>
+#include <tinythread.h>
+
+#ifdef ANDROID
+#include <jni.h>
+#include <android/log.h>	
+	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Pakal", __VA_ARGS__))
+	//#define AM_DEBUG_TRACE LOGI
 #else
-	#include "Poco/ConsoleChannel.h"
-#endif // PAKAL_WIN32_PLATFORM
-#include <string>
-#include <stdarg.h> 
+	//#define AM_DEBUG_TRACE //printf
+	#define LOGI(...)
+#endif
+#include "SingletonHolder.h"
 
+using namespace Pakal;
+using namespace tthread;
 
-const unsigned LOGGER_MAX_ENTRY_SIZE = 255;
+#if PAKAL_USE_SCRIPTS == 1
+//	LUA, definicion
+EXPORT_OOLUA_FUNCTIONS_NON_CONST(TLog,log)
+EXPORT_OOLUA_FUNCTIONS_0_CONST(TLog)
+#endif
 
-namespace Pakal
+#ifdef PAKAL_WIN32_PLATFORM
+	#define COLOURED_LOG
+#endif
+
+#ifdef COLOURED_LOG
+#include  <stdio.h>
+#include  <windows.h>
+
+void ChangeColour(WORD theColour)
 {
-	namespace LogMgr
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
+	SetConsoleTextAttribute(hConsole,theColour);  // set the text attribute of the previous handle
+}
+
+#endif
+
+namespace Pakal{
+
+	mutex logMutex;	
+	bool Initialized = false;
+
+
+	void LogMgr::operator<<(const std::string& msj )
+	{		
+		lock_guard<mutex> guard(logMutex);
+		log(Pakal::LogMgr::LOG_INFO, msj.c_str());
+	}
+
+	LogMgr& LogMgr::instance()
 	{
-	/*	char buffer[LOGGER_MAX_ENTRY_SIZE];
-		Poco::Mutex mutex;*/
+		static SingletonHolder<LogMgr> sh;
+		return *sh.get();
+	}	
 
-		std::string Format(const char* format, va_list args)
+	void LogMgr::log( int level, const char *format, ... )
+	{
+#if PAKAL_USE_LOG == 1
+		lock_guard<mutex> guard(logMutex);
+		if( m_log == nullptr) return;
+
+#ifdef COLOURED_LOG
+		switch(level)
 		{
-			// Protect the buffer
-			/*Poco::Mutex::ScopedLock lock(LogMgr::mutex);
+		case LOG_DEBUG:
+			ChangeColour(FOREGROUND_GREEN| FOREGROUND_INTENSITY);
+			break;
+		case LOG_INFO:
+			ChangeColour(FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_RED);			
+			break;
+		case LOG_WARNING:
+			ChangeColour(FOREGROUND_GREEN|FOREGROUND_RED| FOREGROUND_INTENSITY);
+			break;
+		case LOG_ERROR:
+			ChangeColour(FOREGROUND_RED|FOREGROUND_INTENSITY);
+			break;
+		case LOG_FATAL:
+			ChangeColour(FOREGROUND_GREEN|FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+			break;
+		}		
+#endif
 
-			vsnprintf(LogMgr::buffer, LOGGER_MAX_ENTRY_SIZE - 1, format, args);
-			LogMgr::buffer[LOGGER_MAX_ENTRY_SIZE - 1] = '\0';
-			std::string text = LogMgr::buffer;
-			return text;*/
-			return std::string("");
+		va_list listArguments;
+		va_start( listArguments, format );				
+
+#ifndef PAKAL_ANDROID_PLATFORM
+		vfprintf( m_log, format, listArguments );
+		fprintf( m_log, "\n" );
+		fflush(m_log);
+#else
+		__android_log_vprint(level + ANDROID_LOG_DEBUG, "TEO_ENGINE", format, listArguments);
+#endif
+
+#if PAKAL_USE_LOG_FILE == 1						
+		vfprintf( stdout, format, listArguments );
+		fprintf( stdout, "\n" );
+		fflush(stdout);
+#endif
+
+		va_end( listArguments );
+#endif
+	}
+
+	LogMgr::LogMgr()
+	{		
+		m_log = stdout;
+		mFileName.clear();
+		Initialized = true;
+	}
+	LogMgr::~LogMgr(void)
+	{		
+		log(Pakal::LogMgr::LOG_INFO,"[INFO]\tLog deinitialized");
+		if( m_log!=stdout )
+		{
+			fclose( m_log );
+			//SAFE_DEL(m_log);
+		}				
+		Initialized = false;
+	}
+
+	void LogMgr::setFile( const std::string &_filename )
+	{		
+		mFileName = _filename;
+
+		if( mFileName.empty() == true)
+			mFileName = "GameLog.log";
+#if PAKAL_USE_LOG_FILE
+#ifdef _MSC_VER
+		fopen_s(&m_log,mFileName.c_str(), "w+");
+#else
+		m_log = fopen( mFileName.c_str(), "w" );
+#endif		
+#endif
+		if( m_log==NULL ){
+			m_log = stdout;
+			log(Pakal::LogMgr::LOG_ERROR,"[ERROR]\tError at open the log file. Redirecting to stdout.");
 		}
 
+		log(Pakal::LogMgr::LOG_INFO,"[INFO]\tLog initialized");
 	}
 }
 
-void Pakal::LogMgr::log( int level, const char *format,...)
-{
-
-	va_list vl;
-	va_start(vl, format);
-	vprintf(format, vl);
-	va_end(vl);
-
-	//Poco::Logger& loggerImpl = Poco::Logger::root();
-
-	//// Don't do formatting when this logger filters the message.
-	//// This prevents unecessary string manipulation.
-	//if (level <=  loggerImpl.getLevel())
-	//{
-	//	va_list args;
-	//	va_start(args, format);
-
-	//	std::string messageText = Format(format, args);
-
-	//	switch (level)
-	//	{
-	//	case LOG_NONE:
-	//		break;
-	//	case LOG_FATAL:
-	//		loggerImpl.fatal(messageText);
-	//		break;
-	//	case LOG_CRITICAL:
-	//		loggerImpl.critical(messageText);
-	//		break;
-	//	case LOG_ERROR:
-	//		loggerImpl.error(messageText);
-	//		break;
-	//	case LOG_WARNING:
-	//		loggerImpl.warning(messageText);
-	//		break;
-	//	case LOG_NOTICE:
-	//		loggerImpl.notice(messageText);
-	//		break;
-	//	case LOG_INFORMATION:
-	//		loggerImpl.information(messageText);
-	//		break;
-	//	case LOG_DEBUG:
-	//		loggerImpl.debug(messageText);
-	//		break;
-	//	case LOG_TRACE:
-	//		loggerImpl.trace(messageText);
-	//		break;
-	//	default:
-	//		loggerImpl.information(messageText);
-	//		break;
-	//	}
-	//}
-}
-
-void Pakal::LogMgr::set_log_level( int level )
-{
-	/*Poco::Logger& loggerImpl = Poco::Logger::root();
-	loggerImpl.setLevel(level);*/
-}
-
-bool Pakal::LogMgr::init()
-{
-#ifdef PAKAL_WIN32_PLATFORM
-	//Poco::Logger::root().setChannel( new Poco::WindowsColorConsoleChannel() );
-#else
-	//Poco::Logger::root().setChannel( new Poco::ColorConsoleChannel() );
-#endif
-	//Poco::Logger::root().information("Initializing Pakal LogManager" );	
-	return true;
-}
-
-
-bool Pakal::LogMgr::stop()
-{
-	//Poco::Logger::root().getChannel()->close();
-	//Poco::Logger::root().getChannel()->release();
-	return true;
+namespace rapidxml{
+	void parse_error_handler(const char *what, void *where)
+	{
+		LOG_ERROR("[RapidXML] error:%s",what)
+	}
 }

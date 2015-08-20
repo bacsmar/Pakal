@@ -28,9 +28,7 @@ Engine::~Engine()
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
-	SAFE_DEL(m_scheduler);
-
-	LogMgr::stop();
+	SAFE_DEL(m_scheduler);	
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine() :
@@ -42,8 +40,7 @@ Engine::Engine() :
 	m_game_state_manager(nullptr),
 	m_component_manager(nullptr)
 {
-	LogMgr::init();
-	LogMgr::set_log_level(10);
+	LogMgr::instance();	
 
 	m_scheduler = get_scheduler();
 
@@ -71,11 +68,9 @@ void Engine::run(IPakalApplication* application)
 
 	m_application = application;
 
-
 	//exit in case the graphics_system exits
 	m_running_loop = true;
 	auto listenerId = m_graphics_system->terminate_event.add_listener([this]() { m_running_loop = false;  });
-
 
 	//Initialize managers
 	m_scheduler->initialize();
