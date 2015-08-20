@@ -29,6 +29,11 @@ IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler)
 	m_showFps(false)
 {}
 //////////////////////////////////////////////////////////////////////////
+IrrGraphicsSystem::~IrrGraphicsSystem()
+{
+	SAFE_DEL(m_render_info);
+}
+//////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::init_window()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
@@ -70,7 +75,6 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	device->closeDevice();
 	device->drop();
 	device = nullptr;
-	delete m_render_info;
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::begin_scene()
