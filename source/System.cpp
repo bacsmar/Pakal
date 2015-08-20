@@ -6,6 +6,10 @@ namespace Pakal
 {
 	void System::update_loop()
 	{
+		m_dispatcher.dispatch_tasks();
+		m_is_initialized = true;
+		m_cv.notify_one();
+
 		do
 		{
 			m_dispatcher.dispatch_tasks();
@@ -67,13 +71,17 @@ namespace Pakal
 		ASSERT_IF(m_state != SystemState::Created && m_state != SystemState::Terminated);
 
 		m_state = SystemState::Created;
+		m_is_initialized = false;
 
 		m_scheduler->register_dispatcher(&m_dispatcher);
 			
 		if (m_threaded)
 		{
 			m_thread = new std::thread(&System::update_loop,this);
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+			// wait	until the system dispatch his first tasks in the update_loop
+			std::unique_lock<std::mutex> lock(m_cv_m);
+			m_cv.wait(lock, [=](){ return m_is_initialized;} );
 		}
 		else
 		{
