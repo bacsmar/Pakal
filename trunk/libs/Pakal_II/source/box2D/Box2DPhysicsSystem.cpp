@@ -26,7 +26,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler) :
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
-	factories.push_back( CreateComponentFactory<BodyComponent>(this) );
+	factories.push_back( CreateComponentFactory<BodyComponent,BodyComponent_Box2d>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)

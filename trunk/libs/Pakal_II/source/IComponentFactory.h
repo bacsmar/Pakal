@@ -23,51 +23,66 @@ namespace Pakal
 	public:
 		virtual IComponent* create() = 0;
 
-		virtual const RTTI& get_component_type() = 0;
+		virtual const char* get_typename() = 0;
 
 		virtual ~IComponentFactory() {}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TComponent, class TInitializer = void>
+	template <class TBase,class TImplementation, class TInitializer = void>
 	class ComponentFactory : public IComponentFactory
 	{
 	protected:
 		
 		template<class T>
-		inline IComponent *  _create (T* initializer) { return new TComponent(initializer); }
+		inline TImplementation*  _create (T* initializer) { return new TImplementation(initializer); }
 		
-		inline IComponent *  _create (void*) { return new TComponent(); }
+		inline TImplementation*  _create (void*) { return new TImplementation(); }
 
 	public:
 
-		ComponentFactory(TInitializer* intializer) : m_Initializer(intializer) {} 
+		explicit ComponentFactory(TInitializer* intializer) : m_initializer(intializer)
+		{
+			ASSERT(TImplementation::getRTTI().isDerivedFrom(TBase::getRTTI()));
+		} 
 
 		virtual ~ComponentFactory(){}
 
 		virtual IComponent* create() override
 		{
-			return _create(m_Initializer);
+			return _create(m_initializer);
 		}
 
-		virtual const RTTI& get_component_type() override
+		virtual const char* get_typename() override
 		{
-			return TComponent::getRTTI();
+			return TBase::getRTTI().getName();
 		}
 				
 	protected:
-		TInitializer* m_Initializer;
+		TInitializer* m_initializer;
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TComponent, class TInitializer>
+	template <class TBase,class TImplementation, class TInitializer>
 	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
-		return new ComponentFactory<TComponent, TInitializer>(initializer);		
+		return new ComponentFactory<TBase,TImplementation,TInitializer>(initializer);		
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class componentType>
+	template <class TBase,class TImplementation>
 	IComponentFactory * CreateComponentFactory()
 	{
-		return new ComponentFactory<componentType, void>(nullptr);
+		return new ComponentFactory<TBase,TImplementation,void>(nullptr);
+	};
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	template <class TImplementation, class TInitializer>
+	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
+	{
+		return new ComponentFactory<TImplementation,TImplementation,TInitializer>(initializer);		
+	};
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	template <class TImplementation>
+	IComponentFactory * CreateComponentFactory()
+	{
+		return new ComponentFactory<TImplementation,TImplementation,void>(nullptr);
 	};
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////

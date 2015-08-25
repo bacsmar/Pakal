@@ -42,7 +42,5 @@ namespace Pakal
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;
 		virtual void on_resume_graphics() = 0;
-
-		void register_component_factories(std::vector<IComponentFactory*>& factories) override = 0;
 	};
 }

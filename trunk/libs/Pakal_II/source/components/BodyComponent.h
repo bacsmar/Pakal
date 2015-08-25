@@ -39,4 +39,15 @@ namespace Pakal
 	private:
 		core::vector3df m_Position;
 	};	
+
+
+	class BodyComponent_Box2d : public BodyComponent
+	{
+	public:
+		explicit BodyComponent_Box2d(Box2DPhysicsSystem* sys)
+			: BodyComponent(sys) {}
+	};
+
+
+
 }
