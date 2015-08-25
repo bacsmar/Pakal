@@ -23,27 +23,31 @@ namespace Pakal
 
 		std::condition_variable m_wait_condition;
 		std::mutex m_wait_mutex;
+
 	protected:
 
 		Event<void>			  m_event_completed;
 
-		inline void set_completed(bool val);
-
+		inline void set_completed();
 		virtual void run();
 
 	public:
 
-		BasicTask(const std::function<void()>& job, EventScheduler* scheduler);
-		BasicTask();
+		explicit BasicTask(const std::function<void()>& job, EventScheduler* scheduler) : m_job(job) { m_completed=false, m_event_completed.connect_with_scheduler(scheduler); };
+		explicit BasicTask(EventScheduler* scheduler) { m_completed=true; m_event_completed.connect_with_scheduler(scheduler); }
 
 		virtual ~BasicTask() {};
 
-		inline bool is_completed();
+		inline bool is_completed() { return m_completed; }
+		inline EventScheduler* get_event_scheduler() { return m_event_completed.get_event_scheduler(); }
+		inline void wait()
+		{
+			std::unique_lock<std::mutex> lock(m_wait_mutex);
+			m_wait_condition.wait(lock, [=](){ return is_completed();} );			
+		}
 
 
-		inline void wait();
 		void on_completion(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
-		inline EventScheduler* get_event_scheduler();
 	};
 
-	}
+}

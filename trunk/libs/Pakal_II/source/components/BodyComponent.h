@@ -18,10 +18,10 @@ namespace Pakal
 	class _PAKALExport BodyComponent : public PhysicComponent
 	{
 	public:
-		DECLARE_RTTI(BodyComponent);
+		DECLARE_RTTI_WITH_BASE(BodyComponent,PhysicComponent);
 
 		~BodyComponent() override;
-		BodyComponent(Box2DPhysicsSystem* sys);
+		explicit BodyComponent(Box2DPhysicsSystem* sys);
 
 		b2Body*		createBody(b2BodyDef &bodyDef);
 		b2Fixture*	addFixture(b2FixtureDef &fixtureDef);
@@ -31,13 +31,12 @@ namespace Pakal
 
 	protected:
 		inline Box2DPhysicsSystem* getSystem();
-		void onInit() override;
-		void onDestroy() override;
+		void on_init() override;
+		void on_destroy() override;
 
 		b2Body* m_body;
 		b2Fixture* m_fixture;
 	private:
 		core::vector3df m_Position;
-		unsigned int listenerId;
 	};	
 }

@@ -22,7 +22,7 @@ namespace Pakal
 	{
 	public:	
 		virtual ~Box2DPhysicsSystem() {};
-		Box2DPhysicsSystem(EventScheduler* scheduler);
+		explicit Box2DPhysicsSystem(EventScheduler* scheduler);
 
 		inline b2World* getWorld() const
 		{

@@ -7,7 +7,6 @@
 
 #include "BasicTask.h"
 #include "Event.h"
-#include "EventSystemUtils.h"
 
 namespace Pakal
 {
@@ -23,21 +22,16 @@ namespace Pakal
 
 	public:
 
-		Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : m_job(job)
+		explicit Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : BasicTask(nullptr,scheduler) , m_job(job)
 		{
-			set_completed( false);
-			m_event_completed.connect_with_scheduler(scheduler);
+			m_event_completed_with_result.connect_with_scheduler(scheduler);
+		}
+		explicit Task(const TArgs& result, EventScheduler* scheduler) : BasicTask(scheduler),  m_result(result)
+		{
 			m_event_completed_with_result.connect_with_scheduler(scheduler);
 		}
 
-		Task(const TArgs& result) : m_result(result)
-		{
-			set_completed(true);
-		}
-
-		~Task()
-		{
-		}		
+		~Task() { }
 
 
 	private:
@@ -52,7 +46,7 @@ namespace Pakal
 			ASSERT(is_completed() == false);
 
 			m_result = m_job();			
-			set_completed(true);
+			set_completed();
 			m_event_completed_with_result.notify(m_result);
 			m_event_completed.notify();
 		}
@@ -67,7 +61,7 @@ namespace Pakal
 		
 		void on_completion(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
 		{
-			if (m_completed)
+			if (is_completed())
 			{
 				m_event_completed_with_result.clear();
 				m_event_completed_with_result.addListener(callBack,callBackThread);
@@ -88,7 +82,7 @@ namespace Pakal
 		{
 			if (tasks.empty())
 			{
-				return completed_task();
+				return completed_task(nullptr);
 			}
 
 			EventScheduler* scheduler = tasks.at(0)->get_event_scheduler();
@@ -130,15 +124,15 @@ namespace Pakal
 			}
 		}
 
-		static BasicTaskPtr completed_task()
+		static BasicTaskPtr completed_task(EventScheduler* scheduler)
 		{
-			return std::make_shared<BasicTask>();
+			return std::make_shared<BasicTask>(scheduler);
 		};
 
 		template <class T>
-		static std::shared_ptr<Task<T>> from_result(const T& result)
+		static std::shared_ptr<Task<T>> from_result(const T& result,EventScheduler* scheduler)
 		{
-			return std::make_shared<Task<T>>(result);
+			return std::make_shared<Task<T>>(result,scheduler);
 		}
 	};
 	

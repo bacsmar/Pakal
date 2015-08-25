@@ -3,10 +3,6 @@
 
 namespace Pakal
 {
-	std::thread::id InboxQueue::get_tid()
-	{
-		return m_tid;
-	}
 
 	InboxQueue::InboxQueue(EventScheduler* dispatcher, std::thread::id tid): m_scheduler(dispatcher), m_tid(tid)
 	{		

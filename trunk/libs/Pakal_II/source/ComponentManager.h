@@ -44,6 +44,6 @@ namespace Pakal
 		virtual ~ComponentManager();
 		ComponentManager(){}
 	private:
-		std::unordered_map<std::string, IComponentFactory*> m_ComponentFactories;
+		std::unordered_map<std::string, IComponentFactory*> m_factories;
 	};
 }

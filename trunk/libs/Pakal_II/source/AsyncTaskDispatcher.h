@@ -2,6 +2,8 @@
 
 #include "Config.h"
 #include <thread>
+#include "InboxQueue.h"
+
 
 namespace Pakal 
 {
@@ -19,9 +21,13 @@ namespace Pakal
 		~AsyncTaskDispatcher() {}
 		AsyncTaskDispatcher() : m_inbox(nullptr), m_scheduler(nullptr) {}
 
-		inline std::thread::id thread_id();
+		inline std::thread::id thread_id()
+		{
+			ASSERT(m_inbox);
+			return m_inbox->get_tid();
+		}
 
-		inline EventScheduler* get_scheduler();
+		inline EventScheduler* get_scheduler() { return m_scheduler; }
 
 		void dispatch_tasks();
 	};

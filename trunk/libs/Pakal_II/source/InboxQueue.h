@@ -65,7 +65,10 @@ namespace Pakal
 			return m_inbox.size();
 		}
 		
-		inline std::thread::id get_tid();
+		inline std::thread::id get_tid()
+		{
+			return m_tid;
+		};
 
 	};
 }

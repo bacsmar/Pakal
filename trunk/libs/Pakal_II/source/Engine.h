@@ -14,15 +14,14 @@ namespace Pakal
 	class ComponentManager;
 	class IManager;
 
-	class _PAKALExport Engine : public System
+	class _PAKALExport Engine final : public System
 	{
-	private:
 		using System::initialize;
 
 		bool m_running_loop;
 
 	public:
-		static Engine &instance();
+		static Engine& instance();
 
 		void run(IPakalApplication* application);
 
@@ -35,19 +34,24 @@ namespace Pakal
 
 		inline void add_system(ISystem* system)
 		{
-			ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
+			ASSERT(get_state() == SystemState::Created || get_state() == SystemState::Terminated);
 			ASSERT(std::find(m_systems.begin(),m_systems.end(), system) == m_systems.end());
 
 			m_systems.push_back(system);
 		}
 
+		inline void remove_system(ISystem* system)
+		{
+			ASSERT(get_state() == SystemState::Created || get_state() == SystemState::Terminated);
+			m_systems.erase(std::find(m_systems.begin(),m_systems.end(), system));
+		}
 
 		Engine();
 		~Engine();
 	protected:
 
 		void procress_os_messages();
-		void on_update() override;
+		void on_update() override {};
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;

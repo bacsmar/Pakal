@@ -17,20 +17,19 @@ namespace Pakal
 	class _PAKALExport MeshComponent : public GraphicComponent
 	{
 	public:		
-
-		DECLARE_RTTI(MeshComponent);
+		DECLARE_RTTI_WITH_BASE(MeshComponent,GraphicComponent);
 
 		~MeshComponent() override;
 
-		MeshComponent(IrrGraphicsSystem* irr);
+		explicit MeshComponent(IrrGraphicsSystem* irr);
 	protected:
 		inline IrrGraphicsSystem* getSystem();
 
 		irr::video::ITexture		*m_texture;
 		irr::scene::IMesh			*m_mesh;
 		irr::scene::IMeshSceneNode	*m_node;
-		void onInit() override;
-		void onDestroy() override;
+		void on_init() override;
+		void on_destroy() override;
 	public:
 
 		BasicTaskPtr LoadMeshAsync(const std::string& meshName);

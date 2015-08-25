@@ -70,7 +70,7 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 	if (currentTid == tid)
 	{
 		fn();
-		return TaskUtils::completed_task();
+		return TaskUtils::completed_task(this);
 	}
 
 	return find_inbox_for_thread(tid)->push_task(fn);
