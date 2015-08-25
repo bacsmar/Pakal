@@ -21,12 +21,12 @@ namespace Pakal
 
 	BasicTaskPtr GraphicComponent::init()
 	{
-		return m_GraphicSystem->get_scheduler()->execute_in_thread(std::bind(&GraphicComponent::onInit,this),m_GraphicSystem->get_thread_id());
+		return m_graphic_system->get_scheduler()->execute_in_thread(std::bind(&GraphicComponent::on_init,this),m_graphic_system->get_thread_id());
 	}
 
 	BasicTaskPtr GraphicComponent::destroy()
 	{
-		return m_GraphicSystem->get_scheduler()->execute_in_thread(std::bind(&GraphicComponent::onDestroy,this),m_GraphicSystem->get_thread_id());
+		return m_graphic_system->get_scheduler()->execute_in_thread(std::bind(&GraphicComponent::on_destroy,this),m_graphic_system->get_thread_id());
 	}
 
 }

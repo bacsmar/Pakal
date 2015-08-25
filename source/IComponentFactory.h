@@ -59,13 +59,13 @@ namespace Pakal
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TComponent, class TInitializer>
-	IComponentFactory * create_component_factory(TInitializer* initializer)
+	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
 		return new ComponentFactory<TComponent, TInitializer>(initializer);		
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class componentType>
-	IComponentFactory * create_component_factory()
+	IComponentFactory * CreateComponentFactory()
 	{
 		return new ComponentFactory<componentType, void>(nullptr);
 	};

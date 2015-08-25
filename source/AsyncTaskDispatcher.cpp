@@ -1,20 +1,8 @@
 #include "AsyncTaskDispatcher.h"
-#include "InboxQueue.h"
 #include "BasicTask.h"
 
 #include "EventScheduler.h"
 
-
-
-std::thread::id Pakal::AsyncTaskDispatcher::thread_id()
-{
-	return m_inbox == nullptr ? NULL_THREAD : m_inbox->get_tid();
-}
-
-Pakal::EventScheduler* Pakal::AsyncTaskDispatcher::get_scheduler()
-{
-	return m_scheduler;
-}
 
 void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 {
@@ -25,7 +13,7 @@ void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 	
 	if( m_inbox->size() )
 	{
-		InboxQueue::TaskQueue& tasks = m_inbox->pop_all_tasks();
+		auto& tasks = m_inbox->pop_all_tasks();
 		while (!tasks.empty())
 		{
 			BasicTaskPtr t = tasks.front();

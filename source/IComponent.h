@@ -22,18 +22,18 @@ namespace Pakal
 	{
 		friend class IEntity;
 	public:
-		REQUIRE_RTTI()
+		DECLARE_RTTI(IComponent)
 
 		virtual ~IComponent(void){}	
 		
 		IComponent() : 
-			m_ParentEntity(nullptr),
-			m_isInitialized(false)
+			m_parent_entity(nullptr),
+			m_initialized(false)
 		{}		
 
-		inline const IEntity* get_parent_entity() const		{ return m_ParentEntity; };
-		inline void set_parent_entity(const IEntity *parent)	{ m_ParentEntity = parent; };		
-		inline bool is_initialized()	const					{ return m_isInitialized; }
+		inline const IEntity* get_parent_entity() const		{ return m_parent_entity; };
+		inline void set_parent_entity(const IEntity *parent)	{ m_parent_entity = parent; };		
+		inline bool is_initialized()	const					{ return m_initialized; }
 		
 
 		virtual BasicTaskPtr init()	= 0;
@@ -41,8 +41,8 @@ namespace Pakal
 
 	protected:		
 
-		const IEntity* m_ParentEntity;		
-		bool		   m_isInitialized;		
+		const IEntity* m_parent_entity;		
+		bool		   m_initialized;		
 
 	};
 }

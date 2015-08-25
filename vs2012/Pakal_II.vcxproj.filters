@@ -141,18 +141,6 @@
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\GraphicsSystem.h">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalMath.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\PakalTypes.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\Pakalvector3d.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\MeshComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -177,26 +165,24 @@
     <ClInclude Include="..\source\GenericEntity.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\SingletonHolder.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\System.h">
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\source\GameStateManager.h">
       <Filter>Managers\GameStateManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\IManager.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\ComponentManager.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\TaskCompletionSource.h">
-      <Filter>Managers\EventManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\elios%27 files\Projects\zombiewar\trunk\libs\Pakal_II\source\ISystem.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\IManager.h" />
+    <ClInclude Include="..\source\ISystem.h" />
+    <ClInclude Include="..\source\TaskCompletionSource.h" />
+    <ClInclude Include="..\source\SingletonHolder.h" />
+    <ClInclude Include="..\source\PakalMath.h" />
+    <ClInclude Include="..\source\PakalTypes.h" />
+    <ClInclude Include="..\source\Pakalvector3d.h" />
+    <ClInclude Include="..\source\GraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

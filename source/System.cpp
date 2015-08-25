@@ -39,27 +39,6 @@ namespace Pakal
 		m_state = SystemState::Created;
 	}
 
-	EventScheduler* System::get_scheduler()
-	{
-		return m_scheduler;
-	}
-
-	std::thread::id System::get_thread_id()
-	{
-		return m_dispatcher.thread_id();
-	}
-
-	bool System::is_threaded()
-	{
-		return m_threaded;
-	}
-
-	SystemState System::get_state()
-	{
-		return m_state; 
-	}
-
-
 	void System::update()
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
@@ -106,6 +85,7 @@ namespace Pakal
 
 		return m_scheduler->execute_in_thread([this]()
 		{
+			m_dispatcher.dispatch_tasks();
 			m_scheduler->deregister_dispatcher(&m_dispatcher);
 
 			m_state = SystemState::Terminated;

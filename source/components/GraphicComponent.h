@@ -18,20 +18,22 @@ namespace Pakal
 	{
 		friend class GraphicsSystem;
 	public:
+		DECLARE_RTTI_WITH_BASE(GraphicComponent,IComponent)
 
 		virtual ~GraphicComponent();
-		GraphicComponent(GraphicsSystem *graphicSystem) : m_GraphicSystem(graphicSystem) {}
+
+		explicit GraphicComponent(GraphicsSystem *graphicSystem) : m_graphic_system(graphicSystem) {}
 		
 		BasicTaskPtr init() override final;	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes
 	protected:
 		// is called when the component was initialized by the parent System
-		virtual void onInit() = 0;
+		virtual void on_init() = 0;
 		// is called when the component was destroyed by the parent System
-		virtual void onDestroy() = 0;
+		virtual void on_destroy() = 0;
 
 	protected:
-		GraphicsSystem *m_GraphicSystem;		
+		GraphicsSystem *m_graphic_system;		
 	
 	};
 }

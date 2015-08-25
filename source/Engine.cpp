@@ -55,7 +55,6 @@ Engine::Engine() :
 
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,6 +133,8 @@ void Engine::run(IPakalApplication* application)
 	//unsubscribe from event
 	m_graphics_system->terminate_event.remove_listener(listenerId);
 
+	//clear the message queue
+	procress_os_messages();
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
@@ -174,10 +175,6 @@ void Engine::on_resume()
 
 	TaskUtils::wait_all(resumeTasks);
 }
-//////////////////////////////////////////////////////////////////////////
-
-void Engine::on_update() {}
-
 //////////////////////////////////////////////////////////////////////////
 void Engine::procress_os_messages()
 {

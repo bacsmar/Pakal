@@ -19,16 +19,18 @@ namespace Pakal
 	{
 		friend class PhysicsSystem;
 	public:
+		DECLARE_RTTI_WITH_BASE(PhysicComponent,IComponent)
+
 		virtual ~PhysicComponent(){}
-		PhysicComponent(PhysicsSystem* pSystem) : m_PhysicsSystem(pSystem)	{ }
+		explicit PhysicComponent(PhysicsSystem* system) : m_physics_system(system)	{ }
 
 		BasicTaskPtr init() override final; 	// hide init From derivated classes
 		BasicTaskPtr destroy() override final;	// hide init From derivated classes
 
 	protected:		
-		virtual void onInit() = 0;
-		virtual void onDestroy() = 0;
+		virtual void on_init() = 0;
+		virtual void on_destroy() = 0;
 
-		PhysicsSystem* m_PhysicsSystem;				
+		PhysicsSystem* m_physics_system;				
 	};
 }

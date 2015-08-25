@@ -4,7 +4,7 @@ namespace Pakal
 {
 
 	template <class T>
-	class SingletonHolder
+	class SingletonHolder final
 	{
 	public:
 		SingletonHolder():

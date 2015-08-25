@@ -4,7 +4,7 @@
 #include <functional>
 #include <iostream>
 
-void Pakal::BodyComponent::onInit()
+void Pakal::BodyComponent::on_init()
 {	
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
@@ -21,21 +21,17 @@ void Pakal::BodyComponent::onInit()
 
 	m_body = getSystem()->createBody(&bodyDef);
 	m_fixture =  m_body->CreateFixture(&fixtureDef);	
-
-	std::function<void(bool)> f = [=](bool)
-	{
-		std::cout << "Joder:"<< this->m_body->GetPosition().y<<std::endl;
-	};
 	
-	listenerId = getSystem()->update_event.add_listener(f);	
 }
 
-void Pakal::BodyComponent::onDestroy()
+void Pakal::BodyComponent::on_destroy()
 {
-	getSystem()->update_event.remove_listener(listenerId);
 	getSystem()->destroyBody(m_body);
 	m_body = nullptr;
+
+	delete this;
 	std::cout << "eliminando:"<<std::endl;
+
 }
 
 Pakal::BodyComponent::~BodyComponent()
@@ -77,5 +73,5 @@ void Pakal::BodyComponent::setPosition(Pakal::core::vector3df & position)
 
 Pakal::Box2DPhysicsSystem* Pakal::BodyComponent::getSystem()
 {
-	return static_cast<Box2DPhysicsSystem*>(m_PhysicsSystem);
+	return static_cast<Box2DPhysicsSystem*>(m_physics_system);
 }
