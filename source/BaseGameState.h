@@ -12,7 +12,7 @@ namespace Pakal
 		friend GameStateManager;
 
 	public:
-		const char* get_name()
+		inline const char* get_name()
 		{
 			return m_name.c_str();
 		}
@@ -24,14 +24,14 @@ namespace Pakal
 
 	protected:
 
-		BaseGameState(const std::string& name): m_game_state_manager(nullptr), m_deallocate_on_pop(false)
+		explicit BaseGameState(const std::string& name): m_game_state_manager(nullptr), m_deallocate_on_pop(false)
 		{
 			m_name = name;
 		}
 
 		~BaseGameState() { }
 
-		const GameStateManager* get_game_state_manager()
+		inline const GameStateManager* get_game_state_manager()
 		{
 			return m_game_state_manager;
 		};

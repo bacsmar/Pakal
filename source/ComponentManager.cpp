@@ -18,20 +18,20 @@ void ComponentManager::register_provider(IComponentProvider& provider )
 	}
 }
 
-void ComponentManager::register_factory( IComponentFactory* factory, const std::string& name)
+void ComponentManager::register_factory(IComponentFactory* factory, bool replacePreviousFactory)
 {
 	ASSERT(factory);
 
-	std::string factoryName = name.empty() ? factory->get_component_type().getName() : name;
+	std::string componentTypename = factory->get_typename();
 
-	if(m_factories.find( factoryName ) != m_factories.end())
+	if(m_factories.find( componentTypename ) != m_factories.end() && replacePreviousFactory == false)
 	{
 		LOG_ERROR("[ComponentManager] Factory Already registered");
 		ASSERT(false);
 	}
 
-	m_factories[ factoryName ] = factory;
-	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", factoryName.c_str() );
+	m_factories[ componentTypename ] = factory;
+	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", componentTypename.c_str() );
 }
 
 IComponent* ComponentManager::create_component(const char* typeName )

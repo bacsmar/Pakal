@@ -8,15 +8,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "config.h"
+#include "Config.h"
 
 namespace Pakal{
 
-	class RTTI
+	class _PAKALExport RTTI
 	{
 	public:
-		RTTI(const char* name) : m_name(name), m_parent(nullptr){}
-		RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti){}
+		explicit RTTI(const char* name) : m_name(name), m_parent(nullptr){}
+		explicit RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti){}
 
 		inline const char * getName() const { return m_name; }
 

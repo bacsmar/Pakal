@@ -28,8 +28,6 @@ namespace Pakal
 		static PhysicsSystem* create_instance(EventScheduler* scheduler);
 
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
-		virtual void				register_component_factories( std::vector<IComponentFactory*> &factories) override {};
-
 		virtual const char*			get_system_name() override = 0;
 
 	protected:
