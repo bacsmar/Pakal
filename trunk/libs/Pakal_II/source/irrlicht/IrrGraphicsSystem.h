@@ -25,7 +25,7 @@ namespace Pakal
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };
 
-		IrrGraphicsSystem(EventScheduler* scheduler);
+		explicit IrrGraphicsSystem(EventScheduler* scheduler,bool usesThread);
 
 	protected:
 

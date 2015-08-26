@@ -41,7 +41,7 @@ namespace Pakal
 		virtual			~EventScheduler();
 
 
-		BasicTaskPtr	execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
+		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 
 		void register_dispatcher(AsyncTaskDispatcher* dispatcher);
 		void deregister_dispatcher(AsyncTaskDispatcher* dispatcher);

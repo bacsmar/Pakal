@@ -3,6 +3,8 @@
 #include "System.h"
 
 #include <unordered_set>
+#include <functional>
+#include <iostream>
 
 namespace Pakal
 {
@@ -21,7 +23,20 @@ namespace Pakal
 		bool m_running_loop;
 
 	public:
-		static Engine& instance();
+
+		struct Settings
+		{
+			bool use_threads;
+
+			std::function<GraphicsSystem*(Engine*)> graphic_system_allocator;
+			std::function<PhysicsSystem*(Engine*)> physics_system_allocator;
+
+			Settings();
+		};
+
+
+		explicit Engine(const Settings& settings);
+		~Engine();
 
 		void run(IPakalApplication* application);
 
@@ -46,8 +61,6 @@ namespace Pakal
 			m_systems.erase(std::find(m_systems.begin(),m_systems.end(), system));
 		}
 
-		Engine();
-		~Engine();
 	protected:
 
 		void procress_os_messages();

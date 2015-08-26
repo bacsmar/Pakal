@@ -17,8 +17,8 @@ using namespace gui;
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler)
-	: GraphicsSystem(scheduler), 
+IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler,bool usesThread)
+	: GraphicsSystem(scheduler,usesThread), 
 	m_is_rendering(false),
 	m_window(0),
 	device(nullptr),

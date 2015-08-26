@@ -25,14 +25,12 @@ namespace Pakal
 	public:
 		Event<bool> update_event;
 
-		static PhysicsSystem* create_instance(EventScheduler* scheduler);
-
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
 		virtual const char*			get_system_name() override = 0;
 
 	protected:
 
-		explicit PhysicsSystem(EventScheduler* scheduler);;
+		explicit PhysicsSystem(EventScheduler* scheduler,bool usesThread);
 		virtual ~PhysicsSystem() {};
 
 		virtual void init_world()  {};

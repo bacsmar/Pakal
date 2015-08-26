@@ -22,8 +22,7 @@ namespace Pakal
 		void on_resume() override final;		
 		
 	public:
-		static GraphicsSystem* create_instance(EventScheduler* scheduler);
-		
+
 		virtual void				set_window_caption(const wchar_t*) {};
 		virtual void				show_fps(bool) {};
 		virtual const char*			get_system_name() override = 0;
@@ -33,7 +32,7 @@ namespace Pakal
 		Event<void> terminate_event;
 	protected:
 
-		GraphicsSystem(EventScheduler* scheduler) : System(scheduler,false) { terminate_event.connect_with_scheduler(scheduler); }
+		explicit GraphicsSystem(EventScheduler* scheduler, bool usesThread) : System(scheduler,usesThread), terminate_event(scheduler) {  }
 		virtual ~GraphicsSystem(){}
 
 

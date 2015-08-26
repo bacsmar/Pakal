@@ -14,8 +14,8 @@
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler) :
-		PhysicsSystem(scheduler),
+Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler,bool usesThread) :
+		PhysicsSystem(scheduler,usesThread),
 		m_pWorld(nullptr),
 		m_pContactListener(nullptr),
 		m_pContactFilter(nullptr),

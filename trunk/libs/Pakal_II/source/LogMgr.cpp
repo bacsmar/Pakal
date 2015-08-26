@@ -2,21 +2,14 @@
 #include <iostream>
 #include <stdarg.h>
 #include <cstdio>
-#include <tinythread.h>
 
 #ifdef ANDROID
 #include <jni.h>
-#include <android/log.h>	
-	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Pakal", __VA_ARGS__))
-	//#define AM_DEBUG_TRACE LOGI
-#else
-	//#define AM_DEBUG_TRACE //printf
-	#define LOGI(...)
+#include <android/log.h>
 #endif
 #include "SingletonHolder.h"
 
 using namespace Pakal;
-using namespace tthread;
 
 #if PAKAL_USE_SCRIPTS == 1
 //	LUA, definicion
@@ -40,16 +33,16 @@ void ChangeColour(WORD theColour)
 
 #endif
 
-namespace Pakal{
-
-	mutex logMutex;	
+namespace Pakal
+{
+	std::mutex logMutex;	
 	bool Initialized = false;
 
 
 	void LogMgr::operator<<(const std::string& msj )
-	{		
-		lock_guard<mutex> guard(logMutex);
-		log(Pakal::LogMgr::LOG_INFO, msj.c_str());
+	{
+		std::lock_guard<std::mutex> guard(logMutex);
+		log(LOG_INFO, msj.c_str());
 	}
 
 	LogMgr& LogMgr::instance()
@@ -61,7 +54,7 @@ namespace Pakal{
 	void LogMgr::log( int level, const char *format, ... )
 	{
 #if PAKAL_USE_LOG == 1
-		lock_guard<mutex> guard(logMutex);
+		std::lock_guard<std::mutex> guard(logMutex);
 		if( m_log == nullptr) return;
 
 #ifdef COLOURED_LOG
@@ -114,7 +107,7 @@ namespace Pakal{
 	}
 	LogMgr::~LogMgr(void)
 	{		
-		log(Pakal::LogMgr::LOG_INFO,"[INFO]\tLog deinitialized");
+		log(LOG_INFO,"[INFO]\tLog deinitialized");
 		if( m_log!=stdout )
 		{
 			fclose( m_log );
@@ -138,10 +131,10 @@ namespace Pakal{
 #endif
 		if( m_log==NULL ){
 			m_log = stdout;
-			log(Pakal::LogMgr::LOG_ERROR,"[ERROR]\tError at open the log file. Redirecting to stdout.");
+			log(LOG_ERROR,"[ERROR]\tError at open the log file. Redirecting to stdout.");
 		}
 
-		log(Pakal::LogMgr::LOG_INFO,"[INFO]\tLog initialized");
+		log(LOG_INFO,"[INFO]\tLog initialized");
 	}
 }
 
