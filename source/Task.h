@@ -22,13 +22,18 @@ namespace Pakal
 
 	public:
 
-		explicit Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : BasicTask(nullptr,scheduler) , m_job(job)
-		{
-			m_event_completed_with_result.connect_with_scheduler(scheduler);
+		explicit Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : 
+			BasicTask(nullptr,scheduler) , 
+			m_job(job),
+			m_event_completed_with_result(scheduler)
+		{	
 		}
-		explicit Task(const TArgs& result, EventScheduler* scheduler) : BasicTask(scheduler),  m_result(result)
+
+		explicit Task(const TArgs& result, EventScheduler* scheduler) : 
+			BasicTask(scheduler), 
+			m_result(result),
+			m_event_completed_with_result(scheduler)
 		{
-			m_event_completed_with_result.connect_with_scheduler(scheduler);
 		}
 
 		~Task() { }
@@ -73,19 +78,24 @@ namespace Pakal
 	};
 
 
-
-
 	class TaskUtils
 	{
+		static EventScheduler* m_scheduler;
+
 	public:
+		static void set_scheduler(EventScheduler* scheduler)
+		{
+			m_scheduler = scheduler;
+		}
+
 		static BasicTaskPtr when_all(const std::vector<BasicTaskPtr>& tasks)
 		{
+			ASSERT(m_scheduler);
+
 			if (tasks.empty())
 			{
-				return completed_task(nullptr);
+				return completed_task();
 			}
-
-			EventScheduler* scheduler = tasks.at(0)->get_event_scheduler();
 
 			static auto emptyDelegate = []()
 			{
@@ -94,7 +104,7 @@ namespace Pakal
 				return n;
 			};
 
-			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate, scheduler);
+			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate, m_scheduler);
 			task->m_result = tasks.size();
 
 			BasicTaskPtr myTask(task);
@@ -124,17 +134,18 @@ namespace Pakal
 			}
 		}
 
-		static BasicTaskPtr completed_task(EventScheduler* scheduler)
+		static BasicTaskPtr completed_task()
 		{
-			return std::make_shared<BasicTask>(scheduler);
+			ASSERT(m_scheduler);
+			return std::make_shared<BasicTask>(m_scheduler);
 		};
 
 		template <class T>
-		static std::shared_ptr<Task<T>> from_result(const T& result,EventScheduler* scheduler)
+		static std::shared_ptr<Task<T>> from_result(const T& result)
 		{
-			return std::make_shared<Task<T>>(result,scheduler);
+			ASSERT(m_scheduler);
+			return std::make_shared<Task<T>>(result,m_scheduler);
 		}
-	};
-	
+	};	
 
 }

@@ -43,6 +43,3 @@
 #define PAKAL_USE_LOG 1
 #define PAKAL_LOG_SHOW_FILE_INFO 0
 #define PAKAL_USE_LOG_FILE 0
-
-//! compile with multithread
-#define PAKAL_USE_THREADS 1

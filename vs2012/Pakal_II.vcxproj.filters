@@ -66,6 +66,10 @@
     <ClCompile Include="..\source\System.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Task.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EngineSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />

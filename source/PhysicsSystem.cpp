@@ -1,23 +1,13 @@
 #include "PhysicsSystem.h"
 
-#if PAKAL_USE_BOX2D
-	#include "Box2D/Box2DPhysicsSystem.h"
-#endif
 
 using namespace Pakal;
 
-PhysicsSystem* PhysicsSystem::create_instance(EventScheduler* scheduler)
-{
-#if PAKAL_USE_BOX2D
-	return new Box2DPhysicsSystem(scheduler);
-#else
-	return nullptr;
-#endif
-}
 
-PhysicsSystem::PhysicsSystem(EventScheduler* scheduler): System(scheduler, PAKAL_USE_THREADS == 1)
+PhysicsSystem::PhysicsSystem(EventScheduler* scheduler, bool usesThread): 
+	System(scheduler,usesThread),
+	update_event(scheduler)
 {
-	update_event.connect_with_scheduler(scheduler);
 }
 
 void PhysicsSystem::on_initialize()

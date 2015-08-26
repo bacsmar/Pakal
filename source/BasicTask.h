@@ -33,8 +33,18 @@ namespace Pakal
 
 	public:
 
-		explicit BasicTask(const std::function<void()>& job, EventScheduler* scheduler) : m_job(job) { m_completed=false, m_event_completed.connect_with_scheduler(scheduler); };
-		explicit BasicTask(EventScheduler* scheduler) { m_completed=true; m_event_completed.connect_with_scheduler(scheduler); }
+		explicit BasicTask(const std::function<void()>& job, EventScheduler* scheduler) :
+			m_job(job), 
+			m_event_completed(scheduler)
+		{
+			m_completed=false;
+		};
+
+		explicit BasicTask(EventScheduler* scheduler) : 
+			m_event_completed(scheduler)
+		{
+			m_completed=true;
+		}
 
 		virtual ~BasicTask() {};
 

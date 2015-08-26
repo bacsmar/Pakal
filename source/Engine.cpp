@@ -7,7 +7,6 @@
 #include "EventScheduler.h"
 
 #include "ComponentManager.h"
-#include "SingletonHolder.h"
 
 #ifdef PAKAL_WIN32_PLATFORM
 	#include <Windows.h>
@@ -15,12 +14,6 @@
 
 using namespace Pakal;
 
-//////////////////////////////////////////////////////////////////////////
-Engine& Engine::instance()
-{
-	static SingletonHolder<Engine> sh;
-	return *sh.get();
-}
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
@@ -31,8 +24,8 @@ Engine::~Engine()
 	SAFE_DEL(m_scheduler);	
 }
 //////////////////////////////////////////////////////////////////////////
-Engine::Engine() :
-	System(new EventScheduler(),PAKAL_USE_THREADS == 1),
+Engine::Engine(const Settings& settings) :
+	System(new EventScheduler(),settings.use_threads),
 	m_running_loop(false),
 	m_application(nullptr),
 	m_graphics_system(nullptr),
@@ -43,9 +36,10 @@ Engine::Engine() :
 	LogMgr::instance();	
 
 	m_scheduler = get_scheduler();
+	TaskUtils::set_scheduler(m_scheduler);
 
-	m_graphics_system	= GraphicsSystem::create_instance(m_scheduler);
-	m_physics_system	= PhysicsSystem::create_instance(m_scheduler);
+	m_graphics_system	= settings.graphic_system_allocator(this);
+	m_physics_system	= settings.physics_system_allocator(this);
 
 	m_game_state_manager	= new GameStateManager(this);
 	m_component_manager		= new ComponentManager();

@@ -41,13 +41,8 @@ namespace Pakal
 
 		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
 
-		Event() : m_scheduler(nullptr), m_enabled(true)
+		explicit Event(EventScheduler* scheduler) : m_scheduler(scheduler), m_enabled(true)
 		{
-		}
-
-		inline void connect_with_scheduler(EventScheduler* scheduler)
-		{
-			m_scheduler = scheduler;
 		}
 
 		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = std::this_thread::get_id())
@@ -125,13 +120,8 @@ namespace Pakal
 
 		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
 
-		Event() : m_scheduler(nullptr), m_isEnabled(true)
+		explicit Event(EventScheduler* scheduler) : m_scheduler(scheduler), m_isEnabled(true)
 		{
-		}
-
-		inline void connect_with_scheduler(EventScheduler* scheduler)
-		{
-			m_scheduler = scheduler;
 		}
 
 		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())

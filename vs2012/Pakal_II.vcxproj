@@ -65,6 +65,8 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\Task.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent.cpp" />
@@ -202,7 +204,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/Pakal_II/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/Pakal_II/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_IRR_STATIC_LIB_;POCO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
