@@ -35,9 +35,7 @@ void ChangeColour(WORD theColour)
 
 namespace Pakal
 {
-	std::mutex logMutex;	
-	bool Initialized = false;
-
+	std::mutex logMutex;
 
 	void LogMgr::operator<<(const std::string& msj )
 	{
@@ -103,21 +101,19 @@ namespace Pakal
 	{		
 		m_log = stdout;
 		mFileName.clear();
-		Initialized = true;
 	}
 	LogMgr::~LogMgr(void)
 	{		
 		log(LOG_INFO,"[INFO]\tLog deinitialized");
-		if( m_log!=stdout )
+		if( m_log != stdout )
 		{
 			fclose( m_log );
-			//SAFE_DEL(m_log);
-		}				
-		Initialized = false;
+		}
 	}
 
 	void LogMgr::setFile( const std::string &_filename )
 	{		
+		std::lock_guard<std::mutex> guard(logMutex);
 		mFileName = _filename;
 
 		if( mFileName.empty() == true)
@@ -129,16 +125,18 @@ namespace Pakal
 		m_log = fopen( mFileName.c_str(), "w" );
 #endif		
 #endif
-		if( m_log==NULL ){
+		if( m_log == nullptr )
+		{
 			m_log = stdout;
 			log(LOG_ERROR,"[ERROR]\tError at open the log file. Redirecting to stdout.");
 		}
 
-		log(LOG_INFO,"[INFO]\tLog initialized");
+		log(LOG_INFO,"[INFO]\tLog redirected to %s", mFileName);
 	}
 }
 
-namespace rapidxml{
+namespace rapidxml
+{
 	void parse_error_handler(const char *what, void *where)
 	{
 		LOG_ERROR("[RapidXML] error:%s",what)
