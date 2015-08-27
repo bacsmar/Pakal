@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "TaskFwd.h"
 
+
 #include <functional>
 #include <thread>
 #include <atomic>
@@ -20,10 +21,6 @@ namespace Pakal
 
 		std::function<void()> m_job;
 		std::atomic_bool	 m_completed;
-
-		std::condition_variable m_wait_condition;
-		std::mutex m_wait_mutex;
-
 	protected:
 		struct ContinuationData
 		{
@@ -45,12 +42,8 @@ namespace Pakal
 		explicit BasicTask()  { m_completed = true; }
 		explicit BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
 		virtual ~BasicTask() {};
-	
-		inline void wait()
-		{
-			std::unique_lock<std::mutex> lock(m_wait_mutex);
-			m_wait_condition.wait(lock, [=](){ return is_completed();} );			
-		}
+
+		inline void wait();
 
 		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
 

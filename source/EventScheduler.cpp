@@ -26,6 +26,22 @@ Pakal::EventScheduler::~EventScheduler()
 	m_inboxes.clear();	
 }
 
+void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition)
+{
+	auto currentTid = std::this_thread::get_id();
+	m_mutex.lock();
+	auto dispatcher = std::find_if(m_dispatchers.begin(),m_dispatchers.end(),[currentTid](AsyncTaskDispatcher* d)
+	{
+		return d->thread_id() == currentTid;
+	});
+	m_mutex.unlock();
+
+	if (dispatcher != m_dispatchers.end())
+		while(!condition()) (*dispatcher)->dispatch_tasks(); //TODO
+	else
+		while(!condition());
+}
+
 Pakal::InboxQueue* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id tid)
 {	
 	auto position = m_inboxes.find(tid);
