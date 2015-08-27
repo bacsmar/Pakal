@@ -23,6 +23,7 @@
 
 //! compile with http://www.sfml-dev.org
 #define PAKAL_USE_SFML 0 
+#define PAKAL_USE_SFML_AUDIO 1 
 
 //! compile with bullet physics
 #define PAKAL_USE_BULLET 0
@@ -41,5 +42,6 @@
 
 //! compile with LOG
 #define PAKAL_USE_LOG 1
+//! include file & line information
 #define PAKAL_LOG_SHOW_FILE_INFO 0
 #define PAKAL_USE_LOG_FILE 0

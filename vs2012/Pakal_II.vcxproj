@@ -36,6 +36,8 @@
     <ClInclude Include="..\source\math\vectorn.h" />
     <ClInclude Include="..\source\IManager.h" />
     <ClInclude Include="..\source\ISystem.h" />
+    <ClInclude Include="..\source\sfml\SoundManager_SFML.h" />
+    <ClInclude Include="..\source\SoundManager.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
@@ -78,6 +80,8 @@
     <ClCompile Include="..\source\Component.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
+    <ClCompile Include="..\source\SoundManager.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
@@ -176,7 +180,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -226,6 +230,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">
@@ -250,7 +255,8 @@
       <StringPooling>true</StringPooling>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation>
+      </MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
