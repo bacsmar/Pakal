@@ -178,15 +178,29 @@
     <ClInclude Include="..\source\ComponentManager.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IManager.h" />
-    <ClInclude Include="..\source\ISystem.h" />
-    <ClInclude Include="..\source\TaskCompletionSource.h" />
-    <ClInclude Include="..\source\SingletonHolder.h" />
-    <ClInclude Include="..\source\PakalMath.h" />
-    <ClInclude Include="..\source\PakalTypes.h" />
-    <ClInclude Include="..\source\Pakalvector3d.h" />
     <ClInclude Include="..\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\TaskCompletionSource.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalMath.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalTypes.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Pakalvector3d.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ISystem.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SingletonHolder.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IManager.h">
+      <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +236,9 @@
     </Filter>
     <Filter Include="Managers\ComponentManager">
       <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\SoundManager">
+      <UniqueIdentifier>{86c981f4-0115-4174-b83b-ea0a7449ca7e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

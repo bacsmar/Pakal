@@ -189,6 +189,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cAudio.lib;oolua.lib;lua.lib;sqlite.lib;OpenAL32.lib;tinythread.lib;%(AdditionalDependencies)</AdditionalDependencies>
