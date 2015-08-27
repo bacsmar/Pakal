@@ -64,6 +64,12 @@
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\SoundManager.cpp">
+      <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp">
+      <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -220,6 +226,12 @@
     <ClInclude Include="..\source\components\BodyComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\SoundManager.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\SoundManager_SFML.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -257,6 +269,9 @@
     </Filter>
     <Filter Include="math">
       <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\SoundManager">
+      <UniqueIdentifier>{c891e1b4-8bdd-4f5d-9454-f503e911923b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
