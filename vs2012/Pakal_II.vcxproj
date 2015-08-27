@@ -170,9 +170,10 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tinythread.lib;RocketCore.lib;RocketControls.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\bin\$(Configuration);$(SolutionDir)\libs\_bin\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(Configuration);$(SolutionDir)/libs/SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\build\$(Configuration);$(SolutionDir)\libs\_bin\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(Configuration);$(SolutionDir)/libs/SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Version>0.1</Version>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
