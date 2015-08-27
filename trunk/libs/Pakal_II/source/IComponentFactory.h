@@ -43,6 +43,7 @@ namespace Pakal
 		explicit ComponentFactory(TInitializer* intializer) : m_initializer(intializer)
 		{
 			ASSERT(TImplementation::getRTTI().isDerivedFrom(TBase::getRTTI()));
+			ASSERT(TImplementation::getRTTI().isDerivedFrom(IComponent::getRTTI()));
 		} 
 
 		virtual ~ComponentFactory(){}

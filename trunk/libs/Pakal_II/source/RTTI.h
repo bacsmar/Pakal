@@ -67,8 +67,7 @@ namespace Pakal{
 	{\
 		return x::getRTTI();\
 	}
-
-
+	
 #define DECLARE_RTTI_WITH_BASE(x,base)  \
 	static const Pakal::RTTI &getRTTI()\
 	{\
@@ -80,9 +79,3 @@ namespace Pakal{
 	{\
 		return x::getRTTI();\
 	}
- 
-
-
-#define REQUIRE_RTTI() \
-	virtual const Pakal::RTTI &getType() = 0;\
-	static const Pakal::RTTI &getRTTI();

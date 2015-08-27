@@ -30,7 +30,7 @@ namespace Pakal
 
 	protected:
 
-		explicit PhysicsSystem(EventScheduler* scheduler,bool usesThread);
+		explicit PhysicsSystem(bool usesThread);
 		virtual ~PhysicsSystem() {};
 
 		virtual void init_world()  {};

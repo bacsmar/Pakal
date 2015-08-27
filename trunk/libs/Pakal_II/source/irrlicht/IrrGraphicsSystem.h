@@ -6,7 +6,7 @@
 
 #ifdef _IRR_WINDOWS_
 	#pragma comment(lib, "Irrlicht.lib")
-//#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+  //#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 
 namespace Pakal
@@ -25,7 +25,7 @@ namespace Pakal
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };
 
-		explicit IrrGraphicsSystem(EventScheduler* scheduler,bool usesThread);
+		explicit IrrGraphicsSystem(bool usesThread);
 
 	protected:
 

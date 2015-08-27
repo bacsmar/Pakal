@@ -1,40 +1,26 @@
 #pragma once
-#include "config.h"
-#include <Pakalvector3d.h>
-#include "components/GraphicComponent.h"
+#include "Config.h"
 
 #include "TaskFwd.h"
+#include "Component.h"
 
-namespace irr { namespace video { class ITexture; } }
-namespace irr { namespace scene { class IMeshSceneNode; } }
-namespace irr { namespace scene { class IMesh; } }
+#include "GraphicsSystem.h"
+#include "math/tm.h"
 
 namespace Pakal
 {
-	class IrrGraphicsSystem;
 
-
-	class _PAKALExport MeshComponent : public GraphicComponent
+	class _PAKALExport MeshComponent : public Component
 	{
 	public:		
-		DECLARE_RTTI_WITH_BASE(MeshComponent,GraphicComponent);
+		DECLARE_RTTI_WITH_BASE(MeshComponent,Component);
 
-		~MeshComponent() override;
+		explicit MeshComponent(GraphicsSystem* graphicsSystem): Component(graphicsSystem) {}
+		~MeshComponent() {};
 
-		explicit MeshComponent(IrrGraphicsSystem* irr);
-	protected:
-		inline IrrGraphicsSystem* getSystem();
-
-		irr::video::ITexture		*m_texture;
-		irr::scene::IMesh			*m_mesh;
-		irr::scene::IMeshSceneNode	*m_node;
-		void on_init() override;
-		void on_destroy() override;
-	public:
-
-		BasicTaskPtr LoadMeshAsync(const std::string& meshName);
-		BasicTaskPtr LoadTextureAsync(const std::string& textureName);
-		inline void  setPosition(const Pakal::core::vector3df& position);
-		inline  Pakal::core::vector3df getPosition();
+		virtual BasicTaskPtr LoadMeshAsync(const std::string& meshName) = 0;
+		virtual BasicTaskPtr LoadTextureAsync(const std::string& textureName) = 0;
+		virtual void  setPosition(const tmath::vector3df& position) = 0;
+		virtual tmath::vector3df getPosition() = 0;
 	};	
 }

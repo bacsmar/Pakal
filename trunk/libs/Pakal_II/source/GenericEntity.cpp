@@ -14,10 +14,19 @@
 
 namespace Pakal
 {
-	BasicTaskPtr GenericEntity::initialize()
+
+	BasicTaskPtr GenericEntity::destroy()
 	{
-		return initialize_components();
+		std::vector<BasicTaskPtr> destroyTasks;
+
+		for( auto & component: m_components)
+		{			
+			destroyTasks.push_back(component->destroy());
+		}
+
+		return TaskUtils::when_all(destroyTasks);
 	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	void GenericEntity::add_component(IComponent *c) 
 	{
@@ -30,26 +39,23 @@ namespace Pakal
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	BasicTaskPtr GenericEntity::initialize_components()
+	BasicTaskPtr GenericEntity::initialize()
 	{
-		std::vector<BasicTaskPtr> terminationTasks;
+		std::vector<BasicTaskPtr> initTasks;
 
 		for (auto c : m_components)
 		{
 			c->set_parent_entity(this);
-			terminationTasks.push_back(c->init());
+			initTasks.push_back(c->initialize());
 		}
 
-		return TaskUtils::when_all(terminationTasks);
+		return TaskUtils::when_all(initTasks);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	GenericEntity::~GenericEntity() 
 	{
-		for( auto & component: m_components)
-		{			
-			component->destroy();
-		}
+		
 	}
 
 

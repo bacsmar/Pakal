@@ -24,7 +24,7 @@ namespace Pakal
 
 	public:
 
-		struct Settings
+		struct _PAKALExport Settings
 		{
 			bool use_threads;
 
@@ -77,7 +77,6 @@ namespace Pakal
 
 		GameStateManager*	m_game_state_manager;
 		ComponentManager*	m_component_manager;
-		EventScheduler*		m_scheduler;
 
 		std::vector<ISystem*> m_systems;
 

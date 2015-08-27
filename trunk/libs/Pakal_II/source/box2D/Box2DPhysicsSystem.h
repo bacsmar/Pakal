@@ -22,7 +22,7 @@ namespace Pakal
 	{
 	public:	
 		virtual ~Box2DPhysicsSystem() {};
-		explicit Box2DPhysicsSystem(EventScheduler* scheduler, bool usesThread);
+		explicit Box2DPhysicsSystem(bool usesThread);
 
 		inline b2World* getWorld() const
 		{

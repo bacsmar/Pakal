@@ -12,7 +12,7 @@ namespace Pakal
 	class _PAKALExport TaskCompletionSource
 	{
 	public:
-		explicit TaskCompletionSource(EventScheduler* scheduler);
+		explicit TaskCompletionSource();
 
 		inline BasicTaskPtr get_task()
 		{
