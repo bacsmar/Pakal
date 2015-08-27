@@ -1,19 +1,8 @@
 #include "BasicTask.h"
+#include "EventScheduler.h"
 
 namespace Pakal
 {
-	void BasicTask::on_completion(const std::function<void()>& callBack, std::thread::id callBackThread)
-	{
-		if (is_completed())
-		{
-			m_event_completed.clear();
-			m_event_completed.add_listener(callBack,callBackThread);
-			m_event_completed.notify();
-		}
-		else
-			m_event_completed.add_listener(callBack,callBackThread);
-
-	}
 
 	void BasicTask::set_completed() 
 	{
@@ -22,12 +11,44 @@ namespace Pakal
 		m_wait_condition.notify_one();			
 	}
 
+	void BasicTask::queue_continuations()
+	{
+		std::lock_guard<std::mutex> lock(m_continuation_mutex);
+
+		for(auto& c : m_continuations )
+		{
+			if (c.tid == NULL_THREAD)
+			{
+				c.tid = std::this_thread::get_id();
+			}
+			EventScheduler::instance().execute_in_thread(c.continuation,c.tid);
+		}
+		m_continuations.clear();
+	}
+
 	void BasicTask::run()
 	{
 		ASSERT(is_completed() == false);
 
 		m_job();
 		set_completed();
-		m_event_completed.notify();
+		queue_continuations();
+	}
+
+
+	BasicTaskPtr BasicTask::continue_with(const std::function<void()>& callBack, std::thread::id callBackThread)
+	{
+		auto task =	std::make_shared<BasicTask>(callBack);
+
+		m_continuation_mutex.lock();
+		m_continuations.push_back(ContinuationData(task,callBackThread));
+		m_continuation_mutex.unlock();
+
+		if (is_completed())
+		{
+			queue_continuations();
+		}
+
+		return task;
 	}
 }

@@ -39,9 +39,17 @@ namespace Pakal
 
 			m_inbox.push(task);
 			return task;			
-		}		
+		}
+
+		template<class TOut>
+		void push_task(std::shared_ptr<Task<TOut>> task)
+		{
+			ASSERT(this);
+			m_inbox.push(task);
+		}
 
 		BasicTaskPtr push_task(const std::function<void()>& jobDelegate);	
+		void push_task(BasicTaskPtr task);	
 
 		inline BasicTaskPtr pop_task()
 		{
