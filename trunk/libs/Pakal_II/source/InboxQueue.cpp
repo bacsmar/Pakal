@@ -11,6 +11,8 @@ namespace Pakal
 
 		m_inbox.push(taskPtr);
 
+		//cv.nofity();
+
 		return taskPtr;
 	}
 
@@ -18,5 +20,6 @@ namespace Pakal
 	{
 		ASSERT(this);
 		m_inbox.push(task);
+		//cv.nofity();
 	}
 }
