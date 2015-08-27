@@ -22,20 +22,20 @@ namespace Pakal
 
 	public: 
 		typedef std::queue<BasicTaskPtr,std::list<BasicTaskPtr>> TaskQueue;		
-	private:		
-		EventScheduler*			m_scheduler;
-		DoubleBufferedQueue<BasicTaskPtr, std::list<BasicTaskPtr> > m_inbox;
-		std::thread::id m_tid;
+		typedef DoubleBufferedQueue<BasicTaskPtr,std::list<BasicTaskPtr>> InboxContainer;		
+	private:
 
-		explicit InboxQueue(EventScheduler* dispatcher, std::thread::id tid);
-		
+		std::thread::id m_tid;
+		InboxContainer m_inbox;
+
+		explicit InboxQueue(std::thread::id tid) : m_tid(tid) {};
 
 		template<class TOut>
 		std::shared_ptr<Task<TOut>> push_task(const std::function<TOut(void)> & jobDelegate)
 		{
 			ASSERT(this);
 
-			auto task = std::make_shared<Task<TOut>>(jobDelegate, m_scheduler);
+			auto task = std::make_shared<Task<TOut>>(jobDelegate);
 
 			m_inbox.push(task);
 			return task;			

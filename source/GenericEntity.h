@@ -9,6 +9,7 @@
 #pragma once
 
 #include "IEntity.h"
+#include "IComponent.h"
 #include <vector>
 
 namespace Pakal
@@ -20,10 +21,11 @@ namespace Pakal
 	public:	
 		virtual ~GenericEntity();
 
-		virtual BasicTaskPtr initialize() 	override;
-				void		 add_component(IComponent *c);
-				void		 remove_component(IComponent *c);
-				BasicTaskPtr initialize_components();		
+		virtual BasicTaskPtr initialize() override;
+		virtual	BasicTaskPtr destroy() override;
+
+		void add_component(IComponent *c);
+		void remove_component(IComponent *c);
 		
 		IComponent* get_component_by_name(const std::string& name);		
 

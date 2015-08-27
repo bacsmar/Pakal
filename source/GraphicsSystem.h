@@ -32,7 +32,7 @@ namespace Pakal
 		Event<void> terminate_event;
 	protected:
 
-		explicit GraphicsSystem(EventScheduler* scheduler, bool usesThread) : System(scheduler,usesThread), terminate_event(scheduler) {  }
+		explicit GraphicsSystem(bool usesThread) : System(usesThread) {  }
 		virtual ~GraphicsSystem(){}
 
 

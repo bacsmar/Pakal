@@ -22,19 +22,8 @@ namespace Pakal
 
 	public:
 
-		explicit Task(const std::function<TArgs(void)>& job, EventScheduler* scheduler) : 
-			BasicTask(nullptr,scheduler) , 
-			m_job(job),
-			m_event_completed_with_result(scheduler)
-		{	
-		}
-
-		explicit Task(const TArgs& result, EventScheduler* scheduler) : 
-			BasicTask(scheduler), 
-			m_result(result),
-			m_event_completed_with_result(scheduler)
-		{
-		}
+		explicit Task(const std::function<TArgs(void)>& job) : BasicTask(nullptr),  m_job(job) {}
+		explicit Task(const TArgs& result) : m_result(result) {}
 
 		~Task() { }
 
@@ -80,18 +69,10 @@ namespace Pakal
 
 	class TaskUtils
 	{
-		static EventScheduler* m_scheduler;
-
 	public:
-		static void set_scheduler(EventScheduler* scheduler)
-		{
-			m_scheduler = scheduler;
-		}
 
 		static BasicTaskPtr when_all(const std::vector<BasicTaskPtr>& tasks)
 		{
-			ASSERT(m_scheduler);
-
 			if (tasks.empty())
 			{
 				return completed_task();
@@ -104,7 +85,7 @@ namespace Pakal
 				return n;
 			};
 
-			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate, m_scheduler);
+			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate);
 			task->m_result = tasks.size();
 
 			BasicTaskPtr myTask(task);
@@ -136,15 +117,13 @@ namespace Pakal
 
 		static BasicTaskPtr completed_task()
 		{
-			ASSERT(m_scheduler);
-			return std::make_shared<BasicTask>(m_scheduler);
+			return std::make_shared<BasicTask>();
 		};
 
 		template <class T>
 		static std::shared_ptr<Task<T>> from_result(const T& result)
 		{
-			ASSERT(m_scheduler);
-			return std::make_shared<Task<T>>(result,m_scheduler);
+			return std::make_shared<Task<T>>(result);
 		}
 	};	
 

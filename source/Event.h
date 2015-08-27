@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Config.h"
-#include <set>
 
 #include <unordered_map>
 
@@ -30,8 +29,6 @@ namespace Pakal
 	class
 		_PAKALExport Event
 	{
-	private:
-		EventScheduler* m_scheduler;
 		std::unordered_map<unsigned int, DelegateData<TArgs>> m_delegates;
 		bool m_enabled;
 		std::mutex m_mutex;
@@ -39,9 +36,7 @@ namespace Pakal
 		typedef std::function<void(TArgs)> MethodDelegate;
 	public:
 
-		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
-
-		explicit Event(EventScheduler* scheduler) : m_scheduler(scheduler), m_enabled(true)
+		explicit Event() : m_enabled(true)
 		{
 		}
 
@@ -49,7 +44,7 @@ namespace Pakal
 		{			
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			unsigned int hash = EventSystemUtils::hash_function((int)& delegate + (int)& callbackThread);
+			unsigned int hash = EventSchedulerHelper::hash_function((int)& delegate + (int)& callbackThread);
 			m_delegates.emplace(hash, DelegateData<TArgs>(delegate, callbackThread) );
 
 			return hash;
@@ -98,7 +93,7 @@ namespace Pakal
 				if (thisThread == dd.second.tid || dd.second.tid == NULL_THREAD )
 					dd.second.delegate(arguments);
 				else
-					EventSystemUtils::execute_in_thread(m_scheduler,[dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
+					EventSchedulerHelper::execute_in_thread([dd,arguments]() { dd.second.delegate(arguments); },dd.second.tid);
 			}
 		}
 
@@ -111,16 +106,13 @@ namespace Pakal
 		typedef std::function<void(void)> MethodDelegate;		
 	private:
 
-		EventScheduler* m_scheduler;
 		std::unordered_map<unsigned int, DelegateData<void>> m_delegates;
-		bool m_isEnabled;
+		bool m_enabled;
 		std::mutex m_mutex;
 
 	public:
 
-		inline EventScheduler* get_event_scheduler() { return m_scheduler; }
-
-		explicit Event(EventScheduler* scheduler) : m_scheduler(scheduler), m_isEnabled(true)
+		explicit Event() :  m_enabled(true)
 		{
 		}
 
@@ -128,19 +120,19 @@ namespace Pakal
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			unsigned int hash = EventSystemUtils::hash_function((int)& delegate + (int)& callBackThread);
+			unsigned int hash = EventSchedulerHelper::hash_function((int)& delegate + (int)& callBackThread);
 			m_delegates.emplace(hash, DelegateData<void>(delegate, callBackThread) );
 			return hash;
 		}
 
 		inline void disable()
 		{
-			m_isEnabled = false;
+			m_enabled = false;
 		}
 
 		inline void enable()
 		{
-			m_isEnabled = true;
+			m_enabled = true;
 		}
 
 		inline bool empty() const
@@ -162,7 +154,7 @@ namespace Pakal
 
 		void notify()
 		{
-			if (!m_isEnabled || m_delegates.size() == 0)
+			if (!m_enabled || m_delegates.size() == 0)
 				return;
 
 			m_mutex.lock();
@@ -176,7 +168,7 @@ namespace Pakal
 				if (thisThread == dd.second.tid || dd.second.tid == NULL_THREAD )
 					dd.second.delegate();
 				else
-					EventSystemUtils::execute_in_thread(m_scheduler,dd.second.delegate,dd.second.tid);
+					EventSchedulerHelper::execute_in_thread(dd.second.delegate,dd.second.tid);
 			}
 		}
 

@@ -4,9 +4,7 @@
 using namespace Pakal;
 
 
-PhysicsSystem::PhysicsSystem(EventScheduler* scheduler, bool usesThread): 
-	System(scheduler,usesThread),
-	update_event(scheduler)
+PhysicsSystem::PhysicsSystem(bool usesThread):  System(usesThread)
 {
 }
 

@@ -6,6 +6,7 @@
 #include "IDebugDrawer.h"
 
 #include "Components/MeshComponent.h"
+#include "Components/MeshComponent_Irrlitch.h"
 
 using namespace irr;
 using namespace irr::core;
@@ -17,8 +18,8 @@ using namespace gui;
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(EventScheduler* scheduler,bool usesThread)
-	: GraphicsSystem(scheduler,usesThread), 
+IrrGraphicsSystem::IrrGraphicsSystem(bool usesThread)
+	: GraphicsSystem(usesThread), 
 	m_is_rendering(false),
 	m_window(0),
 	device(nullptr),
@@ -123,7 +124,8 @@ void IrrGraphicsSystem::on_update_graphics()
 	begin_scene();
 	bool result = draw();
 	end_scene();
-	if (result == false) terminate();
+	if (result == false) 
+		terminate();
 }
 
 void IrrGraphicsSystem::on_pause_graphics()
@@ -150,7 +152,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.push_back( CreateComponentFactory<MeshComponent>(this));
+	factories.push_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

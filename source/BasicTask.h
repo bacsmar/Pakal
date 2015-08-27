@@ -26,38 +26,34 @@ namespace Pakal
 
 	protected:
 
-		Event<void>			  m_event_completed;
+		Event<void>	m_event_completed;
 
 		inline void set_completed();
 		virtual void run();
 
 	public:
 
-		explicit BasicTask(const std::function<void()>& job, EventScheduler* scheduler) :
-			m_job(job), 
-			m_event_completed(scheduler)
+		explicit BasicTask(const std::function<void()>& job) : m_job(job)
 		{
-			m_completed=false;
+			m_completed = false;
 		};
 
-		explicit BasicTask(EventScheduler* scheduler) : 
-			m_event_completed(scheduler)
+		explicit BasicTask()
 		{
-			m_completed=true;
+			m_completed = true;
 		}
 
 		virtual ~BasicTask() {};
 
 		inline bool is_completed() { return m_completed; }
-		inline EventScheduler* get_event_scheduler() { return m_event_completed.get_event_scheduler(); }
 		inline void wait()
 		{
 			std::unique_lock<std::mutex> lock(m_wait_mutex);
 			m_wait_condition.wait(lock, [=](){ return is_completed();} );			
 		}
 
-
 		void on_completion(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
+
 	};
 
 }

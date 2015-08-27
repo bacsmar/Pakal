@@ -21,11 +21,10 @@ Engine::~Engine()
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
-	SAFE_DEL(m_scheduler);	
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
-	System(new EventScheduler(),settings.use_threads),
+	System(settings.use_threads),
 	m_running_loop(false),
 	m_application(nullptr),
 	m_graphics_system(nullptr),
@@ -34,9 +33,6 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager(nullptr)
 {
 	LogMgr::instance();	
-
-	m_scheduler = get_scheduler();
-	TaskUtils::set_scheduler(m_scheduler);
 
 	m_graphics_system	= settings.graphic_system_allocator(this);
 	m_physics_system	= settings.physics_system_allocator(this);
@@ -63,10 +59,12 @@ void Engine::run(IPakalApplication* application)
 
 	//exit in case the graphics_system exits
 	m_running_loop = true;
-	auto listenerId = m_graphics_system->terminate_event.add_listener([this]() { m_running_loop = false;  });
+	auto listenerId = m_graphics_system->terminate_event.add_listener([this]()
+	{
+		m_running_loop = false;
+	});
 
 	//Initialize managers
-	m_scheduler->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 
@@ -122,7 +120,6 @@ void Engine::run(IPakalApplication* application)
 	//terminate managers
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
-	m_scheduler->terminate();
 
 	//unsubscribe from event
 	m_graphics_system->terminate_event.remove_listener(listenerId);

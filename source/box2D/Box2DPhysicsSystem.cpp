@@ -2,20 +2,20 @@
 #include "Box2DPhysicsSystem.h"
 #include "Box2DPhysicsListeners.h"
 
-#include "IComponent.h"
-#include "components/PhysicComponent.h"
+#include "IComponentFactory.h"
 #include "components/BodyComponent.h"
+#include "Components/BodyComponent_Box2D.h"
 
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
 #endif
-#include <Pakal_II/Source/IComponentFactory.h>
+
 
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler,bool usesThread) :
-		PhysicsSystem(scheduler,usesThread),
+Box2DPhysicsSystem::Box2DPhysicsSystem(bool usesThread) :
+		PhysicsSystem(usesThread),
 		m_pWorld(nullptr),
 		m_pContactListener(nullptr),
 		m_pContactFilter(nullptr),
@@ -26,7 +26,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(EventScheduler* scheduler,bool usesThread
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
-	factories.push_back( CreateComponentFactory<BodyComponent,BodyComponent_Box2d>(this) );
+	factories.push_back( CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)

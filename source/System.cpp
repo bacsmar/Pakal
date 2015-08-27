@@ -8,10 +8,7 @@ namespace Pakal
 	{
 		ASSERT(m_threaded);
 
-		m_dispatcher.dispatch_tasks();
-
-		m_thread_ready = true;
-		m_wait_condition.notify_one();
+		while (m_dispatcher_ready == false) {}
 
 		while(m_state != SystemState::Terminated)
 		{
@@ -29,13 +26,10 @@ namespace Pakal
 		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
 	}
 
-	System::System(EventScheduler* scheduler, bool usesThread)
+	System::System(bool usesThread)
 	{
-		ASSERT(scheduler);
-
 		m_threaded = usesThread;
 		m_thread = nullptr;
-		m_scheduler = scheduler;
 		m_state = SystemState::Created;
 	}
 
@@ -55,23 +49,20 @@ namespace Pakal
 		ASSERT(m_state == SystemState::Created || m_state == SystemState::Terminated);
 
 		m_state = SystemState::Created;
-		m_scheduler->register_dispatcher(&m_dispatcher);
 			
-		if (m_threaded)
+		if (is_threaded())
 		{
-			m_thread_ready = false;
-			std::unique_lock<std::mutex> lock(m_wait_mutex);
-
+			m_dispatcher_ready = false;
 			m_thread = new std::thread(&System::update_loop,this);
-
-			m_wait_condition.wait(lock, [=](){ return m_thread_ready;} );
+			EventScheduler::instance().register_dispatcher_for_thread(&m_dispatcher,m_thread->get_id());
+			m_dispatcher_ready = true;
 		}
 		else
 		{
-			m_dispatcher.dispatch_tasks();
+			EventScheduler::instance().register_dispatcher_for_thread(&m_dispatcher,std::this_thread::get_id());
 		}
 
-		return  m_scheduler->execute_in_thread([this]()
+		return EventScheduler::instance().execute_in_thread([this]()
 		{
 			m_state = SystemState::Running;
 			on_initialize();
@@ -83,15 +74,15 @@ namespace Pakal
 	{
 		ASSERT(m_state == SystemState::Running || m_state == SystemState::Paused );
 
-		return m_scheduler->execute_in_thread([this]()
+		return EventScheduler::instance().execute_in_thread([this]()
 		{
 			m_dispatcher.dispatch_tasks();
-			m_scheduler->deregister_dispatcher(&m_dispatcher);
+			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 
 			m_state = SystemState::Terminated;
 			on_terminate();
 
-			if (m_threaded)
+			if (is_threaded())
 			{
 				m_thread->detach();
 				SAFE_DEL(m_thread);
@@ -105,14 +96,14 @@ namespace Pakal
 
 		m_state = SystemState::Paused;
 
-		return m_scheduler->execute_in_thread(std::bind(&System::on_pause,this),m_dispatcher.thread_id());
+		return EventScheduler::instance().execute_in_thread(std::bind(&System::on_pause,this),m_dispatcher.thread_id());
 	}
 
 	BasicTaskPtr System::resume()
 	{
 		ASSERT(m_state == SystemState::Paused);
 
-		return m_scheduler->execute_in_thread([this]()
+		return EventScheduler::instance().execute_in_thread([this]()
 		{
 			on_resume();
 			m_state = SystemState::Running;

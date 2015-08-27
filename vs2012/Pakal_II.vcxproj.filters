@@ -30,20 +30,8 @@
     <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\PhysicComponent.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\GraphicComponent.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\MeshComponent.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\BasicTask.cpp">
       <Filter>Managers\EventManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\BodyComponent.cpp">
-      <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EventSystemUtils.cpp">
       <Filter>Managers\EventManager</Filter>
@@ -66,10 +54,16 @@
     <ClCompile Include="..\source\System.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\Task.cpp">
-      <Filter>Managers\EventManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\Component.cpp">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -133,14 +127,8 @@
     <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\PhysicComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\TaskFwd.h">
       <Filter>Managers\EventManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\GraphicComponent.h">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
@@ -150,9 +138,6 @@
     </ClInclude>
     <ClInclude Include="..\source\BasicTask.h">
       <Filter>Managers\EventManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\EventSystemUtils.h">
       <Filter>Managers\EventManager</Filter>
@@ -178,29 +163,62 @@
     <ClInclude Include="..\source\ComponentManager.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\IManager.h" />
+    <ClInclude Include="..\source\ISystem.h" />
+    <ClInclude Include="..\source\SingletonHolder.h" />
     <ClInclude Include="..\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Component.h">
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\TaskCompletionSource.h">
       <Filter>Managers\EventManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\PakalMath.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
+      <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\PakalTypes.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
+      <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\Pakalvector3d.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\components\BodyComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\ISystem.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\math\matrix.h">
+      <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\SingletonHolder.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\math\matrix2.h">
+      <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IManager.h">
-      <Filter>Foundation</Filter>
+    <ClInclude Include="..\source\math\matrix3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\matrix4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\quaternion.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tm.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tmconfig.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tmg.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector2.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vectorn.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -237,8 +255,8 @@
     <Filter Include="Managers\ComponentManager">
       <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Managers\SoundManager">
-      <UniqueIdentifier>{86c981f4-0115-4174-b83b-ea0a7449ca7e}</UniqueIdentifier>
+    <Filter Include="math">
+      <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

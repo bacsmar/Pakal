@@ -11,39 +11,25 @@
 #include "config.h"
 
 #include "RTTI.h"
-#include "BasicTask.h"
+#include "TaskFwd.h"
 
 namespace Pakal
 {	
-	class IEntity;	
-	class BasicTask;
-	//--------------------------------- IComponent ---------------------------------------------------
+	class IEntity;
+
 	class _PAKALExport IComponent
 	{
-		friend class IEntity;
 	public:
 		DECLARE_RTTI(IComponent)
 
-		virtual ~IComponent(void){}	
-		
-		IComponent() : 
-			m_parent_entity(nullptr),
-			m_initialized(false)
-		{}		
+		virtual ~IComponent(){}	
+		IComponent()  {}		
 
-		inline const IEntity* get_parent_entity() const		{ return m_parent_entity; };
-		inline void set_parent_entity(const IEntity *parent)	{ m_parent_entity = parent; };		
-		inline bool is_initialized()	const					{ return m_initialized; }
-		
+		virtual BasicTaskPtr initialize() = 0;
+		virtual BasicTaskPtr destroy() = 0;
 
-		virtual BasicTaskPtr init()	= 0;
-		virtual BasicTaskPtr destroy()	= 0;
-
-	protected:		
-
-		const IEntity* m_parent_entity;		
-		bool		   m_initialized;		
-
+		virtual void set_parent_entity(IEntity* entity) = 0;
+		virtual IEntity* get_parent_entity() = 0;
 	};
 }
 
