@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\math\matrix.h" />
     <ClInclude Include="..\source\Component.h" />
-    <ClInclude Include="..\components\BodyComponent.h" />
-    <ClInclude Include="..\components\MeshComponent_Irrlitch.h" />
-    <ClInclude Include="..\math\matrix.h" />
+    <ClInclude Include="..\source\components\BodyComponent.h" />
+    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
     <ClInclude Include="..\source\math\matrix3.h" />
     <ClInclude Include="..\source\math\matrix4.h" />
