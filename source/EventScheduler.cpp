@@ -49,6 +49,16 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 	return find_inbox_for_thread(tid)->push_task(fn);
 }
 
+void Pakal::EventScheduler::execute_in_thread(BasicTaskPtr task, std::thread::id tid)
+{
+	auto currentTid = std::this_thread::get_id();
+
+	if (currentTid == tid)
+		task->run();
+	else
+		find_inbox_for_thread(tid)->push_task(task);
+}
+
 void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* dispatcher, std::thread::id tid)
 {
 	ASSERT(m_dispatchers.find(dispatcher) == m_dispatchers.end());

@@ -30,9 +30,8 @@ namespace Pakal
 
 	private:
 
-		std::function<TArgs(void)>		m_job;
-		TArgs							m_result;
-		Event<TArgs>					m_event_completed_with_result;
+		std::function<TArgs(void)>	m_job;
+		TArgs						m_result;
 
 	protected:
 		inline void run() override
@@ -41,8 +40,7 @@ namespace Pakal
 
 			m_result = m_job();			
 			set_completed();
-			m_event_completed_with_result.notify(m_result);
-			m_event_completed.notify();
+			queue_continuations();
 		}
 
 	public:
@@ -53,16 +51,20 @@ namespace Pakal
 			return m_result;
 		}
 		
-		void on_completion(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
+		std::shared_ptr<Task<TArgs>> continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
 		{
+			auto task =	std::make_shared<Task<TArgs>>(callBack);
+
+			m_continuation_mutex.lock();
+			m_continuations.push_back(ContinuationData(task,callBackThread));
+			m_continuation_mutex.unlock();
+
 			if (is_completed())
 			{
-				m_event_completed_with_result.clear();
-				m_event_completed_with_result.addListener(callBack,callBackThread);
-				m_event_completed_with_result.notify(m_result);
+				queue_continuations();
 			}
-			else
-				m_event_completed_with_result.addListener(callBack,callBackThread);
+
+			return task;
 		}
 	};
 
@@ -102,7 +104,7 @@ namespace Pakal
 
 			for (auto& t : tasks)
 			{
-				t->on_completion(onComplete, NULL_THREAD);
+				t->continue_with(onComplete,NULL_THREAD);
 			}
 			return myTask;
 		}

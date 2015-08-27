@@ -13,4 +13,10 @@ namespace Pakal
 
 		return taskPtr;
 	}
+
+	void InboxQueue::push_task(BasicTaskPtr task)
+	{
+		ASSERT(this);
+		m_inbox.push(task);
+	}
 }

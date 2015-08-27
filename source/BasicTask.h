@@ -1,12 +1,12 @@
 #pragma once
 #include "Config.h"
+#include "TaskFwd.h"
 
 #include <functional>
 #include <thread>
 #include <atomic>
 #include <condition_variable>
-
-#include "Event.h"
+#include <list>
 
 namespace Pakal
 {
@@ -14,45 +14,45 @@ namespace Pakal
 
 	class _PAKALExport BasicTask
 	{
-		friend class InboxQueue;
 		friend class AsyncTaskDispatcher;
 		friend class TaskCompletionSource;
+		friend class EventScheduler;
 
 		std::function<void()> m_job;
-		std::atomic_bool	  m_completed;
+		std::atomic_bool	 m_completed;
 
 		std::condition_variable m_wait_condition;
 		std::mutex m_wait_mutex;
 
 	protected:
+		struct ContinuationData
+		{
+			BasicTaskPtr continuation;
+			std::thread::id tid;
+			ContinuationData(BasicTaskPtr task, const std::thread::id &td) : continuation(task), tid(td)  { }
+		};	
 
-		Event<void>	m_event_completed;
+		std::list<ContinuationData> m_continuations;
+		std::mutex m_continuation_mutex;
 
 		inline void set_completed();
+		void  queue_continuations();
 		virtual void run();
 
 	public:
-
-		explicit BasicTask(const std::function<void()>& job) : m_job(job)
-		{
-			m_completed = false;
-		};
-
-		explicit BasicTask()
-		{
-			m_completed = true;
-		}
-
-		virtual ~BasicTask() {};
-
 		inline bool is_completed() { return m_completed; }
+
+		explicit BasicTask()  { m_completed = true; }
+		explicit BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
+		virtual ~BasicTask() {};
+	
 		inline void wait()
 		{
 			std::unique_lock<std::mutex> lock(m_wait_mutex);
 			m_wait_condition.wait(lock, [=](){ return is_completed();} );			
 		}
 
-		void on_completion(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
+		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
 
 	};
 

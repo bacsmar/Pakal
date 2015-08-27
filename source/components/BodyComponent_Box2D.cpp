@@ -8,6 +8,8 @@ using namespace Pakal;
 
 void BodyComponent_Box2D::on_initialize()
 {	
+	//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.Set( 3.0f, 2.1f);

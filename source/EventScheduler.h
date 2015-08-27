@@ -47,6 +47,20 @@ namespace Pakal
 
 			return find_inbox_for_thread(tid)->push_task(fn);
 		}
+
+		template<typename TArgs>
+		void execute_in_thread(std::shared_ptr<Task<TArgs>> task, std::thread::id tid)
+		{
+			auto currentTid = std::this_thread::get_id();
+
+			if (currentTid == tid)
+				task->run();
+			else
+				find_inbox_for_thread(tid)->push_task(task);
+		}
+
+
 		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
+		void execute_in_thread(BasicTaskPtr task, std::thread::id tid);
 	};
 }
