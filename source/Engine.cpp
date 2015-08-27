@@ -7,11 +7,12 @@
 #include "EventScheduler.h"
 
 #include "ComponentManager.h"
+#include "SoundManager.h"
 
 #ifdef PAKAL_WIN32_PLATFORM
 	#include <Windows.h>
 #endif
-
+ 
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
@@ -21,6 +22,7 @@ Engine::~Engine()
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
+	SAFE_DEL(m_sound_manager)
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
@@ -39,6 +41,7 @@ Engine::Engine(const Settings& settings) :
 
 	m_game_state_manager	= new GameStateManager(this);
 	m_component_manager		= new ComponentManager();
+	m_sound_manager			= settings.sound_manager_allocator(this);
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
@@ -46,7 +49,6 @@ Engine::Engine(const Settings& settings) :
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
 }
-
 //////////////////////////////////////////////////////////////////////////
 void Engine::run(IPakalApplication* application)
 {
@@ -67,6 +69,7 @@ void Engine::run(IPakalApplication* application)
 	//Initialize managers
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
+	m_sound_manager->initialize();
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -118,6 +121,7 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(terminationTasks);
 
 	//terminate managers
+	m_sound_manager->terminate();
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
 
