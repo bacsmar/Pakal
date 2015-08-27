@@ -7,7 +7,7 @@
 namespace Pakal
 {
 
-	class _PAKALExport Component : public IComponent
+	class _PAKALExport SystemComponent : public IComponent
 	{
 		IEntity* m_parent;
 
@@ -15,9 +15,9 @@ namespace Pakal
 		System* m_system;
 
 	public:
-		DECLARE_RTTI_WITH_BASE(Component,IComponent)
+		DECLARE_RTTI_WITH_BASE(SystemComponent,IComponent)
 
-		explicit Component(System* owner) : m_parent(nullptr), m_system(owner) {}
+		explicit SystemComponent(System* owner) : m_parent(nullptr), m_system(owner) {}
 
 		BasicTaskPtr initialize() override final;
 		BasicTaskPtr destroy() override final;
