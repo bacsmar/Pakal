@@ -12,9 +12,9 @@ namespace Pakal
 
 	namespace EventSchedulerHelper
 	{
-		unsigned int hash_function(unsigned int valueToHash);
+		unsigned int _PAKALExport hash_function(unsigned int valueToHash);
 
-		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, const std::thread::id& id);
+		BasicTaskPtr _PAKALExport execute_in_thread(const std::function<void()>& fn, const std::thread::id& id);
 
 
 	};	
