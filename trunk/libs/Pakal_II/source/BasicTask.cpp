@@ -6,9 +6,8 @@ namespace Pakal
 
 	void BasicTask::set_completed() 
 	{
-		ASSERT(!is_completed());
+		ASSERT(!m_completed);
 		m_completed = true;
-		m_wait_condition.notify_one();			
 	}
 
 	void BasicTask::queue_continuations()
@@ -35,6 +34,10 @@ namespace Pakal
 		queue_continuations();
 	}
 
+	void BasicTask::wait() 
+	{
+		EventScheduler::instance().wait_this_thread([=](){ return is_completed(); });
+	}
 
 	BasicTaskPtr BasicTask::continue_with(const std::function<void()>& callBack, std::thread::id callBackThread)
 	{

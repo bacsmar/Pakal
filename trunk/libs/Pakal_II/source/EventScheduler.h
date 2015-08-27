@@ -34,6 +34,8 @@ namespace Pakal
 	public:
 		static EventScheduler& instance();
 
+		void wait_this_thread(const std::function<bool()>& condition);
+
 		void register_dispatcher_for_thread(AsyncTaskDispatcher* dispatcher,std::thread::id tid);
 		void deregister_dispatcher(AsyncTaskDispatcher* dispatcher);
 
@@ -47,6 +49,7 @@ namespace Pakal
 
 			return find_inbox_for_thread(tid)->push_task(fn);
 		}
+		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 
 		template<typename TArgs>
 		void execute_in_thread(std::shared_ptr<Task<TArgs>> task, std::thread::id tid)
@@ -58,9 +61,6 @@ namespace Pakal
 			else
 				find_inbox_for_thread(tid)->push_task(task);
 		}
-
-
-		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 		void execute_in_thread(BasicTaskPtr task, std::thread::id tid);
 	};
 }
