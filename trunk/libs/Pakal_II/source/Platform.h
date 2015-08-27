@@ -20,17 +20,8 @@
 #define PAKAL_VERSION ((PAKAL_VERSION_MAJOR << 16) | (PAKAL_VERSION_MINOR << 8) | PAKAL_VERSION_PATCH)
 
 //------------------------------------------------------------------//
-
-#ifdef PAKAL_DYNAMIC_LIB
-#  undef PAKAL_DYNAMIC_LIB
-#endif
-
-#define PAKAL_DYNAMIC_LIB
-
+//#define PAKAL_STATIC_LIB	//
 #define PAKAL_NONCLIENT_BUILD
-
-// Default is blank for most OS's
-#define _PAKALExport
 
 //-------------- Determine Compiler ---------------------------------
 #if defined( _MSC_VER )
@@ -53,22 +44,6 @@
 #		define PAKAL_XBOX_PLATFORM
 #	else
 #		define PAKAL_WIN32_PLATFORM
-#		if defined( PAKAL_DYNAMIC_LIB )
-#			undef _PAKALExport
-//Ignorable Dll interface warning...
-#           if !defined(PAKAL_MINGW_COMPILER)
-#			    pragma warning (disable : 4251)
-#           endif
-#			if defined( PAKAL_NONCLIENT_BUILD )
-#				define _PAKALExport __declspec( dllexport )
-#			else
-#               if defined(PAKAL_MINGW_COMPILER)
-#                   define _PAKALExport
-#               else
-#				    define _PAKALExport __declspec( dllimport )
-#               endif
-#			endif
-#		endif
 #	endif
 #elif defined( __APPLE_CC__ ) // Apple OS X
 // Device                                       Simulator
@@ -78,8 +53,6 @@
 #   else
 #       define PAKAL_APPLE_PLATFORM
 #   endif
-#   undef _PAKALExport
-#   define _PAKALExport __attribute__((visibility("default")))
 #elif defined(OS_ANDROID) || defined(ANDROID)
 #	define PAKAL_ANDROID_PLATFORM
 #elif defined(__linux__)
@@ -87,6 +60,59 @@
 //#endif
 #endif
 
+////////////////////////////////////////////////////////////
+// Define helpers to create portable import / export macros for each module
+////////////////////////////////////////////////////////////
+#if defined(PAKAL_STATIC_LIB)
+
+    // Static build doesn't need import/export macros
+    #define PAKAL_API_EXPORT
+    #define PAKAL_API_IMPORT
+#else
+
+	#if defined(PAKAL_WIN32_PLATFORM)
+
+        // Windows compilers need specific (and different) keywords for export and import
+        #define PAKAL_API_EXPORT __declspec(dllexport)
+        #define PAKAL_API_IMPORT __declspec(dllimport)
+
+        // For Visual C++ compilers, we also need to turn off this annoying C4251 warning
+        #ifdef _MSC_VER
+
+            #pragma warning(disable: 4251)
+
+        #endif
+
+    #else // Linux, FreeBSD, Mac OS X
+
+        #if __GNUC__ >= 4
+
+            // GCC 4 has special keywords for showing/hidding symbols,
+            // the same keyword is used for both importing and exporting
+            #define PAKAL_API_EXPORT __attribute__ ((__visibility__ ("default")))
+            #define PAKAL_API_IMPORT __attribute__ ((__visibility__ ("default")))
+
+        #else
+
+            // GCC < 4 has no mechanism to explicitely hide symbols, everything's exported
+            #define PAKAL_API_EXPORT
+            #define PAKAL_API_IMPORT
+
+        #endif
+
+    #endif
+
+#endif
+
+#if defined( PAKAL_NONCLIENT_BUILD )
+#	define _PAKALExport PAKAL_API_EXPORT
+#else
+#   define _PAKALExport PAKAL_API_IMPORT
+#endif
+
+////////////////////////////////////////////////////////////
+// Define several useful macros
+////////////////////////////////////////////////////////////
 #define SAFE_DEL(x) {delete (x);x=nullptr;}
 
 #ifdef _DEBUG

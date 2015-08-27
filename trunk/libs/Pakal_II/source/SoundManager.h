@@ -7,9 +7,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "IManager.h"
+#include <string>
+
 namespace Pakal
 {
-	class SoundManager :
+	class _PAKALExport SoundManager :
 		public Pakal::IManager
 	{
 	public:
@@ -18,5 +20,7 @@ namespace Pakal
 	public:
 		SoundManager(void);
 		virtual ~SoundManager(void);
+
+		virtual void play_music(const std::string& filename) = 0;
 	};
 }
