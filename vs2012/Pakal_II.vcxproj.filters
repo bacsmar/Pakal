@@ -70,6 +70,12 @@
     <ClCompile Include="..\source\SystemComponent.cpp">
       <Filter>Managers\ComponentManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\ResourceManager.cpp">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StreamFile.cpp">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -182,43 +188,43 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\matrix2.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\matrix3.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\matrix4.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\quaternion.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\tm.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\tmconfig.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\tmg.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\vector2.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\vector3.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\vector4.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\vectorn.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\math\matrix.h">
-      <Filter>math</Filter>
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent.h">
       <Filter>Components</Filter>
@@ -231,6 +237,15 @@
     </ClInclude>
     <ClInclude Include="..\source\SystemComponent.h">
       <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ResourceManager.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IStream.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\StreamFile.h">
+      <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -267,11 +282,14 @@
     <Filter Include="Managers\ComponentManager">
       <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="math">
-      <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers\SoundManager">
       <UniqueIdentifier>{c891e1b4-8bdd-4f5d-9454-f503e911923b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ResourceManager">
+      <UniqueIdentifier>{980dfa46-65f4-4fce-bc12-8d0a607a8209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
