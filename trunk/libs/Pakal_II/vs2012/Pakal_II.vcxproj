@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\math\matrix.h" />
-    <ClInclude Include="..\source\Component.h" />
+    <ClInclude Include="..\source\SystemComponent.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
@@ -77,7 +77,7 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\Component.cpp" />
+    <ClCompile Include="..\source\SystemComponent.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />

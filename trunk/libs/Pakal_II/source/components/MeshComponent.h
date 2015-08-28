@@ -2,7 +2,7 @@
 #include "Config.h"
 
 #include "TaskFwd.h"
-#include "Component.h"
+#include "SystemComponent.h"
 
 #include "GraphicsSystem.h"
 #include "math/tm.h"
@@ -10,12 +10,12 @@
 namespace Pakal
 {
 
-	class _PAKALExport MeshComponent : public Component
+	class _PAKALExport MeshComponent : public SystemComponent
 	{
 	public:		
-		DECLARE_RTTI_WITH_BASE(MeshComponent,Component);
+		DECLARE_RTTI_WITH_BASE(MeshComponent,SystemComponent);
 
-		explicit MeshComponent(GraphicsSystem* graphicsSystem): Component(graphicsSystem) {}
+		explicit MeshComponent(GraphicsSystem* graphicsSystem): SystemComponent(graphicsSystem) {}
 		~MeshComponent() {};
 
 		virtual BasicTaskPtr LoadMeshAsync(const std::string& meshName) = 0;

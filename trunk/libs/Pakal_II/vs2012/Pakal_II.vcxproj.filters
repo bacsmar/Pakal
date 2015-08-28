@@ -55,9 +55,6 @@
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EngineSettings.cpp" />
-    <ClCompile Include="..\source\Component.cpp">
-      <Filter>Managers\ComponentManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -69,6 +66,9 @@
     </ClCompile>
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp">
       <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\SystemComponent.cpp">
+      <Filter>Managers\ComponentManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,9 +175,6 @@
     <ClInclude Include="..\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\Component.h">
-      <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\TaskCompletionSource.h">
       <Filter>Managers\EventManager</Filter>
     </ClInclude>
@@ -231,6 +228,9 @@
     </ClInclude>
     <ClInclude Include="..\source\sfml\SoundManager_SFML.h">
       <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SystemComponent.h">
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
