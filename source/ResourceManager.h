@@ -15,33 +15,38 @@
 namespace Pakal
 {
 	
-
+	// TODO: acceso concurrente
 	class _PAKALExport ResourceManager :
 		public Pakal::IManager
 	{		
+		friend class Engine;
 	public:
 		
-		typedef std::function<IStreamPtr(const std::string&)> OpenReaderFunction;
-		typedef std::function<void(const std::string& resource_name, std::string& out_path_string)> FindResourcePathFunction;
+		typedef std::function<IStreamPtr(const std::string&)> OpenReaderFunction;		
+		typedef std::function<bool(const std::string& resource_name)> AddZipFileFunction;
+		//typedef std::function<void(const std::string& resource_name, std::string& out_path_string)> FindResourcePathFunction;
 
 	protected:
-		struct stream_reader_factory
+		struct StreamReaderFactory
 		{
-			OpenReaderFunction			m_open_reader_function;
-			//FindResourcePathFunction	m_find_resource_path_function;	// TODO
+			OpenReaderFunction	open_reader;
+			AddZipFileFunction	add_zip_file;
+			//FindResourcePathFunction	find_resource_path;
 		};
 
-		std::vector<OpenReaderFunction> m_stream_reader_factories;	// TODO... guardar la estructura?
+		std::vector<StreamReaderFactory> m_stream_reader_factories;	
 
-	public:
 		void initialize() override;
 		void terminate() override;
+
+	public:		
 	
 		ResourceManager(void);
 		virtual ~ResourceManager(void);		
 
-		//void findResourceFullPath( const std::string& resourceName, std::string& fileFullPath);	// TODO
-		IStreamPtr openResource(const std::string& resourceName);
+		//void find_resource_full_path( const std::string& resourceName, std::string& outfileFullPath);	// TODO		
+		bool add_file_archive( const std::string &path);
+		IStreamPtr open_resource(const std::string& resourceName);
 
 		void register_reader( const OpenReaderFunction & open_reader_function);
 	};
