@@ -8,6 +8,7 @@
 
 #include "ComponentManager.h"
 #include "SoundManager.h"
+#include "ResourceManager.h"
 
 #ifdef PAKAL_WIN32_PLATFORM
 	#include <Windows.h>
@@ -39,6 +40,7 @@ Engine::Engine(const Settings& settings) :
 	m_graphics_system	= settings.graphic_system_allocator(this);
 	m_physics_system	= settings.physics_system_allocator(this);
 
+	m_resource_manager		= new ResourceManager();
 	m_game_state_manager	= new GameStateManager(this);
 	m_component_manager		= new ComponentManager();
 	m_sound_manager			= settings.sound_manager_allocator(this);
@@ -70,6 +72,7 @@ void Engine::run(IPakalApplication* application)
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
+	m_resource_manager->initialize();
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -124,6 +127,7 @@ void Engine::run(IPakalApplication* application)
 	m_sound_manager->terminate();
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
+	m_resource_manager->terminate();
 
 	//unsubscribe from event
 	m_graphics_system->terminate_event.remove_listener(listenerId);

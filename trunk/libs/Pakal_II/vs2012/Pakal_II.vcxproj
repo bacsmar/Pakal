@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\IStream.h" />
     <ClInclude Include="..\source\math\matrix.h" />
     <ClInclude Include="..\source\SystemComponent.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
@@ -36,8 +37,10 @@
     <ClInclude Include="..\source\math\vectorn.h" />
     <ClInclude Include="..\source\IManager.h" />
     <ClInclude Include="..\source\ISystem.h" />
+    <ClInclude Include="..\source\ResourceManager.h" />
     <ClInclude Include="..\source\sfml\SoundManager_SFML.h" />
     <ClInclude Include="..\source\SoundManager.h" />
+    <ClInclude Include="..\source\StreamFile.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
@@ -80,8 +83,10 @@
     <ClCompile Include="..\source\SystemComponent.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
     <ClCompile Include="..\source\SoundManager.cpp" />
+    <ClCompile Include="..\source\StreamFile.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />

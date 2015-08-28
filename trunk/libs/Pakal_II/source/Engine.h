@@ -16,6 +16,7 @@ namespace Pakal
 	class ComponentManager;
 	class IManager;
 	class SoundManager;
+	class ResourceManager;
 
 	class _PAKALExport Engine final : public System
 	{
@@ -47,6 +48,7 @@ namespace Pakal
 		inline PhysicsSystem*		get_physics_system() const { return m_physics_system; }
 		inline IPakalApplication*	get_application() const { return m_application; }
 		inline SoundManager*		get_sound_manager() const { return m_sound_manager; }
+		inline ResourceManager*		get_resource_manager() const { return m_resource_manager; }
 
 		const char* get_system_name() override { return "Engine"; };
 
@@ -81,6 +83,7 @@ namespace Pakal
 		GameStateManager*	m_game_state_manager;
 		ComponentManager*	m_component_manager;
 		SoundManager*		m_sound_manager;
+		ResourceManager*	m_resource_manager;
 
 		std::vector<ISystem*> m_systems;
 
