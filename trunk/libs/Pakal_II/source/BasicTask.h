@@ -43,7 +43,7 @@ namespace Pakal
 		explicit BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
 		virtual ~BasicTask() {};
 
-		inline void wait();
+		void wait();		
 
 		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
 

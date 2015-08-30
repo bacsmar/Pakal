@@ -37,10 +37,11 @@ Engine::Engine(const Settings& settings) :
 {
 	LogMgr::instance();	
 
+	m_resource_manager		= new ResourceManager();
+
 	m_graphics_system	= settings.graphic_system_allocator(this);
 	m_physics_system	= settings.physics_system_allocator(this);
-
-	m_resource_manager		= new ResourceManager();
+	
 	m_game_state_manager	= new GameStateManager(this);
 	m_component_manager		= new ComponentManager();
 	m_sound_manager			= settings.sound_manager_allocator(this);

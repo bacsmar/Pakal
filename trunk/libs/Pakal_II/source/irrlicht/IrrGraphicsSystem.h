@@ -3,6 +3,7 @@
 
 #include <irrlicht.h>
 #include <string>
+#include "IStream.h"
 
 #ifdef _IRR_WINDOWS_
 	#pragma comment(lib, "Irrlicht.lib")
@@ -14,7 +15,8 @@ namespace Pakal
 	class BasicTask;
 	class IComponent;
 	class IDebugDrawerClient;
-	struct RendererInfo;	
+	struct RendererInfo;
+	class IStream;
 
 	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem
 	{
@@ -24,6 +26,9 @@ namespace Pakal
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };
+
+		IStreamPtr open_reader(const std::string& fname);
+		bool add_file_archive(const std::string& fname);
 
 		explicit IrrGraphicsSystem(bool usesThread);
 

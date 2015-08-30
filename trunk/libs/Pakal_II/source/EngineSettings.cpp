@@ -30,6 +30,7 @@
 #endif
 
 #endif
+#include "ResourceManager.h"
 
 using namespace Pakal;
 
@@ -39,7 +40,17 @@ Engine::Settings::Settings()
 	use_threads = true;
 
 #if PAKAL_USE_IRRLICHT == 1
-	graphic_system_allocator = [](Engine* engine) { return new IrrGraphicsSystem(false); };
+	graphic_system_allocator = [](Engine* engine)
+	{
+		IrrGraphicsSystem* irrlicht = new IrrGraphicsSystem(false);
+
+		ResourceManager::StreamReaderFactory factory;		
+		factory.open_reader = [irrlicht](const std::string& fname){ return irrlicht->open_reader(fname); };
+		factory.add_file_archive = [irrlicht](const std::string& fname){ return irrlicht->add_file_archive(fname); };
+
+		engine->get_resource_manager()->register_reader( factory);
+		return irrlicht;
+	};
 #endif
 
 #if PAKAL_USE_BOX2D == 1
