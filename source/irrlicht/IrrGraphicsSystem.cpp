@@ -7,6 +7,7 @@
 
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
+#include "StreamFileIrrlicht.h"
 
 using namespace irr;
 using namespace irr::core;
@@ -16,6 +17,22 @@ using namespace io;
 using namespace gui;
 
 using namespace Pakal;
+
+//////////////////////////////////////////////////////////////////////////
+IStreamPtr IrrGraphicsSystem::open_reader(const std::string& fname)
+{
+	auto fileName = fname.c_str();
+	if( get_device()->getFileSystem()->existFile(fileName) )
+	{
+		IReadFile* file =  get_device()->getFileSystem()->createAndOpenFile(fileName);
+		return (std::make_shared<StreamFileIrrlicht>(file));
+	}
+	return nullptr;
+}
+bool IrrGraphicsSystem::add_file_archive(const std::string& fname)
+{
+	return get_device()->getFileSystem()->addFileArchive(fname.c_str());
+}
 
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::IrrGraphicsSystem(bool usesThread)
