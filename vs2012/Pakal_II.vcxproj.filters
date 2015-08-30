@@ -76,6 +76,9 @@
     <ClCompile Include="..\source\StreamFile.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -245,6 +248,9 @@
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\StreamFile.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
   </ItemGroup>
