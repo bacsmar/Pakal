@@ -2,9 +2,6 @@
 #include "Config.h"
 #include "MeshComponent.h"
 
-#if PAKAL_USE_IRRLICHT == 1
-
-
 
 namespace irr { namespace video { class ITexture; } }
 namespace irr { namespace scene { class IMeshSceneNode; } }
@@ -28,18 +25,15 @@ namespace Pakal
 
 		explicit MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem);
 
-		void on_initialize() override;
-		void on_destroy() override;
-
 		BasicTaskPtr LoadMeshAsync(const std::string& meshName) override;
 		BasicTaskPtr LoadTextureAsync(const std::string& textureName) override;
 
 		void setPosition(const tmath::vector3df& position) override;
 		tmath::vector3df getPosition() override;
+
+	protected:
+		void on_initialize() override;
+		void on_destroy() override;
 	};
 
 }
-
-
-
-#endif

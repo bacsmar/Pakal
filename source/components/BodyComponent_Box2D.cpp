@@ -1,7 +1,4 @@
 #include "BodyComponent_Box2D.h"
-
-#if PAKAL_USE_BOX2D == 1
-
 #include "box2D/Box2DPhysicsSystem.h"
 
 using namespace Pakal;
@@ -75,5 +72,3 @@ Box2DPhysicsSystem* BodyComponent_Box2D::get_system()
 {
 	return static_cast<Box2DPhysicsSystem*>(m_system);
 }
-
-#endif

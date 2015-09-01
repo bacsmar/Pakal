@@ -12,13 +12,15 @@ namespace Pakal
 
 	void BasicTask::queue_continuations()
 	{
+		auto currentTid = std::this_thread::get_id();
+
 		std::lock_guard<std::mutex> lock(m_continuation_mutex);
 
 		for(auto& c : m_continuations )
 		{
 			if (c.tid == NULL_THREAD)
 			{
-				c.tid = std::this_thread::get_id();
+				c.tid = currentTid;
 			}
 			EventScheduler::instance().execute_in_thread(c.continuation,c.tid);
 		}

@@ -24,6 +24,7 @@ Engine::~Engine()
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
 	SAFE_DEL(m_sound_manager)
+	SAFE_DEL(m_resource_manager)
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
@@ -35,16 +36,17 @@ Engine::Engine(const Settings& settings) :
 	m_game_state_manager(nullptr),
 	m_component_manager(nullptr)
 {
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
+
 	LogMgr::instance();	
 
-	m_resource_manager		= new ResourceManager();
+	m_resource_manager	 = new ResourceManager();
+	m_game_state_manager = new GameStateManager(this);
+	m_component_manager	 = new ComponentManager();
+	m_sound_manager		 = settings.sound_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this);
 	m_physics_system	= settings.physics_system_allocator(this);
-	
-	m_game_state_manager	= new GameStateManager(this);
-	m_component_manager		= new ComponentManager();
-	m_sound_manager			= settings.sound_manager_allocator(this);
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
@@ -58,13 +60,13 @@ void Engine::run(IPakalApplication* application)
 	ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
 	ASSERT(application);
 
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
+	LOG_INFO("Running unnamed application ");
 
 	m_application = application;
 
 	//exit in case the graphics_system exits
 	m_running_loop = true;
-	auto listenerId = m_graphics_system->terminate_event.add_listener([this]()
+	auto listenerId = m_graphics_system->terminate_requested.add_listener([this]()
 	{
 		m_running_loop = false;
 	});
@@ -88,6 +90,7 @@ void Engine::run(IPakalApplication* application)
 	
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> nonThreadedSystems;
+	nonThreadedSystems.reserve(m_systems.size() + 1);
 
 	if (!is_threaded())
 		nonThreadedSystems.push_back(this);
@@ -131,7 +134,7 @@ void Engine::run(IPakalApplication* application)
 	m_resource_manager->terminate();
 
 	//unsubscribe from event
-	m_graphics_system->terminate_event.remove_listener(listenerId);
+	m_graphics_system->terminate_requested.remove_listener(listenerId);
 
 	//clear the message queue
 	procress_os_messages();
@@ -140,11 +143,12 @@ void Engine::run(IPakalApplication* application)
 void Engine::on_initialize()
 {
 	m_application->setup_environment(this);
-	m_application->setup_game_states(m_game_state_manager);	
+	m_application->start(m_game_state_manager);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
+	m_application->end(m_game_state_manager);
 	m_running_loop = false;  
 }
 //////////////////////////////////////////////////////////////////////////

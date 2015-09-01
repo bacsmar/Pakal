@@ -142,7 +142,7 @@ void IrrGraphicsSystem::on_update_graphics()
 	bool result = draw();
 	end_scene();
 	if (result == false) 
-		terminate();
+		terminate_requested.notify();
 }
 
 void IrrGraphicsSystem::on_pause_graphics()

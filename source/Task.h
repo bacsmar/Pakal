@@ -80,12 +80,7 @@ namespace Pakal
 				return completed_task();
 			}
 
-			static auto emptyDelegate = []()
-			{
-				std::atomic_int n;
-				n.store(0);
-				return n;
-			};
+			static auto emptyDelegate = []() { return std::atomic_int(); };
 
 			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate);
 			task->m_result = tasks.size();
@@ -94,8 +89,8 @@ namespace Pakal
 
 			std::function<void()> onComplete = [myTask]()
 			{
-				Task<std::atomic_int>* t = static_cast<Task<std::atomic_int>*>(myTask.get());
-				--t->m_result;
+				auto t = static_cast<Task<std::atomic_int>*>(myTask.get());
+				t->m_result-= 1;
 				if (t->m_result == 0)
 				{
 					t->run();

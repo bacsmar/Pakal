@@ -15,7 +15,7 @@ namespace Pakal
 
 	public:
 
-		GameStateManager(Engine* engine) : m_engine(engine) {};
+		explicit GameStateManager(Engine* engine) : m_engine(engine) {};
 		~GameStateManager();
 
 		virtual void initialize() override {};

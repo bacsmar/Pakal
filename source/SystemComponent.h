@@ -22,11 +22,13 @@ namespace Pakal
 		BasicTaskPtr initialize() override final;
 		BasicTaskPtr destroy() override final;
 
+		inline void set_parent_entity(IEntity* entity) override final { m_parent = entity; };
+		inline IEntity* get_parent_entity() override { return m_parent; };
+
+	protected:
 		virtual void on_initialize() = 0;
 		virtual void on_destroy() = 0;
 
-		inline void set_parent_entity(IEntity* entity) override final { m_parent = entity; };
-		inline IEntity* get_parent_entity() override { return m_parent; };
 	};
 
 }

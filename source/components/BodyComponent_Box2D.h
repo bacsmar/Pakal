@@ -2,8 +2,6 @@
 #include "Config.h"
 #include "BodyComponent.h"
 
-#if PAKAL_USE_BOX2D == 1
-
 class b2Body;
 class b2Fixture;
 class b2CircleShape;
@@ -41,8 +39,3 @@ namespace Pakal
 		tmath::vector3df m_position;
 	};	
 }
-
-
-
-#endif
-

@@ -14,7 +14,6 @@ void GraphicsSystem::on_initialize()
 void GraphicsSystem::on_terminate()
 {
 	on_terminate_graphics();
-	terminate_event.notify();
 }
 
 //////////////////////////////////////////////////////////////////////////
