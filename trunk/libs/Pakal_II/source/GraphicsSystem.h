@@ -29,7 +29,7 @@ namespace Pakal
 
 		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
-		Event<void> terminate_event;
+		Event<void> terminate_requested;
 	protected:
 
 		explicit GraphicsSystem(bool usesThread) : System(usesThread) {  }

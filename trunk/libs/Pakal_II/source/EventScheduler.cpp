@@ -28,6 +28,8 @@ Pakal::EventScheduler::~EventScheduler()
 
 void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition)
 {
+	if (condition()) return;
+
 	auto currentTid = std::this_thread::get_id();
 	m_mutex.lock();
 	auto dispatcher = std::find_if(m_dispatchers.begin(),m_dispatchers.end(),[currentTid](AsyncTaskDispatcher* d)
@@ -95,7 +97,7 @@ void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* 
 
 void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatcher)
 {
-	ASSERT(dispatcher->m_inbox->size() == 0);
+	ASSERT(dispatcher->m_inbox->empty());
 
 	std::lock_guard<std::mutex> lock(m_mutex);
 

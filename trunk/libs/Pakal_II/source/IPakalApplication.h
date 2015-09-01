@@ -23,7 +23,9 @@ namespace Pakal
 	public:
 		virtual void setup_environment( Engine * engine) = 0;
 
-		virtual void setup_game_states( GameStateManager * gameStateSystem) = 0;
+		virtual void start( GameStateManager * gameStateSystem) = 0;
+
+		virtual void end(GameStateManager * gameStateSystem) = 0;
 
 		virtual ~IPakalApplication() {}
 	};

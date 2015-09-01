@@ -1,7 +1,5 @@
 #include "MeshComponent_Irrlitch.h"
 
-#if PAKAL_USE_IRRLICHT == 1
-
 #include "irrlicht/IrrGraphicsSystem.h"
 #include "EventScheduler.h"
 
@@ -62,4 +60,3 @@ tmath::vector3df MeshComponent_Irrlitch::getPosition()
 
 	return tmath::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }
-#endif
