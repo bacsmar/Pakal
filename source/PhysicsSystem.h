@@ -33,11 +33,11 @@ namespace Pakal
 		{
 			tmath::vector3df gravity;
 			bool allow_sleep;
-			int iteration_velocity;
-			int iteration_position;
+			int velocity_iterations;
+			int position_iterations;
 			bool uses_thread;
 
-			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(true), iteration_velocity(8), iteration_position(3), uses_thread(true) {}
+			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(true), velocity_iterations(8), position_iterations(3), uses_thread(true) {}
 		};
 
 	protected:

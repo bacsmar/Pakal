@@ -79,17 +79,18 @@ void Box2DPhysicsSystem::init_world()
 	m_world->SetContinuousPhysics(false);	
 	m_world->SetAllowSleeping(m_settings.allow_sleep);
 
-	m_contact_listener = new ContactListener();
-	m_contact_filter = new ContactFilter();
-	m_destruction_listener = new DestructionListener();	
+	//m_contact_listener = new ContactListener();
+	//m_contact_filter = new ContactFilter();
+	//m_destruction_listener = new DestructionListener();	
 
-	m_world->SetContactListener(m_contact_listener);
-	m_world->SetContactFilter(m_contact_filter);
-	m_world->SetDestructionListener(m_destruction_listener);
+	//m_world->SetContactListener(m_contact_listener);
+	//m_world->SetContactFilter(m_contact_filter);
+	//m_world->SetDestructionListener(m_destruction_listener);
 
 	m_debug_draw = nullptr;
 
 	m_world->SetDebugDraw(m_debug_draw);
+
 }
 
 void Box2DPhysicsSystem::clear_world()
@@ -105,7 +106,7 @@ void Box2DPhysicsSystem::clear_world()
 void Box2DPhysicsSystem::update_world(long long dt)
 {
 	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);	
-	m_world->Step(dt/1000.0f,m_settings.iteration_velocity,m_settings.iteration_position);		
+	m_world->Step(dt/1000.0f,m_settings.velocity_iterations,m_settings.position_iterations);		
 }
 
 

@@ -78,7 +78,7 @@ void IrrGraphicsSystem::init_window()
 
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-150), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-3), vector3df(0,0,0));		
 
 }
 //////////////////////////////////////////////////////////////////////////
