@@ -4,7 +4,7 @@
 using namespace Pakal;
 
 
-PhysicsSystem::PhysicsSystem(bool usesThread):  System(usesThread)
+PhysicsSystem::PhysicsSystem(const Settings& settings):  System(settings.uses_thread), m_settings(settings)
 {
 }
 
@@ -21,7 +21,7 @@ void PhysicsSystem::on_terminate()
 void PhysicsSystem::on_update(long long dt)
 {
 	update_world(dt);
-	update_event.notify();
+	updated.notify();
 }
 
 void PhysicsSystem::on_pause()

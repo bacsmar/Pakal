@@ -4,14 +4,14 @@
 
 #include <unordered_set>
 #include <functional>
-#include <iostream>
+
+#include "PhysicsSystem.h"
+#include "GraphicsSystem.h"
 
 namespace Pakal
 {
 	class IPakalApplication;
-	class GraphicsSystem;
 	class EventScheduler;
-	class PhysicsSystem;
 	class GameStateManager;
 	class ComponentManager;
 	class IManager;
@@ -28,10 +28,12 @@ namespace Pakal
 
 		struct _PAKALExport Settings
 		{
-			bool use_threads;
+			bool uses_thread;
+			PhysicsSystem::Settings physic_system_settings;
+			GraphicsSystem::Settings graphic_system_settings;
 
-			std::function<GraphicsSystem*(Engine*)> graphic_system_allocator;
-			std::function<PhysicsSystem*(Engine*)>	physics_system_allocator;
+			std::function<GraphicsSystem*(Engine*,const GraphicsSystem::Settings& settings)> graphic_system_allocator;
+			std::function<PhysicsSystem*(Engine*,const PhysicsSystem::Settings& settings)>	physics_system_allocator;
 			std::function<SoundManager*(Engine*)>	sound_manager_allocator;
 
 			Settings();

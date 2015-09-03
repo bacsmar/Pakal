@@ -14,9 +14,9 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 	return m_system->execute_block([=]()
 	{
 		b2BodyDef bodyDef;
-		bodyDef.position.Set( settings.Position.x, settings.Position.y);
+		bodyDef.position.Set( settings.position.x, settings.position.y);
 
-		switch (settings.Type)
+		switch (settings.type)
 		{
 			case BodyType::Static: bodyDef.type = b2_staticBody; break;
 			case BodyType::Kinematic: bodyDef.type = b2_kinematicBody; break;
@@ -26,17 +26,17 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 
 	
 		b2FixtureDef fixtureDef;
-		fixtureDef.density = settings.Density;
-		fixtureDef.friction = settings.Friction;
-		fixtureDef.restitution = settings.Restitution;
+		fixtureDef.density = settings.density;
+		fixtureDef.friction = settings.friction;
+		fixtureDef.restitution = settings.restitution;
 
 		std::shared_ptr<b2Shape> shape;
-		if (settings.ShapeInfo->getType() == CircleShape::getRTTI())
+		if (settings.shape_info->getType() == CircleShape::getRTTI())
 		{
-			CircleShape* s =  static_cast<CircleShape*>(settings.ShapeInfo);
+			CircleShape* s =  static_cast<CircleShape*>(settings.shape_info);
 
 			shape = std::make_shared<b2CircleShape>();
-			shape->m_radius = s->Radius;
+			shape->m_radius = s->radius;
 
 			fixtureDef.shape = shape.get();
 		}

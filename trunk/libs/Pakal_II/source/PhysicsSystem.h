@@ -5,7 +5,7 @@
 #include "IComponentProvider.h"
 
 #include "Event.h"
-
+#include "math/tm.h"
 
 namespace Pakal
 {
@@ -23,14 +23,27 @@ namespace Pakal
 		void on_resume() override final;
 
 	public:
-		Event<void> update_event;
+		Event<void> updated;
 
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
 		virtual const char*			get_system_name() override = 0;
 
-	protected:
 
-		explicit PhysicsSystem(bool usesThread);
+		struct Settings
+		{
+			tmath::vector3df gravity;
+			bool allow_sleep;
+			int iteration_velocity;
+			int iteration_position;
+			bool uses_thread;
+
+			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(true), iteration_velocity(8), iteration_position(3), uses_thread(true) {}
+		};
+
+	protected:
+		Settings m_settings;
+
+		explicit PhysicsSystem(const Settings& settings);
 		virtual ~PhysicsSystem() {};
 
 		virtual void init_world()  {};
