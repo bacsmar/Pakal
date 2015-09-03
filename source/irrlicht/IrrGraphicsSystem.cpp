@@ -35,8 +35,8 @@ bool IrrGraphicsSystem::add_file_archive(const std::string& fname)
 }
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(bool usesThread)
-	: GraphicsSystem(usesThread), 
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
+	: GraphicsSystem(settings), 
 	m_is_rendering(false),
 	m_window(0),
 	device(nullptr),
@@ -44,7 +44,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(bool usesThread)
 	smgr(nullptr),
 	guienv(nullptr),	
 	m_render_info(new RendererInfo()),
-	m_showFps(false)
+	m_show_fps(false)
 {}
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
@@ -57,8 +57,8 @@ void IrrGraphicsSystem::init_window()
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
 	device =
-		createDevice( EDT_OPENGL, dimension2d<u32>(640, 480), 32,
-		false, false, false, nullptr);
+		createDevice( EDT_OPENGL, dimension2d<u32>(m_settings.resolution.x, m_settings.resolution.y), m_settings.bits,
+		m_settings.full_screen, false, m_settings.vsync, nullptr);
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
@@ -66,7 +66,7 @@ void IrrGraphicsSystem::init_window()
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
 
-	show_fps(m_showFps);
+	show_fps(m_show_fps);
 
 	smgr->addCameraSceneNode();	
 
@@ -118,7 +118,7 @@ bool IrrGraphicsSystem::draw()
 		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");
 	}	
 
-	if( m_showFps)
+	if( m_show_fps)
 	{		
 		stringw str = L"FPS [";
 		str += driver->getName();
@@ -162,7 +162,7 @@ void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::show_fps( bool val )
 {	
-	m_showFps = val;	
+	m_show_fps = val;	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFactory*>& factories)

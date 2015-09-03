@@ -24,7 +24,7 @@ namespace Pakal
 	struct CircleShape : BodyShape
 	{
 		DECLARE_RTTI_WITH_BASE(CircleShape,BodyShape)
-		float Radius;
+		float radius;
 	};
 
 
@@ -34,14 +34,14 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(BodyComponent,Component);
 	struct Settings
 	{
-		BodyType Type;
-		BodyShape* ShapeInfo;
-		float Density;
-		float Friction;
-		float Restitution;
-		tmath::vector3df Position;
+		BodyType type;
+		BodyShape* shape_info;
+		float density;
+		float friction;
+		float restitution;
+		tmath::vector3df position;
 
-		Settings() : Type(BodyType::Dynamic), ShapeInfo(nullptr), Density(2.37f), Friction(0.31f), Restitution(0.82f) { }
+		Settings() : type(BodyType::Dynamic), shape_info(nullptr), density(2.37f), friction(0.31f), restitution(0.82f) { }
 	};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;

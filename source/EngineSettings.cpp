@@ -37,14 +37,16 @@ using namespace Pakal;
 
 Engine::Settings::Settings() 
 {
-	use_threads = true;
+	uses_thread = true;
+	physic_system_settings.uses_thread = uses_thread;
+	graphic_system_settings.uses_thread = false;
 
 #if PAKAL_USE_IRRLICHT == 1
-	graphic_system_allocator = [](Engine* engine)
+	graphic_system_allocator = [](Engine* engine,const GraphicsSystem::Settings& settings)
 	{
-		IrrGraphicsSystem* irrlicht = new IrrGraphicsSystem(false);
+		IrrGraphicsSystem* irrlicht = new IrrGraphicsSystem(settings);
 
-		ResourceManager::StreamReaderFactory factory;		
+		ResourceManager::StreamReaderFactory factory;
 		factory.open_reader = [irrlicht](const std::string& fname){ return irrlicht->open_reader(fname); };
 		factory.add_file_archive = [irrlicht](const std::string& fname){ return irrlicht->add_file_archive(fname); };
 
@@ -54,7 +56,7 @@ Engine::Settings::Settings()
 #endif
 
 #if PAKAL_USE_BOX2D == 1
-	physics_system_allocator = [this](Engine* engine) { return new Box2DPhysicsSystem(use_threads); };
+	physics_system_allocator = [this](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1

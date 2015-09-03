@@ -30,7 +30,7 @@ namespace Pakal
 		IStreamPtr open_reader(const std::string& fname);
 		bool add_file_archive(const std::string& fname);
 
-		explicit IrrGraphicsSystem(bool usesThread);
+		explicit IrrGraphicsSystem(const Settings& settings);
 
 	protected:
 
@@ -69,6 +69,6 @@ namespace Pakal
 		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;
 		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) override;
 
-		bool m_showFps;
+		bool m_show_fps;
 	};	
 }

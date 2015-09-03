@@ -14,13 +14,13 @@
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-Box2DPhysicsSystem::Box2DPhysicsSystem(bool usesThread) :
-		PhysicsSystem(usesThread),
-		m_pWorld(nullptr),
-		m_pContactListener(nullptr),
-		m_pContactFilter(nullptr),
-		m_pDestructionListener(nullptr),
-		m_pDebugDraw(nullptr)		
+Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
+		PhysicsSystem(settings),
+		m_world(nullptr),
+		m_contact_listener(nullptr),
+		m_contact_filter(nullptr),
+		m_destruction_listener(nullptr),
+		m_debug_draw(nullptr)
 {	
 }
 //////////////////////////////////////////////////////////////////////////
@@ -31,81 +31,81 @@ void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFac
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
 {
-	return m_pWorld->CreateBody(def);
+	return m_world->CreateBody(def);
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_body(b2Body* body)
 {
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
-	return m_pWorld->DestroyBody(body);
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	return m_world->DestroyBody(body);
 }
 //////////////////////////////////////////////////////////////////////////
 b2Joint* Box2DPhysicsSystem::create_joint(const b2JointDef* def)
 {
-	return m_pWorld->CreateJoint(def);
+	return m_world->CreateJoint(def);
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_joint(b2Joint* joint)
 {
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
-	return m_pWorld->DestroyJoint(joint);
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	return m_world->DestroyJoint(joint);
 }
 //////////////////////////////////////////////////////////////////////////
-inline void Box2DPhysicsSystem::enable()	{ m_pContactListener->Enable(); }
+inline void Box2DPhysicsSystem::enable()	{ m_contact_listener->Enable(); }
 //////////////////////////////////////////////////////////////////////////
-inline void Box2DPhysicsSystem::disable()	{ m_pContactListener->Disable(); }
+inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::do_debug_draw()
 {
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
-	if( m_pWorld) m_pWorld->DrawDebugData();
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	if( m_world) m_world->DrawDebugData();
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 {	
 #if PAKAL_USE_IRRLICHT
-	m_pDebugDraw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
+	m_debug_draw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
 #endif
-	m_pWorld->SetDebugDraw(m_pDebugDraw);
-	m_pDebugDraw->SetFlags(b2Draw::e_shapeBit);
+	m_world->SetDebugDraw(m_debug_draw);
+	m_debug_draw->SetFlags(b2Draw::e_shapeBit);
 }
 
 void Box2DPhysicsSystem::init_world()
 {
-	b2Vec2 gravity(0.00f, -9.82f);
-	m_pWorld = new b2World(gravity);
-	m_pWorld->SetWarmStarting(true);
-	m_pWorld->SetContinuousPhysics(false);	
-	m_pWorld->SetAllowSleeping(true);
+	
+	b2Vec2 gravity(m_settings.gravity.x, m_settings.gravity.y);
+	m_world = new b2World(gravity);
+	m_world->SetWarmStarting(true);
+	m_world->SetContinuousPhysics(false);	
+	m_world->SetAllowSleeping(m_settings.allow_sleep);
 
-	m_pContactListener = new ContactListener();
-	m_pContactFilter = new ContactFilter();
-	m_pDestructionListener = new DestructionListener();	
+	m_contact_listener = new ContactListener();
+	m_contact_filter = new ContactFilter();
+	m_destruction_listener = new DestructionListener();	
 
-	m_pWorld->SetContactListener(m_pContactListener);
-	m_pWorld->SetContactFilter(m_pContactFilter);
-	m_pWorld->SetDestructionListener(m_pDestructionListener);
+	m_world->SetContactListener(m_contact_listener);
+	m_world->SetContactFilter(m_contact_filter);
+	m_world->SetDestructionListener(m_destruction_listener);
 
-	m_pDebugDraw = nullptr;
+	m_debug_draw = nullptr;
 
-	m_pWorld->SetDebugDraw(m_pDebugDraw);
+	m_world->SetDebugDraw(m_debug_draw);
 }
 
 void Box2DPhysicsSystem::clear_world()
 {
-	SAFE_DEL(m_pDebugDraw);
-	SAFE_DEL(m_pContactListener);
-	SAFE_DEL(m_pContactFilter);
-	SAFE_DEL(m_pDestructionListener);
-	SAFE_DEL(m_pWorld);
+	SAFE_DEL(m_debug_draw);
+	SAFE_DEL(m_contact_listener);
+	SAFE_DEL(m_contact_filter);
+	SAFE_DEL(m_destruction_listener);
+	SAFE_DEL(m_world);
 }
 
 
 void Box2DPhysicsSystem::update_world(long long dt)
 {
-	float PHYSIC_UPDATE_RATE = dt/1000.0f;
-	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
-	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);	
+	m_world->Step(dt/1000.0f,m_settings.iteration_velocity,m_settings.iteration_position);		
 }
 
 

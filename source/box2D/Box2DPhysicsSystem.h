@@ -22,11 +22,11 @@ namespace Pakal
 	{
 	public:	
 		virtual ~Box2DPhysicsSystem() {};
-		explicit Box2DPhysicsSystem(bool usesThread);
+		explicit Box2DPhysicsSystem(const Settings& settings);
 
-		inline b2World* getWorld() const
+		inline b2World* get_world() const
 		{
-			return m_pWorld;
+			return m_world;
 		}
 
 		inline const char* get_system_name() override final
@@ -59,14 +59,12 @@ namespace Pakal
 		inline void disable();		
 
 	private:
-		b2World				* m_pWorld;
-		ContactListener		* m_pContactListener;
-		ContactFilter		* m_pContactFilter;
-		DestructionListener	* m_pDestructionListener;
-		b2Draw				* m_pDebugDraw;
+		b2World				* m_world;
+		ContactListener		* m_contact_listener;
+		ContactFilter		* m_contact_filter;
+		DestructionListener	* m_destruction_listener;
+		b2Draw				* m_debug_draw;
 
-		std::mutex			m_debugDrawMutex;
-
-		std::vector<std::pair<b2Body*, bool> > m_EnableQueue;
+		std::mutex			m_debug_draw_mutex;
 	};
 }

@@ -28,7 +28,7 @@ Engine::~Engine()
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
-	System(settings.use_threads),
+	System(settings.uses_thread),
 	m_running_loop(false),
 	m_application(nullptr),
 	m_graphics_system(nullptr),
@@ -45,8 +45,8 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager	 = new ComponentManager();
 	m_sound_manager		 = settings.sound_manager_allocator(this);
 
-	m_graphics_system	= settings.graphic_system_allocator(this);
-	m_physics_system	= settings.physics_system_allocator(this);
+	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
+	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);

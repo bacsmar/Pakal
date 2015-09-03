@@ -4,6 +4,7 @@
 #include "IComponentProvider.h"
 #include "System.h"
 #include "Event.h"
+#include  "math/tm.h"
 
 namespace Pakal
 {
@@ -30,9 +31,22 @@ namespace Pakal
 		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
 		Event<void> terminate_requested;
-	protected:
 
-		explicit GraphicsSystem(bool usesThread) : System(usesThread) {  }
+		struct Settings
+		{
+			tmath::vectorn<unsigned int,2> resolution;
+			int bits;
+			bool full_screen;
+			bool vsync;
+			bool uses_thread;
+
+			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false), uses_thread(false) {}
+		};
+
+	protected:
+		Settings m_settings;
+
+		explicit GraphicsSystem(const Settings& settings) : System(settings.uses_thread), m_settings(settings) {  }
 		virtual ~GraphicsSystem(){}
 
 

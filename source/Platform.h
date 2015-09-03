@@ -120,6 +120,5 @@
 	#include <cassert>
 #else
 	#define  ASSERT(x)
-	#define  ASSERT_IF(x)
 #endif
 
