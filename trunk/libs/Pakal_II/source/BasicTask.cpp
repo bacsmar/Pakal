@@ -12,7 +12,7 @@ namespace Pakal
 
 	void BasicTask::queue_continuations()
 	{
-		auto currentTid = std::this_thread::get_id();
+		auto currentTid = THIS_THREAD;
 
 		std::lock_guard<std::mutex> lock(m_continuation_mutex);
 

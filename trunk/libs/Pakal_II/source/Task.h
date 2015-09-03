@@ -52,7 +52,7 @@ namespace Pakal
 			return m_result;
 		}
 		
-		std::shared_ptr<Task<TArgs>> continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = std::this_thread::get_id())
+		std::shared_ptr<Task<TArgs>> continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
 			auto task =	std::make_shared<Task<TArgs>>(callBack);
 

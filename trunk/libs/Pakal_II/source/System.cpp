@@ -66,7 +66,7 @@ namespace Pakal
 		}
 		else
 		{
-			EventScheduler::instance().register_dispatcher_for_thread(&m_dispatcher,std::this_thread::get_id());
+			EventScheduler::instance().register_dispatcher_for_thread(&m_dispatcher,THIS_THREAD);
 		}
 
 		return EventScheduler::instance().execute_in_thread([this]()
