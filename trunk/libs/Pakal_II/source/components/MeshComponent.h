@@ -16,9 +16,10 @@ namespace Pakal
 
 		struct Settings
 		{
-			std::string MeshName;
-			std::string TextureName;
-			tmath::vector3df Position;
+			std::string mesh_name;
+			std::string texture_name;
+			tmath::vector3df position;
+			tmath::vector3df size;
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
@@ -29,5 +30,8 @@ namespace Pakal
 
 		virtual void  set_position(const tmath::vector3df& position) = 0;
 		virtual tmath::vector3df get_position() = 0;
+
+		virtual tmath::vector3df get_size() = 0;
+		virtual void set_size(const tmath::vector3df& size) = 0;
 	};	
 }

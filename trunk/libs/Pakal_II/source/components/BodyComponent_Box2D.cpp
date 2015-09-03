@@ -48,6 +48,7 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 
 		m_body = m_system->create_body(&bodyDef);
 		m_fixture =  m_body->CreateFixture(&fixtureDef);	
+
 	});	
 }
 

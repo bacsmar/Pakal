@@ -13,9 +13,16 @@ BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 {
 	return m_system->execute_block([=]()
 	{
-		if (!settings.MeshName.empty())   set_mesh(settings.MeshName);
-		if (!settings.TextureName.empty())   set_texture(settings.TextureName);
-		set_position(settings.Position);		
+		if (!settings.mesh_name.empty())   set_mesh(settings.mesh_name);
+		if (!settings.texture_name.empty())   set_texture(settings.texture_name);
+		if (m_node)
+		{ 
+			set_position(settings.position);
+			if (settings.size != tmath::vector3df())
+			{
+				set_size(settings.size);
+			}
+		}
 	});
 }
 
@@ -70,3 +77,23 @@ tmath::vector3df MeshComponent_Irrlitch::get_position()
 	return tmath::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }
 
+tmath::vector3df MeshComponent_Irrlitch::get_size()
+{
+	auto v =  m_node->getTransformedBoundingBox().getExtent();
+	v *= m_node->getScale();
+
+	return tmath::vector3df(v.X,v.Y,v.Z);
+}
+
+void MeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
+{
+	auto v =  m_node->getTransformedBoundingBox().getExtent();
+
+	v = irr::core::vector3df(1,1,1) / v;
+
+	v.X *= size.x;
+	v.Y *= size.y;
+	v.Z *= size.z;
+	
+	m_node->setScale(v);
+}
