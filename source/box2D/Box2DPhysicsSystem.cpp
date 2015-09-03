@@ -2,7 +2,7 @@
 #include "Box2DPhysicsSystem.h"
 #include "Box2DPhysicsListeners.h"
 
-#include "IComponentFactory.h"
+#include "ComponentFactory.h"
 #include "components/BodyComponent.h"
 #include "Components/BodyComponent_Box2D.h"
 
@@ -29,23 +29,23 @@ void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFac
 	factories.push_back( CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
-b2Body* Box2DPhysicsSystem::createBody(const b2BodyDef* def)
+b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
 {
 	return m_pWorld->CreateBody(def);
 }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::destroyBody(b2Body* body)
+void Box2DPhysicsSystem::destroy_body(b2Body* body)
 {
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	return m_pWorld->DestroyBody(body);
 }
 //////////////////////////////////////////////////////////////////////////
-b2Joint* Box2DPhysicsSystem::createJoint(const b2JointDef* def)
+b2Joint* Box2DPhysicsSystem::create_joint(const b2JointDef* def)
 {
 	return m_pWorld->CreateJoint(def);
 }
 //////////////////////////////////////////////////////////////////////////
-void Box2DPhysicsSystem::destroyJoint(b2Joint* joint)
+void Box2DPhysicsSystem::destroy_joint(b2Joint* joint)
 {
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex);
 	return m_pWorld->DestroyJoint(joint);
@@ -72,7 +72,7 @@ void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 
 void Box2DPhysicsSystem::init_world()
 {
-	b2Vec2 gravity(5.0f, 0.0f);
+	b2Vec2 gravity(0.00f, -9.82f);
 	m_pWorld = new b2World(gravity);
 	m_pWorld->SetWarmStarting(true);
 	m_pWorld->SetContinuousPhysics(false);	
@@ -101,9 +101,9 @@ void Box2DPhysicsSystem::clear_world()
 }
 
 
-void Box2DPhysicsSystem::update_world()
+void Box2DPhysicsSystem::update_world(long long dt)
 {
-	float PHYSIC_UPDATE_RATE = 1.0f/30.0f;
+	float PHYSIC_UPDATE_RATE = dt/1000.0f;
 	std::lock_guard<std::mutex> lock( m_debugDrawMutex) ;	
 	m_pWorld->Step(PHYSIC_UPDATE_RATE, 8, 3);		
 }

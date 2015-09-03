@@ -1,23 +1,61 @@
 #pragma once
 #include "Config.h"
 #include "math/tm.h"
-
-#include "SystemComponent.h"
-#include "PhysicsSystem.h"
+#include "TaskFwd.h"
+#include "Component.h"
 
 namespace Pakal
 {
 
-	class _PAKALExport BodyComponent : public SystemComponent
+	enum class BodyType
 	{
-	public:		
-		DECLARE_RTTI_WITH_BASE(BodyComponent,SystemComponent);
+		Static,
+		Kinematic,
+		Dynamic
+	};
 
-		explicit BodyComponent(PhysicsSystem* physicsSystem): SystemComponent(physicsSystem) {}
-		~BodyComponent() {};
+	struct BodyShape
+	{
+		virtual ~BodyShape() {}
 
-		virtual void setPosition(const tmath::vector3df& newPosition) = 0;
-		virtual tmath::vector3df& getPosition() = 0;
-	
+		DECLARE_RTTI(BodyShape)
+	};
+
+	struct CircleShape : BodyShape
+	{
+		DECLARE_RTTI_WITH_BASE(CircleShape,BodyShape)
+		float Radius;
+	};
+
+
+	class _PAKALExport BodyComponent : public Component
+	{
+	public:	
+		DECLARE_RTTI_WITH_BASE(BodyComponent,Component);
+	struct Settings
+	{
+		BodyType Type;
+		BodyShape* ShapeInfo;
+		float Density;
+		float Friction;
+		float Restitution;
+		tmath::vector3df Position;
+
+		Settings() : Type(BodyType::Dynamic), ShapeInfo(nullptr), Density(2.37f), Friction(0.31f), Restitution(0.82f) { }
+	};
+
+		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
+		virtual BasicTaskPtr destroy() = 0;
+
+		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
+		virtual tmath::vector3df get_position() = 0;
+
+		virtual void set_density(float density) = 0;
+		virtual void set_friction(float friction) = 0;
+		virtual void set_restitution(float restitution) = 0;
+
+		virtual float get_density() = 0;
+		virtual float get_friction() = 0;
+		virtual float get_restitution() = 0;
 	};	
 }

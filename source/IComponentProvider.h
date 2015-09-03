@@ -8,7 +8,7 @@ namespace Pakal
 
 	class IComponentFactory;
 	class BasicTask;
-	class IComponent;
+	class Component;
 
 	class _PAKALExport IComponentProvider
 	{

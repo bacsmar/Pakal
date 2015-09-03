@@ -40,7 +40,7 @@ namespace Pakal
 		{
 		}
 
-		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = std::this_thread::get_id())
+		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 		{			
 			std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -116,7 +116,7 @@ namespace Pakal
 		{
 		}
 
-		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = std::this_thread::get_id())
+		inline unsigned int add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 

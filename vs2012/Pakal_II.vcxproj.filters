@@ -67,9 +67,6 @@
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp">
       <Filter>Managers\SoundManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\SystemComponent.cpp">
-      <Filter>Managers\ComponentManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
@@ -105,12 +102,6 @@
     </ClInclude>
     <ClInclude Include="..\source\Config.h">
       <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IComponent.h">
-      <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IComponentFactory.h">
-      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\AsyncTaskDispatcher.h">
       <Filter>Managers\EventManager</Filter>
@@ -238,9 +229,6 @@
     <ClInclude Include="..\source\sfml\SoundManager_SFML.h">
       <Filter>Managers\SoundManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\SystemComponent.h">
-      <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\ResourceManager.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
@@ -252,6 +240,12 @@
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h">
       <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Component.h">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ComponentFactory.h">
+      <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,7 @@
 namespace Pakal
 {
 	class IComponentFactory;
-	class IComponent;
+	class Component;
 	class IComponentProvider;
 
 	class _PAKALExport ComponentManager : IManager
@@ -29,12 +29,12 @@ namespace Pakal
 		void register_factory(IComponentFactory* factory, bool replacePreviousFactory = false);
 		void register_provider(IComponentProvider &provider);
 
-		IComponent* create_component(const char* componentName);
+		Component* create_component(const char* componentName);
 
 		template <class T>
 		T* create_component()
 		{
- 			IComponent* ic = create_component(T::getRTTI().getName());
+ 			Component* ic = create_component(T::getRTTI().getName());
 			return static_cast<T*>(ic);
 		}
 

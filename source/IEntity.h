@@ -12,7 +12,7 @@
 
 namespace Pakal
 {
-	class IComponent;
+	class Component;
 
 	class _PAKALExport IEntity
 	{

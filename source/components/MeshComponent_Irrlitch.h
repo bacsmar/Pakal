@@ -13,27 +13,27 @@ namespace Pakal
 	
 	class _PAKALExport MeshComponent_Irrlitch : public MeshComponent
 	{
-	protected:
-		irr::video::ITexture		*m_texture;
-		irr::scene::IMesh			*m_mesh;
-		irr::scene::IMeshSceneNode	*m_node;
-
-		inline IrrGraphicsSystem* get_system();
-
 	public:
 		DECLARE_RTTI_WITH_BASE(MeshComponent_Irrlitch,MeshComponent)
-
-		explicit MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem);
-
-		BasicTaskPtr LoadMeshAsync(const std::string& meshName) override;
-		BasicTaskPtr LoadTextureAsync(const std::string& textureName) override;
-
-		void setPosition(const tmath::vector3df& position) override;
-		tmath::vector3df getPosition() override;
-
 	protected:
-		void on_initialize() override;
-		void on_destroy() override;
+		IrrGraphicsSystem*			m_system;
+
+		irr::video::ITexture*		m_texture;
+		irr::scene::IMesh*			m_mesh;
+		irr::scene::IMeshSceneNode* m_node;
+
+	public:
+		explicit MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem) : m_system(irrGraphicsSystem), m_texture(nullptr), m_mesh(nullptr), m_node(nullptr) {};
+		~MeshComponent_Irrlitch();
+
+		BasicTaskPtr  set_mesh(const std::string& meshName) override;
+		BasicTaskPtr  set_texture(const std::string& textureName) override;
+
+		void set_position(const tmath::vector3df& position) override;
+		tmath::vector3df get_position() override;
+
+		BasicTaskPtr initialize(const Settings& settings) override;
+		BasicTaskPtr destroy() override;
 	};
 
 }

@@ -1,62 +1,72 @@
 #include "MeshComponent_Irrlitch.h"
-
 #include "irrlicht/IrrGraphicsSystem.h"
-#include "EventScheduler.h"
 
 using namespace Pakal;
 
-
-IrrGraphicsSystem* MeshComponent_Irrlitch::get_system()
+MeshComponent_Irrlitch::~MeshComponent_Irrlitch() 
 {
-	return static_cast<IrrGraphicsSystem*>(m_system);
+	m_system = nullptr;
+	ASSERT( m_node == nullptr);
 }
 
-MeshComponent_Irrlitch::MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem) : MeshComponent(irrGraphicsSystem), m_node(nullptr) { }
-
-void MeshComponent_Irrlitch::on_initialize() {}
-
-void MeshComponent_Irrlitch::on_destroy()
+BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 {
-	if (m_node)
+	return m_system->execute_block([=]()
 	{
-		m_node->remove();
-	}
+		if (!settings.MeshName.empty())   set_mesh(settings.MeshName);
+		if (!settings.TextureName.empty())   set_texture(settings.TextureName);
+		set_position(settings.Position);		
+	});
 }
 
-BasicTaskPtr MeshComponent_Irrlitch::LoadMeshAsync(const std::string& meshName)
+BasicTaskPtr MeshComponent_Irrlitch::destroy()
 {
-	return EventScheduler::instance().execute_in_thread([=]()
+	return m_system->execute_block([=]()
 	{
-		m_mesh = get_system()->get_smgr()->getMesh(meshName.c_str());
 		if (m_node)
 		{
 			m_node->remove();
-		}
-		m_node = get_system()->get_smgr()->addMeshSceneNode(m_mesh);
-	},m_system->get_thread_id());
+			m_node = nullptr;
+		}	
+	});
 }
 
-BasicTaskPtr MeshComponent_Irrlitch::LoadTextureAsync(const std::string& textureName)
+BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 {
-	return EventScheduler::instance().execute_in_thread([=]()
+	return m_system->execute_block([=]()
 	{
-		m_texture = get_system()->get_driver()->getTexture(textureName.c_str());
+		if (m_node)
+			m_node->remove();
+
+		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());
+
+		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
 
 		m_node->setMaterialFlag(irr::video::EMF_LIGHTING,false);
-		m_node->setMaterialTexture(0,m_texture);
 		m_node->setVisible(true);
-	},m_system->get_thread_id());
+	});
 }
 
-void MeshComponent_Irrlitch::setPosition(const tmath::vector3df& position)
+BasicTaskPtr MeshComponent_Irrlitch::set_texture(const std::string& textureName)
+{
+	return m_system->execute_block([=]()
+	{
+		m_texture = m_system->get_driver()->getTexture(textureName.c_str());
+		m_node->setMaterialTexture(0,m_texture);
+	});
+
+}
+
+void MeshComponent_Irrlitch::set_position(const tmath::vector3df& position)
 {
 	irr::core::vector3df v(position.x,position.y,position.z);
 	m_node->setPosition(v);
 }
 
-tmath::vector3df MeshComponent_Irrlitch::getPosition()
+tmath::vector3df MeshComponent_Irrlitch::get_position()
 {
 	auto vector3D = m_node->getPosition();
 
 	return tmath::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }
+

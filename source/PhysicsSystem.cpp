@@ -18,10 +18,10 @@ void PhysicsSystem::on_terminate()
 	clear_world();
 }
 
-void PhysicsSystem::on_update()
+void PhysicsSystem::on_update(long long dt)
 {
-	update_world();
-	update_event.notify(true);
+	update_world(dt);
+	update_event.notify();
 }
 
 void PhysicsSystem::on_pause()

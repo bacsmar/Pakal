@@ -24,7 +24,7 @@ namespace Pakal
 		virtual BasicTaskPtr terminate() = 0;
 		virtual BasicTaskPtr resume() = 0;
 		virtual BasicTaskPtr pause() = 0;
-		virtual void		 update() = 0;
+		virtual void		 update(long long dt) = 0;
 
 		virtual SystemState get_state() = 0;
 		virtual bool is_threaded() = 0;

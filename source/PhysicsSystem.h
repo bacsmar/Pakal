@@ -18,12 +18,12 @@ namespace Pakal
 
 		void on_initialize() override final;
 		void on_terminate() override final;
-		void on_update() override final; 
+		void on_update(long long dt) override final; 
 		void on_pause() override final;
 		void on_resume() override final;
 
 	public:
-		Event<bool> update_event;
+		Event<void> update_event;
 
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
 		virtual const char*			get_system_name() override = 0;
@@ -34,7 +34,7 @@ namespace Pakal
 		virtual ~PhysicsSystem() {};
 
 		virtual void init_world()  {};
-		virtual void update_world() {};
+		virtual void update_world(long long dt) {};
 		virtual void clear_world() {};
 		virtual void pause_world() {};
 		virtual void resume_world() {};

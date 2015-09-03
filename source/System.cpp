@@ -1,4 +1,5 @@
 #include "System.h"
+#include <chrono>
 
 #include "EventScheduler.h"
 
@@ -10,14 +11,20 @@ namespace Pakal
 
 		while (m_dispatcher_ready == false) {}
 
+		std::chrono::system_clock::time_point start,end;
+		long long delta = 0;
+
 		while(m_state != SystemState::Terminated)
 		{
+			start = std::chrono::high_resolution_clock::now();
+
 			m_dispatcher.dispatch_tasks();
 			if (m_state == SystemState::Running)
 			{
-				on_update();
+				on_update(delta);
 			}
-
+			end = std::chrono::high_resolution_clock::now();
+			delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 		} 
 	}
 
@@ -33,14 +40,14 @@ namespace Pakal
 		m_state = SystemState::Created;
 	}
 
-	void System::update()
+	void System::update(long long dt)
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
 		m_dispatcher.dispatch_tasks();
 		if (m_state == SystemState::Running)
 		{
-			on_update();
+			on_update(dt);
 		}
 	}
 
@@ -108,5 +115,10 @@ namespace Pakal
 			on_resume();
 			m_state = SystemState::Running;
 		},m_dispatcher.thread_id());
+	}
+
+	BasicTaskPtr System::execute_block(const std::function<void()>& block)
+	{
+		return EventScheduler::instance().execute_in_thread(block,thread_id());
 	}
 }
