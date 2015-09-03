@@ -4,7 +4,7 @@
 //TODO create an option to wait for tasks
 void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 {
-	ASSERT(thread_id() == std::this_thread::get_id());
+	ASSERT(thread_id() == THIS_THREAD);
 
 	if(m_inbox->size() > 0)
 	{

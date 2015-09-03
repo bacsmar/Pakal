@@ -86,7 +86,7 @@ namespace Pakal
 			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			auto thisThread = std::this_thread::get_id();
+			auto thisThread = THIS_THREAD;
 
 			for (const auto& dd : copyDelegates)
 			{
@@ -161,7 +161,7 @@ namespace Pakal
 			auto copyDelegates(m_delegates);
 			m_mutex.unlock();
 
-			auto thisThread = std::this_thread::get_id();
+			auto thisThread = THIS_THREAD;
 
 			for (const auto &dd : copyDelegates)
 			{

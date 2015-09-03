@@ -78,7 +78,7 @@ void IrrGraphicsSystem::init_window()
 
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-400), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-150), vector3df(0,0,0));		
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 void IrrGraphicsSystem::begin_scene()
 {
 	ASSERT(driver);
-	driver->beginScene(true, true, SColor(255,0,0,0));
+	driver->beginScene(true, true, SColor(255,200,200,200));
 }
 //////////////////////////////////////////////////////////////////////////
 bool IrrGraphicsSystem::draw()

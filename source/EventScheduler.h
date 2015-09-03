@@ -42,7 +42,7 @@ namespace Pakal
 		template<typename TArgs>
 		std::shared_ptr<Task<TArgs>> execute_in_thread(const std::function<TArgs()>& fn, std::thread::id tid)
 		{
-			auto currentTid = std::this_thread::get_id();
+			auto currentTid = THIS_THREAD;
 
 			if (currentTid == tid)
 				return TaskUtils::from_result(fn());
@@ -54,7 +54,7 @@ namespace Pakal
 		template<typename TArgs>
 		void execute_in_thread(std::shared_ptr<Task<TArgs>> task, std::thread::id tid)
 		{
-			auto currentTid = std::this_thread::get_id();
+			auto currentTid = THIS_THREAD;
 
 			if (currentTid == tid)
 				task->run();

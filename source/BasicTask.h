@@ -45,7 +45,7 @@ namespace Pakal
 
 		void wait();		
 
-		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = std::this_thread::get_id());
+		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = NULL_THREAD);
 
 	};
 

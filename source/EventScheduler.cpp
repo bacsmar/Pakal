@@ -30,7 +30,7 @@ void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condit
 {
 	if (condition()) return;
 
-	auto currentTid = std::this_thread::get_id();
+	auto currentTid = THIS_THREAD;
 	m_mutex.lock();
 	auto dispatcher = std::find_if(m_dispatchers.begin(),m_dispatchers.end(),[currentTid](AsyncTaskDispatcher* d)
 	{
@@ -56,7 +56,7 @@ Pakal::InboxQueue* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id 
 
 Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function<void()>& fn,std::thread::id tid)
 {
-	auto currentTid = std::this_thread::get_id();
+	auto currentTid = THIS_THREAD;
 
 	if (currentTid == tid)
 	{
@@ -69,7 +69,7 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 
 void Pakal::EventScheduler::execute_in_thread(BasicTaskPtr task, std::thread::id tid)
 {
-	auto currentTid = std::this_thread::get_id();
+	auto currentTid = THIS_THREAD;
 
 	if (currentTid == tid)
 		task->run();
