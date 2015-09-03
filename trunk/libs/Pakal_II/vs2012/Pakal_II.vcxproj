@@ -22,7 +22,6 @@
     <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h" />
     <ClInclude Include="..\source\IStream.h" />
     <ClInclude Include="..\source\math\matrix.h" />
-    <ClInclude Include="..\source\SystemComponent.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
@@ -64,8 +63,8 @@
     <ClInclude Include="..\source\EventScheduler.h" />
     <ClInclude Include="..\source\GameStateManager.h" />
     <ClInclude Include="..\source\GenericEntity.h" />
-    <ClInclude Include="..\source\IComponent.h" />
-    <ClInclude Include="..\source\IComponentFactory.h" />
+    <ClInclude Include="..\source\Component.h" />
+    <ClInclude Include="..\source\ComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
     <ClInclude Include="..\source\IDebugDrawer.h" />
     <ClInclude Include="..\source\IEntity.h" />
@@ -82,7 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp" />
-    <ClCompile Include="..\source\SystemComponent.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />

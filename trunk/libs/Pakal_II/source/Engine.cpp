@@ -101,15 +101,23 @@ void Engine::run(IPakalApplication* application)
 			nonThreadedSystems.push_back(s);
 	}
 
+	std::chrono::system_clock::time_point start,end;
+	long long delta = 0;
+
 	//do the loop
 	while(m_running_loop)
 	{
+		start = std::chrono::high_resolution_clock::now();
+
 		for (auto s : nonThreadedSystems)
 		{
 			if (s->get_state() != SystemState::Terminated)
-				s->update();
+				s->update(delta);
 		}
 		procress_os_messages();
+
+		end = std::chrono::high_resolution_clock::now();
+		delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 	}
 	
 	//terminate engine

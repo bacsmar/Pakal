@@ -3,72 +3,103 @@
 
 using namespace Pakal;
 
-void BodyComponent_Box2D::on_initialize()
-{	
-	//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-	b2BodyDef bodyDef;
-	bodyDef.type = b2_dynamicBody;
-	bodyDef.position.Set( 3.0f, 2.1f);
-
-	b2CircleShape shape;
-	shape.m_radius = 20.22f;
-
-	b2FixtureDef fixtureDef;
-	fixtureDef.shape = &shape;
-	fixtureDef.density = 2.37f;
-	fixtureDef.friction = 0.31f;
-	fixtureDef.restitution = 0.82f;
-
-	m_body = get_system()->createBody(&bodyDef);
-	m_fixture =  m_body->CreateFixture(&fixtureDef);	
-	
-}
-
-void BodyComponent_Box2D::on_destroy()
-{
-	get_system()->destroyBody(m_body);
-	m_body = nullptr;
-}
-
 BodyComponent_Box2D::~BodyComponent_Box2D()
 {
+	m_system = nullptr;
+	ASSERT(m_body == nullptr);
 }
 
-BodyComponent_Box2D::BodyComponent_Box2D(Box2DPhysicsSystem* box) : BodyComponent(box), m_body(nullptr)
+BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 {
+	return m_system->execute_block([=]()
+	{
+		b2BodyDef bodyDef;
+		bodyDef.position.Set( settings.Position.x, settings.Position.y);
+
+		switch (settings.Type)
+		{
+			case BodyType::Static: bodyDef.type = b2_staticBody; break;
+			case BodyType::Kinematic: bodyDef.type = b2_kinematicBody; break;
+			case BodyType::Dynamic: bodyDef.type = b2_dynamicBody; break;
+			default: break;
+		}
+
+	
+		b2FixtureDef fixtureDef;
+		fixtureDef.density = settings.Density;
+		fixtureDef.friction = settings.Friction;
+		fixtureDef.restitution = settings.Restitution;
+
+		std::shared_ptr<b2Shape> shape;
+		if (settings.ShapeInfo->getType() == CircleShape::getRTTI())
+		{
+			CircleShape* s =  static_cast<CircleShape*>(settings.ShapeInfo);
+
+			shape = std::make_shared<b2CircleShape>();
+			shape->m_radius = s->Radius;
+
+			fixtureDef.shape = shape.get();
+		}
+		else
+		{
+			//TODO implement other shapes
+			ASSERT(false);
+		}
+
+		m_body = m_system->create_body(&bodyDef);
+		m_fixture =  m_body->CreateFixture(&fixtureDef);	
+	});	
 }
 
-b2Body* BodyComponent_Box2D::createBody(b2BodyDef& bodyDef)
+BasicTaskPtr BodyComponent_Box2D::destroy()
 {
-	ASSERT( !m_body);
-	m_body = get_system()->createBody(&bodyDef);
-	return m_body;
+	return m_system->execute_block([=]()
+	{
+		m_system->destroy_body(m_body);
+		m_body = nullptr;		
+	});
 }
 
-b2Fixture* BodyComponent_Box2D::addFixture(b2FixtureDef& fixtureDef)
+void BodyComponent_Box2D::set_density(float density)
 {
-	ASSERT(m_body);
-
-	m_fixture =  m_body->CreateFixture(&fixtureDef);
-	return m_fixture;
+	m_fixture->SetDensity(density);
 }
 
-tmath::vector3df & BodyComponent_Box2D::getPosition()
+void BodyComponent_Box2D::set_friction(float friction)
 {
-	ASSERT(m_body);
-	auto b2Vec2 = m_body->GetPosition();
-	m_position.x = b2Vec2.x;	
-	m_position.y = b2Vec2.y;	
-	return m_position;
+	m_fixture->SetFriction(friction);
 }
 
-void BodyComponent_Box2D::setPosition(const tmath::vector3df & position)
+void BodyComponent_Box2D::set_restitution(float restitution)
 {
-	m_position = position;
+	m_fixture->SetRestitution(restitution);
 }
 
-Box2DPhysicsSystem* BodyComponent_Box2D::get_system()
+float BodyComponent_Box2D::get_density()
 {
-	return static_cast<Box2DPhysicsSystem*>(m_system);
+	return m_fixture->GetDensity();
+}
+
+float BodyComponent_Box2D::get_friction()
+{
+	return m_fixture->GetFriction();
+}
+
+float BodyComponent_Box2D::get_restitution()
+{
+	return m_fixture->GetRestitution();
+}
+
+tmath::vector3df BodyComponent_Box2D::get_position()
+{
+	auto& v = m_body->GetPosition();
+	return tmath::vector3df(v.x,v.y,0.0f);
+}
+
+BasicTaskPtr BodyComponent_Box2D::set_position(const tmath::vector3df & position)
+{
+	return m_system->execute_block([=]()
+	{
+		m_body->SetTransform(b2Vec2(position.x,position.y),0);
+	});
 }

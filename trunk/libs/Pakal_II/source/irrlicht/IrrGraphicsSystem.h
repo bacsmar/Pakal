@@ -13,7 +13,7 @@
 namespace Pakal
 {
 	class BasicTask;
-	class IComponent;
+	class Component;
 	class IDebugDrawerClient;
 	struct RendererInfo;
 	class IStream;
@@ -52,7 +52,7 @@ namespace Pakal
 
 		void on_init_graphics() override;
 		void on_terminate_graphics() override;
-		void on_update_graphics() override;
+		void on_update_graphics(long long dt) override;
 		void on_pause_graphics() override;
 		void on_resume_graphics() override;
 

@@ -1,7 +1,7 @@
 #include "IrrGraphicsSystem.h"
 
 #include "LogMgr.h"
-#include "IComponentFactory.h"
+#include "ComponentFactory.h"
 
 #include "IDebugDrawer.h"
 
@@ -78,7 +78,7 @@ void IrrGraphicsSystem::init_window()
 
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-100), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-400), vector3df(0,0,0));		
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ void IrrGraphicsSystem::end_scene()
 	driver->endScene();
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_update_graphics()
+void IrrGraphicsSystem::on_update_graphics(long long dt)
 {
 	begin_scene();
 	bool result = draw();

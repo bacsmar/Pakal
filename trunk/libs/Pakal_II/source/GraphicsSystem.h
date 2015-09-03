@@ -17,7 +17,7 @@ namespace Pakal
 
 		void on_initialize() override final;
 		void on_terminate() override final;
-		void on_update() override final;
+		void on_update(long long dt) override final;
 		void on_pause() override final;
 		void on_resume() override final;		
 		
@@ -37,7 +37,7 @@ namespace Pakal
 
 
 		virtual void on_init_graphics() = 0;
-		virtual void on_update_graphics() = 0;
+		virtual void on_update_graphics(long long dt) = 0;
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;
 		virtual void on_resume_graphics() = 0;

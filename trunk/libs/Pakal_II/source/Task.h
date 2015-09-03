@@ -8,6 +8,7 @@
 #include "BasicTask.h"
 #include "Event.h"
 
+
 namespace Pakal
 {
 	class EventScheduler;
@@ -114,7 +115,8 @@ namespace Pakal
 
 		static BasicTaskPtr completed_task()
 		{
-			return std::make_shared<BasicTask>();
+			static BasicTaskPtr t = std::make_shared<BasicTask>();
+			return t;
 		};
 
 		template <class T>

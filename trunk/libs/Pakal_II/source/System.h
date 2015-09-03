@@ -21,7 +21,7 @@ namespace Pakal
 
 		virtual void on_initialize() = 0;
 		virtual void on_terminate() = 0;
-		virtual void on_update() = 0;
+		virtual void on_update(long long dt) = 0;
 		virtual void on_pause() = 0;
 		virtual void on_resume() = 0;
 
@@ -34,16 +34,18 @@ namespace Pakal
 		virtual ~System();
 		explicit System(bool usesThread);
 
-		inline const std::thread::id& get_thread_id() { return m_dispatcher.thread_id(); };
+		inline const std::thread::id& thread_id() { return m_dispatcher.thread_id(); };
 		inline bool is_threaded() override final { return m_threaded; };
 		inline SystemState get_state() override final { return m_state; };
 
-		void update() override final;
+		void update(long long dt) override final;
 
 		BasicTaskPtr initialize() override final;
 		BasicTaskPtr terminate() override final;
 		BasicTaskPtr pause() override final;
 		BasicTaskPtr resume() override final;
+
+		BasicTaskPtr execute_block(const std::function<void()>& block);
 	};
 
 }

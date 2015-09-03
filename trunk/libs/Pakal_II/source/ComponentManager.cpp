@@ -1,6 +1,6 @@
 #include "ComponentManager.h"
 
-#include "IComponentFactory.h"
+#include "ComponentFactory.h"
 #include "IComponentProvider.h"
 #include "LogMgr.h"
 
@@ -34,7 +34,7 @@ void ComponentManager::register_factory(IComponentFactory* factory, bool replace
 	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", componentTypename.c_str() );
 }
 
-IComponent* ComponentManager::create_component(const char* typeName )
+Component* ComponentManager::create_component(const char* typeName )
 {
 	const auto &it = m_factories.find(typeName);
 
@@ -44,7 +44,7 @@ IComponent* ComponentManager::create_component(const char* typeName )
 		return nullptr;
 	}	
 
-	IComponent * newComponent = it->second->create(); //call the factory create component
+	Component * newComponent = it->second->create(); //call the factory create component
 	return newComponent;
 }
 

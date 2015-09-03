@@ -15,7 +15,7 @@ namespace Pakal
 	class ContactListener;
 	class ContactFilter;
 	class DestructionListener;
-	class IComponent;
+	class Component;
 	//////////////////////////////////////////////////////////////////////////	
 
 	class _PAKALExport Box2DPhysicsSystem final : public PhysicsSystem, IDebugDrawerClient
@@ -34,10 +34,10 @@ namespace Pakal
 			return "Box2DPhysicsSystem";
 		}
 
-		b2Body	* createBody(const b2BodyDef* def);
-		b2Joint * createJoint(const b2JointDef* def);
-		void destroyBody(b2Body* body);
-		void destroyJoint(b2Joint* joint);
+		b2Body	* create_body(const b2BodyDef* def);
+		b2Joint * create_joint(const b2JointDef* def);
+		void destroy_body(b2Body* body);
+		void destroy_joint(b2Joint* joint);
 	protected:
 
 		friend class Engine;
@@ -51,7 +51,7 @@ namespace Pakal
 		virtual void set_drawer(const RendererInfo *renderInfo) override;
 
 		// from PhysicsSystem
-		virtual void update_world() override;
+		virtual void update_world(long long dt) override;
 		virtual void init_world() override;
 		virtual void clear_world() override;
 		

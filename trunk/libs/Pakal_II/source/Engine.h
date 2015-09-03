@@ -69,7 +69,7 @@ namespace Pakal
 	protected:
 
 		void procress_os_messages();
-		void on_update() override {};
+		void on_update(long long dt) override {};
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;
