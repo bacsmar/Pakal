@@ -15,22 +15,25 @@
 	#ifdef PAKAL_STATIC_LIB	//debug & static lib
 		#pragma comment(lib, "sfml-audio-s-d.lib")
 		#pragma comment(lib, "sfml-system-s-d.lib")
+		#pragma comment(lib, "sfml-window-s-d.lib")
 	#else
 		#pragma comment(lib, "sfml-audio-d.lib")
 		#pragma comment(lib, "sfml-system-d.lib")
+		#pragma comment(lib, "sfml-window-d.lib")
 	#endif
 #else
 	#ifdef PAKAL_STATIC_LIB	//debug & static lib
 		#pragma comment(lib, "sfml-audio-s.lib") 
 		#pragma comment(lib, "sfml-system-s.lib")
+		#pragma comment(lib, "sfml-window-s.lib")
 	#else
 		#pragma comment(lib, "sfml-audio.lib") 
 		#pragma comment(lib, "sfml-system.lib")
+		#pragma comment(lib, "sfml-window.lib")
 	#endif
 #endif
 
 #endif
-#include "ResourceManager.h"
 
 using namespace Pakal;
 
@@ -42,17 +45,7 @@ Engine::Settings::Settings()
 	graphic_system_settings.uses_thread = false;
 
 #if PAKAL_USE_IRRLICHT == 1
-	graphic_system_allocator = [](Engine* engine,const GraphicsSystem::Settings& settings)
-	{
-		IrrGraphicsSystem* irrlicht = new IrrGraphicsSystem(settings);
-
-		ResourceManager::StreamReaderFactory factory;
-		factory.open_reader = [irrlicht](const std::string& fname){ return irrlicht->open_reader(fname); };
-		factory.add_file_archive = [irrlicht](const std::string& fname){ return irrlicht->add_file_archive(fname); };
-
-		engine->get_resource_manager()->register_reader( factory);
-		return irrlicht;
-	};
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1

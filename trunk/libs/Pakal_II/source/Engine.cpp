@@ -10,10 +10,12 @@
 #include "SoundManager.h"
 #include "ResourceManager.h"
 
+//#include <vld.h>
+
 #ifdef PAKAL_WIN32_PLATFORM
 	#include <Windows.h>
 #endif
- 
+
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
@@ -23,8 +25,7 @@ Engine::~Engine()
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
-	SAFE_DEL(m_sound_manager)
-	SAFE_DEL(m_resource_manager)
+	SAFE_DEL(m_sound_manager)	
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
@@ -39,8 +40,7 @@ Engine::Engine(const Settings& settings) :
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 
 	LogMgr::instance();	
-
-	m_resource_manager	 = new ResourceManager();
+	
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();
 	m_sound_manager		 = settings.sound_manager_allocator(this);
@@ -74,8 +74,7 @@ void Engine::run(IPakalApplication* application)
 	//Initialize managers
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
-	m_sound_manager->initialize();
-	m_resource_manager->initialize();
+	m_sound_manager->initialize();	
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -138,8 +137,7 @@ void Engine::run(IPakalApplication* application)
 	//terminate managers
 	m_sound_manager->terminate();
 	m_component_manager->terminate();
-	m_game_state_manager->terminate();
-	m_resource_manager->terminate();
+	m_game_state_manager->terminate();	
 
 	//unsubscribe from event
 	m_graphics_system->terminate_requested.remove_listener(listenerId);

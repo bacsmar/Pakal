@@ -1,45 +1,50 @@
 #include "ResourceManager.h"
 #include "StreamFile.h"
-
-
-void Pakal::ResourceManager::initialize()
-{
-	// register default sources...	
-	register_reader( &StreamFile::open_reader);
-}
-
-void Pakal::ResourceManager::terminate()
-{
-	m_stream_reader_factories.clear();
-}
+#include <algorithm>
+#include "SingletonHolder.h"
+#include "StreamFileProvider.h"
 
 Pakal::ResourceManager::ResourceManager(void)
 {
+	//register_reader(new StreamFileProvider());	// memory leak
 }
-
 
 Pakal::ResourceManager::~ResourceManager(void)
 {
+	m_stream_sources.clear();
+}
+
+Pakal::ResourceManager& Pakal::ResourceManager::instance()
+{
+	static SingletonHolder<ResourceManager> sh;
+		return *sh.get();
 }
 
 bool Pakal::ResourceManager::add_file_archive(const std::string& path)
-{
-	for( auto& factory : m_stream_reader_factories)
+{	
+	bool result = false;
+	auto f = open_resource(path);	
+	for( auto& factory : m_stream_sources)
 	{		
-		if( factory.add_file_archive && factory.add_file_archive(path) )
+		auto newFactory = factory->add_file_archive(f);
+		if( newFactory )
 		{			
-			return true;
+			if(( newFactory!= factory) )
+				m_stream_sources.push_back( newFactory );
+			result = true;
 		}
 	}
-	return false;
+	return result;
 }
 
-bool Pakal::ResourceManager::set_data_dir(const std::string& path)
+bool Pakal::ResourceManager::add_data_dir(const std::string& path)
 {
-	for( auto& factory : m_stream_reader_factories)
+	for( auto& factory : m_stream_sources)
 	{
-		if( factory.add_data_dir && factory.add_data_dir(path) )	// only 1?
+		auto newFactory = factory->add_data_dir(path);
+		if( newFactory && ( newFactory!= factory))
 		{			
+			m_stream_sources.push_back( newFactory );
 			return true;
 		}
 	}
@@ -48,9 +53,9 @@ bool Pakal::ResourceManager::set_data_dir(const std::string& path)
 
 Pakal::IStreamPtr Pakal::ResourceManager::open_resource(const std::string& resourceName)
 {
-	for( auto& factory : m_stream_reader_factories)
+	for( auto& factory : m_stream_sources)
 	{
-		auto reader = factory.open_reader(resourceName);
+		auto reader = factory->open_reader(resourceName);
 		if( reader.get() )
 		{
 			return reader;
@@ -59,16 +64,13 @@ Pakal::IStreamPtr Pakal::ResourceManager::open_resource(const std::string& resou
 	return nullptr;
 }
 
-void Pakal::ResourceManager::register_reader(const OpenReaderFunction & open_reader_function)
-{	
-	StreamReaderFactory factory;
-	factory.open_reader = open_reader_function;
-	factory.add_file_archive = nullptr; 
-	factory.add_data_dir = nullptr;
-	m_stream_reader_factories.push_back( factory );
+void Pakal::ResourceManager::register_reader(IFileArchive* factory)
+{
+	m_stream_sources.push_back(factory);
 }
 
-void Pakal::ResourceManager::register_reader(const StreamReaderFactory& factory)
-{	
-	m_stream_reader_factories.push_back( factory);
+void Pakal::ResourceManager::remove_reader(IFileArchive* factory)
+{
+	auto f = std::find(m_stream_sources.begin(), m_stream_sources.end() , factory);
+	m_stream_sources.erase( f );	
 }

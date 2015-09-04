@@ -10,60 +10,59 @@
 
 namespace Pakal
 {
-	// static
-	IStreamPtr StreamFile::open_reader(const std::string& fname)
-	{
-		auto file = new StreamFile();
-		IStreamPtr p(file);
-
-		return file->open(fname) ? p : nullptr;		
-	}
-
 	StreamFile::~StreamFile()
 	{
 		close();
 	}
 
+	StreamFile::StreamFile() : m_file(nullptr)
+	{
+	}
+
 	bool StreamFile::open(const std::string& fname)
 	{
-		m_file.open(fname.c_str());
-		return m_file.is_open();
+		m_file_name = fname;		
+		m_file = fopen(fname.c_str() , "rb");		
+		return m_file;
 	}
 
 	void StreamFile::close()
 	{
-		m_file.close();			
+		if( m_file)
+		fclose(m_file);
 	}
 
 	std::streamoff StreamFile::skip(size_t value)
 	{
-		m_file.seekg(value,std::ios::cur);
-		return 0;
+		return fseek(m_file, value, SEEK_CUR);		
 	}
 
 	std::streamoff StreamFile::tell()
 	{
-		return m_file.tellg();
+		return ftell(m_file);
 	}
 
-	void StreamFile::seek(size_t offset)
+	bool StreamFile::seek(size_t offset, bool relativeMovement)
 	{
-		m_file.seekg(offset);
+		return fseek(m_file, offset, relativeMovement ? SEEK_CUR : SEEK_SET) == 0;
 	}
 
 	std::streamoff StreamFile::size()
 	{
-		auto cur = m_file.tellg();
-		m_file.seekg (0, std::ios::end);
-		auto length = m_file.tellg();
-		m_file.seekg (cur, std::ios::beg);
-		return length;
+		auto currPosition = tell();
+		fseek(m_file, 0, SEEK_END);
+		auto	m_file_size = tell();
+		fseek(m_file, currPosition, SEEK_SET);	
+		return m_file_size;		
 	}
 
 	std::streamoff StreamFile::read(void* buf, std::size_t count)
 	{
-		m_file.read(static_cast<char*>(buf), count);
-		return 0;
+		return fread(buf, 1, count, m_file);
 	}
-	
+
+	const char* StreamFile::get_file_name()
+	{
+		return m_file_name.c_str();
+	}
 }
