@@ -12,9 +12,10 @@
 
 namespace Pakal
 {
+	// used to read from  irrlicht to pakal
 	class _PAKALExport StreamFileIrrlicht : public IStream
 	{
-		irr::io::IReadFile *m_file;
+		irr::io::IReadFile *m_irr_file;
 	public:
 		virtual ~StreamFileIrrlicht(void);
 		StreamFileIrrlicht(irr::io::IReadFile *f);
@@ -29,12 +30,34 @@ namespace Pakal
 		virtual std::streamoff tell() override;
 
 		// set input stream position to _Pos
-		virtual void seek(size_t offset) override;
+		virtual bool seek(size_t offset, bool relativeMovement) override;
 
 		//
 		virtual std::streamoff size() override;
 
 		//
 		virtual std::streamoff read(void* buf, std::size_t count) override;				
+		const char* get_file_name() override;	
 	};	
+
+	// Used to read from pakal to Irrlicht
+	class IrrReadPakalFile : public irr::io::IReadFile
+	{
+		IStreamPtr			m_pakal_stream;
+		const irr::io::path m_file_name;
+	public:
+		irr::s32 read(void* buffer, irr::u32 sizeToRead) override;
+
+		bool seek(long finalPos, bool relativeMovement) override;
+
+		long getSize() const override;
+
+		long getPos() const override;
+
+		const irr::io::path& getFileName() const override;
+
+		explicit IrrReadPakalFile(IStreamPtr p);
+
+		~IrrReadPakalFile() override{}	
+	};
 }

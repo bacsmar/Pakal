@@ -9,45 +9,38 @@
 #include <string>
 #include "IStream.h"
 #include <vector>
-#include <functional>
-
 
 namespace Pakal
 {
 	
 	// TODO: acceso concurrente
-	class _PAKALExport ResourceManager :
-		public IManager
-	{		
-		friend class Engine;
+	class _PAKALExport ResourceManager final
+	{
+		template <class ResourceManager> friend class SingletonHolder;
 	public:
-		
-		typedef std::function<IStreamPtr(const std::string& path)> OpenReaderFunction;
-		typedef std::function<bool(const std::string& path)> StringPredicate;		
-
-	protected:
-		struct StreamReaderFactory
+		class IFileArchive
 		{
-			OpenReaderFunction	open_reader;
-			StringPredicate		add_file_archive;
-			StringPredicate		add_data_dir;
+		protected:
+			~IFileArchive(){}
+		public:
+			virtual IStreamPtr		open_reader(const std::string&  path) = 0;
+			virtual IFileArchive*	add_file_archive(IStreamPtr file){ return nullptr; };
+			virtual IFileArchive*	add_data_dir(const std::string&  path){ return nullptr; };
 		};
 
-		std::vector<StreamReaderFactory> m_stream_reader_factories;	
+	protected:		
 
-		void initialize() override;
-		void terminate() override;
+		std::vector<IFileArchive*> m_stream_sources;	
 
-	public:		
-	
 		ResourceManager(void);
-		virtual ~ResourceManager(void);		
-		
+		~ResourceManager(void);
+	public:					
+		static ResourceManager& instance();
 		bool add_file_archive( const std::string &path);
-		bool set_data_dir( const std::string &path);
+		bool add_data_dir( const std::string &path);
 		IStreamPtr open_resource(const std::string& resourceName);
-
-		void register_reader( const OpenReaderFunction & open_reader_function);
-		void register_reader( const StreamReaderFactory& factory);
+		
+		void register_reader( IFileArchive* factory);
+		void remove_reader( IFileArchive* factory);
 	};
 }

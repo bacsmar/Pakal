@@ -9,6 +9,7 @@
 	#pragma comment(lib, "Irrlicht.lib")
   //#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
+#include <Pakal_II/source/ResourceManager.h>
 
 namespace Pakal
 {
@@ -25,14 +26,26 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
-		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };
-
-		IStreamPtr open_reader(const std::string& fname);
-		bool add_file_archive(const std::string& fname);
+		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };				
 
 		explicit IrrGraphicsSystem(const Settings& settings);
 
 	protected:
+
+		// Irrlicht FileSystem Interface
+		class IrrFileSystemProvider final : public ResourceManager::IFileArchive
+		{
+			friend class IrrGraphicsSystem;
+			irr::io::IFileSystem* m_irr_fs;
+
+			explicit IrrFileSystemProvider(irr::io::IFileSystem* irr): m_irr_fs(irr){};
+
+			~IrrFileSystemProvider();;
+
+			IStreamPtr		open_reader(const std::string& fname) override;
+			IFileArchive*	add_file_archive(IStreamPtr file) override;
+			IFileArchive*	add_data_dir(const std::string& fname) override;
+		};		
 
 		bool m_is_rendering;				
 
@@ -40,10 +53,11 @@ namespace Pakal
 		std::string m_config_path;
 		size_t		m_window;
 
-		irr::IrrlichtDevice			* device;		
-		irr::video::IVideoDriver	* driver;		
-		irr::scene::ISceneManager	* smgr;		
-		irr::gui::IGUIEnvironment	* guienv;		
+		irr::IrrlichtDevice			* device;
+		irr::video::IVideoDriver	* driver;
+		irr::scene::ISceneManager	* smgr;
+		irr::gui::IGUIEnvironment	* guienv;
+		IrrFileSystemProvider		* m_fs_provider;
 
 		RendererInfo				*m_render_info;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		

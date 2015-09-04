@@ -7,6 +7,7 @@
 
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
+#include "ResourceManager.h"
 #include "StreamFileIrrlicht.h"
 
 using namespace irr;
@@ -19,19 +20,34 @@ using namespace gui;
 using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
-IStreamPtr IrrGraphicsSystem::open_reader(const std::string& fname)
+IrrGraphicsSystem::IrrFileSystemProvider::~IrrFileSystemProvider()
 {
-	auto fileName = fname.c_str();
-	if( get_device()->getFileSystem()->existFile(fileName) )
+	for(auto i = m_irr_fs->getFileArchiveCount(); i > 0; i-- )
 	{
-		IReadFile* file =  get_device()->getFileSystem()->createAndOpenFile(fileName);
+		m_irr_fs->removeFileArchive(i - 1);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+IStreamPtr IrrGraphicsSystem::IrrFileSystemProvider::open_reader(const std::string& fname)
+{	
+	auto fileName = fname.c_str();
+	if( m_irr_fs->existFile(fileName) )
+	{
+		IReadFile* file =  m_irr_fs->createAndOpenFile(fileName);
 		return (std::make_shared<StreamFileIrrlicht>(file));
 	}
 	return nullptr;
 }
-bool IrrGraphicsSystem::add_file_archive(const std::string& fname)
+//////////////////////////////////////////////////////////////////////////
+ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_file_archive(IStreamPtr file)
 {
-	return get_device()->getFileSystem()->addFileArchive(fname.c_str());
+	return  m_irr_fs->addFileArchive( new IrrReadPakalFile(file) ) ? this : nullptr;
+}
+//////////////////////////////////////////////////////////////////////////
+ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_data_dir(const std::string& fname)
+{		
+	return m_irr_fs->addFileArchive(fname.c_str()) ? this : nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,6 +59,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
 	driver(nullptr),
 	smgr(nullptr),
 	guienv(nullptr),	
+	m_fs_provider(nullptr),
 	m_render_info(new RendererInfo()),
 	m_show_fps(false)
 {}
@@ -63,6 +80,9 @@ void IrrGraphicsSystem::init_window()
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
 
+	m_fs_provider = new IrrFileSystemProvider(device->getFileSystem() );
+	ResourceManager::instance().register_reader(m_fs_provider);
+	
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
 
@@ -90,6 +110,10 @@ void IrrGraphicsSystem::on_init_graphics()
 void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
+
+	ResourceManager::instance().remove_reader(m_fs_provider);
+	SAFE_DEL(m_fs_provider);
+
 	device->closeDevice();
 	device->drop();
 	device = nullptr;
