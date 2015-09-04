@@ -39,8 +39,10 @@
     <ClInclude Include="..\source\ISystem.h" />
     <ClInclude Include="..\source\ResourceManager.h" />
     <ClInclude Include="..\source\sfml\SoundManager_SFML.h" />
+    <ClInclude Include="..\source\sfml\StreamFileSFML.h" />
     <ClInclude Include="..\source\SoundManager.h" />
     <ClInclude Include="..\source\StreamFile.h" />
+    <ClInclude Include="..\source\StreamFileProvider.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
@@ -85,8 +87,10 @@
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
+    <ClCompile Include="..\source\sfml\StreamFileSFML.cpp" />
     <ClCompile Include="..\source\SoundManager.cpp" />
     <ClCompile Include="..\source\StreamFile.cpp" />
+    <ClCompile Include="..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
