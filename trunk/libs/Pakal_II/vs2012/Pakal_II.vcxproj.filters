@@ -70,11 +70,17 @@
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\StreamFile.cpp">
+    <ClCompile Include="..\source\StreamFileProvider.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\StreamFile.cpp">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClCompile>
     <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp">
-      <Filter>Managers\ResourceManager</Filter>
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\StreamFileSFML.cpp">
+      <Filter>Managers\ResourceManager\Streams</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,17 +241,23 @@
     <ClInclude Include="..\source\IStream.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\StreamFile.h">
-      <Filter>Managers\ResourceManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h">
-      <Filter>Managers\ResourceManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\Component.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\ComponentFactory.h">
       <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\StreamFileProvider.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\StreamFile.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\StreamFileSFML.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +302,9 @@
     </Filter>
     <Filter Include="Math">
       <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ResourceManager\Streams">
+      <UniqueIdentifier>{e4c3afcb-af51-4b8d-b202-d14e1f0a37eb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -112,6 +112,7 @@ void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatche
 
 	if (orphanInbox)
 	{
+		delete m_inboxes[threadId];
 		m_inboxes.erase(threadId);
 	}
 
