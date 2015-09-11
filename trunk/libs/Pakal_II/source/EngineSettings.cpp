@@ -41,8 +41,6 @@ using namespace Pakal;
 Engine::Settings::Settings() 
 {
 	uses_thread = true;
-	physic_system_settings.uses_thread = uses_thread;
-	graphic_system_settings.uses_thread = false;
 
 #if PAKAL_USE_IRRLICHT == 1
 	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings); };

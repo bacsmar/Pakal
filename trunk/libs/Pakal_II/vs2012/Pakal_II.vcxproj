@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h" />
     <ClInclude Include="..\source\IStream.h" />
     <ClInclude Include="..\source\math\matrix.h" />

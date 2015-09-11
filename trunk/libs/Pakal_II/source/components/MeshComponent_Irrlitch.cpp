@@ -48,6 +48,7 @@ BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());
 
 		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
+		m_node->setDebugDataVisible(irr::scene::EDS_BBOX_ALL);
 
 		m_node->setMaterialFlag(irr::video::EMF_LIGHTING,false);
 		m_node->setVisible(true);
@@ -96,4 +97,15 @@ void MeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
 	v.Z *= size.z;
 	
 	m_node->setScale(v);
+}
+
+void MeshComponent_Irrlitch::set_angle(const tmath::vector3df& angle)
+{
+	m_node->setRotation(irr::core::vector3df(angle.x,angle.y,angle.z));
+}
+
+tmath::vector3df MeshComponent_Irrlitch::get_angle()
+{
+	auto& r = m_node->getRotation();
+	return tmath::vector3df(r.X,r.Y,r.Z);
 }

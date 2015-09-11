@@ -3,6 +3,7 @@
 #include "math/tm.h"
 #include "TaskFwd.h"
 #include "Component.h"
+#include "Shapes.h"
 
 namespace Pakal
 {
@@ -13,19 +14,7 @@ namespace Pakal
 		Kinematic,
 		Dynamic
 	};
-
-	struct BodyShape
-	{
-		virtual ~BodyShape() {}
-
-		DECLARE_RTTI(BodyShape)
-	};
-
-	struct CircleShape : BodyShape
-	{
-		DECLARE_RTTI_WITH_BASE(CircleShape,BodyShape)
-		float radius;
-	};
+	
 
 
 	class _PAKALExport BodyComponent : public Component
@@ -49,6 +38,12 @@ namespace Pakal
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
 		virtual tmath::vector3df get_position() = 0;
+
+		virtual void  set_angle(const tmath::vector3df& position) = 0;
+		virtual tmath::vector3df get_angle() = 0;
+
+		virtual tmath::vector3df get_size() = 0;
+		virtual void set_size(const tmath::vector3df& size) = 0;
 
 		virtual void set_density(float density) = 0;
 		virtual void set_friction(float friction) = 0;
