@@ -1,5 +1,6 @@
 #include "BodyComponent_Box2D.h"
 #include "box2D/Box2DPhysicsSystem.h"
+#include "math/tmg.h"
 
 using namespace Pakal;
 
@@ -31,20 +32,59 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 		fixtureDef.restitution = settings.restitution;
 
 		std::shared_ptr<b2Shape> shape;
-		if (settings.shape_info->getType() == CircleShape::getRTTI())
-		{
-			CircleShape* s =  static_cast<CircleShape*>(settings.shape_info);
 
-			shape = std::make_shared<b2CircleShape>();
-			shape->m_radius = s->radius;
-
-			fixtureDef.shape = shape.get();
-		}
-		else
+		switch (settings.shape_info->m_shape_type)
 		{
-			//TODO implement other shapes
-			ASSERT(false);
+			case ShapeType::CircleShape: 
+			{
+				CircleShape* c = static_cast<CircleShape*>(settings.shape_info);
+				auto cshape = std::make_shared<b2CircleShape>();
+				cshape->m_radius = c->radius;
+				shape = cshape;
+			} 
+			break;
+			case ShapeType::PolygonShape: 
+			{
+				PolygonShape* p = static_cast<PolygonShape*>(settings.shape_info);
+
+				b2Vec2* vertices = new b2Vec2[p->vertices.size()]; 
+
+				for (size_t i = 0; i < p->vertices.size(); i++)
+					vertices[i] = b2Vec2(p->vertices[i].x,p->vertices[i].y);
+
+				auto pshape = std::make_shared<b2PolygonShape>();
+
+				pshape->Set(vertices,p->vertices.size());
+
+				delete vertices;
+
+				shape = pshape;
+			} 
+			break;
+			case ShapeType::BoxShape:
+			{
+				BoxShape* b = static_cast<BoxShape*>(settings.shape_info);
+
+				auto pshape = std::make_shared<b2PolygonShape>();
+
+				float hx = b->dimensions.x / 2.0f;
+				float hy = b->dimensions.y / 2.0f;
+				float angle =  tmg::d2r(b->angle.x);
+				b2Vec2 centroid = b2Vec2(b->center.x,b->center.y);
+
+				pshape->SetAsBox(hx,hy,centroid,angle);
+
+				shape = pshape;
+			}
+			break;
+			case ShapeType::EdgeShape:
+			case ShapeType::ChainShape:
+			default:
+				ASSERT(false);
+			break;
+
 		}
+		fixtureDef.shape = shape.get();
 
 		m_body = m_system->create_body(&bodyDef);
 		m_fixture =  m_body->CreateFixture(&fixtureDef);	
@@ -101,6 +141,27 @@ BasicTaskPtr BodyComponent_Box2D::set_position(const tmath::vector3df & position
 {
 	return m_system->execute_block([=]()
 	{
-		m_body->SetTransform(b2Vec2(position.x,position.y),0);
+		m_body->SetTransform(b2Vec2(position.x,position.y),m_body->GetAngle());
 	});
+}
+
+void BodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
+{
+	m_body->SetTransform(m_body->GetPosition(),tmg::d2r(angle.x));
+}
+
+tmath::vector3df BodyComponent_Box2D::get_angle()
+{
+	return tmath::vector3df(0,0,tmg::r2d(m_body->GetAngle()));
+}
+
+void BodyComponent_Box2D::set_size(const tmath::vector3df& size)
+{
+	ASSERT(false); // implement me :(
+}
+
+tmath::vector3df BodyComponent_Box2D::get_size()
+{
+	ASSERT(false); // implement me :(
+	return tmath::vector3df();
 }

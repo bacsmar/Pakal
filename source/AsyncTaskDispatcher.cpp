@@ -9,11 +9,14 @@ void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 	if(m_inbox->size() > 0)
 	{
 		auto& tasks = m_inbox->pop_all_tasks();
-		while (!tasks.empty())
+		int numTasks = tasks.size();
+		while (m_inbox !=nullptr && !tasks.empty())
 		{
 			BasicTaskPtr t = tasks.front();
 			tasks.pop();
 			t->run();
+			numTasks--;
 		}
+		ASSERT(numTasks == 0);
 	}
 }

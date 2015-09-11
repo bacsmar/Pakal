@@ -15,34 +15,34 @@ namespace Pakal
 	{
 	protected:
 		static const int MAX_INITIALIZATION_QUEUES = 2;
-		C	m_Lists[MAX_INITIALIZATION_QUEUES];
-		C*	m_updateList;
-		std::mutex	m_UpdateMutex;
-		int			m_ActiveUpdateList;
+		C	m_lists[MAX_INITIALIZATION_QUEUES];
+		C*	m_update_list;
+		std::mutex	m_update_mutex;
+		int			m_active_update_list;
 	public:
-		C& getListToProcess()
+		C& get_list_to_process()
 		{
-			m_UpdateMutex.lock();
-			int queueToProcess = m_ActiveUpdateList;
-			m_ActiveUpdateList = (m_ActiveUpdateList + 1) % MAX_INITIALIZATION_QUEUES;
-			m_updateList = &m_Lists[m_ActiveUpdateList];
-			m_UpdateMutex.unlock();
-			return m_Lists[queueToProcess];
+			m_update_mutex.lock();
+			int queueToProcess = m_active_update_list;
+			m_active_update_list = (m_active_update_list + 1) % MAX_INITIALIZATION_QUEUES;
+			m_update_list = &m_lists[m_active_update_list];
+			m_update_mutex.unlock();
+			return m_lists[queueToProcess];
 		}
 
 		inline bool empty()
 		{
-			return m_updateList->empty();
+			return m_update_list->empty();
 		}
 		inline size_t size()
 		{
-			return m_updateList->size();
+			return m_update_list->size();
 		}	
 
 		virtual ~DoubleBufferedClass(){}
-		DoubleBufferedClass() : m_ActiveUpdateList(0) , m_updateList(0)
+		DoubleBufferedClass() : m_update_list(nullptr) , m_active_update_list(0)
 		{
-			m_updateList = &m_Lists[m_ActiveUpdateList];
+			m_update_list = &m_lists[m_active_update_list];
 		}
 	};
 
@@ -52,13 +52,13 @@ namespace Pakal
 	public:
 		inline void insert( T t)
 		{
-			std::lock_guard<std::mutex> lock(m_UpdateMutex);
-			m_updateList->insert(t);
+			std::lock_guard<std::mutex> lock(m_update_mutex);
+			m_update_list->insert(t);
 		}
 		inline void erase( T t)
 		{
-			std::lock_guard<std::mutex> lock(m_UpdateMutex);
-			m_updateList->erase(t);
+			std::lock_guard<std::mutex> lock(m_update_mutex);
+			m_update_list->erase(t);
 		}
 	};
 
@@ -68,18 +68,18 @@ namespace Pakal
 	public:	
 		inline void push( T t)
 		{
-			std::lock_guard<std::mutex> lock(m_UpdateMutex);
-			m_updateList->push(t);
+			std::lock_guard<std::mutex> lock(m_update_mutex);
+			m_update_list->push(t);
 		}
 		inline void pop()
 		{
-			std::lock_guard<std::mutex> lock(m_UpdateMutex);
-			m_updateList->pop();
+			std::lock_guard<std::mutex> lock(m_update_mutex);
+			m_update_list->pop();
 		}
 		inline T front()
 		{
-			std::lock_guard<std::mutex> lock(m_UpdateMutex);
-			return m_updateList->front();
+			std::lock_guard<std::mutex> lock(m_update_mutex);
+			return m_update_list->front();
 		}
 	};
 

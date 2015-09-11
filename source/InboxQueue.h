@@ -60,7 +60,7 @@ namespace Pakal
 
 		inline TaskQueue& pop_all_tasks()
 		{
-			return m_inbox.getListToProcess();
+			return m_inbox.get_list_to_process();
 		}
 
 		inline bool empty()

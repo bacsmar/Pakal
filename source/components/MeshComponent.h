@@ -33,5 +33,8 @@ namespace Pakal
 
 		virtual tmath::vector3df get_size() = 0;
 		virtual void set_size(const tmath::vector3df& size) = 0;
+
+		virtual void  set_angle(const tmath::vector3df& position) = 0;
+		virtual tmath::vector3df get_angle() = 0;
 	};	
 }
