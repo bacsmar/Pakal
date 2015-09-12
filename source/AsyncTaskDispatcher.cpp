@@ -6,17 +6,11 @@ void Pakal::AsyncTaskDispatcher::dispatch_tasks()
 {
 	ASSERT(thread_id() == THIS_THREAD);
 
-	if(m_inbox->size() > 0)
+	m_inbox->swap_buffer();
+
+	while (m_inbox !=nullptr && !m_inbox->empty())
 	{
-		auto& tasks = m_inbox->pop_all_tasks();
-		int numTasks = tasks.size();
-		while (m_inbox !=nullptr && !tasks.empty())
-		{
-			BasicTaskPtr t = tasks.front();
-			tasks.pop();
-			t->run();
-			numTasks--;
-		}
-		ASSERT(numTasks == 0);
+		BasicTaskPtr t = m_inbox->pop_task();
+		t->run();
 	}
 }
