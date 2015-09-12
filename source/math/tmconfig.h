@@ -30,6 +30,7 @@ namespace Pakal
 	namespace tmath
 	{
 		typedef vectorn<float,2> vector2df;
+		typedef vectorn<unsigned int,2> vector2di;
 		typedef vectorn<float,3> vector3df;
 	}
 }

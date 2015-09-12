@@ -9,6 +9,7 @@
 #include "Components/MeshComponent_Irrlitch.h"
 #include "ResourceManager.h"
 #include "StreamFileIrrlicht.h"
+#include <irrlicht/source/Irrlicht/CTimer.h>
 
 using namespace irr;
 using namespace irr::core;
@@ -51,10 +52,9 @@ ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_dat
 }
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,IWindowManager* windowManager)
 	: GraphicsSystem(settings), 
-	m_is_rendering(false),
-	m_window(0),
+	m_window_manager(windowManager),
 	device(nullptr),
 	driver(nullptr),
 	smgr(nullptr),
@@ -73,9 +73,16 @@ void IrrGraphicsSystem::init_window()
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
-	device =
-		createDevice( EDT_OPENGL, dimension2d<u32>(m_settings.resolution.x, m_settings.resolution.y), m_settings.bits,
-		m_settings.full_screen, false, m_settings.vsync, nullptr);
+
+	SIrrlichtCreationParameters parameters;
+
+	parameters.Bits = m_settings.bits;
+	parameters.Fullscreen =  m_settings.full_screen;
+	parameters.Vsync =  m_settings.vsync;
+	parameters.DriverType = EDT_OPENGL;
+	parameters.WindowId = m_window_manager->create_window(m_settings.resolution,m_settings.full_screen,m_settings.bits);
+
+	device = createDeviceEx(parameters);
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
@@ -88,17 +95,17 @@ void IrrGraphicsSystem::init_window()
 
 	show_fps(m_show_fps);
 
-	smgr->addCameraSceneNode();	
-
-#ifdef PAKAL_WIN32_PLATFORM
-	m_window = reinterpret_cast<size_t>(driver->getExposedVideoData().OpenGLWin32.HWnd);
-#else
-	m_Window = (size_t)driver->getExposedVideoData().OpenGLLinux.HWnd;
-#endif	
+	smgr->addCameraSceneNode();
 
 	LOG_INFO("[Graphic System] done");
 
 	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-3), vector3df(0,0,0));		
+
+
+	m_resized_callback_id = m_window_manager->resized_event.add_listener([this](tmath::vector2di dimensions)
+	{
+		device->getVideoDriver()->OnResize(dimension2du(dimensions.x,dimensions.y));
+	},THIS_THREAD);
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -111,9 +118,10 @@ void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 
+	m_window_manager->resized_event.remove_listener(m_resized_callback_id);
+
 	ResourceManager::instance().remove_reader(m_fs_provider);
 	SAFE_DEL(m_fs_provider);
-
 	device->closeDevice();
 	device->drop();
 	device = nullptr;
@@ -125,8 +133,9 @@ void IrrGraphicsSystem::begin_scene()
 	driver->beginScene(true, true, SColor(255,200,200,200));
 }
 //////////////////////////////////////////////////////////////////////////
-bool IrrGraphicsSystem::draw()
+void IrrGraphicsSystem::draw()
 {
+	os::Timer::tick(); // do not remove
 	smgr->drawAll();
 	guienv->drawAll();
 
@@ -134,13 +143,6 @@ bool IrrGraphicsSystem::draw()
 	{
 		r->do_debug_draw();
 	}
-
-	auto isRunning = device->run();
-
-	if( false == isRunning )
-	{
-		LOG_INFO("[Graphic System] Sending ET_DISPLAY_DESTROYED message");
-	}	
 
 	if( m_show_fps)
 	{		
@@ -152,7 +154,6 @@ bool IrrGraphicsSystem::draw()
 		device->setWindowCaption(str.c_str());            
 	}
 
-	return isRunning;
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
@@ -163,10 +164,8 @@ void IrrGraphicsSystem::end_scene()
 void IrrGraphicsSystem::on_update_graphics(long long dt)
 {
 	begin_scene();
-	bool result = draw();
+	draw();
 	end_scene();
-	if (result == false) 
-		terminate_requested.notify();
 }
 
 void IrrGraphicsSystem::on_pause_graphics()

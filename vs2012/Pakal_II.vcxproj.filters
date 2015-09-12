@@ -76,6 +76,15 @@
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
       <Filter>Components\BodyComponent</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\InputManager_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StreamFileProvider.cpp">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\StreamFileSFML.cpp">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -256,6 +265,15 @@
     <ClInclude Include="..\source\components\Shapes.h">
       <Filter>Components\BodyComponent</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\IInputManager.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IWindowManager.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\InputManager_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -305,6 +323,9 @@
     </Filter>
     <Filter Include="Components\BodyComponent">
       <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\InputManager">
+      <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

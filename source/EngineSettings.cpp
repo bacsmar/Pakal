@@ -35,23 +35,29 @@
 
 #endif
 
+#if PAKAL_USE_SFML_INPUT == 1
+#include "InputManager_SFML.h"
+#endif
 using namespace Pakal;
 
 
-Engine::Settings::Settings() 
+Engine::Settings::Settings()  : uses_thread(true)
 {
-	uses_thread = true;
 
 #if PAKAL_USE_IRRLICHT == 1
-	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings); };
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings,engine->get_input_manager()); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1
-	physics_system_allocator = [this](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
+	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1
 	sound_manager_allocator = [](Engine* engine){ return new SoundManagerSFML(); };
+#endif
+
+#if PAKAL_USE_SFML_INPUT == 1
+	input_manager_allocator = [](Engine* engine){ return new InputManager_SFML(); };
 #endif
 
 }

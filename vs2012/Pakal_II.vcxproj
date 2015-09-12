@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\InputManager_SFML.h" />
+    <ClInclude Include="..\source\IInputManager.h" />
+    <ClInclude Include="..\source\IWindowManager.h" />
     <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h" />
     <ClInclude Include="..\source\IStream.h" />
@@ -83,6 +86,7 @@
     <ClInclude Include="..\source\TaskFwd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\InputManager_SFML.cpp" />
     <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />

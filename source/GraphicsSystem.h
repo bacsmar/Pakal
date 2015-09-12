@@ -3,7 +3,6 @@
 
 #include "IComponentProvider.h"
 #include "System.h"
-#include "Event.h"
 #include  "math/tm.h"
 
 namespace Pakal
@@ -30,11 +29,9 @@ namespace Pakal
 
 		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
-		Event<void> terminate_requested;
-
 		struct Settings
 		{
-			tmath::vectorn<unsigned int,2> resolution;
+			tmath::vector2di resolution;
 			int bits;
 			bool full_screen;
 			bool vsync;

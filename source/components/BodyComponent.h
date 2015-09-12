@@ -39,7 +39,7 @@ namespace Pakal
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
 		virtual tmath::vector3df get_position() = 0;
 
-		virtual void  set_angle(const tmath::vector3df& position) = 0;
+		virtual BasicTaskPtr  set_angle(const tmath::vector3df& position) = 0;
 		virtual tmath::vector3df get_angle() = 0;
 
 		virtual tmath::vector3df get_size() = 0;
