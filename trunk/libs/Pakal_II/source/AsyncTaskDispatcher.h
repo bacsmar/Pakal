@@ -10,7 +10,8 @@ namespace Pakal
 	class InboxQueue;
 	class EventScheduler;
 
-	class _PAKALExport AsyncTaskDispatcher final
+	class _PAKALExport 
+		AsyncTaskDispatcher final
 	{
 		friend class EventScheduler;
 

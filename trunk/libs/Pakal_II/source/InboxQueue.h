@@ -53,14 +53,12 @@ namespace Pakal
 
 		inline BasicTaskPtr pop_task()
 		{
-			BasicTaskPtr task = m_inbox.front();
-			m_inbox.pop();
-			return task;
+			return m_inbox.pop();
 		}
 
-		inline TaskQueue& pop_all_tasks()
+		inline void swap_buffer()
 		{
-			return m_inbox.get_list_to_process();
+			m_inbox.swap_buffer();
 		}
 
 		inline bool empty()

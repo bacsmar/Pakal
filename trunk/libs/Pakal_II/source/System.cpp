@@ -83,7 +83,8 @@ namespace Pakal
 
 		return EventScheduler::instance().execute_in_thread([this]()
 		{
-			m_dispatcher.dispatch_tasks();
+			m_dispatcher.dispatch_tasks(); //for both lists
+			m_dispatcher.dispatch_tasks(); //for both lists
 			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 
 			m_state = SystemState::Terminated;
