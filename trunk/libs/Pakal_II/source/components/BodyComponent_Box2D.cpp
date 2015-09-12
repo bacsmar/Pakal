@@ -145,9 +145,12 @@ BasicTaskPtr BodyComponent_Box2D::set_position(const tmath::vector3df & position
 	});
 }
 
-void BodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
+BasicTaskPtr BodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
 {
-	m_body->SetTransform(m_body->GetPosition(),tmg::d2r(angle.x));
+	return m_system->execute_block([=]()
+	{
+		m_body->SetTransform(m_body->GetPosition(),tmg::d2r(angle.x));
+	});
 }
 
 tmath::vector3df BodyComponent_Box2D::get_angle()

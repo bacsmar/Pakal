@@ -36,7 +36,7 @@ namespace Pakal
 		tmath::vector3df get_position() override;
 		BasicTaskPtr set_position(const tmath::vector3df & newPosition) override;
 
-		void set_angle(const tmath::vector3df& angle) override;
+		BasicTaskPtr set_angle(const tmath::vector3df& angle) override;
 		tmath::vector3df get_angle() override;
 
 		void set_size(const tmath::vector3df& size) override;

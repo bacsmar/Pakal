@@ -8,20 +8,20 @@
 
 #include "ComponentManager.h"
 #include "SoundManager.h"
-#include "ResourceManager.h"
+#include "IInputManager.h"
 
+
+#include "SFML/Window.hpp"
 //#include <vld.h>
 
-#ifdef PAKAL_WIN32_PLATFORM
-	#include <Windows.h>
-#endif
-
 using namespace Pakal;
+
 
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
 	SAFE_DEL(m_graphics_system)
+	SAFE_DEL(m_input_manager)
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
@@ -35,7 +35,8 @@ Engine::Engine(const Settings& settings) :
 	m_graphics_system(nullptr),
 	m_physics_system(nullptr),
 	m_game_state_manager(nullptr),
-	m_component_manager(nullptr)
+	m_component_manager(nullptr),
+	m_input_manager(nullptr)
 {
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
 
@@ -44,6 +45,7 @@ Engine::Engine(const Settings& settings) :
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();
 	m_sound_manager		 = settings.sound_manager_allocator(this);
+	m_input_manager		 = settings.input_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
 	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
@@ -60,21 +62,19 @@ void Engine::run(IPakalApplication* application)
 	ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
 	ASSERT(application);
 
-	LOG_INFO("Running unnamed application ");
+	LOG_WARNING("Running unnamed application ");
 
 	m_application = application;
-
-	//exit in case the graphics_system exits
 	m_running_loop = true;
-	auto listenerId = m_graphics_system->terminate_requested.add_listener([this]()
-	{
-		m_running_loop = false;
-	});
 
 	//Initialize managers
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
-	m_sound_manager->initialize();	
+	m_sound_manager->initialize();
+	m_input_manager->initialize();
+
+	//listen for os termination event
+	auto listenderId = m_input_manager->closed_event.add_listener([this](){ m_running_loop = false; });
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -83,6 +83,7 @@ void Engine::run(IPakalApplication* application)
 		initializationTasks.push_back(s->initialize());
 	}
 	TaskUtils::wait_all(initializationTasks);
+
 
 	// Initialize engine
 	initialize();
@@ -113,7 +114,8 @@ void Engine::run(IPakalApplication* application)
 			if (s->get_state() != SystemState::Terminated)
 				s->update(delta);
 		}
-		procress_os_messages();
+
+		m_input_manager->process_os_events();
 
 		end = std::chrono::high_resolution_clock::now();
 		delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
@@ -131,19 +133,15 @@ void Engine::run(IPakalApplication* application)
 		if (s->get_state() != SystemState::Terminated)
 			terminationTasks.push_back(s->terminate());
 	}
-
 	TaskUtils::wait_all(terminationTasks);
+
+	 m_input_manager->closed_event.remove_listener(listenderId);
 
 	//terminate managers
 	m_sound_manager->terminate();
 	m_component_manager->terminate();
-	m_game_state_manager->terminate();	
-
-	//unsubscribe from event
-	m_graphics_system->terminate_requested.remove_listener(listenerId);
-
-	//clear the message queue
-	procress_os_messages();
+	m_game_state_manager->terminate();
+	m_input_manager->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
@@ -184,21 +182,5 @@ void Engine::on_resume()
 	}
 
 	TaskUtils::wait_all(resumeTasks);
-}
-//////////////////////////////////////////////////////////////////////////
-void Engine::procress_os_messages()
-{
-#ifdef PAKAL_WIN32_PLATFORM
-	MSG msg;
-	while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-		if (msg.message == WM_QUIT)
-		{
-			m_running_loop = false;
-		}
-	}
-#endif
 }
 //////////////////////////////////////////////////////////////////////////

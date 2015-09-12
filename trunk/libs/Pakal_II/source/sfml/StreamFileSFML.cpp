@@ -41,7 +41,7 @@ namespace Pakal
 
 	bool StreamReaderSFML::seek(size_t offset, bool relativeMovement)
 	{
-		return m_stream->seek(offset);
+		return m_stream->seek(offset) != 0;
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	std::streamoff StreamReaderSFML::size()

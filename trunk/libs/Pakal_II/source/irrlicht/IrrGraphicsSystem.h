@@ -10,6 +10,7 @@
   //#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 #include <Pakal_II/source/ResourceManager.h>
+#include "IWindowManager.h"
 
 namespace Pakal
 {
@@ -26,9 +27,9 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
-		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };				
+		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };	
 
-		explicit IrrGraphicsSystem(const Settings& settings);
+		explicit IrrGraphicsSystem(const Settings& settings,IWindowManager* windowManager);
 
 	protected:
 
@@ -47,11 +48,8 @@ namespace Pakal
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
 
-		bool m_is_rendering;				
-
-		std::string m_home_path;
-		std::string m_config_path;
-		size_t		m_window;
+		IWindowManager* m_window_manager;
+		unsigned m_resized_callback_id;
 
 		irr::IrrlichtDevice			* device;
 		irr::video::IVideoDriver	* driver;
@@ -74,7 +72,7 @@ namespace Pakal
 		void init_window();
 
 		void begin_scene();
-		bool draw();
+		void draw();
 		void end_scene();
 
 		virtual void set_window_caption(const wchar_t* caption) override;
