@@ -22,7 +22,11 @@ void InputManager_SFML::terminate()
 void* InputManager_SFML::create_window(const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel)
 {
 	ASSERT(m_window_created == false);
-	m_window.create(sf::VideoMode(dimensions.x,dimensions.y,bitsPerPixel),"",fullscreen ?  sf::Style::Fullscreen : sf::Style::Default,sf::ContextSettings(),true);
+
+	auto windowScreenStyle = fullscreen ?  sf::Style::Fullscreen : sf::Style::Default;
+	auto videoMode = sf::VideoMode( dimensions.x, dimensions.y, bitsPerPixel);
+
+	m_window.create( videoMode,"", windowScreenStyle , sf::ContextSettings(), true);
 
 	m_window_created = true;
 	return m_window_handle = m_window.getSystemHandle();
