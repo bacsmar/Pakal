@@ -29,7 +29,7 @@ namespace Pakal
 			m_name = name;
 		}
 
-		~BaseGameState() { }
+		virtual ~BaseGameState() { }
 
 		inline const GameStateManager* get_game_state_manager()
 		{

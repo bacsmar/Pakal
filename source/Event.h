@@ -21,9 +21,18 @@ namespace Pakal
 
 		DelegateData(const std::function<void(TArgs)>& d, const std::thread::id &td) : delegate(d), tid(td) 
 		{
-		}
-		
+		}		
 	};	
+	template<>
+	struct _PAKALExport DelegateData<void>
+	{
+		const std::function<void()> delegate;
+		const std::thread::id tid;
+
+		DelegateData(const std::function<void()>& d, const std::thread::id &td) : delegate(d), tid(td)
+		{
+		}
+	};
 
 	template <class TArgs>
 	class

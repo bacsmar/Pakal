@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Config.h"
 #include "GameStateManager.h"
 #include "BaseGameState.h"

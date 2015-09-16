@@ -28,7 +28,7 @@ namespace Pakal
 		template<class T>
 		void rot(const T angle, const tmath::vectorn<T,3>& axis, tmath::quaternion<T>& q)
 		{
-			register T rad = d2r(angle * static_cast<T>(0.5));
+			 T rad = d2r(angle * static_cast<T>(0.5));
 			q.w = cos(rad);
 			q.x = axis.x * sin(rad);
 			q.y = axis.y * sin(rad);
@@ -39,7 +39,7 @@ namespace Pakal
 		template<class T>
 		void rotx(const T angle, tmath::quaternion<T>& q)
 		{
-			register T rad = d2r(angle * static_cast<T>(0.5));
+			 T rad = d2r(angle * static_cast<T>(0.5));
 			q.w = cos(rad);
 			q.x = sin(rad);
 			q.y = static_cast<T>(0.0);
@@ -50,7 +50,7 @@ namespace Pakal
 		template<class T>
 		void roty(const T angle, tmath::quaternion<T>& q)
 		{
-			register T rad = d2r(angle * static_cast<T>(0.5));
+			 T rad = d2r(angle * static_cast<T>(0.5));
 			q.w = cos(rad);
 			q.x = static_cast<T>(0.0);
 			q.y = sin(rad);
@@ -61,7 +61,7 @@ namespace Pakal
 		template<class T>
 		void rotz(const T angle, tmath::quaternion<T>& q)
 		{
-			register T rad = d2r(angle * static_cast<T>(0.5));
+			 T rad = d2r(angle * static_cast<T>(0.5));
 			q.w = cos(rad);
 			q.x = static_cast<T>(0.0);
 			q.y = static_cast<T>(0.0);
@@ -151,9 +151,9 @@ namespace Pakal
 		template<typename T>
 		void rotx(const T& angle, tmath::matrix<T,3,3>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = cos(rad);
-			register T s = sin(rad);
+			 T rad = d2r(angle);
+			 T c = cos(rad);
+			 T s = sin(rad);
 			m.xx = 1.0;
 			m.xy = 0.0;
 			m.xz = 0.0;
@@ -169,9 +169,9 @@ namespace Pakal
 		template<typename T>
 		void roty(const T& angle, tmath::matrix<T,3,3>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = cos(rad);
-			register T s = sin(rad);
+			 T rad = d2r(angle);
+			 T c = cos(rad);
+			 T s = sin(rad);
 			m.xx = c;
 			m.xy = 0.0;
 			m.xz = s;
@@ -187,9 +187,9 @@ namespace Pakal
 		template<typename T>
 		void rotz(const T& angle, tmath::matrix<T,3,3>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = cos(rad);
-			register T s = sin(rad);
+			 T rad = d2r(angle);
+			 T c = cos(rad);
+			 T s = sin(rad);
 			m.xx = c;
 			m.xy = -s;
 			m.xz = 0.0;
@@ -239,9 +239,9 @@ namespace Pakal
 		template<typename T>
 		void rotx(const T& angle, tmath::matrix<T,4,4>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = static_cast<T>(cos(rad));
-			register T s = static_cast<T>(sin(rad));
+			 T rad = d2r(angle);
+			 T c = static_cast<T>(cos(rad));
+			 T s = static_cast<T>(sin(rad));
 			m.xx = 1.0;
 			m.xy = 0.0;
 			m.xz = 0.0;
@@ -264,9 +264,9 @@ namespace Pakal
 		template<typename T>
 		void roty(const T& angle, tmath::matrix<T,4,4>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = static_cast<T>(cos(rad));
-			register T s = static_cast<T>(sin(rad));
+			 T rad = d2r(angle);
+			 T c = static_cast<T>(cos(rad));
+			 T s = static_cast<T>(sin(rad));
 			m.xx = c;
 			m.xy = 0.0;
 			m.xz = s;
@@ -289,9 +289,9 @@ namespace Pakal
 		template<typename T>
 		void rotz(const T& angle, tmath::matrix<T,4,4>& m)
 		{
-			register T rad = d2r(angle);
-			register T c = static_cast<T>(cos(rad));
-			register T s = static_cast<T>(sin(rad));
+			 T rad = d2r(angle);
+			 T c = static_cast<T>(cos(rad));
+			 T s = static_cast<T>(sin(rad));
 			m.xx = c;
 			m.xy = -s;
 			m.xz = 0.0;

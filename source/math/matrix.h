@@ -93,7 +93,7 @@ namespace Pakal
 
 			inline matrix<T,N,M> operator/=(const T& num)
 			{
-				float val = (static_cast<T>(1.0) / num);
+				//float val = (static_cast<T>(1.0) / num);
 				for (int m = 0; m < M; ++m)
 					for (int n = 0; n < N; ++n)
 						cmp[m][n] /= num;

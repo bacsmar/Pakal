@@ -1,9 +1,10 @@
 #pragma once
 #include "Config.h"
 
-#include <functional>
-
 #include "TaskFwd.h"
+
+#include <functional>
+#include <thread>
 
 
 namespace Pakal

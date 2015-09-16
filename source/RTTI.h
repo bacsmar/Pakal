@@ -71,11 +71,11 @@ namespace Pakal{
 #define DECLARE_RTTI_WITH_BASE(x,base)  \
 	static const Pakal::RTTI &getRTTI()\
 	{\
-		x *_##x = 0;\
+		/*x *_##x = 0;*/\
 		static Pakal::RTTI s_RTTI_Info(#x,base::getRTTI());\
 		return s_RTTI_Info;\
 	}\
-	virtual const Pakal::RTTI &getType()\
+	virtual const Pakal::RTTI &getType() override\
 	{\
 		return x::getRTTI();\
 	}

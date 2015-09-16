@@ -4,8 +4,6 @@
 // Original Author: Salvador Noel Romo Garcia.
 // last modification: 27 Agosto 2015
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma once
-
 #include "StreamFileProvider.h"
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -131,7 +131,7 @@ namespace Pakal
 			log(LOG_ERROR,"[ERROR]\tError at open the log file. Redirecting to stdout.");
 		}
 
-		log(LOG_INFO,"[INFO]\tLog redirected to %s", mFileName);
+		log(LOG_INFO,"[INFO]\tLog redirected to %s", mFileName.c_str() );
 	}
 }
 

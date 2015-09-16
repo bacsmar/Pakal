@@ -2,6 +2,7 @@
 #include "SingletonHolder.h"
 #include "InboxQueue.h"
 #include "AsyncTaskDispatcher.h"
+#include <algorithm>
 
 
 Pakal::EventScheduler& Pakal::EventScheduler::instance() 
