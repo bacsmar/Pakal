@@ -101,13 +101,12 @@ void Engine::run(IPakalApplication* application)
 			nonThreadedSystems.push_back(s);
 	}
 
-	std::chrono::system_clock::time_point start,end;
 	long long delta = 0;
 
 	//do the loop
 	while(m_running_loop)
 	{
-		start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::system_clock::now();
 
 		for (auto s : nonThreadedSystems)
 		{
@@ -117,7 +116,7 @@ void Engine::run(IPakalApplication* application)
 
 		m_input_manager->process_os_events();
 
-		end = std::chrono::high_resolution_clock::now();
+		auto end = std::chrono::system_clock::now();
 		delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 	}
 	

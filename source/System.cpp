@@ -10,20 +10,21 @@ namespace Pakal
 		ASSERT(m_threaded);
 
 		while (m_dispatcher_ready == false) {}
-
-		std::chrono::system_clock::time_point start,end;
+		
 		long long delta = 0;
 
 		while(m_state != SystemState::Terminated)
 		{
-			start = std::chrono::high_resolution_clock::now();
+			//auto start = std::chrono::high_resolution_clock::now();
+			auto start = std::chrono::system_clock::now();
 
 			m_dispatcher.dispatch_tasks();
 			if (m_state == SystemState::Running)
 			{
 				on_update(delta);
 			}
-			end = std::chrono::high_resolution_clock::now();
+			//auto end = std::chrono::high_resolution_clock::now();
+			auto end = std::chrono::system_clock::now();
 			delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 		} 
 	}

@@ -105,9 +105,7 @@ void Box2DPhysicsSystem::clear_world()
 
 void Box2DPhysicsSystem::update_world(long long dt)
 {
-	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);	
-	m_world->Step(dt/1000.0f,m_settings.velocity_iterations,m_settings.position_iterations);		
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	m_world->Step(dt/1000.f, m_settings.velocity_iterations, m_settings.position_iterations);
 }
-
-
 //////////////////////////////////////////////////////////////////////////
