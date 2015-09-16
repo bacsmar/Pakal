@@ -34,7 +34,7 @@ namespace Pakal
 		virtual ~System();
 		explicit System(bool usesThread);
 
-		inline const std::thread::id& thread_id() { return m_dispatcher.thread_id(); };
+		inline std::thread::id thread_id() { return m_dispatcher.thread_id(); };
 		inline bool is_threaded() override final { return m_threaded; };
 		inline SystemState get_state() override final { return m_state; };
 
