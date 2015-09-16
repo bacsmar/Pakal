@@ -4,6 +4,7 @@
 
 #include <unordered_set>
 #include <functional>
+#include <algorithm>
 
 #include "PhysicsSystem.h"
 #include "GraphicsSystem.h"

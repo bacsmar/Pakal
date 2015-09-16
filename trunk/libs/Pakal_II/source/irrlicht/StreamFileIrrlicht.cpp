@@ -4,7 +4,6 @@
 // Original Author: Salvador Noel Romo Garcia.
 // last modification: 27 Agosto 2015
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma once
 #include "StreamFileIrrlicht.h"
 
 namespace Pakal

@@ -384,7 +384,7 @@ void B2DebugDrawIrr::DrawString(int x, int y, const char *string, ...)
 #ifdef _MSC_VER
 	_vsnprintf_s(buffer,128,string, arg);
 #else
-	_vsnprintf(buffer, 128, string, arg);
+	vsnprintf(buffer, 128, string, arg);
 #endif    
     va_end(arg);
     core::stringw str(buffer);
