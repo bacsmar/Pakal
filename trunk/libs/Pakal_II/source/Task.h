@@ -18,8 +18,7 @@ namespace Pakal
 	{
 		static_assert(!std::is_void<TArgs>::value, "void type is not allowed");
 		
-		friend class InboxQueue;
-		friend class TaskUtils;
+		friend class InboxQueue;		
 
 	public:
 
@@ -79,18 +78,27 @@ namespace Pakal
 			if (tasks.empty())
 			{
 				return completed_task();
-			}
+			}			
 
-			static auto emptyDelegate = []() { return std::atomic_int(); };
+			// dummy class only used to keep an atomic counter on it
+			class DummyTaskAtomic : public BasicTask
+			{		
+				friend class TaskUtils;
+			public:
+				explicit DummyTaskAtomic(const std::function<void(void)>& job) : BasicTask(job){}
+				std::atomic_int	m_result;				
+			};
 
-			auto task = std::make_shared<Task<std::atomic_int>>(emptyDelegate);
+			static auto emptyDelegate = []() {};
+
+			auto task = std::make_shared<DummyTaskAtomic>(emptyDelegate); // -> auto task = new DummyTaskAtomic(emptyDelegate);
 			task->m_result = tasks.size();
 
 			BasicTaskPtr myTask(task);
 
 			std::function<void()> onComplete = [myTask]()
 			{
-				auto t = static_cast<Task<std::atomic_int>*>(myTask.get());
+				auto t = static_cast<DummyTaskAtomic*>(myTask.get());
 				t->m_result-= 1;
 				if (t->m_result == 0)
 				{
@@ -100,7 +108,7 @@ namespace Pakal
 
 			for (auto& t : tasks)
 			{
-				t->continue_with(onComplete,NULL_THREAD);
+				t->continue_with( onComplete, NULL_THREAD);
 			}
 			return myTask;
 		}
