@@ -55,11 +55,13 @@ void InputManager_SFML::process_os_events()
 			case sf::Event::Resized: 
 				resized_event.notify(tmath::vector2di(e.size.width,e.size.height));
 				break;
-			case sf::Event::LostFocus: break;
-			case sf::Event::GainedFocus: break;
-			case sf::Event::TextEntered: 
-				LOG_ERROR("text entered: %c",e.text.unicode);
+			case sf::Event::LostFocus: 
+				focused_event.notify(false);
 				break;
+			case sf::Event::GainedFocus: 
+				focused_event.notify(true);
+				break;
+			case sf::Event::TextEntered: break;
 			case sf::Event::KeyPressed: break;
 			case sf::Event::KeyReleased: break;
 			case sf::Event::MouseWheelMoved: break;
