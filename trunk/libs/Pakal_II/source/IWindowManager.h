@@ -12,6 +12,7 @@ namespace Pakal
 		virtual ~IWindowManager() {}
 
 		Event<void> closed_event;
+		Event<bool> focused_event;
 		Event<tmath::vector2di> resized_event;
 
 		virtual void* create_window(const tmath::vector2di& dimensions, bool fullscreen,unsigned int bitsPerPixel) = 0;
