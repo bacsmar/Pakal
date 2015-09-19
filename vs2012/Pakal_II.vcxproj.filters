@@ -85,6 +85,9 @@
     <ClCompile Include="..\source\sfml\StreamFileSFML.cpp">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\OSManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -268,11 +271,15 @@
     <ClInclude Include="..\source\IInputManager.h">
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IWindowManager.h">
-      <Filter>Managers\InputManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\InputManager_SFML.h">
       <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\source\OSManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IOSManager.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -327,5 +334,8 @@
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Pakal_II.rc" />
   </ItemGroup>
 </Project>

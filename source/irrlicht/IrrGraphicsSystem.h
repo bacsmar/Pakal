@@ -10,7 +10,6 @@
   //#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 #include <Pakal_II/source/ResourceManager.h>
-#include "IWindowManager.h"
 
 namespace Pakal
 {
@@ -19,6 +18,7 @@ namespace Pakal
 	class IDebugDrawerClient;
 	struct RendererInfo;
 	class IStream;
+	class OSManager;
 
 	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem
 	{
@@ -29,7 +29,7 @@ namespace Pakal
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };	
 
-		explicit IrrGraphicsSystem(const Settings& settings,IWindowManager* windowManager);
+		explicit IrrGraphicsSystem(const Settings& settings, OSManager* windowManager);
 
 	protected:
 
@@ -48,8 +48,11 @@ namespace Pakal
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
 
-		IWindowManager* m_window_manager;
+		//IWindowManager* m_window_manager;
+		OSManager		*	m_os_manager;
 		unsigned m_resized_callback_id;
+		unsigned m_focused_callback_id;
+		bool m_window_initialized;
 
 		irr::IrrlichtDevice			* device;
 		irr::video::IVideoDriver	* driver;
@@ -59,7 +62,6 @@ namespace Pakal
 
 		RendererInfo				*m_render_info;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
-
 		virtual ~IrrGraphicsSystem();
 
 		void on_init_graphics() override;
@@ -69,7 +71,7 @@ namespace Pakal
 		void on_resume_graphics() override;
 
 
-		void init_window();
+		void init_window(void* windowId);
 
 		void begin_scene();
 		void draw();

@@ -14,7 +14,7 @@ namespace Pakal
 	class SoundManagerSFML :
 		public Pakal::SoundManager
 	{
-		sf::Music m_music_player;
+		//sf::Music m_music_player;
 	public:
 		void initialize() override;
 		void terminate() override;	

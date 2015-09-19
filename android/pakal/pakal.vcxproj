@@ -68,9 +68,9 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_COMPILE_WITH_ANDROID_DEVICE_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\libs\Pakal_II\source;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libs\Pakal_II\source;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)\libs\sfml\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CLanguageStandard>Default</CLanguageStandard>
       <CompileAs>Default</CompileAs>
     </ClCompile>
@@ -88,6 +88,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\source\android\OsWrapperAndroid.h" />
     <ClInclude Include="..\..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\..\source\BaseGameState.h" />
     <ClInclude Include="..\..\source\BasicTask.h" />
@@ -120,12 +121,12 @@
     <ClInclude Include="..\..\source\InboxQueue.h" />
     <ClInclude Include="..\..\source\InputManager_SFML.h" />
     <ClInclude Include="..\..\source\IPakalApplication.h" />
+    <ClInclude Include="..\..\source\irrlicht\CIrrDeviceAndroidPakal.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrRendererInfo.h" />
     <ClInclude Include="..\..\source\irrlicht\StreamFileIrrlicht.h" />
     <ClInclude Include="..\..\source\IStream.h" />
     <ClInclude Include="..\..\source\ISystem.h" />
-    <ClInclude Include="..\..\source\IWindowManager.h" />
     <ClInclude Include="..\..\source\LogMgr.h" />
     <ClInclude Include="..\..\source\math\matrix.h" />
     <ClInclude Include="..\..\source\math\matrix2.h" />
@@ -139,6 +140,7 @@
     <ClInclude Include="..\..\source\math\vector3.h" />
     <ClInclude Include="..\..\source\math\vector4.h" />
     <ClInclude Include="..\..\source\math\vectorn.h" />
+    <ClInclude Include="..\..\source\OSManager.h" />
     <ClInclude Include="..\..\source\PakalMath.h" />
     <ClInclude Include="..\..\source\PhysicsSystem.h" />
     <ClInclude Include="..\..\source\Platform.h" />
@@ -158,6 +160,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\android\OsWrapperAndroid.cpp" />
     <ClCompile Include="..\..\source\AsyncTaskDispatcher.cpp" />
     <ClCompile Include="..\..\source\BasicTask.cpp" />
     <ClCompile Include="..\..\source\box2D\B2DebugDrawIrr.cpp" />
@@ -176,9 +179,11 @@
     <ClCompile Include="..\..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\..\source\InboxQueue.cpp" />
     <ClCompile Include="..\..\source\InputManager_SFML.cpp" />
+    <ClCompile Include="..\..\source\irrlicht\CIrrDeviceAndroidPakal.cpp" />
     <ClCompile Include="..\..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\..\source\irrlicht\StreamFileIrrlicht.cpp" />
     <ClCompile Include="..\..\source\LogMgr.cpp" />
+    <ClCompile Include="..\..\source\OSManager.cpp" />
     <ClCompile Include="..\..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\..\source\ResourceManager.cpp" />
     <ClCompile Include="..\..\source\sfml\SoundManager_SFML.cpp" />
@@ -188,6 +193,20 @@
     <ClCompile Include="..\..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\..\source\System.cpp" />
     <ClCompile Include="..\..\source\TaskCompletionSource.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\box2d\vs_android\Box2D.vcxproj">
+      <Project>{0224d0f4-a789-4f3b-a76a-857b4e0ecf0b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\irrlicht-config\IrrAndroid\IrrAndroid.vcxproj">
+      <Project>{6bc4239c-49c7-4504-998a-f49077b063b6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\sfml-config\main\main.vcxproj">
+      <Project>{2a40931b-762c-4656-b3fa-73448b18718f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\sfml-config\sfml-window\sfml-window.vcxproj">
+      <Project>{41537961-2cab-4260-8e7b-7d4657b42047}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
