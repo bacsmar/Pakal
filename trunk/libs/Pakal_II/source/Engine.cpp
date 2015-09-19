@@ -71,7 +71,11 @@ void Engine::run(IPakalApplication* application)
 	m_input_manager->initialize();
 
 	//listen for os termination event
-	auto listenderId = get_os_manager()->event_window_destroyed.add_listener([this](OSManager::WindowArgs){ m_running_loop = false; });
+	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]() { m_running_loop = false; });	
+	auto focusedListenerId = get_os_manager()->event_window_focused.add_listener([this](bool focus)
+	{
+		focus == true ? on_resume() : on_pause();
+	});
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -130,8 +134,9 @@ void Engine::run(IPakalApplication* application)
 			terminationTasks.push_back(s->terminate());
 	}
 	TaskUtils::wait_all(terminationTasks);
-
-	get_os_manager()->event_window_destroyed.remove_listener(listenderId);
+	
+	get_os_manager()->event_app_finished.remove_listener(listenderId);	
+	get_os_manager()->event_window_focused.remove_listener(focusedListenerId);
 
 	//terminate managers
 	m_sound_manager->terminate();

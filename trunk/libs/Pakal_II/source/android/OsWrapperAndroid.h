@@ -19,9 +19,10 @@ namespace Pakal
 		friend class OSManager;
 	protected:
 		virtual ~OsWrapperAndroid();
-		OsWrapperAndroid();
+		OsWrapperAndroid();		
 	public:
-		static void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize);		
+		static void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize);
+		ANativeActivity* activity;
 	};
 
 
