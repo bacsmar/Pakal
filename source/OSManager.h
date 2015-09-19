@@ -24,7 +24,7 @@
 
 namespace Pakal
 {
-	class _PAKALExport OSManager
+	class _PAKALExport OSManager : public OsWrapperImpl
 	{		
 		template <class OSManager> friend class SingletonHolder;
 		friend class Engine;
@@ -40,7 +40,7 @@ namespace Pakal
 
 		struct WindowImpl
 		{
-			virtual unsigned create_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
+			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
 			virtual ~WindowImpl(){}
 		};
 			
@@ -48,17 +48,30 @@ namespace Pakal
 		Event<WindowArgs>	event_window_destroyed;
 		Event<WindowArgs>	event_window_redraw_needed;
 		Event<WindowArgs>	event_window_resized;
-		Event<bool>			event_window_focused;		
+		Event<bool>			event_window_focused;
+		Event<void>			event_app_finished;
+		Event<void>			event_app_paused;
+		Event<void>			event_app_resumed;
+		Event<void>			event_app_started;
+		Event<void>			event_app_stoped;
 
 		virtual BasicTaskPtr setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  close_window();
 		virtual void  process_os_events();
 
 		void on_window_created(const WindowArgs& arg);
-		
-	protected:
+		void on_window_destroyed(const WindowArgs& arg);
+
+		// TO IMPLEMENT
+		/*bool activateAccelerometer(float updateInterval);
+		bool deactivateAccelerometer();
+		bool isAccelerometerActive();
+		bool isAccelerometerAvailable();
+		bool activateGyroscope(float updateInterval);*/
+	protected:		
+			
 		WindowImpl* m_windowImpl;
-		TaskCompletionSource m_task;
+		TaskCompletionSource m_windows_setup_task;
 		// access throug Engine...
 		static OSManager& instance();
 		virtual ~OSManager();

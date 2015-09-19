@@ -1,15 +1,19 @@
 #pragma once
 #include "GraphicsSystem.h"
 
+#ifdef _WINDOWS
+#pragma comment(lib, "Irrlicht.lib")
+//#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#else
+#pragma clang diagnostic ignored "-Winconsistent-missing-override"
+#endif
+
 #include <irrlicht.h>
 #include <string>
 #include "IStream.h"
 
-#ifdef _IRR_WINDOWS_
-	#pragma comment(lib, "Irrlicht.lib")
-  //#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
-#endif
 #include <Pakal_II/source/ResourceManager.h>
+#include "OSManager.h"
 
 namespace Pakal
 {
@@ -47,12 +51,13 @@ namespace Pakal
 			IFileArchive*	add_file_archive(IStreamPtr file) override;
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
-
-		//IWindowManager* m_window_manager;
+		
 		OSManager		*	m_os_manager;
 		unsigned m_resized_callback_id;
-		unsigned m_focused_callback_id;
+		unsigned m_destroyed_callback_id;
+		unsigned m_created_callback_id;
 		bool m_window_initialized;
+		bool m_is_paused;
 
 		irr::IrrlichtDevice			* device;
 		irr::video::IVideoDriver	* driver;
@@ -71,7 +76,7 @@ namespace Pakal
 		void on_resume_graphics() override;
 
 
-		void init_window(void* windowId);
+		void setup_window(const OSManager::WindowArgs& args);
 
 		void begin_scene();
 		void draw();

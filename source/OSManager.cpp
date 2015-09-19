@@ -13,7 +13,7 @@ public:
 	sf::Window m_window;
 	bool m_window_created;
 
-	unsigned create_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel) override
+	unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel) override
 	{
 			ASSERT(m_window_created == false);
 		
@@ -29,23 +29,29 @@ public:
 };
 
 BasicTaskPtr OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
-{
+{	
 	WindowArgs args;
-	args.windowId = m_windowImpl->create_window(windowId, dimensions, fullscreen, bitsPerPixel);
+	args.windowId = m_windowImpl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);
 	if(args.windowId)
 	{		
 		args.size_x = dimensions.x;
 		args.size_y = dimensions.y;
 		on_window_created(args);
 		
-	}
-	return m_task.get_task();
+	}	
+	return m_windows_setup_task.get_task();
 }
 
 void OSManager::on_window_created(const WindowArgs& arg)
 {
 	event_window_created.notify(arg);
-	m_task.set_completed();
+	m_windows_setup_task.set_completed();
+}
+
+void OSManager::on_window_destroyed(const WindowArgs& arg)
+{
+	m_windows_setup_task = TaskCompletionSource();	// restart task
+	event_window_destroyed.notify(arg);
 }
 
 void OSManager::close_window()
