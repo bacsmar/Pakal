@@ -9,7 +9,7 @@ void Pakal::SoundManagerSFML::initialize()
 
 void Pakal::SoundManagerSFML::terminate()
 {
-	m_music_player.stop();	
+	//m_music_player.stop();	
 }
 
 Pakal::SoundManagerSFML::SoundManagerSFML()

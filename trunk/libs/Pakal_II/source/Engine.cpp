@@ -9,14 +9,11 @@
 #include "ComponentManager.h"
 #include "SoundManager.h"
 #include "IInputManager.h"
+#include "OSManager.h"
 
-
-#include "SFML/Window.hpp"
 //#include <vld.h>
 
 using namespace Pakal;
-
-
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
@@ -74,7 +71,7 @@ void Engine::run(IPakalApplication* application)
 	m_input_manager->initialize();
 
 	//listen for os termination event
-	auto listenderId = m_input_manager->closed_event.add_listener([this](){ m_running_loop = false; });
+	auto listenderId = get_os_manager()->event_window_destroyed.add_listener([this](OSManager::WindowArgs){ m_running_loop = false; });
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -114,7 +111,7 @@ void Engine::run(IPakalApplication* application)
 				s->update(delta);
 		}
 
-		m_input_manager->process_os_events();
+		get_os_manager()->process_os_events();
 
 		auto end = std::chrono::system_clock::now();
 		delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
@@ -134,7 +131,7 @@ void Engine::run(IPakalApplication* application)
 	}
 	TaskUtils::wait_all(terminationTasks);
 
-	 m_input_manager->closed_event.remove_listener(listenderId);
+	get_os_manager()->event_window_destroyed.remove_listener(listenderId);
 
 	//terminate managers
 	m_sound_manager->terminate();
@@ -142,6 +139,12 @@ void Engine::run(IPakalApplication* application)
 	m_game_state_manager->terminate();
 	m_input_manager->terminate();
 }
+//////////////////////////////////////////////////////////////////////////
+OSManager* Engine::get_os_manager() const
+{
+	return &OSManager::instance();
+}
+
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {

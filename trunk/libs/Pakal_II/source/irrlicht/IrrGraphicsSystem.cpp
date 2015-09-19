@@ -11,6 +11,12 @@
 #include "StreamFileIrrlicht.h"
 #include <irrlicht/source/Irrlicht/CTimer.h>
 
+#ifdef PAKAL_ANDROID_PLATFORM
+#include "irrlicht/CIrrDeviceAndroidPakal.h"
+#endif
+#include "OSManager.h"
+
+
 using namespace irr;
 using namespace irr::core;
 using namespace scene;
@@ -52,13 +58,14 @@ ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_dat
 }
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,IWindowManager* windowManager)
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* windowManager)
 	: GraphicsSystem(settings), 
-	m_window_manager(windowManager),
+	m_os_manager(windowManager),
+	m_window_initialized(false),
 	device(nullptr),
 	driver(nullptr),
-	smgr(nullptr),
-	guienv(nullptr),	
+	smgr(nullptr),	
+	guienv(nullptr),
 	m_fs_provider(nullptr),
 	m_render_info(new RendererInfo()),
 	m_show_fps(false)
@@ -69,10 +76,9 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	SAFE_DEL(m_render_info);
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::init_window()
+void IrrGraphicsSystem::init_window(void * windowId)
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
-
 
 	SIrrlichtCreationParameters parameters;
 
@@ -80,9 +86,15 @@ void IrrGraphicsSystem::init_window()
 	parameters.Fullscreen =  m_settings.full_screen;
 	parameters.Vsync =  m_settings.vsync;
 	parameters.DriverType = EDT_OPENGL;
-	parameters.WindowId = m_window_manager->create_window(m_settings.resolution,m_settings.full_screen,m_settings.bits);
+	parameters.WindowId = windowId;
 
+#ifdef PAKAL_ANDROID_PLATFORM
+	parameters.DriverType = EDT_OGLES2;
+	device = new CIrrDeviceAndroidPakal(parameters);
+#else	
 	device = createDeviceEx(parameters);
+#endif	
+	
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
@@ -102,23 +114,33 @@ void IrrGraphicsSystem::init_window()
 	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-3), vector3df(0,0,0));		
 
 
-	m_resized_callback_id = m_window_manager->resized_event.add_listener([this](tmath::vector2di dimensions)
+	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs args)
 	{
-		device->getVideoDriver()->OnResize(dimension2du(dimensions.x,dimensions.y));
+		device->getVideoDriver()->OnResize(dimension2du(args.size_x,args.size_y));
 	},THIS_THREAD);
+
+	m_window_initialized = true;
 
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_init_graphics()
 {
-	init_window();
+	m_os_manager->event_window_created.add_listener(
+		[this](OSManager::WindowArgs args)
+		{
+			init_window( (void*)args.windowId );
+		}
+	);
+	
+	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->wait();
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 
-	m_window_manager->resized_event.remove_listener(m_resized_callback_id);
+	m_os_manager->event_window_resized.remove_listener(m_resized_callback_id);
+	m_os_manager->event_window_focused.remove_listener(m_focused_callback_id);
 
 	ResourceManager::instance().remove_reader(m_fs_provider);
 	SAFE_DEL(m_fs_provider);

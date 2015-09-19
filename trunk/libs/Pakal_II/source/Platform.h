@@ -53,7 +53,7 @@
 #   else
 #       define PAKAL_APPLE_PLATFORM
 #   endif
-#elif defined(OS_ANDROID) || defined(ANDROID)
+#elif defined(OS_ANDROID) || defined(ANDROID) || defined(__ANDROID__)
 #	define PAKAL_ANDROID_PLATFORM
 #elif defined(__linux__)
 #	define PAKAL_LINUX_PLATFORM
