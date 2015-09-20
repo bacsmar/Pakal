@@ -64,6 +64,7 @@ namespace Pakal
 		ContactFilter		* m_contact_filter;
 		DestructionListener	* m_destruction_listener;
 		b2Draw				* m_debug_draw;
+		long long			m_time_elapsed;
 
 		std::mutex			m_debug_draw_mutex;
 	};
