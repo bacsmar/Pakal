@@ -28,7 +28,7 @@ public:
 	}	
 };
 
-std::shared_ptr<Task<OSManager::WindowArgs>> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
+TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {	
 	WindowArgs args;
 	args.windowId = m_windowImpl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);

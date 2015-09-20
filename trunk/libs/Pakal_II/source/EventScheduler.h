@@ -40,7 +40,7 @@ namespace Pakal
 		void deregister_dispatcher(AsyncTaskDispatcher* dispatcher);
 
 		template<typename TArgs>
-		std::shared_ptr<Task<TArgs>> execute_in_thread(const std::function<TArgs()>& fn, std::thread::id tid)
+		TaskPtr<TArgs> execute_in_thread(const std::function<TArgs()>& fn, std::thread::id tid)
 		{
 			auto currentTid = THIS_THREAD;
 
@@ -52,7 +52,7 @@ namespace Pakal
 		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 
 		template<typename TArgs>
-		void execute_in_thread(std::shared_ptr<Task<TArgs>> task, std::thread::id tid)
+		void execute_in_thread( TaskPtr<TArgs> task, std::thread::id tid)
 		{
 			auto currentTid = THIS_THREAD;
 
