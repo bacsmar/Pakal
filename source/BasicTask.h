@@ -16,8 +16,8 @@ namespace Pakal
 	class _PAKALExport BasicTask
 	{
 		friend class AsyncTaskDispatcher;
-		friend class TaskCompletionSource;
 		friend class EventScheduler;
+		template <class T> friend class TaskCompletionSource;
 
 		std::function<void()> m_job;
 		std::atomic_bool	 m_completed;
@@ -27,7 +27,7 @@ namespace Pakal
 			BasicTaskPtr continuation;
 			std::thread::id tid;
 			ContinuationData(BasicTaskPtr task, const std::thread::id &td) : continuation(task), tid(td)  { }
-		};	
+		}; 
 
 		std::list<ContinuationData> m_continuations;
 		std::mutex m_continuation_mutex;

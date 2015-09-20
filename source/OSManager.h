@@ -10,12 +10,11 @@
 #include "Config.h"
 #include "Event.h"
 #include "math/tm.h"
+
 #include "TaskCompletionSource.h"
 
 #ifdef PAKAL_ANDROID_PLATFORM
 	#include "android/OsWrapperAndroid.h"
-	//using OsWrapperImpl = Pakal::OsWrapperAndroid;
-	//typedef Pakal::OsWrapperAndroid OsWrapperImpl;
 	#define OsWrapperImpl Pakal::OsWrapperAndroid
 #else
 	class OsDummyWrapper{};
@@ -24,24 +23,27 @@
 
 namespace Pakal
 {
+
 	class _PAKALExport OSManager : public OsWrapperImpl
 	{		
 		template <class OSManager> friend class SingletonHolder;
 		friend class Engine;
 		friend class OsWrapperImpl;
 	public :
-		
+
+
+		class WindowImpl
+		{
+		public:
+			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
+			virtual ~WindowImpl() {}
+		};
+
 		struct WindowArgs
 		{
 			unsigned windowId;
 			unsigned size_x;
 			unsigned size_y;
-		};
-
-		struct WindowImpl
-		{
-			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
-			virtual ~WindowImpl(){}
 		};
 			
 		Event<WindowArgs>	event_window_created;
@@ -55,24 +57,16 @@ namespace Pakal
 		Event<void>			event_app_started;
 		Event<void>			event_app_stoped;
 
-		virtual BasicTaskPtr setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
-		virtual void  close_window();
+		virtual std::shared_ptr<Task<WindowArgs>> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  process_os_events();
 
 		void on_window_created(const WindowArgs& arg);
 		void on_window_destroyed(const WindowArgs& arg);
 
-		// TO IMPLEMENT
-		/*bool activateAccelerometer(float updateInterval);
-		bool deactivateAccelerometer();
-		bool isAccelerometerActive();
-		bool isAccelerometerAvailable();
-		bool activateGyroscope(float updateInterval);*/
 	protected:		
-			
 		WindowImpl* m_windowImpl;
-		TaskCompletionSource m_windows_setup_task;
-		// access throug Engine...
+		TaskCompletionSource<WindowArgs> m_windows_setup_task;
+
 		static OSManager& instance();
 		virtual ~OSManager();
 		OSManager();
