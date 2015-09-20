@@ -1,7 +1,10 @@
 #include "System.h"
 #include <chrono>
+//#include <ctime>
+#include "Clock.h"
 
 #include "EventScheduler.h"
+#include "LogMgr.h"
 
 namespace Pakal
 {
@@ -10,22 +13,16 @@ namespace Pakal
 		ASSERT(m_threaded);
 
 		while (m_dispatcher_ready == false) {}
-		
-		long long delta = 0;
+				
+		Pakal::Clock clock;
 
 		while(m_state != SystemState::Terminated)
 		{
-			//auto start = std::chrono::high_resolution_clock::now();
-			auto start = std::chrono::system_clock::now();
-
 			m_dispatcher.dispatch_tasks();
 			if (m_state == SystemState::Running)
 			{
-				on_update(delta);
+				on_update(clock.restart().asMilliseconds() );
 			}
-			//auto end = std::chrono::high_resolution_clock::now();
-			auto end = std::chrono::system_clock::now();
-			delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 		} 
 	}
 

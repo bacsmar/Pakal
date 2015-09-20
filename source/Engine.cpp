@@ -10,6 +10,7 @@
 #include "SoundManager.h"
 #include "IInputManager.h"
 #include "OSManager.h"
+#include "Clock.h"
 
 //#include <vld.h>
 
@@ -102,23 +103,26 @@ void Engine::run(IPakalApplication* application)
 			nonThreadedSystems.push_back(s);
 	}
 
-	long long delta = 0;
+	//long long delta = 0;
 
 	//do the loop
 	while(m_running_loop)
 	{
-		auto start = std::chrono::system_clock::now();
+		//auto start = std::chrono::system_clock::now();		
+		Pakal::Clock clock;
 
 		for (auto s : nonThreadedSystems)
 		{
-			if (s->get_state() != SystemState::Terminated)
-				s->update(delta);
+			if (s->get_state() != SystemState::Terminated) 
+			{
+				s->update(clock.restart().asMilliseconds());
+				//s->update( delta );
+			}
 		}
 
 		get_os_manager()->process_os_events();
-
-		auto end = std::chrono::system_clock::now();
-		delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+		//auto end = std::chrono::system_clock::now();		
+		//delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 	}
 	
 	//terminate engine
@@ -148,6 +152,11 @@ void Engine::run(IPakalApplication* application)
 OSManager* Engine::get_os_manager() const
 {
 	return &OSManager::instance();
+}
+
+void Engine::on_update(long long dt)
+{
+	//std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 //////////////////////////////////////////////////////////////////////////

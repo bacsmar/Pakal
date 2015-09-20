@@ -88,6 +88,12 @@
     <ClCompile Include="..\source\OSManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Clock.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PakalTime.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -280,6 +286,15 @@
     </ClInclude>
     <ClInclude Include="..\source\IOSManager.h">
       <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Clock.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\win32\ClockImpl.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalTime.h">
+      <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

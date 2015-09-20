@@ -20,7 +20,8 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
 		m_contact_listener(nullptr),
 		m_contact_filter(nullptr),
 		m_destruction_listener(nullptr),
-		m_debug_draw(nullptr)
+		m_debug_draw(nullptr),
+		m_time_elapsed(0)
 {	
 }
 //////////////////////////////////////////////////////////////////////////
@@ -105,7 +106,16 @@ void Box2DPhysicsSystem::clear_world()
 
 void Box2DPhysicsSystem::update_world(long long dt)
 {
-	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
-	m_world->Step(dt/1000.f, m_settings.velocity_iterations, m_settings.position_iterations);
+	std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
+
+	static float targetTimeInSeconds = (1.f / 60); 
+	static long long targetTime = targetTimeInSeconds * 1000; // in milliseconds
+	
+	m_time_elapsed += dt;	// in milliseconds
+	while(m_time_elapsed > targetTime)
+	{ 
+		m_world->Step( targetTimeInSeconds , m_settings.velocity_iterations, m_settings.position_iterations);
+		m_time_elapsed -= targetTime;
+	}
 }
 //////////////////////////////////////////////////////////////////////////

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\Clock.h" />
     <ClInclude Include="..\source\InputManager_SFML.h" />
     <ClInclude Include="..\source\IInputManager.h" />
     <ClInclude Include="..\source\IOSManager.h" />
@@ -85,9 +86,12 @@
     <ClInclude Include="..\source\RTTI.h" />
     <ClInclude Include="..\source\Task.h" />
     <ClInclude Include="..\source\TaskFwd.h" />
+    <ClInclude Include="..\source\PakalTime.h" />
+    <ClInclude Include="..\source\win32\ClockImpl.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\Clock.cpp" />
     <ClCompile Include="..\source\InputManager_SFML.cpp" />
     <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
@@ -119,6 +123,7 @@
     <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
+    <ClCompile Include="..\source\PakalTime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Pakal_II.rc" />

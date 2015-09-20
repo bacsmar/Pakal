@@ -148,8 +148,9 @@ void IrrGraphicsSystem::on_init_graphics()
 			setup_window( args );
 		}
 	, THIS_THREAD);	
+	//, NULL_THREAD);
 
-	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->wait();
+	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->continue_with([](){})-> wait();
 
 	m_os_manager->event_window_created.remove_listener(listenerId);	
 

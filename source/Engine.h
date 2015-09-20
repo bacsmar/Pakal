@@ -77,7 +77,7 @@ namespace Pakal
 
 	protected:
 
-		void on_update(long long dt) override {};
+		void on_update(long long dt) override;
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;
