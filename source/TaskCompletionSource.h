@@ -34,7 +34,6 @@ namespace Pakal
 	template <class T>
 	class _PAKALExport TaskCompletionSource
 	{
-		using TaskPtr = std::shared_ptr<Task<T>>;
 
 	public:
 		explicit TaskCompletionSource()
@@ -42,7 +41,7 @@ namespace Pakal
 			m_task = std::make_shared <Task<T>>([this]() { return m_result; });
 		};
 
-		inline TaskPtr get_task()
+		inline TaskPtr<T> get_task()
 		{
 			return m_task;
 		};
@@ -55,7 +54,7 @@ namespace Pakal
 
 	private:
 		T m_result;
-		TaskPtr m_task;
+		TaskPtr<T> m_task;
 	};
 
 }

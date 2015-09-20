@@ -42,7 +42,7 @@ namespace Pakal
 		}
 
 		template<class TOut>
-		void push_task(std::shared_ptr<Task<TOut>> task)
+		void push_task( TaskPtr<TOut> task)
 		{
 			ASSERT(this);
 			m_inbox.push(task);

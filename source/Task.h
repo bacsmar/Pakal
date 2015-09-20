@@ -127,7 +127,7 @@ namespace Pakal
 		};
 
 		template <class T>
-		static std::shared_ptr<Task<T>> from_result(const T& result)
+		static TaskPtr<T> from_result(const T& result)
 		{
 			return std::make_shared<Task<T>>(result);
 		}

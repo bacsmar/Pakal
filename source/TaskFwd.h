@@ -12,6 +12,9 @@ namespace Pakal
 	class _PAKALExport BasicTask;	
 	typedef std::shared_ptr<BasicTask> BasicTaskPtr;
 
+	template <class T>
+	using TaskPtr = std::shared_ptr<Task<T>>;
+
 	const std::thread::id NULL_THREAD = std::thread::id();
 	#define  THIS_THREAD  std::this_thread::get_id()
 
