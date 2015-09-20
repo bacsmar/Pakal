@@ -143,17 +143,10 @@ void IrrGraphicsSystem::setup_window(const OSManager::WindowArgs& args)
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_init_graphics()
 {
-	auto listenerId = m_os_manager->event_window_created.add_listener( [this](OSManager::WindowArgs args)
-		{
-			setup_window( args );
-		}
-	, THIS_THREAD);	
-	//, NULL_THREAD);
-
-	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->continue_with([](){})-> wait();
-
-	m_os_manager->event_window_created.remove_listener(listenerId);	
-
+	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->continue_with([this](const OSManager::WindowArgs& args)
+	{
+		setup_window(args);
+	},THIS_THREAD)-> wait();
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_terminate_graphics()

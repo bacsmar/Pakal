@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "BasicTask.h"
-#include "Event.h"
 
 
 namespace Pakal
@@ -18,7 +17,7 @@ namespace Pakal
 	{
 		static_assert(!std::is_void<TArgs>::value, "void type is not allowed");
 		
-		friend class InboxQueue;		
+		template <class T> friend class TaskCompletionSource;
 
 	public:
 
@@ -51,9 +50,9 @@ namespace Pakal
 			return m_result;
 		}
 		
-		std::shared_ptr<Task<TArgs>> continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
+		BasicTaskPtr continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
-			auto task =	std::make_shared<Task<TArgs>>(callBack);
+			auto task = std::make_shared<BasicTask>([=]() {  callBack(m_result);  });
 
 			m_continuation_mutex.lock();
 			m_continuations.push_back(ContinuationData(task,callBackThread));

@@ -24,11 +24,11 @@ public:
 		
 			m_window_created = true;
 			m_window_handle = m_window.getSystemHandle();
-			return (unsigned)m_window_handle;
+			return reinterpret_cast<unsigned>(m_window_handle);
 	}	
 };
 
-BasicTaskPtr OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
+std::shared_ptr<Task<OSManager::WindowArgs>> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {	
 	WindowArgs args;
 	args.windowId = m_windowImpl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);
@@ -39,32 +39,24 @@ BasicTaskPtr OSManager::setup_window(unsigned windowId, const tmath::vector2di& 
 		on_window_created(args);
 		
 	}	
-	return m_windows_setup_task.get_task();
+	return m_windows_setup_task.get_task(); 
 }
 
 void OSManager::on_window_created(const WindowArgs& arg)
 {
 	event_window_created.notify(arg);
-	m_windows_setup_task.set_completed();
+	m_windows_setup_task.set_completed(arg);
 }
 
 void OSManager::on_window_destroyed(const WindowArgs& arg)
 {
-	m_windows_setup_task = TaskCompletionSource();	// restart task
+	m_windows_setup_task = TaskCompletionSource<WindowArgs>();	// restart task
 	event_window_destroyed.notify(arg);
-}
-
-void OSManager::close_window()
-{
-	//	m_window_created = false;
-	//	m_window.close();
-	//	m_window_handle = nullptr;
-	//	closed_event.notify();
 }
 
 void OSManager::process_os_events()
 {
-	auto window = (WindowCreatorSFML*)m_windowImpl;
+	auto window = static_cast<WindowCreatorSFML*>(m_windowImpl);
 	if (!window->m_window_created) return;
 		
 		sf::Event e;
@@ -72,18 +64,10 @@ void OSManager::process_os_events()
 		{
 			switch (e.type)
 			{
-			case sf::Event::Closed:
-				close_window();
-				break;
-			case sf::Event::Resized:
-				//resized_event.notify(tmath::vector2di(e.size.width,e.size.height));
-				break;
-			case sf::Event::LostFocus:
-				//focused_event.notify(false);
-				break;
-			case sf::Event::GainedFocus:
-				//focused_event.notify(true);
-				break;
+			case sf::Event::Closed: break;
+			case sf::Event::Resized: break;
+			case sf::Event::LostFocus: break;
+			case sf::Event::GainedFocus: break;
 			case sf::Event::TextEntered: break;
 			case sf::Event::KeyPressed: break;
 			case sf::Event::KeyReleased: break;
