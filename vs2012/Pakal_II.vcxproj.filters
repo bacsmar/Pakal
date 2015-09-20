@@ -48,9 +48,6 @@
     <ClCompile Include="..\source\ComponentManager.cpp">
       <Filter>Managers\ComponentManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\TaskCompletionSource.cpp">
-      <Filter>Managers\EventManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\System.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
@@ -349,8 +346,5 @@
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Pakal_II.rc" />
   </ItemGroup>
 </Project>

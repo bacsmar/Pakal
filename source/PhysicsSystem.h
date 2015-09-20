@@ -23,7 +23,7 @@ namespace Pakal
 		void on_resume() override final;
 
 	public:
-		Event<void> updated;
+		Event<PhysicsSystem,void> updated;
 
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
 		virtual const char*			get_system_name() override = 0;

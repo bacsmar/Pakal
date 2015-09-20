@@ -104,7 +104,6 @@
     <ClCompile Include="..\source\StreamFile.cpp" />
     <ClCompile Include="..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\source\System.cpp" />
-    <ClCompile Include="..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
@@ -124,9 +123,6 @@
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Pakal_II.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10973BBF-12C3-4F4F-98CB-D2D8CB870919}</ProjectGuid>
