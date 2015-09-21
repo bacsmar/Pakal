@@ -49,13 +49,32 @@ namespace Pakal
 			wait();
 			return m_result;
 		}
-		
+
+
+		template <class TReturn>
+		std::shared_ptr<Task<TReturn>> continue_with(const std::function<TReturn(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
+		{
+			auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(m_result);  });
+
+			m_continuation_mutex.lock();
+			m_continuations.push_back(ContinuationData(task, callBackThread));
+			m_continuation_mutex.unlock();
+
+			if (is_completed())
+			{
+				queue_continuations();
+			}
+
+			return task;
+		}
+
+
 		BasicTaskPtr continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
 			auto task = std::make_shared<BasicTask>([=]() {  callBack(m_result);  });
 
 			m_continuation_mutex.lock();
-			m_continuations.push_back(ContinuationData(task,callBackThread));
+			m_continuations.push_back(ContinuationData(task, callBackThread));
 			m_continuation_mutex.unlock();
 
 			if (is_completed())
