@@ -7,30 +7,6 @@
 
 namespace Pakal
 {
-	template<>
-	class _PAKALExport TaskCompletionSource<void>
-	{
-	public:
-		explicit TaskCompletionSource()
-		{
-			static auto emptyDelegate = []() {};
-			m_task = std::make_shared<BasicTask>(emptyDelegate);
-		};
-
-		inline BasicTaskPtr get_task()
-		{
-			return m_task;
-		};
-
-		inline void set_completed()
-		{
-			m_task->run();
-		};
-
-	private:
-		BasicTaskPtr m_task;
-	};
-
 	template <class T>
 	class _PAKALExport TaskCompletionSource
 	{
@@ -55,6 +31,30 @@ namespace Pakal
 	private:
 		T m_result;
 		TaskPtr<T> m_task;
+	};
+
+	template<>
+	class _PAKALExport TaskCompletionSource<void>
+	{
+	public:
+		explicit TaskCompletionSource()
+		{
+			static auto emptyDelegate = []() {};
+			m_task = std::make_shared<BasicTask>(emptyDelegate);
+		};
+
+		inline BasicTaskPtr get_task()
+		{
+			return m_task;
+		};
+
+		inline void set_completed()
+		{
+			m_task->run();
+		};
+
+	private:
+		BasicTaskPtr m_task;
 	};
 
 }
