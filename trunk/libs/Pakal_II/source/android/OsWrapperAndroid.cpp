@@ -41,25 +41,25 @@ namespace Pakal
 
 	void onStart(ANativeActivity* activity)
 	{
-		get_osWrapper()->event_app_started.notify();
+		get_osWrapper()->on_app_started();
 	}
 	void onResume(ANativeActivity* activity)
 	{		
-		get_osWrapper()->event_app_resumed.notify();
+		get_osWrapper()->on_app_resumed();
 	}
 
 	void onPause(ANativeActivity* activity)
 	{
-		get_osWrapper()->event_app_paused.notify();
+		get_osWrapper()->on_app_paused();
 	}
 
 	void onStop(ANativeActivity* activity)
 	{
-		get_osWrapper()->event_app_stoped.notify();
+		get_osWrapper()->on_app_stoped();
 	}
 	void onDestroy(ANativeActivity* activity)
 	{
-		get_osWrapper()->event_app_finished.notify();
+		get_osWrapper()->on_app_finished();
 	}
 
 	void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
@@ -80,7 +80,7 @@ namespace Pakal
 	{
 		OSManager::WindowArgs e;
 		e.windowId = (unsigned)window;
-		get_osWrapper()->event_window_redraw_needed.notify(e);
+		get_osWrapper()->on_window_redraw_needed(e);
 	}
 	void onNativeWindowResized(ANativeActivity* activity, ANativeWindow* window)
 	{
@@ -88,7 +88,7 @@ namespace Pakal
 		e.windowId = (unsigned)window;
 		e.size_x = ANativeWindow_getWidth(window);
 		e.size_y = ANativeWindow_getHeight(window);
-		get_osWrapper()->event_window_resized.notify(e);
+		get_osWrapper()->on_window_resized(e);
 	}
 	void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
 	{
@@ -100,7 +100,7 @@ namespace Pakal
 	}
 	void onWindowFocusChanged(ANativeActivity* activity, int hasFocus)
 	{
-		get_osWrapper()->event_window_focused.notify(hasFocus != 0);
+		get_osWrapper()->on_window_focused(hasFocus != 0);
 	}
 	void onContentRectChanged(ANativeActivity* activity, const ARect* rect)
 	{
@@ -139,7 +139,10 @@ OsWrapperAndroid::OsWrapperAndroid()
 void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize)
 {
 	// let sfml register the activity and stuff.. but.. 
-	sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);
+	if (savedState != NULL)
+	{
+		sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);
+	}
 		
 	Pakal::OSManagerInstance = &OSManager::instance();
 	OSManager::instance().activity = activity;

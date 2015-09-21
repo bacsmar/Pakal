@@ -83,7 +83,10 @@ void Engine::run(IPakalApplication* application)
 	initialize();
 
 	//listen for os events
-	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]() { m_running_loop = false; });
+	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]()
+	{
+		m_running_loop = false;
+	});
 	auto focusedListenerId = get_os_manager()->event_window_focused.add_listener([this](bool focus)
 	{
 		focus ? resume() : pause();

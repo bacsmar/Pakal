@@ -61,8 +61,15 @@ namespace Pakal
 		virtual void  process_os_events();
 
 		void on_window_created(const WindowArgs& arg);
-		void on_window_destroyed(const WindowArgs& arg);		
+		void on_window_destroyed(const WindowArgs& arg);
+		void on_window_redraw_needed(const WindowArgs& arg);
+		void on_window_resized(const WindowArgs& arg);
+		void on_window_focused(bool);
 		void on_app_finished();
+		void on_app_paused();
+		void on_app_resumed();
+		void on_app_started();
+		void on_app_stoped();
 
 	protected:		
 		WindowImpl* m_windowImpl;

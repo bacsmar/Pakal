@@ -30,21 +30,32 @@ public:
 	}	
 	void process_os_events() override
 	{		
-		if (!m_window_created) return;
+		if (!m_window_created)
+		{
+			return;
+		}
 
 		sf::Event e;
 		while (m_window.pollEvent(e))
 		{
 			switch (e.type)
 			{
-			case sf::Event::Closed:
+			case sf::Event::Closed:			
 				m_os_manager->on_app_finished();
 				break;
-			case sf::Event::Resized:				
+			case sf::Event::Resized:
+			{
+				OSManager::WindowArgs args;
+				args.size_x = e.size.width;
+				args.size_y = e.size.height;
+				m_os_manager->on_window_resized(args);
+			}
+			break;
+			case sf::Event::LostFocus:			
+				m_os_manager->on_window_focused(false);			
 				break;
-			case sf::Event::LostFocus:				
-				break;
-			case sf::Event::GainedFocus:				
+			case sf::Event::GainedFocus:
+				m_os_manager->on_window_focused(true);
 				break;
 			case sf::Event::TextEntered: break;
 			case sf::Event::KeyPressed: break;
@@ -100,6 +111,41 @@ void OSManager::on_window_destroyed(const WindowArgs& arg)
 void OSManager::on_app_finished()
 {
 	event_app_finished.notify();
+}
+
+void OSManager::on_window_redraw_needed(const WindowArgs& arg)
+{
+	event_window_redraw_needed.notify(arg);
+}
+
+void OSManager::on_window_resized(const WindowArgs& arg)
+{
+	event_window_resized.notify(arg);
+}
+
+void OSManager::on_window_focused(bool focused)
+{
+	event_window_focused.notify(focused);
+}
+
+void OSManager::on_app_paused()
+{
+	event_app_paused.notify();
+}
+
+void OSManager::on_app_resumed()
+{
+	event_app_resumed.notify();
+}
+
+void OSManager::on_app_started()
+{
+	event_app_started.notify();
+}
+
+void OSManager::on_app_stoped()
+{
+	event_app_stoped.notify();
 }
 
 void OSManager::process_os_events()
