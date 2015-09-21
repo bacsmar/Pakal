@@ -118,3 +118,12 @@ void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatche
 	}
 
 }
+
+Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_worker(const std::function<void()>& fn)
+{
+	BasicTaskPtr task = std::make_shared<BasicTask>(fn);
+
+	std::async(std::launch::async,[=]() { task->run(); });
+	
+	return task;
+}
