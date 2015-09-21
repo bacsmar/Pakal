@@ -195,7 +195,6 @@
     <ClCompile Include="..\..\source\StreamFile.cpp" />
     <ClCompile Include="..\..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\..\source\System.cpp" />
-    <ClCompile Include="..\..\source\TaskCompletionSource.cpp" />
     <ClCompile Include="..\..\source\unix\ClockImpl.cpp" />
   </ItemGroup>
   <ItemGroup>

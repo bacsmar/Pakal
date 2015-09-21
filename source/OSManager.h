@@ -12,24 +12,27 @@
 #include "math/tm.h"
 
 #include "TaskCompletionSource.h"
+#include "IManager.h"
 
 #ifdef PAKAL_ANDROID_PLATFORM
 	#include "android/OsWrapperAndroid.h"
 	#define OsWrapperImpl Pakal::OsWrapperAndroid
 #else
-	class OsDummyWrapper{};
+class OsDummyWrapper{};
 	typedef OsDummyWrapper OsWrapperImpl;
 #endif
 
 namespace Pakal
 {
 
-	class _PAKALExport OSManager : public OsWrapperImpl
-	{		
+	class _PAKALExport OSManager : public OsWrapperImpl, public IManager
+	{	
 		template <class OSManager> friend class SingletonHolder;
 		friend class Engine;
 		friend class OsWrapperImpl;
-	public :		
+	public :			
+		void initialize() override;
+		void terminate() override;	
 
 		struct WindowImpl
 		{
