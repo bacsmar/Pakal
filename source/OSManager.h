@@ -29,14 +29,13 @@ namespace Pakal
 		template <class OSManager> friend class SingletonHolder;
 		friend class Engine;
 		friend class OsWrapperImpl;
-	public :
+	public :		
 
-
-		class WindowImpl
+		struct WindowImpl
 		{
-		public:
 			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
-			virtual ~WindowImpl() {}
+			virtual void	process_os_events() = 0;
+			virtual ~WindowImpl(){}
 		};
 
 		struct WindowArgs
@@ -45,23 +44,25 @@ namespace Pakal
 			unsigned size_x;
 			unsigned size_y;
 		};
-			
-		Event<OSManager, WindowArgs>	event_window_created;
-		Event<OSManager, WindowArgs>	event_window_destroyed;
-		Event<OSManager, WindowArgs>	event_window_redraw_needed;
-		Event<OSManager, WindowArgs>	event_window_resized;
-		Event<OSManager, bool>			event_window_focused;
-		Event<OSManager, void>			event_app_finished;
-		Event<OSManager, void>			event_app_paused;
-		Event<OSManager, void>			event_app_resumed;
-		Event<OSManager, void>			event_app_started;
-		Event<OSManager, void>			event_app_stoped;
+
+		
+		Event<OSManager,WindowArgs>	event_window_created;
+		Event<OSManager,WindowArgs>	event_window_destroyed;
+		Event<OSManager,WindowArgs>	event_window_redraw_needed;
+		Event<OSManager,WindowArgs>	event_window_resized;
+		Event<OSManager,bool>		event_window_focused;
+		Event<OSManager,void>		event_app_finished;
+		Event<OSManager,void>		event_app_paused;
+		Event<OSManager,void>		event_app_resumed;
+		Event<OSManager,void>		event_app_started;
+		Event<OSManager,void>		event_app_stoped;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  process_os_events();
 
 		void on_window_created(const WindowArgs& arg);
-		void on_window_destroyed(const WindowArgs& arg);
+		void on_window_destroyed(const WindowArgs& arg);		
+		void on_app_finished();
 
 	protected:		
 		WindowImpl* m_windowImpl;

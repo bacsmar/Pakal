@@ -11,6 +11,7 @@
 
 #include <android/window.h>
 #include <android/native_activity.h>
+#include <android/configuration.h>
 
 namespace Pakal
 {
@@ -22,7 +23,8 @@ namespace Pakal
 		OsWrapperAndroid();		
 	public:
 		static void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize);
-		ANativeActivity* activity;
+		ANativeActivity*	activity;
+		AConfiguration*		configuration;
 	};
 
 

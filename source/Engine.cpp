@@ -69,14 +69,7 @@ void Engine::run(IPakalApplication* application)
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
-	m_input_manager->initialize();
-
-	//listen for os termination event
-	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]() { m_running_loop = false; });	
-	auto focusedListenerId = get_os_manager()->event_window_focused.add_listener([this](bool focus)
-	{
-		focus == true ? on_resume() : on_pause();
-	});
+	m_input_manager->initialize();	
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -86,9 +79,15 @@ void Engine::run(IPakalApplication* application)
 	}
 	TaskUtils::wait_all(initializationTasks);
 
-
 	// Initialize engine
 	initialize();
+
+	//listen for os events
+	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]() { m_running_loop = false; });
+	auto focusedListenerId = get_os_manager()->event_window_focused.add_listener([this](bool focus)
+	{
+		focus ? resume() : pause();
+	});
 	
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> nonThreadedSystems;
@@ -102,27 +101,21 @@ void Engine::run(IPakalApplication* application)
 		if (!s->is_threaded())
 			nonThreadedSystems.push_back(s);
 	}
-
-	//long long delta = 0;
-
+	
 	//do the loop
 	while(m_running_loop)
 	{
-		//auto start = std::chrono::system_clock::now();		
-		Pakal::Clock clock;
+		Clock clock;
 
 		for (auto s : nonThreadedSystems)
 		{
 			if (s->get_state() != SystemState::Terminated) 
 			{
-				s->update(clock.restart().asMilliseconds());
-				//s->update( delta );
+				s->update(clock.restart().asMilliseconds());	
 			}
 		}
 
-		get_os_manager()->process_os_events();
-		//auto end = std::chrono::system_clock::now();		
-		//delta = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+		get_os_manager()->process_os_events();		
 	}
 	
 	//terminate engine

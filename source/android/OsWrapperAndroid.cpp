@@ -1,5 +1,6 @@
 #include "OsWrapperAndroid.h"
 #include "OSManager.h"
+#include <android/configuration.h>
 
 using namespace Pakal;
 
@@ -107,7 +108,12 @@ namespace Pakal
 	}
 	void onConfigurationChanged(ANativeActivity* activity)
 	{
-		
+		AConfiguration *config = get_osWrapper()->configuration;
+
+		AConfiguration_getOrientation(config);
+		AConfiguration_fromAssetManager(config,
+			activity->assetManager);
+		//print_cur_config(android_app);
 	}
 	void* onSaveInstanceState(ANativeActivity* activity, size_t* outSize)
 	{
@@ -121,10 +127,12 @@ namespace Pakal
 
 OsWrapperAndroid::~OsWrapperAndroid()
 {
+	AConfiguration_delete(configuration);
 }
 
 OsWrapperAndroid::OsWrapperAndroid()
 {
+	configuration = AConfiguration_new();
 }
 //
 
