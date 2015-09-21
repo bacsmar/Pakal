@@ -82,6 +82,16 @@ public:
 	}
 };
 
+void OSManager::initialize()
+{
+	m_windowImpl = new WindowCreatorSFML(this);
+}
+
+void OSManager::terminate()
+{
+	SAFE_DEL(m_windowImpl);
+}
+
 TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {	
 	WindowArgs args;
@@ -160,11 +170,9 @@ OSManager& OSManager::instance()
 }
 
 OSManager::~OSManager()
-{
-	SAFE_DEL(m_windowImpl);
+{	
 }
 
 OSManager::OSManager()
-{
-	m_windowImpl = new WindowCreatorSFML(this);
+{	
 }

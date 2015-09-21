@@ -64,8 +64,9 @@ void Engine::run(IPakalApplication* application)
 
 	m_application = application;
 	m_running_loop = true;
-
+	
 	//Initialize managers
+	get_os_manager()->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
@@ -143,6 +144,7 @@ void Engine::run(IPakalApplication* application)
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
 	m_input_manager->terminate();
+	get_os_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
 OSManager* Engine::get_os_manager() const
