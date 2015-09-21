@@ -19,8 +19,7 @@ namespace Pakal
 		friend class EventScheduler;
 		template <class T> friend class TaskCompletionSource;
 
-		std::function<void()> m_job;
-		std::atomic_bool	 m_completed;
+
 	protected:
 		struct ContinuationData
 		{
@@ -29,24 +28,44 @@ namespace Pakal
 			ContinuationData(BasicTaskPtr task, const std::thread::id &td) : continuation(task), tid(td)  { }
 		}; 
 
+		std::function<void()> m_job;
 		std::list<ContinuationData> m_continuations;
 		std::mutex m_continuation_mutex;
+		std::atomic_bool	 m_completed;
 
-		inline void set_completed();
 		void  queue_continuations();
-		virtual void run();
+		void run();
 
+		
 	public:
-		inline bool is_completed() { return m_completed; }
 
 		explicit BasicTask()  { m_completed = true; }
 		explicit BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
 		virtual ~BasicTask() {};
 
+		inline bool is_completed() { return m_completed; }
 		void wait();		
 
 		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = NULL_THREAD);
 
+		template<typename TReturn>
+		TaskPtr<TReturn> continue_with(const std::function<TReturn()>& callBack, std::thread::id callBackThread = NULL_THREAD);
 	};
 
+	template<typename TReturn>
+	TaskPtr<TReturn> BasicTask::continue_with(const std::function<TReturn()>& callBack, std::thread::id callBackThread) 
+	{
+		auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(); });
+
+		m_continuation_mutex.lock();
+		m_continuations.push_back(ContinuationData(task, callBackThread));
+		m_continuation_mutex.unlock();
+
+		if (is_completed())
+		{
+			queue_continuations();
+		}
+
+		return task;
+	}
 }
