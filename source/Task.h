@@ -30,8 +30,7 @@ namespace Pakal
 
 		~Task() { }
 
-
-		inline TArgs result()
+		inline const TArgs& result()
 		{
 			wait();
 			return m_result;
@@ -42,13 +41,11 @@ namespace Pakal
 		{
 			auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(m_result);  });
 
-			m_continuation_mutex.lock();
-			m_continuations.push_back(ContinuationData(task, callBackThread));
-			m_continuation_mutex.unlock();
-
+			queue_continuation(ContinuationData(task, callBackThread));
+			
 			if (is_completed())
 			{
-				queue_continuations();
+				run_continuations();
 			}
 
 			return task;
@@ -58,13 +55,11 @@ namespace Pakal
 		{
 			auto task = std::make_shared<BasicTask>([=]() {  callBack(m_result);  });
 
-			m_continuation_mutex.lock();
-			m_continuations.push_back(ContinuationData(task, callBackThread));
-			m_continuation_mutex.unlock();
-
+			queue_continuation(ContinuationData(task, callBackThread));
+			
 			if (is_completed())
 			{
-				queue_continuations();
+				run_continuations();
 			}
 
 			return task;

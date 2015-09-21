@@ -2,7 +2,6 @@
 #include "Config.h"
 #include "TaskFwd.h"
 
-
 #include <functional>
 #include <thread>
 #include <atomic>
@@ -19,24 +18,26 @@ namespace Pakal
 		friend class EventScheduler;
 		template <class T> friend class TaskCompletionSource;
 
-
 	protected:
 		struct ContinuationData
 		{
 			BasicTaskPtr continuation;
 			std::thread::id tid;
-			ContinuationData(BasicTaskPtr task, const std::thread::id &td) : continuation(task), tid(td)  { }
-		}; 
+			ContinuationData(BasicTaskPtr task, const std::thread::id &td) : continuation(task), tid(td) { }
+		};
 
 		std::function<void()> m_job;
-		std::list<ContinuationData> m_continuations;
-		std::mutex m_continuation_mutex;
-		std::atomic_bool	 m_completed;
 
-		void  queue_continuations();
+		void queue_continuation(const ContinuationData&& continuation);
+		void run_continuations();
 		void run();
 
-		
+	private:
+
+		std::atomic_bool	 m_completed;
+		std::list<ContinuationData> m_continuations;
+		std::mutex m_continuation_mutex;
+
 	public:
 
 		explicit BasicTask()  { m_completed = true; }
@@ -57,13 +58,11 @@ namespace Pakal
 	{
 		auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(); });
 
-		m_continuation_mutex.lock();
-		m_continuations.push_back(ContinuationData(task, callBackThread));
-		m_continuation_mutex.unlock();
-
+		queue_continuation(ContinuationData(task, callBackThread));
+		
 		if (is_completed())
 		{
-			queue_continuations();
+			run_continuations();
 		}
 
 		return task;
