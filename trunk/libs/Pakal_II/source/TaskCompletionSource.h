@@ -38,7 +38,7 @@ namespace Pakal
 	public:
 		explicit TaskCompletionSource()
 		{
-			m_task = std::make_shared <Task<T>>([this]() { return m_result; });
+			m_task = std::make_shared<Task<T>>([this]() { return m_result; });
 		};
 
 		inline TaskPtr<T> get_task()

@@ -1,6 +1,4 @@
 #include "System.h"
-#include <chrono>
-//#include <ctime>
 #include "Clock.h"
 
 #include "EventScheduler.h"
@@ -14,7 +12,7 @@ namespace Pakal
 
 		while (m_dispatcher_ready == false) {}
 				
-		Pakal::Clock clock;
+		Clock clock;
 
 		while(m_state != SystemState::Terminated)
 		{

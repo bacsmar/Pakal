@@ -3,22 +3,27 @@
 
 namespace Pakal
 {
-
-	void BasicTask::queue_continuations()
+	void BasicTask::run_continuations()
 	{
 		auto currentTid = THIS_THREAD;
 
 		std::lock_guard<std::mutex> lock(m_continuation_mutex);
 
-		for(auto& c : m_continuations )
+		for (auto& c : m_continuations)
 		{
 			if (c.tid == NULL_THREAD)
 			{
 				c.tid = currentTid;
 			}
-			EventScheduler::instance().execute_in_thread(c.continuation,c.tid);
+			EventScheduler::instance().execute_in_thread(c.continuation, c.tid);
 		}
 		m_continuations.clear();
+	}
+
+	void BasicTask::queue_continuation(const ContinuationData&& continuation)
+	{
+		std::lock_guard<std::mutex> lock(m_continuation_mutex);
+		m_continuations.push_back(continuation);
 	}
 
 	void BasicTask::run()
@@ -27,7 +32,7 @@ namespace Pakal
 
 		m_job();		
 		m_completed = true;
-		queue_continuations();
+		run_continuations();
 	}
 
 	void BasicTask::wait() 
@@ -39,13 +44,11 @@ namespace Pakal
 	{
 		auto task =	std::make_shared<BasicTask>(callBack);
 
-		m_continuation_mutex.lock();
-		m_continuations.push_back(ContinuationData(task,callBackThread));
-		m_continuation_mutex.unlock();
+		queue_continuation(ContinuationData(task, callBackThread));
 
 		if (is_completed())
 		{
-			queue_continuations();
+			run_continuations();
 		}
 
 		return task;
