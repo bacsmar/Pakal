@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
+#include <future>
 
 #include <TaskFwd.h>
 #include "Task.h"
@@ -49,8 +50,6 @@ namespace Pakal
 
 			return find_inbox_for_thread(tid)->push_task(fn);
 		}
-		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
-
 		template<typename TArgs>
 		void execute_in_thread( TaskPtr<TArgs> task, std::thread::id tid)
 		{
@@ -61,6 +60,20 @@ namespace Pakal
 			else
 				find_inbox_for_thread(tid)->push_task(task);
 		}
+
+		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);
 		void execute_in_thread(BasicTaskPtr task, std::thread::id tid);
+
+		BasicTaskPtr execute_in_worker(const std::function<void()>& fn);
+
+		template<typename TArgs>
+		TaskPtr<TArgs> execute_in_worker(const std::function<TArgs()>& fn)
+		{
+			auto task = std::make_shared<Task<TArgs>>(fn);
+
+			std::async(std::launch::async, [=]() { task->run(); });
+
+			return task;
+		}
 	};
 }
