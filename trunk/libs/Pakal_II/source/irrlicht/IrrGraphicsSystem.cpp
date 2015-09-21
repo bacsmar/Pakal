@@ -76,7 +76,7 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	SAFE_DEL(m_render_info);
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::setup_window(const OSManager::WindowArgs& args)
+void IrrGraphicsSystem::setup_driver(const OSManager::WindowArgs& args)
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
@@ -87,7 +87,7 @@ void IrrGraphicsSystem::setup_window(const OSManager::WindowArgs& args)
 	parameters.Vsync =  m_settings.vsync;
 	parameters.DriverType = EDT_OPENGL;
 	parameters.WindowId = (void*)args.windowId;	
-	parameters.WindowSize = dimension2di(args.size_x, args.size_y);
+	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
 
 #ifdef PAKAL_ANDROID_PLATFORM
 	parameters.DriverType = EDT_OGLES2;	
@@ -122,8 +122,7 @@ void IrrGraphicsSystem::setup_window(const OSManager::WindowArgs& args)
 	{
 		device->getContextManager()->destroySurface();
 		m_window_initialized = false;
-	}
-	);
+	}, THIS_THREAD);
 
 	//// next time we only need to recreate the openGL context
 	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](OSManager::WindowArgs args)
@@ -134,8 +133,7 @@ void IrrGraphicsSystem::setup_window(const OSManager::WindowArgs& args)
 		event.UserEvent.UserData2 = args.windowId;
 		device->postEventFromUser(event);
 		m_window_initialized = true;
-	}
-	, THIS_THREAD);
+	}, THIS_THREAD);
 
 	m_window_initialized = true;
 
@@ -145,7 +143,7 @@ void IrrGraphicsSystem::on_init_graphics()
 {
 	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->continue_with([this](const OSManager::WindowArgs& args)
 	{
-		setup_window(args);
+		setup_driver(args);
 	},THIS_THREAD)-> wait();
 }
 //////////////////////////////////////////////////////////////////////////

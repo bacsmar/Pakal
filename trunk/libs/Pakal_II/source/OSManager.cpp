@@ -8,10 +8,12 @@ using namespace Pakal;
 
 class WindowCreatorSFML : public OSManager::WindowImpl
 {
+	OSManager*	m_os_manager;
+	void*		m_window_handle;	
+	bool		m_window_created;
+	sf::Window	m_window;
 public:
-	void*		m_window_handle;
-	sf::Window m_window;
-	bool m_window_created;
+	explicit WindowCreatorSFML(OSManager* manager) : m_os_manager(manager), m_window_handle(nullptr), m_window_created(false) { }	
 
 	unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel) override
 	{
@@ -26,6 +28,47 @@ public:
 			m_window_handle = m_window.getSystemHandle();
 			return reinterpret_cast<unsigned>(m_window_handle);
 	}	
+	void process_os_events() override
+	{		
+		if (!m_window_created) return;
+
+		sf::Event e;
+		while (m_window.pollEvent(e))
+		{
+			switch (e.type)
+			{
+			case sf::Event::Closed:
+				m_os_manager->on_app_finished();
+				break;
+			case sf::Event::Resized:				
+				break;
+			case sf::Event::LostFocus:				
+				break;
+			case sf::Event::GainedFocus:				
+				break;
+			case sf::Event::TextEntered: break;
+			case sf::Event::KeyPressed: break;
+			case sf::Event::KeyReleased: break;
+			case sf::Event::MouseWheelMoved: break;
+			case sf::Event::MouseWheelScrolled: break;
+			case sf::Event::MouseButtonPressed: break;
+			case sf::Event::MouseButtonReleased: break;
+			case sf::Event::MouseMoved: break;
+			case sf::Event::MouseEntered: break;
+			case sf::Event::MouseLeft: break;
+			case sf::Event::JoystickButtonPressed: break;
+			case sf::Event::JoystickButtonReleased: break;
+			case sf::Event::JoystickMoved: break;
+			case sf::Event::JoystickConnected: break;
+			case sf::Event::JoystickDisconnected: break;
+			case sf::Event::TouchBegan: break;
+			case sf::Event::TouchMoved: break;
+			case sf::Event::TouchEnded: break;
+			case sf::Event::SensorChanged: break;
+			default: break;
+			}
+		}
+	}
 };
 
 TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
@@ -54,42 +97,14 @@ void OSManager::on_window_destroyed(const WindowArgs& arg)
 	event_window_destroyed.notify(arg);
 }
 
+void OSManager::on_app_finished()
+{
+	event_app_finished.notify();
+}
+
 void OSManager::process_os_events()
 {
-	auto window = static_cast<WindowCreatorSFML*>(m_windowImpl);
-	if (!window->m_window_created) return;
-		
-		sf::Event e;
-		while (window->m_window.pollEvent(e))
-		{
-			switch (e.type)
-			{
-			case sf::Event::Closed: break;
-			case sf::Event::Resized: break;
-			case sf::Event::LostFocus: break;
-			case sf::Event::GainedFocus: break;
-			case sf::Event::TextEntered: break;
-			case sf::Event::KeyPressed: break;
-			case sf::Event::KeyReleased: break;
-			case sf::Event::MouseWheelMoved: break;
-			case sf::Event::MouseWheelScrolled: break;
-			case sf::Event::MouseButtonPressed: break;
-			case sf::Event::MouseButtonReleased: break;
-			case sf::Event::MouseMoved: break;
-			case sf::Event::MouseEntered: break;
-			case sf::Event::MouseLeft: break;
-			case sf::Event::JoystickButtonPressed: break;
-			case sf::Event::JoystickButtonReleased: break;
-			case sf::Event::JoystickMoved: break;
-			case sf::Event::JoystickConnected: break;
-			case sf::Event::JoystickDisconnected: break;
-			case sf::Event::TouchBegan: break;
-			case sf::Event::TouchMoved: break;
-			case sf::Event::TouchEnded: break;
-			case sf::Event::SensorChanged: break;
-			default: break;
-			}
-		}
+	m_windowImpl->process_os_events();
 }
 
 OSManager& OSManager::instance()
@@ -105,5 +120,5 @@ OSManager::~OSManager()
 
 OSManager::OSManager()
 {
-	m_windowImpl = new WindowCreatorSFML();
+	m_windowImpl = new WindowCreatorSFML(this);
 }

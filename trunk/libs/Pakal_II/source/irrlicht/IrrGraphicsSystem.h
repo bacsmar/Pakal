@@ -76,7 +76,7 @@ namespace Pakal
 		void on_resume_graphics() override;
 
 
-		void setup_window(const OSManager::WindowArgs& args);
+		void setup_driver(const OSManager::WindowArgs& args);
 
 		void begin_scene();
 		void draw();
