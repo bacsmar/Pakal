@@ -4,12 +4,6 @@
 namespace Pakal
 {
 
-	void BasicTask::set_completed() 
-	{
-		ASSERT(!m_completed);
-		m_completed = true;
-	}
-
 	void BasicTask::queue_continuations()
 	{
 		auto currentTid = THIS_THREAD;
@@ -31,8 +25,8 @@ namespace Pakal
 	{
 		ASSERT(is_completed() == false);
 
-		m_job();
-		set_completed();
+		m_job();		
+		m_completed = true;
 		queue_continuations();
 	}
 
@@ -56,4 +50,7 @@ namespace Pakal
 
 		return task;
 	}
+
+
+
 }

@@ -15,34 +15,21 @@ namespace Pakal
 	template<class TArgs>
 	class _PAKALExport Task final : public BasicTask
 	{
-		static_assert(!std::is_void<TArgs>::value, "void type is not allowed");
-		
+		static_assert(!std::is_void<TArgs>::value, "void type is not allowed");		
 		template <class T> friend class TaskCompletionSource;
+
+		TArgs						m_result;
 
 	public:
 
-		explicit Task(const std::function<TArgs(void)>& job) : BasicTask(nullptr),  m_job(job) {}
+		explicit Task(const std::function<TArgs(void)>& job) : BasicTask(nullptr)
+		{
+			m_job = [=]() { m_result = job(); };
+		}
 		explicit Task(const TArgs& result) : m_result(result) {}
 
 		~Task() { }
 
-
-	private:
-
-		std::function<TArgs(void)>	m_job;
-		TArgs						m_result;
-
-	protected:
-		inline void run() override
-		{
-			ASSERT(is_completed() == false);
-
-			m_result = m_job();			
-			set_completed();
-			queue_continuations();
-		}
-
-	public:
 
 		inline TArgs result()
 		{
@@ -50,9 +37,8 @@ namespace Pakal
 			return m_result;
 		}
 
-
 		template <class TReturn>
-		std::shared_ptr<Task<TReturn>> continue_with(const std::function<TReturn(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
+		TaskPtr<TReturn> continue_with(const std::function<TReturn(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
 			auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(m_result);  });
 
@@ -67,7 +53,6 @@ namespace Pakal
 
 			return task;
 		}
-
 
 		BasicTaskPtr continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{

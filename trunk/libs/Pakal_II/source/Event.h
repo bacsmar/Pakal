@@ -37,8 +37,7 @@ namespace Pakal
 		};
 
 		template <class TArgs>
-		class
-			_PAKALExport Event_t
+		class _PAKALExport Event_t
 		{
 			std::unordered_map<unsigned int, DelegateData<TArgs>> m_delegates;
 			bool m_enabled;
