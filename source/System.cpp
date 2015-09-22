@@ -67,8 +67,8 @@ namespace Pakal
 
 		return EventScheduler::instance().execute_in_thread([this]()
 		{
-			m_state = SystemState::Running;
 			on_initialize();
+			m_state = SystemState::Running;
 		},m_dispatcher.thread_id());
 
 	}
@@ -79,12 +79,12 @@ namespace Pakal
 
 		return EventScheduler::instance().execute_in_thread([this]()
 		{
-			m_dispatcher.dispatch_tasks(); //for both lists
+			m_dispatcher.dispatch_tasks();
 			m_dispatcher.dispatch_tasks(); //for both lists
 			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 
-			m_state = SystemState::Terminated;
 			on_terminate();
+			m_state = SystemState::Terminated;
 
 			if (is_threaded())
 			{
@@ -98,9 +98,11 @@ namespace Pakal
 	{
 		ASSERT(m_state == SystemState::Running);
 
-		m_state = SystemState::Paused;
-
-		return EventScheduler::instance().execute_in_thread(std::bind(&System::on_pause,this),m_dispatcher.thread_id());
+		return EventScheduler::instance().execute_in_thread([this]()
+		{
+			on_pause();
+			m_state = SystemState::Paused;
+		}, m_dispatcher.thread_id());
 	}
 
 	BasicTaskPtr System::resume()
