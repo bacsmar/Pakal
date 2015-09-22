@@ -43,6 +43,7 @@ namespace Pakal
 
 		struct WindowArgs
 		{
+			WindowArgs() : windowId(0), size_x(0), size_y(0){}
 			unsigned windowId;
 			unsigned size_x;
 			unsigned size_y;

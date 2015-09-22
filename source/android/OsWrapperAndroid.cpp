@@ -111,8 +111,7 @@ namespace Pakal
 		AConfiguration *config = get_osWrapper()->configuration;
 
 		AConfiguration_getOrientation(config);
-		AConfiguration_fromAssetManager(config,
-			activity->assetManager);
+		AConfiguration_fromAssetManager(config, activity->assetManager);
 		//print_cur_config(android_app);
 	}
 	void* onSaveInstanceState(ANativeActivity* activity, size_t* outSize)
@@ -139,7 +138,7 @@ OsWrapperAndroid::OsWrapperAndroid()
 void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize)
 {
 	// let sfml register the activity and stuff.. but.. 
-	if (savedState != NULL)
+	if (Pakal::OSManagerInstance == nullptr)
 	{
 		sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);
 	}
