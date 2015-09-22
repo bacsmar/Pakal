@@ -20,13 +20,10 @@ namespace Pakal
 	class SoundManager;
 	class ResourceManager;
 	class IInputManager;
-	//class OSManager;
 
 	class _PAKALExport Engine final : public System
 	{
 		using System::initialize;
-
-		bool m_running_loop;
 
 	public:
 
@@ -57,7 +54,7 @@ namespace Pakal
 		inline IPakalApplication*	get_application() const { return m_application; }
 		inline SoundManager*		get_sound_manager() const { return m_sound_manager; }
 		inline IInputManager*		get_input_manager() const { return m_input_manager; }
-		OSManager*			get_os_manager() const;
+		inline OSManager*			get_os_manager()  { return &OSManager::instance(); } 
 
 		const char* get_system_name() override { return "Engine"; };
 
@@ -75,9 +72,9 @@ namespace Pakal
 			m_systems.erase(std::find(m_systems.begin(),m_systems.end(), system));
 		}
 
-	protected:
+	private:
 
-		void on_update(long long dt) override;
+		void on_update(long long dt) override {};
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;
@@ -95,5 +92,7 @@ namespace Pakal
 
 		std::vector<ISystem*> m_systems;
 
+		unsigned m_listener_terminate;
+		unsigned m_listener_focus;
 	};
 }

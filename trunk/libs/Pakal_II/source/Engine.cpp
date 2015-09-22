@@ -28,7 +28,6 @@ Engine::~Engine()
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
 	System(settings.uses_thread),
-	m_running_loop(false),
 	m_application(nullptr),
 	m_graphics_system(nullptr),
 	m_physics_system(nullptr),
@@ -63,14 +62,13 @@ void Engine::run(IPakalApplication* application)
 	LOG_WARNING("Running unnamed application ");
 
 	m_application = application;
-	m_running_loop = true;
 	
 	//Initialize managers
 	get_os_manager()->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
-	m_input_manager->initialize();	
+	m_input_manager->initialize();
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -83,22 +81,15 @@ void Engine::run(IPakalApplication* application)
 	// Initialize engine
 	initialize();
 
-	//listen for os events
-	auto listenderId = get_os_manager()->event_app_finished.add_listener([this]()
-	{
-		m_running_loop = false;
-	});
-	auto focusedListenerId = get_os_manager()->event_window_focused.add_listener([this](bool focus)
-	{
-		focus ? resume() : pause();
-	});
-	
+
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> nonThreadedSystems;
-	nonThreadedSystems.reserve(m_systems.size() + 1);
+	nonThreadedSystems.reserve(m_systems.size());
 
 	if (!is_threaded())
+	{
 		nonThreadedSystems.push_back(this);
+	}
 
 	for (auto s : m_systems)
 	{
@@ -107,24 +98,18 @@ void Engine::run(IPakalApplication* application)
 	}
 	
 	//do the loop
-	while(m_running_loop)
+	while(get_state() != SystemState::Terminated)
 	{
 		Clock clock;
 
 		for (auto s : nonThreadedSystems)
-		{
 			if (s->get_state() != SystemState::Terminated) 
 			{
 				s->update(clock.restart().asMilliseconds());	
 			}
-		}
 
 		get_os_manager()->process_os_events();		
 	}
-	
-	//terminate engine
-	if (get_state() != SystemState::Terminated)
-		terminate()->wait();
 
 	//terminate systems
 	std::vector<BasicTaskPtr> terminationTasks;
@@ -135,9 +120,6 @@ void Engine::run(IPakalApplication* application)
 			terminationTasks.push_back(s->terminate());
 	}
 	TaskUtils::wait_all(terminationTasks);
-	
-	get_os_manager()->event_app_finished.remove_listener(listenderId);	
-	get_os_manager()->event_window_focused.remove_listener(focusedListenerId);
 
 	//terminate managers
 	m_sound_manager->terminate();
@@ -146,28 +128,24 @@ void Engine::run(IPakalApplication* application)
 	m_input_manager->terminate();
 	get_os_manager()->terminate();
 }
-//////////////////////////////////////////////////////////////////////////
-OSManager* Engine::get_os_manager() const
-{
-	return &OSManager::instance();
-}
-
-void Engine::on_update(long long dt)
-{
-	//std::this_thread::sleep_for(std::chrono::seconds(1));
-}
 
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
+	//listen for os events
+	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]() { terminate()->wait(); });
+	m_listener_focus = get_os_manager()->event_window_focused.add_listener([this](bool focus) { focus ?  resume()->wait() :  pause()->wait(); });
+
 	m_application->setup_environment(this);
 	m_application->start(m_game_state_manager);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
+	get_os_manager()->event_app_finished.remove_listener(m_listener_terminate);
+	get_os_manager()->event_window_focused.remove_listener(m_listener_focus);
+
 	m_application->end(m_game_state_manager);
-	m_running_loop = false;  
 }
 //////////////////////////////////////////////////////////////////////////
 
