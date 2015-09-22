@@ -79,8 +79,7 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(initializationTasks);
 
 	// Initialize engine
-	initialize();
-
+	initialize()->wait();
 
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> nonThreadedSystems;
@@ -97,18 +96,22 @@ void Engine::run(IPakalApplication* application)
 			nonThreadedSystems.push_back(s);
 	}
 	
-	//do the loop
-	while(get_state() != SystemState::Terminated)
-	{
-		Clock clock;
 
+	//do the loop
+	Clock clock;
+	long long dt = 0;
+
+	while (get_state() != SystemState::Terminated)
+	{
 		for (auto s : nonThreadedSystems)
-			if (s->get_state() != SystemState::Terminated) 
+			if (s->get_state() != SystemState::Terminated)
 			{
-				s->update(clock.restart().asMilliseconds());	
+				s->update(dt);
 			}
 
-		get_os_manager()->process_os_events();		
+		get_os_manager()->processs_window_events();
+
+		dt = clock.restart().asMilliseconds();
 	}
 
 	//terminate systems
@@ -133,8 +136,17 @@ void Engine::run(IPakalApplication* application)
 void Engine::on_initialize()
 {
 	//listen for os events
-	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]() { terminate()->wait(); });
-	m_listener_focus = get_os_manager()->event_window_focused.add_listener([this](bool focus) { focus ?  resume()->wait() :  pause()->wait(); });
+	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]()
+	{
+		terminate()->wait();
+	});
+	m_listener_focus = get_os_manager()->event_window_focused.add_listener([this](bool focused)
+	{
+		if (get_state() == SystemState::Running && !focused)
+			pause()->wait();
+		else if (get_state() == SystemState::Paused && focused)
+			resume()->wait();
+	});
 
 	m_application->setup_environment(this);
 	m_application->start(m_game_state_manager);	

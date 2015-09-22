@@ -3,7 +3,7 @@
 namespace Pakal
 {
 
-	BasicTaskPtr InboxQueue::push_task(const std::function<void()>& jobDelegate)
+	BasicTaskPtr InboxTask::push_task(const std::function<void()>& jobDelegate)
 	{
 		ASSERT(this);
 
@@ -16,7 +16,7 @@ namespace Pakal
 		return taskPtr;
 	}
 
-	void InboxQueue::push_task(BasicTaskPtr task)
+	void InboxTask::push_task(BasicTaskPtr task)
 	{
 		ASSERT(this);
 		m_inbox.push(task);

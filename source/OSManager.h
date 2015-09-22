@@ -61,7 +61,7 @@ namespace Pakal
 		Event<OSManager,void>		event_app_stoped;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
-		virtual void  process_os_events();
+		virtual void  processs_window_events();
 
 		void on_window_created(const WindowArgs& arg);
 		void on_window_destroyed(const WindowArgs& arg);

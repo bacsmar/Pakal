@@ -15,7 +15,7 @@
 namespace Pakal
 {
 
-	class InboxQueue;
+	class InboxTask;
 	class AsyncTaskDispatcher;
 
 
@@ -23,11 +23,11 @@ namespace Pakal
 	{
 		template <class EventScheduler> friend class SingletonHolder;
 
-		std::unordered_map<std::thread::id, InboxQueue*> m_inboxes;
+		std::unordered_map<std::thread::id, InboxTask*> m_inboxes;
 		std::unordered_set<AsyncTaskDispatcher*> m_dispatchers;
 		std::mutex m_mutex;
 
-		InboxQueue* find_inbox_for_thread(std::thread::id tid);	
+		InboxTask* find_inbox_for_thread(std::thread::id tid);	
 
 		EventScheduler()  {}
 		virtual	~EventScheduler();

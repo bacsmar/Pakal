@@ -45,7 +45,7 @@ void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condit
 		while(!condition());
 }
 
-Pakal::InboxQueue* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id tid)
+Pakal::InboxTask* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id tid)
 {	
 	auto position = m_inboxes.find(tid);
 
@@ -88,7 +88,7 @@ void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* 
 
 	if (inbox == nullptr)
 	{
-		inbox = new InboxQueue(tid);
+		inbox = new InboxTask(tid);
 		m_inboxes[tid] = inbox;
 	}
 
