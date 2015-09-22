@@ -14,9 +14,9 @@ namespace Pakal
 	public:
 		explicit TaskCompletionSource()
 		{
-			m_task = std::make_shared<Task<T>>([this]() { return m_result; });
+			reset();
 		};
-
+		
 		inline TaskPtr<T> get_task()
 		{
 			return m_task;
@@ -27,10 +27,27 @@ namespace Pakal
 			m_result = result;
 			m_task->run();
 		};
+		~TaskCompletionSource()
+		{
+
+		}
+
+		TaskCompletionSource& operator=(TaskCompletionSource&& other) // move assignment
+		{			
+			reset();
+			return *this;
+		}
 
 	private:
+
+		inline void reset()
+		{
+			m_task = std::make_shared<Task<T>>([this](){ return m_result; });
+			m_result = {};
+		}
+
 		T m_result;
-		TaskPtr<T> m_task;
+		TaskPtr<T> m_task;		
 	};
 
 	template<>
