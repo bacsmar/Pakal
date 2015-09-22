@@ -15,7 +15,7 @@ namespace Pakal
 
 
 	class
-		_PAKALExport InboxQueue
+		_PAKALExport InboxTask
 	{
 		friend class EventScheduler;	
 		friend class AsyncTaskDispatcher;
@@ -28,7 +28,7 @@ namespace Pakal
 		std::thread::id m_tid;
 		InboxContainer m_inbox;
 
-		explicit InboxQueue(std::thread::id tid) : m_tid(tid) {};
+		explicit InboxTask(std::thread::id tid) : m_tid(tid) {};
 
 		template<class TOut>
 		std::shared_ptr<Task<TOut>> push_task(const std::function<TOut(void)> & jobDelegate)

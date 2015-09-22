@@ -60,8 +60,6 @@ ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_dat
 IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* windowManager)
 	: GraphicsSystem(settings), 
 	m_os_manager(windowManager),
-	m_window_initialized(false),
-	m_is_paused(false),
 	device(nullptr),
 	driver(nullptr),	
 	smgr(nullptr),
@@ -86,7 +84,7 @@ void IrrGraphicsSystem::setup_driver(const OSManager::WindowArgs& args)
 	parameters.Fullscreen =  m_settings.full_screen;
 	parameters.Vsync =  m_settings.vsync;
 	parameters.DriverType = EDT_OPENGL;
-	parameters.WindowId = (void*)args.windowId;	
+	parameters.WindowId = reinterpret_cast<void*>(args.windowId);	
 	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
 
 #ifdef PAKAL_ANDROID_PLATFORM
@@ -113,29 +111,25 @@ void IrrGraphicsSystem::setup_driver(const OSManager::WindowArgs& args)
 	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-3), vector3df(0,0,0));		
 
 	// setting up events
-	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs args)
+	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs a)
 	{
-		device->getVideoDriver()->OnResize(dimension2du(args.size_x,args.size_y));
+		device->getVideoDriver()->OnResize(dimension2du(a.size_x,a.size_y));
 	},THIS_THREAD);
 	
-	m_destroyed_callback_id = m_os_manager->event_window_destroyed.add_listener([this](OSManager::WindowArgs args)
+	m_destroyed_callback_id = m_os_manager->event_window_destroyed.add_listener([this](OSManager::WindowArgs a)
 	{
 		device->getContextManager()->destroySurface();
-		m_window_initialized = false;
 	}, THIS_THREAD);
 
 	//// next time we only need to recreate the openGL context
-	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](OSManager::WindowArgs args)
+	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](OSManager::WindowArgs a)
 	{
 		SEvent event;
 		event.EventType = irr::EET_USER_EVENT;
 		event.UserEvent.UserData1 = 0;	// for pakal IrrDevice 0 means... restar the context...
-		event.UserEvent.UserData2 = args.windowId;
+		event.UserEvent.UserData2 = a.windowId;
 		device->postEventFromUser(event);
-		m_window_initialized = true;
 	}, THIS_THREAD);
-
-	m_window_initialized = true;
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -205,12 +199,10 @@ void IrrGraphicsSystem::on_update_graphics(long long dt)
 
 void IrrGraphicsSystem::on_pause_graphics()
 {
-	m_is_paused = true;
 }
 
 void IrrGraphicsSystem::on_resume_graphics()
 {
-	m_is_paused = false;
 }
 
 //////////////////////////////////////////////////////////////////////////

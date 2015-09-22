@@ -46,6 +46,7 @@ namespace Pakal
 	{
 		using BaseClass = DoubleBufferedClass< std::queue<T, _Container> >;
 	public:
+
 		inline void push(T t)
 		{
 			std::lock_guard<std::mutex> lock(BaseClass::m_update_mutex);
@@ -73,7 +74,7 @@ namespace Pakal
 		inline void erase(T t)
 		{
 			std::lock_guard<std::mutex> lock(BaseClass::m_update_mutex);
-			BaseClass::m_push_list.erase(t);
+			BaseClass::m_pop_list.erase(t);
 		}
 	};
 

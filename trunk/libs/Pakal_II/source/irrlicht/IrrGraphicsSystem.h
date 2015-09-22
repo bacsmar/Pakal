@@ -52,12 +52,10 @@ namespace Pakal
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
 		
-		OSManager		*	m_os_manager;
+		OSManager*	m_os_manager;
 		unsigned m_resized_callback_id;
 		unsigned m_destroyed_callback_id;
 		unsigned m_created_callback_id;
-		bool m_window_initialized;
-		bool m_is_paused;
 
 		irr::IrrlichtDevice			* device;
 		irr::video::IVideoDriver	* driver;

@@ -27,10 +27,6 @@ namespace Pakal
 			m_result = result;
 			m_task->run();
 		};
-		~TaskCompletionSource()
-		{
-
-		}
 
 		TaskCompletionSource& operator=(TaskCompletionSource&& other) // move assignment
 		{			

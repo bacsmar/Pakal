@@ -7,7 +7,7 @@
 
 namespace Pakal 
 {
-	class InboxQueue;
+	class InboxTask;
 	class EventScheduler;
 
 	class _PAKALExport 
@@ -15,7 +15,7 @@ namespace Pakal
 	{
 		friend class EventScheduler;
 
-		InboxQueue* m_inbox;
+		InboxTask* m_inbox;
 
 	public:
 		~AsyncTaskDispatcher() {}

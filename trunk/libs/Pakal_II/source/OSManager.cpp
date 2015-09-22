@@ -40,7 +40,8 @@ public:
 		{
 			switch (e.type)
 			{
-			case sf::Event::Closed:			
+			case sf::Event::Closed:	
+				m_os_manager->on_window_destroyed(OSManager::WindowArgs());
 				m_os_manager->on_app_finished();
 				break;
 			case sf::Event::Resized:
@@ -114,7 +115,7 @@ void OSManager::on_window_created(const WindowArgs& arg)
 
 void OSManager::on_window_destroyed(const WindowArgs& arg)
 {
-	m_windows_setup_task = TaskCompletionSource<WindowArgs>();	// restart task
+	m_windows_setup_task = TaskCompletionSource<WindowArgs>();
 	event_window_destroyed.notify(arg);
 }
 
@@ -158,7 +159,7 @@ void OSManager::on_app_stoped()
 	event_app_stoped.notify();
 }
 
-void OSManager::process_os_events()
+void OSManager::processs_window_events()
 {
 	m_windowImpl->process_os_events();
 }

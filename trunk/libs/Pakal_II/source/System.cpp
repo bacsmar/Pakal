@@ -13,14 +13,18 @@ namespace Pakal
 		while (m_dispatcher_ready == false) {}
 				
 		Clock clock;
+		long long dt = 0;
 
 		while(m_state != SystemState::Terminated)
 		{
 			m_dispatcher.dispatch_tasks();
+			
 			if (m_state == SystemState::Running)
 			{
-				on_update(clock.restart().asMilliseconds() );
+				on_update(dt);
 			}
+
+			dt = clock.restart().asMilliseconds();
 		} 
 	}
 

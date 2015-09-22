@@ -35,15 +35,14 @@ namespace Pakal
 			int bits;
 			bool full_screen;
 			bool vsync;
-			bool uses_thread;
 
-			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false), uses_thread(false) {}
+			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}
 		};
 
 	protected:
 		Settings m_settings;
 
-		explicit GraphicsSystem(const Settings& settings) : System(settings.uses_thread), m_settings(settings) {  }
+		explicit GraphicsSystem(const Settings& settings) : System(false), m_settings(settings) {  }
 		virtual ~GraphicsSystem(){}
 
 
