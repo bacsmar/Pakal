@@ -74,6 +74,11 @@ public:
 			}
 		}
 	}
+	void wait_for_os_events() override
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		process_os_events();
+	}
 };
 
 void OSManager::initialize()
@@ -86,6 +91,11 @@ void OSManager::terminate()
 	SAFE_DEL(m_windowImpl);
 }
 
+void OSManager::wait_for_os_events()
+{
+	m_windowImpl->wait_for_os_events();
+}
+
 TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {	
 	WindowArgs args;
@@ -96,7 +106,7 @@ TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const 
 		args.size_y = dimensions.y;
 		on_window_created(args);
 		
-	}	
+	}
 	return m_windows_setup_task.get_task(); 
 }
 

@@ -32,12 +32,14 @@ namespace Pakal
 		friend class OsWrapperImpl;
 	public :			
 		void initialize() override;
-		void terminate() override;	
+		void terminate() override;
+		void wait_for_os_events();
 
 		struct WindowImpl
 		{
 			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
 			virtual void	process_os_events() = 0;
+			virtual void wait_for_os_events() = 0;
 			virtual ~WindowImpl(){}
 		};
 
