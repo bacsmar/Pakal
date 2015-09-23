@@ -111,16 +111,15 @@ void Engine::run(IPakalApplication* application)
 			}
 		}
 		
-		if (get_state() != SystemState::Paused)
+		if (get_state() == SystemState::Paused)
 		{
-			get_os_manager()->process_window_events();
+			get_os_manager()->wait_for_os_events();
+			clock.restart();
 		}
 		else
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			get_os_manager()->process_window_events();
-			clock.restart();
-		}		
+		}
 
 		dt = clock.restart().asMilliseconds();
 	}
