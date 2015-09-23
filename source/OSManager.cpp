@@ -28,14 +28,13 @@ public:
 			m_window_handle = m_window.getSystemHandle();
 			return reinterpret_cast<unsigned>(m_window_handle);
 	}	
-	void process_os_events(bool block) override
+	void process_os_events() override
 	{		
 		ASSERT(m_window_created);
 
 		sf::Event e;
-		while (block && m_window.waitEvent(e) ||  m_window.pollEvent(e))
+		while (m_window.pollEvent(e))
 		{
-			block = false;
 			switch (e.type)
 			{
 			case sf::Event::Closed:	
@@ -153,9 +152,9 @@ void OSManager::on_app_stoped()
 	event_app_stoped.notify();
 }
 
-void OSManager::process_window_events(bool block)
+void OSManager::process_window_events()
 {
-	m_windowImpl->process_os_events(block);
+	m_windowImpl->process_os_events();
 }
 
 OSManager& OSManager::instance()

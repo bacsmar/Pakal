@@ -37,7 +37,7 @@ namespace Pakal
 		struct WindowImpl
 		{
 			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
-			virtual void	process_os_events(bool block) = 0;
+			virtual void	process_os_events() = 0;
 			virtual ~WindowImpl(){}
 		};
 
@@ -62,7 +62,7 @@ namespace Pakal
 		Event<OSManager,void>		event_app_stoped;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
-		virtual void  process_window_events(bool block);
+		virtual void  process_window_events();
 
 		void on_window_created(const WindowArgs& arg);
 		void on_window_destroyed(const WindowArgs& arg);
