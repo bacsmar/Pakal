@@ -28,16 +28,14 @@ public:
 			m_window_handle = m_window.getSystemHandle();
 			return reinterpret_cast<unsigned>(m_window_handle);
 	}	
-	void process_os_events() override
+	void process_os_events(bool block) override
 	{		
-		if (!m_window_created)
-		{
-			return;
-		}
+		ASSERT(m_window_created);
 
 		sf::Event e;
-		while (m_window.pollEvent(e))
+		while (block && m_window.waitEvent(e) ||  m_window.pollEvent(e))
 		{
+			block = false;
 			switch (e.type)
 			{
 			case sf::Event::Closed:	
@@ -52,12 +50,8 @@ public:
 				m_os_manager->on_window_resized(args);
 			}
 			break;
-			case sf::Event::LostFocus:			
-				m_os_manager->on_window_focused(false);			
-				break;
-			case sf::Event::GainedFocus:
-				m_os_manager->on_window_focused(true);
-				break;
+			case sf::Event::LostFocus:	m_os_manager->on_window_focused(false);	break;
+			case sf::Event::GainedFocus: m_os_manager->on_window_focused(true); break;
 			case sf::Event::TextEntered: break;
 			case sf::Event::KeyPressed: break;
 			case sf::Event::KeyReleased: break;
@@ -159,9 +153,9 @@ void OSManager::on_app_stoped()
 	event_app_stoped.notify();
 }
 
-void OSManager::processs_window_events()
+void OSManager::process_window_events(bool block)
 {
-	m_windowImpl->process_os_events();
+	m_windowImpl->process_os_events(block);
 }
 
 OSManager& OSManager::instance()

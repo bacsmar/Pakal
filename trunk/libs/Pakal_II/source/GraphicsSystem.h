@@ -3,7 +3,8 @@
 
 #include "IComponentProvider.h"
 #include "System.h"
-#include  "math/tm.h"
+#include "math/tm.h"
+#include "OSManager.h"
 
 namespace Pakal
 {
@@ -41,12 +42,13 @@ namespace Pakal
 
 	protected:
 		Settings m_settings;
+		OSManager*	m_os_manager;
 
-		explicit GraphicsSystem(const Settings& settings) : System(false), m_settings(settings) {  }
+		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager) : System(false), m_settings(settings), m_os_manager(os_manager) {  }
 		virtual ~GraphicsSystem(){}
 
 
-		virtual void on_init_graphics() = 0;
+		virtual void on_init_graphics(const OSManager::WindowArgs& args) = 0;
 		virtual void on_update_graphics(long long dt) = 0;
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;

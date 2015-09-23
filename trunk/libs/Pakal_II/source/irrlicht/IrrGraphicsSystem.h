@@ -52,7 +52,6 @@ namespace Pakal
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
 		
-		OSManager*	m_os_manager;
 		unsigned m_resized_callback_id;
 		unsigned m_destroyed_callback_id;
 		unsigned m_created_callback_id;
@@ -67,14 +66,11 @@ namespace Pakal
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
 		virtual ~IrrGraphicsSystem();
 
-		void on_init_graphics() override;
+		void on_init_graphics(const OSManager::WindowArgs& args) override;
 		void on_terminate_graphics() override;
 		void on_update_graphics(long long dt) override;
 		void on_pause_graphics() override;
 		void on_resume_graphics() override;
-
-
-		void setup_driver(const OSManager::WindowArgs& args);
 
 		void begin_scene();
 		void draw();

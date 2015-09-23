@@ -104,12 +104,22 @@ void Engine::run(IPakalApplication* application)
 	while (get_state() != SystemState::Terminated)
 	{
 		for (auto s : nonThreadedSystems)
+		{
 			if (s->get_state() != SystemState::Terminated)
 			{
 				s->update(dt);
 			}
+		}
 
-		get_os_manager()->processs_window_events();
+		if (get_state() != SystemState::Paused)
+		{
+			get_os_manager()->process_window_events(false);
+		}
+		else
+		{
+			get_os_manager()->process_window_events(true);
+			clock.restart();
+		}
 
 		dt = clock.restart().asMilliseconds();
 	}
@@ -135,29 +145,16 @@ void Engine::run(IPakalApplication* application)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	//listen for os events
-	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]()
-	{
-		terminate()->wait();
-	});
-	m_listener_focus = get_os_manager()->event_window_focused.add_listener([this](bool focused)
-	{
-		if (get_state() == SystemState::Running && !focused)
-			pause()->wait();
-		else if (get_state() == SystemState::Paused && focused)
-			resume()->wait();
-	});
+	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]() { terminate(); });
 
-	m_application->setup_environment(this);
-	m_application->start(m_game_state_manager);	
+	m_application->start(this);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
 	get_os_manager()->event_app_finished.remove_listener(m_listener_terminate);
-	get_os_manager()->event_window_focused.remove_listener(m_listener_focus);
 
-	m_application->end(m_game_state_manager);
+	m_application->end(this);
 }
 //////////////////////////////////////////////////////////////////////////
 

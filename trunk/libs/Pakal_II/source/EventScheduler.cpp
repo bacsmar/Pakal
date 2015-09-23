@@ -40,7 +40,7 @@ void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condit
 	m_mutex.unlock();
 
 	if (dispatcher != m_dispatchers.end())
-		while(!condition()) (*dispatcher)->dispatch_tasks(); //TODO
+		while(!condition()) (*dispatcher)->dispatch_tasks(false); //TODO
 	else
 		while(!condition());
 }

@@ -14,18 +14,14 @@
 namespace Pakal
 {
 
-	class ComponentSystem;
-	class GameStateManager;
 	class Engine;
 
 	class IPakalApplication
 	{
 	public:
-		virtual void setup_environment( Engine * engine) = 0;
+		virtual void start(Engine* gameStateSystem) = 0;
 
-		virtual void start( GameStateManager * gameStateSystem) = 0;
-
-		virtual void end(GameStateManager * gameStateSystem) = 0;
+		virtual void end(Engine* gameStateSystem) = 0;
 
 		virtual ~IPakalApplication() {}
 	};
