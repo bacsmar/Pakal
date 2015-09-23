@@ -88,7 +88,6 @@
     <ClInclude Include="..\source\TaskFwd.h" />
     <ClInclude Include="..\source\PakalTime.h" />
     <ClInclude Include="..\source\win32\ClockImpl.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\Clock.cpp" />

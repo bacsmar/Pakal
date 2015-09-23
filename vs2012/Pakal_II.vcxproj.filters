@@ -271,7 +271,6 @@
     <ClInclude Include="..\source\InputManager_SFML.h">
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
