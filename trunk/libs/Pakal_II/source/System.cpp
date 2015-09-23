@@ -34,6 +34,11 @@ namespace Pakal
 				on_update(dt);
 			}
 
+			if (dt < 16)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(16 - dt));
+			}
+
 			dt = clock.restart().asMilliseconds();
 		} 
 	}
