@@ -17,8 +17,18 @@ namespace Pakal
 
 		while(m_state != SystemState::Terminated)
 		{
-			m_dispatcher.dispatch_tasks();
-			
+
+			if (m_state != SystemState::Paused)
+			{
+				m_dispatcher.dispatch_tasks(false);
+			}
+			else
+			{
+				m_dispatcher.dispatch_tasks(true);
+				dt = 0;
+				clock.restart();
+			}
+
 			if (m_state == SystemState::Running)
 			{
 				on_update(dt);
@@ -44,7 +54,7 @@ namespace Pakal
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
-		m_dispatcher.dispatch_tasks();
+		m_dispatcher.dispatch_tasks(false);
 		if (m_state == SystemState::Running)
 		{
 			on_update(dt);
@@ -83,8 +93,8 @@ namespace Pakal
 
 		return EventScheduler::instance().execute_in_thread([this]()
 		{
-			m_dispatcher.dispatch_tasks();
-			m_dispatcher.dispatch_tasks(); //for both lists
+			m_dispatcher.dispatch_tasks(false);
+			m_dispatcher.dispatch_tasks(false); //for both lists
 			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 
 			on_terminate();

@@ -7,7 +7,10 @@ using namespace Pakal;
 
 void GraphicsSystem::on_initialize()
 {
-	on_init_graphics();
+	m_os_manager
+		->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)
+		->continue_with(bind(&GraphicsSystem::on_init_graphics,this,std::placeholders::_1),THIS_THREAD)
+		->wait();
 }
 //////////////////////////////////////////////////////////////////////////
 

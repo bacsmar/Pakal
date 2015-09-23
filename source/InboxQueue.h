@@ -51,9 +51,9 @@ namespace Pakal
 		BasicTaskPtr push_task(const std::function<void()>& jobDelegate);	
 		void push_task(BasicTaskPtr task);	
 
-		inline BasicTaskPtr pop_task()
+		inline BasicTaskPtr pop_task(bool block)
 		{
-			return m_inbox.pop();
+			return m_inbox.pop(block);
 		}
 
 		inline void swap_buffer()

@@ -57,9 +57,8 @@ ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_dat
 }
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* windowManager)
-	: GraphicsSystem(settings), 
-	m_os_manager(windowManager),
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager)
+	: GraphicsSystem(settings, osManager),
 	device(nullptr),
 	driver(nullptr),	
 	smgr(nullptr),
@@ -74,7 +73,7 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	SAFE_DEL(m_render_info);
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::setup_driver(const OSManager::WindowArgs& args)
+void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
@@ -132,14 +131,7 @@ void IrrGraphicsSystem::setup_driver(const OSManager::WindowArgs& args)
 	}, THIS_THREAD);
 
 }
-//////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_init_graphics()
-{
-	m_os_manager->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)->continue_with([this](const OSManager::WindowArgs& args)
-	{
-		setup_driver(args);
-	},THIS_THREAD)-> wait();
-}
+
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_terminate_graphics()
 {

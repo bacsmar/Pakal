@@ -26,7 +26,7 @@ namespace Pakal
 			return m_inbox->get_tid();
 		}
 
-		void dispatch_tasks();
+		void dispatch_tasks(bool block);
 	};
 
 }

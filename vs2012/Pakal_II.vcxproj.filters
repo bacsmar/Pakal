@@ -52,9 +52,6 @@
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EngineSettings.cpp" />
-    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\SoundManager.cpp">
       <Filter>Managers\SoundManager</Filter>
     </ClCompile>
@@ -90,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="..\source\PakalTime.cpp">
       <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
+      <Filter>Components\MeshComponent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -153,9 +153,6 @@
     </ClInclude>
     <ClInclude Include="..\source\DoubleBufferedList.h">
       <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\MeshComponent.h">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\BasicTask.h">
       <Filter>Managers\EventManager</Filter>
@@ -226,9 +223,6 @@
     <ClInclude Include="..\source\math\vectorn.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\math\matrix.h">
       <Filter>Math</Filter>
     </ClInclude>
@@ -293,6 +287,12 @@
     <ClInclude Include="..\source\PakalTime.h">
       <Filter>Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
+      <Filter>Components\MeshComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MeshComponent.h">
+      <Filter>Components\MeshComponent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -345,6 +345,12 @@
     </Filter>
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\MeshComponent">
+      <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\InputComponent">
+      <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
