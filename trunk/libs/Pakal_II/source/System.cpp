@@ -4,6 +4,8 @@
 #include "EventScheduler.h"
 #include "LogMgr.h"
 
+#include "FPSCounter.h"
+
 namespace Pakal
 {
 	void System::update_loop()
@@ -14,6 +16,7 @@ namespace Pakal
 				
 		Clock clock;
 		long long dt = 0;
+		FPSCounter fpsCounter;
 
 		while(m_state != SystemState::Terminated)
 		{
@@ -25,6 +28,7 @@ namespace Pakal
 			else
 			{
 				m_dispatcher.dispatch_tasks(true);
+				LOG_DEBUG("System %s fps: %d", get_system_name(), fpsCounter.get_fps() );
 				dt = 0;
 				clock.restart();
 			}
@@ -32,6 +36,7 @@ namespace Pakal
 			if (m_state == SystemState::Running)
 			{
 				on_update(dt);
+				fpsCounter.register_frame(dt);
 			}
 
 			if (dt < 16)
