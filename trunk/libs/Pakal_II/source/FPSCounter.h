@@ -5,17 +5,17 @@ namespace Pakal
 class FPSCounter
 {
 public:
-	FPSCounter::FPSCounter()
+	FPSCounter()
 	: m_fps(60), m_elapsed_milliseconds(0), m_frames_counted(0)
 	{
 	}
-	//! returns current fps
+
 	unsigned get_fps() const
 	{
 		return m_fps;
 	}
 
-	//! to be called every frame
+
 	void register_frame(long long dt)
 	{
 		++m_frames_counted;
