@@ -8,10 +8,9 @@ namespace Pakal
 		return EventScheduler::instance().execute_in_thread(fn, id);
 	}
 
-	unsigned EventSchedulerHelper::hash_function(unsigned valueToHash) 
+	unsigned long long EventSchedulerHelper::new_id()
 	{
-		static std::hash<unsigned int> hasher;		
-		static unsigned long hash_salt = 0;
-		return hasher( valueToHash ^ hash_salt++);
+		static unsigned long long id = 0;
+		return id++;
 	}
 }

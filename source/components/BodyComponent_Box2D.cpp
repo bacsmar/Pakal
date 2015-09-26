@@ -2,6 +2,7 @@
 #include "box2D/Box2DPhysicsSystem.h"
 #include "math/tmg.h"
 
+
 using namespace Pakal;
 
 BodyComponent_Box2D::~BodyComponent_Box2D()
@@ -87,6 +88,7 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 		fixtureDef.shape = shape.get();
 
 		m_body = m_system->create_body(&bodyDef);
+
 		m_fixture =  m_body->CreateFixture(&fixtureDef);	
 
 	});	
@@ -97,7 +99,7 @@ BasicTaskPtr BodyComponent_Box2D::destroy()
 	return m_system->execute_block([=]()
 	{
 		m_system->destroy_body(m_body);
-		m_body = nullptr;		
+		m_body = nullptr;
 	});
 }
 

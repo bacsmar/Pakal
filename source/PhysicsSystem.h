@@ -4,7 +4,6 @@
 #include "System.h"
 #include "IComponentProvider.h"
 
-#include "Event.h"
 #include "math/tm.h"
 
 namespace Pakal
@@ -23,7 +22,6 @@ namespace Pakal
 		void on_resume() override final;
 
 	public:
-		Event<PhysicsSystem,void> updated;
 
 		virtual IDebugDrawerClient* get_debug_drawer(){  return nullptr; };
 		virtual const char*			get_system_name() override = 0;
@@ -37,7 +35,7 @@ namespace Pakal
 			int position_iterations;
 			bool uses_thread;
 
-			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(true), velocity_iterations(8), position_iterations(3), uses_thread(true) {}
+			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(false), velocity_iterations(8), position_iterations(3), uses_thread(true) {}
 		};
 
 	protected:

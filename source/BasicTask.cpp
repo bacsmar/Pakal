@@ -23,7 +23,7 @@ namespace Pakal
 	void BasicTask::queue_continuation(const ContinuationData&& continuation)
 	{
 		std::lock_guard<std::mutex> lock(m_continuation_mutex);
-		m_continuations.push_back(continuation);
+		m_continuations.emplace_back(continuation);
 	}
 
 	void BasicTask::run()

@@ -64,8 +64,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManag
 	smgr(nullptr),
 	guienv(nullptr),
 	m_fs_provider(nullptr),
-	m_render_info(new RendererInfo()),
-	m_show_fps(false)
+	m_render_info(new RendererInfo())
 {}
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
@@ -103,11 +102,9 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
 
-	show_fps(m_show_fps);	
-
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-3), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-30), vector3df(0,0,0));		
 
 	// setting up events
 	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs a)
@@ -165,15 +162,6 @@ void IrrGraphicsSystem::draw()
 		r->do_debug_draw();
 	}
 
-	if( m_show_fps)
-	{		
-		stringw str = L"FPS [";
-		str += driver->getName();
-		str += "] FPS:";
-		str += driver->getFPS();
-
-		device->setWindowCaption(str.c_str());            
-	}
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -202,11 +190,6 @@ void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 {
 	ASSERT(device);
 	device->setWindowCaption(caption);
-}
-//////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::show_fps( bool val )
-{	
-	m_show_fps = val;	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFactory*>& factories)

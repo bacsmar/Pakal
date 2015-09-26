@@ -5,6 +5,8 @@
 
 #include "ISystem.h"
 #include "AsyncTaskDispatcher.h"
+#include "FPSCounter.h"
+
 
 namespace Pakal
 {
@@ -14,6 +16,7 @@ namespace Pakal
 		std::thread*			m_thread;
 		bool					m_threaded;
 		AsyncTaskDispatcher		m_dispatcher;
+		FPSCounter				m_fps_counter;
 
 		std::atomic_bool		m_dispatcher_ready;
 
@@ -37,6 +40,7 @@ namespace Pakal
 		inline std::thread::id thread_id() { return m_dispatcher.thread_id(); };
 		inline bool is_threaded() override final { return m_threaded; };
 		inline SystemState get_state() override final { return m_state; };
+		inline unsigned get_fps() override final { return m_fps_counter.get_fps(); };
 
 		void update(long long dt) override final;
 

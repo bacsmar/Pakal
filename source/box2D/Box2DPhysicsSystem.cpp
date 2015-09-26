@@ -37,7 +37,7 @@ b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_body(b2Body* body)
 {
-	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	//std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	return m_world->DestroyBody(body);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ b2Joint* Box2DPhysicsSystem::create_joint(const b2JointDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_joint(b2Joint* joint)
 {
-	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	//std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	return m_world->DestroyJoint(joint);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::do_debug_draw()
 {
-	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+//	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	if( m_world) m_world->DrawDebugData();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ void Box2DPhysicsSystem::init_world()
 	
 	b2Vec2 gravity(m_settings.gravity.x, m_settings.gravity.y);
 	m_world = new b2World(gravity);
-	m_world->SetWarmStarting(true);
+	m_world->SetWarmStarting(false);
 	m_world->SetContinuousPhysics(false);	
 	m_world->SetAllowSleeping(m_settings.allow_sleep);
 
@@ -106,18 +106,20 @@ void Box2DPhysicsSystem::clear_world()
 
 void Box2DPhysicsSystem::update_world(long long dt)
 {
-	std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
+	//std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
 
 	static float targetTimeInSeconds = (1.f / 60); 
-	static long long targetTime = targetTimeInSeconds * 1000; // in milliseconds
-	
-	m_time_elapsed += dt;	// in milliseconds
-	while(m_time_elapsed > targetTime)
-	{ 
+	//static long long targetTime = targetTimeInSeconds * 1000; // in milliseconds
+
+	//LOG_ERROR("dt is %d", dt);
+
+	//m_time_elapsed += dt;	// in milliseconds
+	//while(m_time_elapsed > targetTime)
+	//{ 
 		m_world->Step( targetTimeInSeconds , m_settings.velocity_iterations, m_settings.position_iterations);
-		m_time_elapsed -= targetTime;
-	}
-	
-	//m_world->Step( dt * 0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
+	//	m_time_elapsed -= targetTime;
+	//}
+
+	//m_world->Step(dt * 0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
 }
 //////////////////////////////////////////////////////////////////////////

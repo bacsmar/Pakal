@@ -19,6 +19,9 @@ namespace Pakal
 	class IPakalApplication
 	{
 	public:
+
+		virtual char* get_name() = 0;
+
 		virtual void start(Engine* gameStateSystem) = 0;
 
 		virtual void end(Engine* gameStateSystem) = 0;
