@@ -47,6 +47,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_6</PlatformToolset>
+    <UseOfStl>c++_static</UseOfStl>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -56,6 +57,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>$(VS_NdkRoot)/sources/android/support/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IncludePath>$(VS_NdkRoot)/sources/android/support/include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -86,6 +90,9 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CppLanguageStandard>c++11</CppLanguageStandard>
+      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

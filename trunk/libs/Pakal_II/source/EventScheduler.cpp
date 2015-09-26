@@ -49,10 +49,9 @@ Pakal::InboxTask* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id t
 {	
 	auto position = m_inboxes.find(tid);
 
-	auto inbox = position == m_inboxes.end() 
+	return position == m_inboxes.end() 
 		       ? nullptr
-		       : position->second;	
-	return inbox;
+		       : position->second;
 }
 
 Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function<void()>& fn,std::thread::id tid)
