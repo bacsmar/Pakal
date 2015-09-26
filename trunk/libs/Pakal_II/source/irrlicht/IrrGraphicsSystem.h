@@ -52,9 +52,9 @@ namespace Pakal
 			IFileArchive*	add_data_dir(const std::string& fname) override;
 		};		
 		
-		unsigned m_resized_callback_id;
-		unsigned m_destroyed_callback_id;
-		unsigned m_created_callback_id;
+		unsigned long long m_resized_callback_id;
+		unsigned long long m_destroyed_callback_id;
+		unsigned long long m_created_callback_id;
 
 		irr::IrrlichtDevice			* device;
 		irr::video::IVideoDriver	* driver;
@@ -77,11 +77,9 @@ namespace Pakal
 		void end_scene();
 
 		virtual void set_window_caption(const wchar_t* caption) override;
-		virtual void show_fps( bool val ) override;
 
 		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;
 		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) override;
 
-		bool m_show_fps;
 	};	
 }

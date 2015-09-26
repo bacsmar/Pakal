@@ -76,7 +76,7 @@ namespace Pakal
 
 	private:
 
-		void on_update(long long dt) override {};
+		void on_update(long long dt) override;
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;
@@ -94,6 +94,6 @@ namespace Pakal
 
 		std::vector<ISystem*> m_systems;
 
-		unsigned m_listener_terminate;
+		unsigned long long m_listener_terminate;
 	};
 }

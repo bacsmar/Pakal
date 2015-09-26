@@ -34,7 +34,7 @@ namespace Pakal
 	{
 		PolygonShape() : BodyShape(ShapeType::PolygonShape) { }
 
-		void set_polygon(const tmath::vector3df* vertices,int count)
+		void set_polygon(const tmath::vector3df vertices[],int count)
 		{
 			for (int i = 0; i < count; i++)
 			{

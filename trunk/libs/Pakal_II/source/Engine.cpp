@@ -11,6 +11,7 @@
 #include "IInputManager.h"
 #include "OSManager.h"
 #include "Clock.h"
+#include <sstream>
 
 //#include <vld.h>
 
@@ -59,7 +60,7 @@ void Engine::run(IPakalApplication* application)
 	ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
 	ASSERT(application);
 
-	LOG_WARNING("Running unnamed application ");
+	LOG_WARNING("Running %s", application->get_name());
 
 	m_application = application;
 	
@@ -101,30 +102,26 @@ void Engine::run(IPakalApplication* application)
 	Clock clock;
 	long long dt = 0;
 
+
 	while (get_state() != SystemState::Terminated)
 	{
-		for (auto s : nonThreadedSystems)
+		for (auto s : nonThreadedSystems) if (s->get_state() != SystemState::Terminated) s->update(dt);
+
+		std::wostringstream ss;
+		ss << L"FPS engine[" << get_fps() << L"] ";
+		for(auto s : m_systems)
 		{
-			if (s->get_state() != SystemState::Terminated)
-			{
-				s->update(dt);
-			}
+			ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";
 		}
-		
+		m_graphics_system->set_window_caption(ss.str().c_str());
+
 		if (get_state() == SystemState::Paused)
 		{
 			get_os_manager()->wait_for_os_events();
 			clock.restart();
 		}
 		else
-		{
 			get_os_manager()->process_window_events();
-		}
-
-		if (dt < 16)
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(16 - dt));
-		}
 
 		dt = clock.restart().asMilliseconds();
 	}
@@ -145,6 +142,12 @@ void Engine::run(IPakalApplication* application)
 	m_game_state_manager->terminate();
 	m_input_manager->terminate();
 	get_os_manager()->terminate();
+}
+//////////////////////////////////////////////////////////////////////////
+
+void Engine::on_update(long long dt)
+{
+	m_game_state_manager->update();
 }
 
 //////////////////////////////////////////////////////////////////////////

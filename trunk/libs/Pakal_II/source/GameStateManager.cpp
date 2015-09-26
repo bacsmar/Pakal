@@ -10,7 +10,6 @@ GameStateManager::~GameStateManager()
 	m_engine = nullptr;
 }
 
-
 void GameStateManager::terminate()
 {
 	while (!states.empty())
@@ -18,9 +17,14 @@ void GameStateManager::terminate()
 		BaseGameState* state = states.top();
 		states.pop();
 
-		state->terminate();
+		state->on_terminate(m_engine);
 		if (state->m_deallocate_on_pop) SAFE_DEL(state);
 	}
+}
+
+void GameStateManager::update()
+{
+	peek_state()->on_update();
 }
 
 void GameStateManager::transition_to_state(BaseGameState* new_state, bool deallocate_on_pop)
@@ -29,12 +33,12 @@ void GameStateManager::transition_to_state(BaseGameState* new_state, bool deallo
 
 	new_state->m_game_state_manager = this;
 	new_state->m_deallocate_on_pop = deallocate_on_pop;
-	new_state->initialize(m_engine);
+	new_state->on_initialize(m_engine);
 	
 	states.pop();
 	states.push(new_state);
 
-	state->terminate();
+	state->on_terminate(m_engine);
 	if (state->m_deallocate_on_pop) SAFE_DEL(state);
 
 }
@@ -43,12 +47,12 @@ void GameStateManager::push_state(BaseGameState* new_state, bool deallocate_on_p
 {
 	if (!states.empty())
 	{
-		states.top()->on_pause();
+		states.top()->on_pause(m_engine);
 	}
 
 	new_state->m_game_state_manager = this;
 	new_state->m_deallocate_on_pop = deallocate_on_pop;
-	new_state->initialize(m_engine);
+	new_state->on_initialize(m_engine);
 	
 	states.push(new_state);
 }
@@ -60,14 +64,14 @@ void GameStateManager::pop_state()
 	BaseGameState* state;
 	
 	state = peek_state();
-	state->terminate();
+	state->on_terminate(m_engine);
 	states.pop();
 
 	if (state->m_deallocate_on_pop) SAFE_DEL(state);
 	if (states.empty())  return;
 	
 	state = peek_state();
-	state->on_resume();
+	state->on_resume(m_engine);
 }
 
 void GameStateManager::pause_state()
@@ -76,7 +80,7 @@ void GameStateManager::pause_state()
 
 	BaseGameState* state = peek_state();
 
-	state->on_pause();
+	state->on_pause(m_engine);
 }
 
 void GameStateManager::resume_state()
@@ -85,7 +89,7 @@ void GameStateManager::resume_state()
 
 	BaseGameState* state = peek_state();
 
-	state->on_resume();
+	state->on_resume(m_engine);
 }
 
 void GameStateManager::pop_states(int amount)

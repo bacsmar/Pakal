@@ -4,7 +4,6 @@
 #include "EventScheduler.h"
 #include "LogMgr.h"
 
-#include "FPSCounter.h"
 
 namespace Pakal
 {
@@ -16,32 +15,25 @@ namespace Pakal
 				
 		Clock clock;
 		long long dt = 0;
-		FPSCounter fpsCounter;
 
 		while(m_state != SystemState::Terminated)
 		{
 
-			if (m_state != SystemState::Paused)
+			if (m_state == SystemState::Paused)
 			{
-				m_dispatcher.dispatch_tasks(false);
+				m_dispatcher.dispatch_one_task(true);
+				dt = 0;
+				clock.restart();
 			}
 			else
 			{
-				m_dispatcher.dispatch_tasks(true);
-				LOG_DEBUG("System %s fps: %d", get_system_name(), fpsCounter.get_fps() );
-				dt = 0;
-				clock.restart();
+				m_dispatcher.dispatch_all_tasks();
 			}
 
 			if (m_state == SystemState::Running)
 			{
 				on_update(dt);
-				fpsCounter.register_frame(dt);
-			}
-
-			if (dt < 16)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(16 - dt));
+				m_fps_counter.register_frame(dt);
 			}
 
 			dt = clock.restart().asMilliseconds();
@@ -64,10 +56,11 @@ namespace Pakal
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
-		m_dispatcher.dispatch_tasks(false);
+		m_dispatcher.dispatch_all_tasks();
 		if (m_state == SystemState::Running)
 		{
 			on_update(dt);
+			m_fps_counter.register_frame(dt);
 		}
 	}
 
@@ -103,11 +96,13 @@ namespace Pakal
 
 		return EventScheduler::instance().execute_in_thread([this]()
 		{
-			m_dispatcher.dispatch_tasks(false);
-			m_dispatcher.dispatch_tasks(false); //for both lists
-			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
+			m_dispatcher.dispatch_all_tasks();
+			m_dispatcher.dispatch_all_tasks(); //for both lists
 
 			on_terminate();
+
+			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
+
 			m_state = SystemState::Terminated;
 
 			if (is_threaded())

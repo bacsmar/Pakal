@@ -21,7 +21,6 @@ void PhysicsSystem::on_terminate()
 void PhysicsSystem::on_update(long long dt)
 {
 	update_world(dt);
-	updated.notify();
 }
 
 void PhysicsSystem::on_pause()

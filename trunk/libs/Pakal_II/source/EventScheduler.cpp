@@ -40,7 +40,7 @@ void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condit
 	m_mutex.unlock();
 
 	if (dispatcher != m_dispatchers.end())
-		while(!condition()) (*dispatcher)->dispatch_tasks(false); //TODO
+		while (!condition()) (*dispatcher)->dispatch_one_task(false);
 	else
 		while(!condition());
 }
@@ -98,6 +98,8 @@ void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* 
 
 void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatcher)
 {
+	ASSERT(dispatcher->m_inbox->empty());
+	dispatcher->m_inbox->swap_buffer();
 	ASSERT(dispatcher->m_inbox->empty());
 
 	std::lock_guard<std::mutex> lock(m_mutex);

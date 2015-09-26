@@ -48,7 +48,6 @@ BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());		
 
 		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
-		m_node->setDebugDataVisible(irr::scene::EDS_BBOX_ALL);
 
 		m_node->setMaterialFlag(irr::video::EMF_LIGHTING,false);
 		m_node->setVisible(true);

@@ -25,7 +25,6 @@ namespace Pakal
 	public:
 
 		virtual void				set_window_caption(const wchar_t*) {};
-		virtual void				show_fps(bool) {};
 		virtual const char*			get_system_name() override = 0;
 
 		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
