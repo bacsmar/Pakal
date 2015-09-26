@@ -106,20 +106,17 @@ void Box2DPhysicsSystem::clear_world()
 
 void Box2DPhysicsSystem::update_world(long long dt)
 {
-	//std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
-
 	static float targetTimeInSeconds = (1.f / 60); 
-	//static long long targetTime = targetTimeInSeconds * 1000; // in milliseconds
+	static float targetTime = targetTimeInSeconds * 1000.f; // in milliseconds
 
-	//LOG_ERROR("dt is %d", dt);
+	
+	m_time_elapsed += dt;
 
-	//m_time_elapsed += dt;	// in milliseconds
-	//while(m_time_elapsed > targetTime)
-	//{ 
-		m_world->Step( targetTimeInSeconds , m_settings.velocity_iterations, m_settings.position_iterations);
-	//	m_time_elapsed -= targetTime;
-	//}
+	if (m_time_elapsed > targetTime)
+	{
+		m_world->Step(targetTimeInSeconds, m_settings.velocity_iterations, m_settings.position_iterations);
+		m_time_elapsed = 0;
+	}
 
-	//m_world->Step(dt * 0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
 }
 //////////////////////////////////////////////////////////////////////////
