@@ -20,7 +20,7 @@ namespace Pakal
 	{
 	public:
 
-		virtual char* get_name() = 0;
+		virtual const char* get_name() = 0;
 
 		virtual void start(Engine* gameStateSystem) = 0;
 
