@@ -23,7 +23,7 @@ public:
 		++m_frames_counted;
 		m_elapsed_milliseconds += dt;		
 
-		if (m_elapsed_milliseconds >= 1500 )
+		if (m_elapsed_milliseconds >= 500 )
 		{
 			m_fps = static_cast<unsigned>(ceil ( ( 1000.0 * m_frames_counted ) / m_elapsed_milliseconds));
 

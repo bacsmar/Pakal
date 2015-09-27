@@ -16,7 +16,7 @@ namespace Pakal
 {
 	namespace priv
 	{
-		template <class TArgs>
+		template <class TArgs = void>
 		struct DelegateData
 		{
 			std::function<void(TArgs)> delegate;
@@ -33,10 +33,11 @@ namespace Pakal
 			bool is_enabled;
 		};
 
+
 		template <class TArgs>
 		class _PAKALExport Event_t
 		{
-			std::unordered_map<unsigned long long, Ptr<DelegateData<TArgs>>> m_delegates;
+			std::unordered_map<unsigned long long, SharedPtr<DelegateData<TArgs>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
 
@@ -51,7 +52,7 @@ namespace Pakal
 				
 				unsigned long long key = EventSchedulerHelper::new_id();
 
-				Ptr<DelegateData<TArgs>> metaData =
+				SharedPtr<DelegateData<TArgs>> metaData =
 					m_delegates.emplace(key, std::make_shared<DelegateData<TArgs>>()).first->second;
 
 				metaData->tid = callbackThread;
@@ -144,7 +145,7 @@ namespace Pakal
 			typedef std::function<void(void)> MethodDelegate;
 		private:
 
-			std::unordered_map<unsigned long long,Ptr<DelegateData<void>>> m_delegates;
+			std::unordered_map<unsigned long long,SharedPtr<DelegateData<>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
 
@@ -167,8 +168,8 @@ namespace Pakal
 
 				unsigned long long key = EventSchedulerHelper::new_id();
 
-				Ptr<DelegateData<void>> metaData = 
-					m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;
+				SharedPtr<DelegateData<>> metaData = 
+					m_delegates.emplace(key, std::make_shared<DelegateData<>>()).first->second;
 
 				metaData->tid = callBackThread;
 				metaData->is_enabled = m_enabled;
