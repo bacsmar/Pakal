@@ -22,9 +22,9 @@ namespace Pakal
 
 		virtual const char* get_name() = 0;
 
-		virtual void start(Engine* gameStateSystem) = 0;
+		virtual void start(Engine*) = 0;
 
-		virtual void end(Engine* gameStateSystem) = 0;
+		virtual void end(Engine*) = 0;
 
 		virtual ~IPakalApplication() {}
 	};

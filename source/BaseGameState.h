@@ -29,7 +29,7 @@ namespace Pakal
 		virtual void on_initialize(Engine* engine) = 0;
 		virtual void on_terminate(Engine* engine) = 0;
 		virtual void on_update() = 0;
-		virtual void on_resume(Engine* engine) = 0;
-		virtual void on_pause(Engine* engine) = 0;;
+		virtual void on_activate(Engine* engine) = 0;
+		virtual void on_deactivate(Engine* engine) = 0;;
 	};
 }

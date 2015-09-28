@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Config.h"
-
 #include <unordered_map>
 
 #include <functional>
@@ -9,14 +7,13 @@
 #include <thread>
 
 #include "EventSystemUtils.h"
-#include <iostream>
 
 
 namespace Pakal
 {
 	namespace priv
 	{
-		template <class TArgs = void>
+		template <class TArgs>
 		struct DelegateData
 		{
 			std::function<void(TArgs)> delegate;
@@ -145,7 +142,7 @@ namespace Pakal
 			typedef std::function<void(void)> MethodDelegate;
 		private:
 
-			std::unordered_map<unsigned long long,SharedPtr<DelegateData<>>> m_delegates;
+			std::unordered_map<unsigned long long,SharedPtr<DelegateData<void>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
 
@@ -168,8 +165,8 @@ namespace Pakal
 
 				unsigned long long key = EventSchedulerHelper::new_id();
 
-				SharedPtr<DelegateData<>> metaData = 
-					m_delegates.emplace(key, std::make_shared<DelegateData<>>()).first->second;
+				SharedPtr<DelegateData<void>> metaData = 
+					m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;
 
 				metaData->tid = callBackThread;
 				metaData->is_enabled = m_enabled;

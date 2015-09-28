@@ -22,11 +22,9 @@ namespace Pakal
 		void terminate() override;
 		void update();
 	
-		void transition_to_state(BaseGameState* new_state, bool deallocate_on_pop = true);
-		void push_state(BaseGameState* new_state, bool deallocate_on_pop = true);
+		void transition_to_state(BaseGameState* newState, bool deallocateOnPop = true);
+		void push_state(BaseGameState* newState, bool deallocateOnPop = true);
 		void pop_state();
-		void pause_state();
-		void resume_state();
 		void pop_states(int amount);
 
 		BaseGameState* peek_state();
