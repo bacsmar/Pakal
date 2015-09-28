@@ -108,7 +108,7 @@ void Engine::run(IPakalApplication* application)
 		for (auto s : nonThreadedSystems) if (s->get_state() != SystemState::Terminated) s->update(dt);
 
 		std::wostringstream ss;
-		ss << L"FPS engine[" << get_fps() << L"] ";
+		ss << get_system_name() << L"[" << get_fps() << L"] ";
 		for(auto s : m_systems)
 		{
 			ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";

@@ -47,7 +47,7 @@ void GameStateManager::push_state(BaseGameState* new_state, bool deallocate_on_p
 {
 	if (!states.empty())
 	{
-		states.top()->on_pause(m_engine);
+		states.top()->on_deactivate(m_engine);
 	}
 
 	new_state->m_game_state_manager = this;
@@ -71,25 +71,7 @@ void GameStateManager::pop_state()
 	if (states.empty())  return;
 	
 	state = peek_state();
-	state->on_resume(m_engine);
-}
-
-void GameStateManager::pause_state()
-{
-	ASSERT(!states.empty());
-
-	BaseGameState* state = peek_state();
-
-	state->on_pause(m_engine);
-}
-
-void GameStateManager::resume_state()
-{
-	ASSERT(!states.empty());
-
-	BaseGameState* state = peek_state();
-
-	state->on_resume(m_engine);
+	state->on_activate(m_engine);
 }
 
 void GameStateManager::pop_states(int amount)
