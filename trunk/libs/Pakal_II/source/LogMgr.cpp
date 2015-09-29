@@ -52,48 +52,56 @@ namespace Pakal
 	void LogMgr::log( int level, const char *format, ... )
 	{
 #if PAKAL_USE_LOG == 1
-		std::lock_guard<std::mutex> guard(logMutex);
-		if( m_log == nullptr) return;
-
-#ifdef COLOURED_LOG
-		switch(level)
-		{
-		case LOG_DEBUG:
-			ChangeColour(FOREGROUND_GREEN| FOREGROUND_INTENSITY);
-			break;
-		case LOG_INFO:
-			ChangeColour(FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_RED);			
-			break;
-		case LOG_WARNING:
-			ChangeColour(FOREGROUND_GREEN|FOREGROUND_RED| FOREGROUND_INTENSITY);
-			break;
-		case LOG_ERROR:
-			ChangeColour(FOREGROUND_RED|FOREGROUND_INTENSITY);
-			break;
-		case LOG_FATAL:
-			ChangeColour(FOREGROUND_GREEN|FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-			break;
-		}		
-#endif
-
 		va_list listArguments;
 		va_start( listArguments, format );				
 
+		log(level, format, listArguments);
+
+		va_end( listArguments );
+#endif
+	}
+
+	void LogMgr::log(int level, const char *format, va_list args)
+	{
+
+#if PAKAL_USE_LOG == 1
+		std::lock_guard<std::mutex> guard(logMutex);
+		if (m_log == nullptr) return;
+
+#ifdef COLOURED_LOG
+		switch (level)
+		{
+		case LOG_DEBUG:
+			ChangeColour(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			break;
+		case LOG_INFO:
+			ChangeColour(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_RED);
+			break;
+		case LOG_WARNING:
+			ChangeColour(FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+			break;
+		case LOG_ERROR:
+			ChangeColour(FOREGROUND_RED | FOREGROUND_INTENSITY);
+			break;
+		case LOG_FATAL:
+			ChangeColour(FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+			break;
+		}
+#endif
+
 #ifndef PAKAL_ANDROID_PLATFORM
-		vfprintf( m_log, format, listArguments );
-		fprintf( m_log, "\n" );
+		vfprintf(m_log, format, args);
+		fprintf(m_log, "\n");
 		fflush(m_log);
 #else
-		__android_log_vprint(level + ANDROID_LOG_DEBUG, "TEO_ENGINE", format, listArguments);
+		__android_log_vprint(level + ANDROID_LOG_DEBUG, "PAKAL_ENGINE", format, args);
 #endif
 
 #if PAKAL_USE_LOG_FILE == 1						
-		vfprintf( stdout, format, listArguments );
-		fprintf( stdout, "\n" );
+		vfprintf(stdout, format, args);
+		fprintf(stdout, "\n");
 		fflush(stdout);
-#endif
-
-		va_end( listArguments );
+#endif		
 #endif
 	}
 
@@ -141,4 +149,16 @@ namespace rapidxml
 	{
 		LOG_ERROR("[RapidXML] error:%s",what)
 	}
+}
+
+#include <cassert>
+void assert_with_message(bool condition, const char *format, ...)
+{
+	if (!condition)
+	{
+		va_list listArguments;
+		va_start(listArguments, format);
+		LogMgr::instance().log(LogMgr::LOG_ERROR, format, listArguments);
+	}
+	assert(condition);
 }

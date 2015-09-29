@@ -116,9 +116,18 @@
 #define SAFE_DEL(x) {delete (x);x=nullptr;}
 
 #ifdef _DEBUG
-	#define ASSERT(x) assert (x)
-	#include <cassert>
+	void assert_with_message(bool condition, const char *format, ...);
+
+	#define __ASSERT_QUOTE__(x) #x
+	#define __ASSERT_TO_STRING__(x) __ASSERT_QUOTE__(x)
+	#define __ASSERT_INFO__ "assert: file [" __FILE__ ":" __ASSERT_TO_STRING__(__LINE__) "]"
+
+	#define ASSERT(x) assert_with_message(x, __ASSERT_INFO__)	
+	#define ASSERT_MSG(x, format, ...) assert_with_message(x, __ASSERT_INFO__ "\n" format, ## __VA_ARGS__)
+
+	
 #else
-	#define  ASSERT(x)
+	#define  ASSERT(...)
+	#define ASSERT_MSG
 #endif
 
