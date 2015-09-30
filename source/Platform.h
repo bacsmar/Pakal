@@ -128,6 +128,6 @@
 	
 #else
 	#define  ASSERT(...)
-	#define ASSERT_MSG
+	#define ASSERT_MSG(...)
 #endif
 
