@@ -19,13 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\DirectorySourceIrrlitch.h" />
+    <ClInclude Include="..\source\IrrlitchStream.h" />
+    <ClInclude Include="..\source\StreamIrrlitch.h" />
+    <ClInclude Include="..\source\ZipSource.h" />
+    <ClInclude Include="..\source\ZipSourceIrrlitch.h" />
+    <ClInclude Include="..\source\DirectorySource.h" />
+    <ClInclude Include="..\source\ISource.h" />
+    <ClInclude Include="..\source\IStream.h" />
+    <ClInclude Include="..\source\MemoryStream.h" />
     <ClInclude Include="..\source\Clock.h" />
     <ClInclude Include="..\source\InputManager_SFML.h" />
     <ClInclude Include="..\source\IInputManager.h" />
     <ClInclude Include="..\source\IOSManager.h" />
     <ClInclude Include="..\source\components\Shapes.h" />
-    <ClInclude Include="..\source\irrlicht\StreamFileIrrlicht.h" />
-    <ClInclude Include="..\source\IStream.h" />
     <ClInclude Include="..\source\math\matrix.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
@@ -45,10 +52,7 @@
     <ClInclude Include="..\source\OSManager.h" />
     <ClInclude Include="..\source\ResourceManager.h" />
     <ClInclude Include="..\source\sfml\SoundManager_SFML.h" />
-    <ClInclude Include="..\source\sfml\StreamFileSFML.h" />
     <ClInclude Include="..\source\SoundManager.h" />
-    <ClInclude Include="..\source\StreamFile.h" />
-    <ClInclude Include="..\source\StreamFileProvider.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
@@ -92,16 +96,12 @@
   <ItemGroup>
     <ClCompile Include="..\source\Clock.cpp" />
     <ClCompile Include="..\source\InputManager_SFML.cpp" />
-    <ClCompile Include="..\source\irrlicht\StreamFileIrrlicht.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
-    <ClCompile Include="..\source\ResourceManager.cpp" />
+    <ClCompile Include="..\source\ResourceManager.cpp"/>
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
-    <ClCompile Include="..\source\sfml\StreamFileSFML.cpp" />
     <ClCompile Include="..\source\SoundManager.cpp" />
-    <ClCompile Include="..\source\StreamFile.cpp" />
-    <ClCompile Include="..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
@@ -118,7 +118,7 @@
     <ClCompile Include="..\source\GenericEntity.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp"/>
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />

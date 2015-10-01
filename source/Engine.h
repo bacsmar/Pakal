@@ -9,6 +9,7 @@
 #include "PhysicsSystem.h"
 #include "GraphicsSystem.h"
 #include "OSManager.h"
+#include "ResourceManager.h"
 
 namespace Pakal
 {
@@ -18,7 +19,6 @@ namespace Pakal
 	class ComponentManager;
 	class IManager;
 	class SoundManager;
-	class ResourceManager;
 	class IInputManager;
 
 	class _PAKALExport Engine final : public System
@@ -56,6 +56,7 @@ namespace Pakal
 		inline IInputManager*		get_input_manager() const { return m_input_manager; }
 		inline GameStateManager*	get_game_state_manager() const { return m_game_state_manager; }
 		inline OSManager*			get_os_manager()  { return &OSManager::instance(); } 
+		inline ResourceManager*		get_resource_manager()  { return &ResourceManager::instance(); } 
 
 
 		const char* get_system_name() override { return "Engine"; };

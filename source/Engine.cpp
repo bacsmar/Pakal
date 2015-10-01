@@ -4,7 +4,6 @@
 #include "PhysicsSystem.h"
 #include "GameStateManager.h"
 #include "IPakalApplication.h"
-#include "EventScheduler.h"
 
 #include "ComponentManager.h"
 #include "SoundManager.h"
@@ -15,10 +14,12 @@
 
 //#include <vld.h>
 
+
 using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
+		
 	SAFE_DEL(m_graphics_system)
 	SAFE_DEL(m_input_manager)
 	SAFE_DEL(m_physics_system)
@@ -65,6 +66,7 @@ void Engine::run(IPakalApplication* application)
 	m_application = application;
 	
 	//Initialize managers
+	get_resource_manager()->initialize();
 	get_os_manager()->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
@@ -105,15 +107,16 @@ void Engine::run(IPakalApplication* application)
 
 	while (get_state() != SystemState::Terminated)
 	{
-		for (auto s : nonThreadedSystems) if (s->get_state() != SystemState::Terminated) s->update(dt);
-
 		std::wostringstream ss;
 		ss << get_system_name() << L"[" << get_fps() << L"] ";
-		for(auto s : m_systems)
+		for (auto s : m_systems)
 		{
 			ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";
 		}
 		m_graphics_system->set_window_caption(ss.str().c_str());
+
+
+		for (auto s : nonThreadedSystems) if (s->get_state() != SystemState::Terminated) s->update(dt);
 
 		if (get_state() == SystemState::Paused)
 		{
@@ -142,6 +145,7 @@ void Engine::run(IPakalApplication* application)
 	m_game_state_manager->terminate();
 	m_input_manager->terminate();
 	get_os_manager()->terminate();
+	get_resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
 
