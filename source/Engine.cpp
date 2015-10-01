@@ -96,7 +96,6 @@ void Engine::run(IPakalApplication* application)
 		if (!s->is_threaded())
 			nonThreadedSystems.push_back(s);
 	}
-	
 
 	//do the loop
 	Clock clock;
@@ -114,7 +113,13 @@ void Engine::run(IPakalApplication* application)
 		m_graphics_system->set_window_caption(ss.str().c_str());
 
 
-		for (auto s : nonThreadedSystems) if (s->get_state() != SystemState::Terminated) s->update(dt);
+		for (auto s : nonThreadedSystems)
+		{
+			if (s->get_state() != SystemState::Terminated)
+			{
+				s->update(dt);
+			}
+		}
 
 		if (get_state() == SystemState::Paused)
 		{
@@ -122,7 +127,9 @@ void Engine::run(IPakalApplication* application)
 			clock.restart();
 		}
 		else
+		{
 			get_os_manager()->process_window_events();
+		}			
 
 		dt = clock.restart().asMilliseconds();
 	}

@@ -151,7 +151,18 @@ namespace rapidxml
 	}
 }
 
+#ifdef _DEBUG
 #include <cassert>
+void assert_with_message(void* condition, const char *format, ...)
+{
+	if (!condition)
+	{
+		va_list listArguments;
+		va_start(listArguments, format);
+		LogMgr::instance().log(LogMgr::LOG_ERROR, format, listArguments);
+	}
+	assert(condition);
+}
 void assert_with_message(bool condition, const char *format, ...)
 {
 	if (!condition)
@@ -162,3 +173,4 @@ void assert_with_message(bool condition, const char *format, ...)
 	}
 	assert(condition);
 }
+#endif

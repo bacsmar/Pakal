@@ -130,9 +130,12 @@
     <ClInclude Include="..\..\source\InboxQueue.h" />
     <ClInclude Include="..\..\source\InputManager_SFML.h" />
     <ClInclude Include="..\..\source\IPakalApplication.h" />
+    <ClInclude Include="..\..\source\irrlicht\DirectorySourceIrrlitch.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrGraphicsSystem.h" />
+    <ClInclude Include="..\..\source\irrlicht\IrrlitchStream.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrRendererInfo.h" />
-    <ClInclude Include="..\..\source\irrlicht\StreamFileIrrlicht.h" />
+    <ClInclude Include="..\..\source\irrlicht\StreamIrrlitch.h" />
+    <ClInclude Include="..\..\source\irrlicht\ZipSourceIrrlitch.h" />
     <ClInclude Include="..\..\source\IStream.h" />
     <ClInclude Include="..\..\source\ISystem.h" />
     <ClInclude Include="..\..\source\LogMgr.h" />
@@ -156,16 +159,12 @@
     <ClInclude Include="..\..\source\ResourceManager.h" />
     <ClInclude Include="..\..\source\RTTI.h" />
     <ClInclude Include="..\..\source\sfml\SoundManager_SFML.h" />
-    <ClInclude Include="..\..\source\sfml\StreamFileSFML.h" />
     <ClInclude Include="..\..\source\SingletonHolder.h" />
     <ClInclude Include="..\..\source\SoundManager.h" />
-    <ClInclude Include="..\..\source\StreamFile.h" />
-    <ClInclude Include="..\..\source\StreamFileProvider.h" />
     <ClInclude Include="..\..\source\System.h" />
     <ClInclude Include="..\..\source\Task.h" />
     <ClInclude Include="..\..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\..\source\TaskFwd.h" />
-    <ClInclude Include="..\..\source\ZombieEngine.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -190,17 +189,13 @@
     <ClCompile Include="..\..\source\InboxQueue.cpp" />
     <ClCompile Include="..\..\source\InputManager_SFML.cpp" />
     <ClCompile Include="..\..\source\irrlicht\IrrGraphicsSystem.cpp" />
-    <ClCompile Include="..\..\source\irrlicht\StreamFileIrrlicht.cpp" />
     <ClCompile Include="..\..\source\LogMgr.cpp" />
     <ClCompile Include="..\..\source\OSManager.cpp" />
     <ClCompile Include="..\..\source\PakalTime.cpp" />
     <ClCompile Include="..\..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\..\source\ResourceManager.cpp" />
     <ClCompile Include="..\..\source\sfml\SoundManager_SFML.cpp" />
-    <ClCompile Include="..\..\source\sfml\StreamFileSFML.cpp" />
     <ClCompile Include="..\..\source\SoundManager.cpp" />
-    <ClCompile Include="..\..\source\StreamFile.cpp" />
-    <ClCompile Include="..\..\source\StreamFileProvider.cpp" />
     <ClCompile Include="..\..\source\System.cpp" />
     <ClCompile Include="..\..\source\unix\ClockImpl.cpp" />
   </ItemGroup>
