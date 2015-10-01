@@ -70,7 +70,10 @@ namespace Pakal
 				else
 					m_memory_streams.erase(streamIt);
 			}
-			erase_if(m_memory_streams, [](const auto& stream) { return stream.second.expired(); });
+			//erase_if(m_memory_streams, [](const auto& stream) { return stream.second.expired(); });			
+			using DataType = std::pair<std::string, WeakPtr<MemoryStream>> ;
+
+			erase_if(m_memory_streams, [](const DataType& stream ) { return stream.second.expired(); });
 		}
 
 		SharedPtr<IStream> stream = nullptr;
