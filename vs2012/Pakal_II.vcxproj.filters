@@ -280,16 +280,16 @@
     <ClInclude Include="..\source\ZipSource.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IrrlitchStream.h">
+    <ClInclude Include="..\source\irrlicht\IrrlitchStream.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\StreamIrrlitch.h">
+    <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DirectorySourceIrrlitch.h">
+    <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\ZipSourceIrrlitch.h">
+    <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
     </ClInclude>
   </ItemGroup>

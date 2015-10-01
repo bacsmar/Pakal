@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\DirectorySourceIrrlitch.h" />
-    <ClInclude Include="..\source\IrrlitchStream.h" />
-    <ClInclude Include="..\source\StreamIrrlitch.h" />
+    <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h" />
+    <ClInclude Include="..\source\irrlicht\IrrlitchStream.h" />
+    <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h" />
+    <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h" />
     <ClInclude Include="..\source\ZipSource.h" />
-    <ClInclude Include="..\source\ZipSourceIrrlitch.h" />
     <ClInclude Include="..\source\DirectorySource.h" />
     <ClInclude Include="..\source\ISource.h" />
     <ClInclude Include="..\source\IStream.h" />
@@ -99,7 +99,7 @@
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
-    <ClCompile Include="..\source\ResourceManager.cpp"/>
+    <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
     <ClCompile Include="..\source\SoundManager.cpp" />
     <ClCompile Include="..\source\System.cpp" />
@@ -118,7 +118,7 @@
     <ClCompile Include="..\source\GenericEntity.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp"/>
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />

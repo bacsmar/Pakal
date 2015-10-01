@@ -11,8 +11,8 @@
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
 
-#include "DirectorySourceIrrlitch.h"
-#include "ZipSourceIrrlitch.h"
+#include "irrlicht/DirectorySourceIrrlitch.h"
+#include "irrlicht/ZipSourceIrrlitch.h"
 
 
 using namespace irr;
