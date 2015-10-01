@@ -115,7 +115,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::begin_scene()
 {
-	ASSERT(driver);
+	ASSERT(driver != nullptr);
 	driver->beginScene(true, true, SColor(255,200,200,200));
 }
 //////////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ void IrrGraphicsSystem::on_resume_graphics()
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 {
-	ASSERT(device);
+	ASSERT(device!= nullptr);
 	device->setWindowCaption(caption);
 }
 //////////////////////////////////////////////////////////////////////////

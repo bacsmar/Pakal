@@ -61,7 +61,7 @@ namespace Pakal
 #endif
 	}
 
-	void LogMgr::log(int level, const char *format, va_list args)
+	void LogMgr::log(int level, const char *format, va_list& args)
 	{
 
 #if PAKAL_USE_LOG == 1

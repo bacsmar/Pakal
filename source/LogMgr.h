@@ -81,7 +81,7 @@ namespace Pakal{
 		enum LogLevel{ LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL};
 		
 		void log( int level, const char *format, ... );
-		void log(int level, const char *format, va_list args);
+		void log(int level, const char *format, va_list& args);
 	};
 }
 
