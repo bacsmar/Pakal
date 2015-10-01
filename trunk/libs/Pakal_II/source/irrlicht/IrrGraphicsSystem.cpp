@@ -8,9 +8,11 @@
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
 #include "ResourceManager.h"
-#include "StreamFileIrrlicht.h"
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
+
+#include "DirectorySourceIrrlitch.h"
+#include "ZipSourceIrrlitch.h"
 
 
 using namespace irr;
@@ -22,39 +24,6 @@ using namespace gui;
 
 using namespace Pakal;
 
-//////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrFileSystemProvider::~IrrFileSystemProvider()
-{
-	for(auto i = m_irr_fs->getFileArchiveCount(); i > 0; i-- )
-	{
-		m_irr_fs->removeFileArchive(i - 1);
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-IStreamPtr IrrGraphicsSystem::IrrFileSystemProvider::open_reader(const std::string& fname)
-{	
-	auto fileName = fname.c_str();
-	if( m_irr_fs->existFile(fileName) )
-	{
-		IReadFile* file =  m_irr_fs->createAndOpenFile(fileName);
-		return (std::make_shared<StreamFileIrrlicht>(file));
-	}
-	return nullptr;
-}
-//////////////////////////////////////////////////////////////////////////
-ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_file_archive(IStreamPtr file)
-{
-	auto pakalReader = new IrrReadPakalFile(file);
-	auto fileArchive =   m_irr_fs->addFileArchive( pakalReader ) ? this : nullptr;
-	pakalReader->drop();
-	return fileArchive;
-}
-//////////////////////////////////////////////////////////////////////////
-ResourceManager::IFileArchive* IrrGraphicsSystem::IrrFileSystemProvider::add_data_dir(const std::string& fname)
-{		
-	return m_irr_fs->addFileArchive(fname.c_str()) ? this : nullptr;
-}
 
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager)
@@ -63,7 +32,6 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManag
 	driver(nullptr),	
 	smgr(nullptr),
 	guienv(nullptr),
-	m_fs_provider(nullptr),
 	m_render_info(new RendererInfo())
 {}
 //////////////////////////////////////////////////////////////////////////
@@ -96,8 +64,10 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
 
-	m_fs_provider = new IrrFileSystemProvider(device->getFileSystem() );
-	ResourceManager::instance().register_reader(m_fs_provider);
+	auto& rmgr = ResourceManager::instance();
+
+	rmgr.register_source<DirectorySource>([this]() { return new DirectorySourceIrrlitch(device->getFileSystem()); });
+	rmgr.register_source<ZipSource>([this]() { return new ZipSourceIrrlitch(device->getFileSystem()); });
 	
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
@@ -138,8 +108,6 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	m_os_manager->event_window_destroyed.remove_listener(m_destroyed_callback_id);
 	m_os_manager->event_window_created.remove_listener(m_created_callback_id);
 
-	ResourceManager::instance().remove_reader(m_fs_provider);
-	SAFE_DEL(m_fs_provider);
 	device->closeDevice();
 	device->drop();
 	device = nullptr;

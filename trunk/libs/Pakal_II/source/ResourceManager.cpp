@@ -1,76 +1,109 @@
 #include "ResourceManager.h"
-#include "StreamFile.h"
-#include <algorithm>
-#include "SingletonHolder.h"
-#include "StreamFileProvider.h"
+#include <memory>
 
-Pakal::ResourceManager::ResourceManager(void)
-{
-	//register_reader(new StreamFileProvider());	// memory leak
-}
 
-Pakal::ResourceManager::~ResourceManager(void)
+namespace Pakal
 {
-	m_stream_sources.clear();
-}
+	std::string ResourceManager::normalize_path(std::string str) 
+	{
+		std::replace(str.begin(), str.end(), '\\', '/');
+		std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+		return str;
+	}
 
-Pakal::ResourceManager& Pakal::ResourceManager::instance()
-{
-	static SingletonHolder<ResourceManager> sh;
+	ResourceManager& ResourceManager::instance() 
+	{
+		static SingletonHolder<ResourceManager> sh;
 		return *sh.get();
-}
-
-bool Pakal::ResourceManager::add_file_archive(const std::string& path)
-{	
-	bool result = false;
-	auto f = open_resource(path);	
-	for( auto& factory : m_stream_sources)
-	{		
-		auto newFactory = factory->add_file_archive(f);
-		if( newFactory )
-		{			
-			if(( newFactory!= factory) )
-				m_stream_sources.push_back( newFactory );
-			result = true;
-		}
 	}
-	return result;
-}
 
-bool Pakal::ResourceManager::add_data_dir(const std::string& path)
-{
-	for( auto& factory : m_stream_sources)
+	void ResourceManager::initialize()
 	{
-		auto newFactory = factory->add_data_dir(path);
-		if( newFactory && ( newFactory!= factory))
-		{			
-			m_stream_sources.push_back( newFactory );
-			return true;
-		}
+		ASSERT(m_sources.empty());
+		ASSERT(m_factories.empty());
+		ASSERT(m_memory_streams.empty());
 	}
-	return false;
-}
 
-Pakal::IStreamPtr Pakal::ResourceManager::open_resource(const std::string& resourceName)
-{
-	for( auto& factory : m_stream_sources)
+	void ResourceManager::terminate()
 	{
-		auto reader = factory->open_reader(resourceName);
-		if( reader.get() )
+		for(ISource*  s : m_sources)
 		{
-			return reader;
+			delete s;
 		}
+
+		m_sources.clear();
+		m_factories.clear();
+		m_memory_streams.clear();
 	}
-	return nullptr;
-}
 
-void Pakal::ResourceManager::register_reader(IFileArchive* factory)
-{
-	m_stream_sources.push_back(factory);
-}
+	void ResourceManager::remove_source(ISource* source) 
+	{
+		std::lock_guard<std::mutex> lock(m_sources_mutex);
 
-void Pakal::ResourceManager::remove_reader(IFileArchive* factory)
-{
-	auto f = std::find(m_stream_sources.begin(), m_stream_sources.end() , factory);
-	m_stream_sources.erase( f );	
+		auto sourcePos = std::find(m_sources.begin(), m_sources.end(), source);
+
+		ASSERT(sourcePos != m_sources.end());
+
+		delete (*sourcePos);
+
+		m_sources.erase(sourcePos);
+
+	}
+
+	SharedPtr<IStream> ResourceManager::open_resource(const std::string& resourcePath, bool inMemory)
+	{
+		if (inMemory)
+		{
+			std::lock_guard<std::mutex> lock(m_memory_streams_mutex);
+
+			std::string normalizedPath = normalize_path(resourcePath);
+
+			auto streamIt = m_memory_streams.find(normalizedPath);
+
+			if (streamIt != m_memory_streams.end())
+			{
+				if (SharedPtr<MemoryStream> s = streamIt->second.lock())
+				{
+					LOG_INFO("[ResourceManager] %s loaded from cache", resourcePath.c_str());
+					return s->new_from_buffer();
+				}
+				else
+					m_memory_streams.erase(streamIt);
+			}
+			erase_if(m_memory_streams, [](const auto& stream) { return stream.second.expired(); });
+		}
+
+		SharedPtr<IStream> stream = nullptr;
+		{
+			std::lock_guard<std::mutex> lock(m_sources_mutex);
+			for (ISource* source : m_sources)
+			{
+				stream = source->open_resource(resourcePath);
+				if (stream != nullptr)
+				{
+					break;
+				}
+			}
+		}
+
+		if (stream != nullptr)
+		{
+			LOG_INFO("[ResourceManager] %s loaded", resourcePath.c_str());
+			if (inMemory)
+			{
+				SharedPtr<MemoryStream> memoryStream = std::make_shared<MemoryStream>(stream.get());
+
+				std::lock_guard<std::mutex> lock(m_memory_streams_mutex);
+				m_memory_streams[normalize_path(resourcePath)] = memoryStream;
+
+				return memoryStream;
+			}
+			else
+				return stream;
+		}
+
+		LOG_ERROR("[ResourceManager] %s could not be loaded", resourcePath.c_str());
+
+		return nullptr;
+	}
 }

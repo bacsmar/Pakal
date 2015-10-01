@@ -20,6 +20,11 @@ namespace Pakal
 
 	template <class T>
 	using UniquePtr = std::unique_ptr<T>;
+	
+	template <class T>
+	using WeakPtr = std::weak_ptr<T>;
+
+
 
 	const std::thread::id NULL_THREAD = std::thread::id();
 	#define  THIS_THREAD  std::this_thread::get_id()

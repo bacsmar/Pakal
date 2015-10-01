@@ -10,9 +10,8 @@
 
 #include <irrlicht.h>
 #include <string>
-#include "IStream.h"
+#include "ResourceManager.h"
 
-#include <Pakal_II/source/ResourceManager.h>
 #include "OSManager.h"
 
 namespace Pakal
@@ -35,22 +34,7 @@ namespace Pakal
 
 		explicit IrrGraphicsSystem(const Settings& settings, OSManager* windowManager);
 
-	protected:
-
-		// Irrlicht FileSystem Interface
-		class IrrFileSystemProvider final : public ResourceManager::IFileArchive
-		{
-			friend class IrrGraphicsSystem;
-			irr::io::IFileSystem* m_irr_fs;
-
-			explicit IrrFileSystemProvider(irr::io::IFileSystem* irr): m_irr_fs(irr){};
-
-			~IrrFileSystemProvider();;
-
-			IStreamPtr		open_reader(const std::string& fname) override;
-			IFileArchive*	add_file_archive(IStreamPtr file) override;
-			IFileArchive*	add_data_dir(const std::string& fname) override;
-		};		
+	protected:	
 		
 		unsigned long long m_resized_callback_id;
 		unsigned long long m_destroyed_callback_id;
@@ -60,7 +44,6 @@ namespace Pakal
 		irr::video::IVideoDriver	* driver;
 		irr::scene::ISceneManager	* smgr;
 		irr::gui::IGUIEnvironment	* guienv;
-		IrrFileSystemProvider		* m_fs_provider;
 
 		RendererInfo				*m_render_info;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		

@@ -1,6 +1,5 @@
 #include "SoundManager_SFML.h"
 #include <Pakal_II/source/ResourceManager.h>
-#include "StreamFileSFML.h"
 
 
 void Pakal::SoundManagerSFML::initialize()
