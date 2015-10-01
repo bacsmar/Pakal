@@ -37,9 +37,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager(nullptr),
 	m_input_manager(nullptr)
 {
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
-
-	LogMgr::instance();	
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);	
 	
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();
