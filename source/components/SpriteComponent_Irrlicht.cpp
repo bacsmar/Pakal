@@ -39,13 +39,7 @@ Pakal::SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(Pakal::IrrGraphicsSyst
 
 
 Pakal::SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
-{		
-	SAFE_DEL(m_sprite_node);
-	for (const auto& it : m_sprites)
-	{
-		delete it.second;
-	}
-	m_sprites.clear();
+{			
 }
 
 bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
@@ -120,11 +114,11 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 	const auto& defaultAnimation =  m_sprites.find(defaultAnim);	
 	if( defaultAnimation != m_sprites.end())
 	{
-		setAnimation( *defaultAnimation->second);
+		set_animation( *defaultAnimation->second);
 	}
 	else
 	{
-		setAnimation( *m_sprites.begin()->second );
+		set_animation( *m_sprites.begin()->second );
 	}	
 
 	return true;	
@@ -134,7 +128,6 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::initialize(const Settings& 
 {
 	return m_system->execute_block([=]() 
 	{
-
 		ASSERT(m_sprite_node == nullptr);
 		auto node = m_device->getSceneManager()->getRootSceneNode();
 		m_sprite_node = new SpriteNode_Irrlicht(node, m_device->getSceneManager(), -1);
@@ -147,18 +140,25 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::initialize(const Settings& 
 		load( resource.get() );
 
 		m_sprite_node->setPosition(core::vector3df(settings.initial_position.x, settings.initial_position.y, settings.initial_position.z));
-		setAnimation(settings.initial_animation);
+		set_animation(settings.initial_animation);
 		m_system->add_to_update_list(this);
 	});
 }
 
-Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::destroy()
+Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::finalize()
 {
 	return m_system->execute_block([=]() 
 	{
 		m_system->remove_from_update_list(this);
-		ASSERT(m_sprite_node);		
+		ASSERT(m_sprite_node);
+		m_sprite_node->detach();
 		m_sprite_node->drop();
+		for (const auto& it : m_sprites)
+		{
+			delete it.second;
+		}
+		m_sprites.clear();
+
 	});
 }
 
@@ -211,6 +211,7 @@ bool SpriteComponent_Irrlicht::isPlaying() const
 
 void SpriteComponent_Irrlicht::setFrame(std::size_t frameIndex, bool resetTime)
 {
+	ASSERT(m_sprite_node);
 	m_sprite_node->setFrame(frameIndex, m_sprite);
 	if (resetTime)
 		m_currentTime = 0;
@@ -221,7 +222,7 @@ unsigned SpriteComponent_Irrlicht::getFrameTime() const
 	return m_frameTime;
 }
 
-void SpriteComponent_Irrlicht::setAnimation(const SpriteIrrlicht& animation)
+void SpriteComponent_Irrlicht::set_animation(const SpriteIrrlicht& animation)
 {
 	m_sprite = &animation;
 	m_sprite_node->set_texture(m_sprite->getSpriteSheet());
@@ -229,12 +230,12 @@ void SpriteComponent_Irrlicht::setAnimation(const SpriteIrrlicht& animation)
 	setFrame(m_currentFrame);
 }
 
-void SpriteComponent_Irrlicht::setAnimation(const std::string& animationName)
+void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
 {
 	const auto& defaultAnimation = m_sprites.find(animationName);
 	if (defaultAnimation != m_sprites.end())
 	{
-		setAnimation(*defaultAnimation->second);
+		set_animation(*defaultAnimation->second);
 	}
 	else
 	{
@@ -255,7 +256,7 @@ void SpriteComponent_Irrlicht::play()
 void SpriteComponent_Irrlicht::play(const SpriteIrrlicht& animation)
 {
 	if (getAnimation() != &animation)
-		setAnimation(animation);
+		set_animation(animation);
 	play();
 }
 

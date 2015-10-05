@@ -65,6 +65,14 @@ const core::aabbox3d<f32>& SpriteNode_Irrlicht::getBoundingBox() const
 	return m_box;
 }
 
+void SpriteNode_Irrlicht::detach()
+{
+	if (this->Parent)
+	{
+		Parent->removeChild(this);
+	}
+}
+
 inline core::vector3df vector2Dto3D(const core::vector2df &v2d)
 {
 	return core::vector3df(v2d.X, v2d.Y, 0.0f);
@@ -141,8 +149,5 @@ void SpriteNode_Irrlicht::OnRegisterSceneNode()
 
 SpriteNode_Irrlicht::~SpriteNode_Irrlicht()
 {
-	if( this->Parent)
-	{
-		Parent->removeChild(this);
-	}
+	detach();
 }

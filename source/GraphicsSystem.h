@@ -54,6 +54,7 @@ namespace Pakal
 		Settings m_settings;
 		OSManager*	m_os_manager;
 
+		std::mutex m_updatablesMutex;
 		std::vector<IUpdatable*> m_updatables;
 
 		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager) : System(false), m_settings(settings), m_os_manager(os_manager) {  }
