@@ -8,7 +8,7 @@ namespace Pakal
 	public:
 		DECLARE_RTTI_WITH_BASE(ZipSource, ISource);
 
-		virtual bool initialize(const path& pathToZip, bool recursiveDirs, const std::string& password) = 0;
+		virtual bool initialize(const path& pathToZip, bool recursiveDirs, const std::string& password = "") = 0;
 		virtual void terminate() = 0;
 	};
 
