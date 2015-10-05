@@ -83,14 +83,14 @@ void SpriteNode_Irrlicht::setFrame(std::size_t frameIndex, const SpriteIrrlicht*
     if (sprite)
     {
         //calculate new vertex positions and texture coordiantes
-        irr::core::recti	rect = sprite->getFrame(frameIndex);
+        irr::core::recti	rect = sprite->get_frame(frameIndex);
 		m_frame_rect = rect;
-		core::vector2di		offset_i (sprite->getOffset(frameIndex));
+		core::vector2di		offset_i (sprite->get_offset(frameIndex));
 		core::vector2df		offset;
 		offset.X = (irr::f32)offset_i.X;
 		offset.Y = (irr::f32)offset_i.Y;
 
-		core::dimension2du d = sprite->getSpriteSheet()->getSize();
+		core::dimension2du d = sprite->get_sprite_sheet()->getSize();
 
 		auto height = rect.LowerRightCorner.Y;
 		auto width = rect.LowerRightCorner.X;		
