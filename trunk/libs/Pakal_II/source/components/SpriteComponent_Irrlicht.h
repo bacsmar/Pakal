@@ -19,7 +19,6 @@
 
 
 class SpriteNode_Irrlicht;
-class SpriteIrrlicht;
 
 namespace Pakal
 {
@@ -27,6 +26,7 @@ namespace Pakal
 	class Entity;
 	class IrrGraphicsSystem;
 	class IStream;
+	class Sprite;
 	
 	class _PAKALExport SpriteComponent_Irrlicht : public SpriteComponent, public GraphicsSystem::IUpdatable
 	{
@@ -41,7 +41,7 @@ namespace Pakal
 		virtual BasicTaskPtr finalize() override;
 
 		void set_animation(const std::string& animationName) override;
-		void set_animation(const SpriteIrrlicht& animation);
+		void set_animation(const Sprite& animation);
 		void set_looped(bool looped) override;
 
 		void update(unsigned dt) override;
@@ -60,12 +60,12 @@ namespace Pakal
 		unsigned get_frame_time() const;
 
 		void play();
-		void play(const SpriteIrrlicht& animation);
+		void play(const Sprite& animation);
 		void pause();
 		void stop();		
-		const SpriteIrrlicht* get_animation() const;
+		const Sprite* get_animation() const;
 
-		const SpriteIrrlicht* m_sprite;
+		const Sprite* m_sprite;
 
 		unsigned			m_frameTime;
 		unsigned			m_currentTime;
@@ -75,12 +75,12 @@ namespace Pakal
 		bool				m_isLooped;
 		bool				m_isFlipped;
 
-		irr::IrrlichtDevice * m_device;		
-		irr::video::IVideoDriver* m_driver;
+		irr::IrrlichtDevice*		m_device;		
+		irr::video::IVideoDriver*	m_driver;
 		IrrGraphicsSystem*			m_system;
 				
 		SpriteNode_Irrlicht *m_sprite_node;
-		std::unordered_map<std::string, SpriteIrrlicht*>	m_sprites;
+		std::unordered_map<std::string, Sprite*>	m_sprites;
 	};	
 
 }

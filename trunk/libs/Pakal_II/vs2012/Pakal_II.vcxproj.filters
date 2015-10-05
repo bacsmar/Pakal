@@ -79,9 +79,6 @@
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
       <Filter>Components\MeshComponent</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\Sprite_Irrlicht.cpp">
-      <Filter>Components\SpriteComponent</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
       <Filter>Components\SpriteComponent</Filter>
     </ClCompile>
@@ -301,9 +298,6 @@
     <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\Sprite_Irrlicht.hpp">
-      <Filter>Components\SpriteComponent</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
       <Filter>Components\SpriteComponent</Filter>
     </ClInclude>
@@ -311,6 +305,9 @@
       <Filter>Components\SpriteComponent</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h">
+      <Filter>Components\SpriteComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\Sprite.h">
       <Filter>Components\SpriteComponent</Filter>
     </ClInclude>
   </ItemGroup>
