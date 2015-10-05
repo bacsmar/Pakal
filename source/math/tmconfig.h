@@ -29,9 +29,18 @@ namespace Pakal
 {
 	namespace tmath
 	{
-		typedef vectorn<float,2> vector2df;
-		typedef vectorn<unsigned int,2> vector2di;
-		typedef vectorn<float,3> vector3df;
+		using vector2df = vectorn<float,2> ;
+		using vector2di = vectorn<int,2> ;
+		using vector2du = vectorn<unsigned, 2>;
+		using vector3df = vectorn<float,3> ;
+		
+		struct recti
+		{
+			recti():UpperLeftCorner(0,0), LowerRightCorner(0,0){}
+			recti(int x, int y, int x2, int y2) : UpperLeftCorner(x,y), LowerRightCorner(x2, y2){}
+			vector2di UpperLeftCorner;
+			vector2di LowerRightCorner;
+		};
 	}
 }
 

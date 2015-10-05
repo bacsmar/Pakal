@@ -7,43 +7,37 @@
 
 #include "irrlicht.h"
 #include "ISceneNode.h"
-#include "Sprite_Irrlicht.hpp"
-
-using namespace irr;
+#include "Components/Sprite.h"
 
 class SpriteNode_Irrlicht :  public irr::scene::ISceneNode	
 {
 public:    
-	explicit SpriteNode_Irrlicht(scene::ISceneNode* parent, scene::ISceneManager* mgr, s32 id);
+	explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, irr::s32 id);
 
 	virtual ~SpriteNode_Irrlicht();
 
 	irr::core::rectf getLocalBounds() const;
 	irr::core::rectf getGlobalBounds() const;
-	void setColor(const video::SColor& color);
+	void setColor(const irr::video::SColor& color);	
 
-	void set_texture(irr::video::ITexture *texture);
+	virtual irr::s32 getMaterialCount(){ return 1; }
+	virtual irr::video::SMaterial& getMaterial(irr::s32 i) { return m_material; } 
 
-	void setFrame(std::size_t frameIndex, const SpriteIrrlicht* sprite);
-
-	virtual s32 getMaterialCount(){ return 1; }
-
-	virtual video::SMaterial& getMaterial(s32 i){ return m_material; } 
 	virtual void OnRegisterSceneNode() override;
-
 	virtual void render() override;
-
-	virtual const core::aabbox3d<f32>& getBoundingBox() const override;
+	virtual const irr::core::aabbox3d<irr::f32>& getBoundingBox() const override;
 
 	void detach();
+	void set_texture(irr::video::ITexture *texture);
+	void set_frame(std::size_t frameIndex, const Pakal::Sprite* sprite);
 
-private:    
-    
-	core::aabbox3d<f32> m_box;
-	video::ITexture*	m_texture;    
-	video::S3DVertex	m_vertices[4];
-	u16					m_indices[6];
-	video::SMaterial	m_material;
-	irr::core::recti	m_frame_rect;
+private:
+
+	irr::core::aabbox3d<irr::f32>	m_box;
+	irr::video::ITexture*			m_texture;
+	irr::video::S3DVertex			m_vertices[4];
+	irr::u16						m_indices[6];
+	irr::video::SMaterial			m_material;
+	irr::core::recti				m_frame_rect;
 	
 };

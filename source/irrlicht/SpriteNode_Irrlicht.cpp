@@ -3,10 +3,11 @@
 ////////////////////////////////////////////////////////////
 
 #include "SpriteNode_Irrlicht.hpp"
-#include "Sprite_Irrlicht.hpp"
+#include "Components/Sprite.h"
 
 using namespace irr;
 using namespace scene;
+using namespace Pakal;
 
 SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr, s32 id)
 	: ISceneNode(parent,mgr, id),
@@ -78,26 +79,35 @@ inline core::vector3df vector2Dto3D(const core::vector2df &v2d)
 	return core::vector3df(v2d.X, v2d.Y, 0.0f);
 }
 
-void SpriteNode_Irrlicht::setFrame(std::size_t frameIndex, const SpriteIrrlicht* sprite)
+inline irr::core::vector2di tmath_vect_to_irrlicht(const Pakal::tmath::vector2di& v)
+{
+	return irr::core::vector2di(v.x, v.y);
+}
+
+void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite* sprite)
 {
     if (sprite)
     {
         //calculate new vertex positions and texture coordiantes
-        irr::core::recti	rect = sprite->get_frame(frameIndex);
-		m_frame_rect = rect;
-		core::vector2di		offset_i (sprite->get_offset(frameIndex));
-		core::vector2df		offset;
-		offset.X = (irr::f32)offset_i.X;
-		offset.Y = (irr::f32)offset_i.Y;
+        auto	rect = sprite->get_frame_offset(frameIndex);		
 
-		core::dimension2du d = sprite->get_sprite_sheet()->getSize();
+		m_frame_rect.LowerRightCorner.X = rect.LowerRightCorner.x;
+		m_frame_rect.LowerRightCorner.Y = rect.LowerRightCorner.y;
+		m_frame_rect.UpperLeftCorner.X = rect.UpperLeftCorner.x;
+		m_frame_rect.UpperLeftCorner.Y = rect.UpperLeftCorner.y;
 
-		auto height = rect.LowerRightCorner.Y;
-		auto width = rect.LowerRightCorner.X;		
+		auto relativepos_i = sprite->get_frame_pos(frameIndex);		
+		core::vector2df		relativePos = { static_cast<irr::f32>(relativepos_i.x) , static_cast<irr::f32>(relativepos_i.y) };
 
-		float left = static_cast<float>(rect.UpperLeftCorner.X) + 0.0001f;
+		//core::dimension2du d = sprite->get_sprite_sheet()->getSize();
+		core::dimension2du d = m_texture->getSize();
+
+		auto height = m_frame_rect.LowerRightCorner.Y;
+		auto width = m_frame_rect.LowerRightCorner.X;
+
+		float left = static_cast<float>(m_frame_rect.UpperLeftCorner.X) + 0.0001f;
 		float right = left + static_cast<float>(width);
-		float top = static_cast<float>(rect.UpperLeftCorner.Y);
+		float top = static_cast<float>(m_frame_rect.UpperLeftCorner.Y);
 		float bottom = top + static_cast<float>(height);
 
 		left /= d.Width;
@@ -105,10 +115,10 @@ void SpriteNode_Irrlicht::setFrame(std::size_t frameIndex, const SpriteIrrlicht*
 		top /= d.Height;
 		bottom /= d.Height;
 
-        m_vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + offset);
-        m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + offset );
-        m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + offset );
-        m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + offset );        
+        m_vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + relativePos);
+        m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );
+        m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );
+        m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );        
 
         m_vertices[0].TCoords = core::vector2df(left, top);
         m_vertices[1].TCoords = core::vector2df(left, bottom);

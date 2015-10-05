@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "SpriteComponent_Irrlicht.h"
 
-#include "irrlicht/Sprite_Irrlicht.hpp"
+#include "Components/Sprite.h"
 #include "irrlicht/SpriteNode_Irrlicht.hpp"
 #include "irrlicht/IrrGraphicsSystem.h"
 
@@ -28,6 +28,7 @@ const char * SPRITE_FRAME_HEIGHT = "h";
 
 
 using namespace Pakal;
+using namespace irr;
 
 Pakal::SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(Pakal::IrrGraphicsSystem *irrManager)
 	: m_frameTime(200), m_currentTime(0), m_currentFrame(0), m_isPaused(true),
@@ -83,7 +84,7 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 	for (const auto& framesNode : animationsNode)
 	{
 		std::string animationName = framesNode.attribute("name").as_string();
-		SpriteIrrlicht *animation = nullptr;
+		Sprite *animation = nullptr;
 
 		const auto& it =  m_sprites.find(animationName);		
 		if( it != m_sprites.end() )
@@ -92,11 +93,11 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 			animation = it->second;
 		}else
 		{
-			animation = new SpriteIrrlicht();
+			animation = new Sprite();
 			m_sprites[animationName] = animation;
 		}
 		
-		animation->set_sprite_sheet(*texture);
+		//animation->set_sprite_sheet(*texture);
 		
 		for (auto&& frame : framesNode)
 		{			
@@ -107,9 +108,11 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 			int height	= frame.attribute(SPRITE_FRAME_HEIGHT).as_int(-1);
 			int offsetX	= frame.attribute("oX").as_int(0);
 			int offsetY	= frame.attribute("oY").as_int(0);
-			animation->add_frame(core::recti(left, top, width, height), core::vector2di(offsetX, offsetY) );			
+			animation->add_frame(tmath::recti(left, top, width, height), tmath::vector2di(offsetX, offsetY) );			
 		}				
-	}		
+	}
+
+	m_sprite_node->set_texture(texture);
 
 	const auto& defaultAnimation =  m_sprites.find(defaultAnim);	
 	if( defaultAnimation != m_sprites.end())
@@ -212,7 +215,7 @@ bool SpriteComponent_Irrlicht::is_playing() const
 void SpriteComponent_Irrlicht::set_frame(std::size_t frameIndex, bool resetTime)
 {
 	ASSERT(m_sprite_node);
-	m_sprite_node->setFrame(frameIndex, m_sprite);
+	m_sprite_node->set_frame(frameIndex, m_sprite);
 	if (resetTime)
 		m_currentTime = 0;
 }
@@ -222,10 +225,10 @@ unsigned SpriteComponent_Irrlicht::get_frame_time() const
 	return m_frameTime;
 }
 
-void SpriteComponent_Irrlicht::set_animation(const SpriteIrrlicht& animation)
+void SpriteComponent_Irrlicht::set_animation(const Sprite& animation)
 {
 	m_sprite = &animation;
-	m_sprite_node->set_texture(m_sprite->get_sprite_sheet());
+	//m_sprite_node->set_texture(m_sprite->get_sprite_sheet());
 	m_currentFrame = 0;
 	set_frame(m_currentFrame);
 }
@@ -253,7 +256,7 @@ void SpriteComponent_Irrlicht::play()
 	m_isPaused = false;
 }
 
-void SpriteComponent_Irrlicht::play(const SpriteIrrlicht& animation)
+void SpriteComponent_Irrlicht::play(const Sprite& animation)
 {
 	if (get_animation() != &animation)
 		set_animation(animation);
@@ -277,7 +280,7 @@ void SpriteComponent_Irrlicht::set_looped(bool looped)
 	m_isLooped = looped;
 }
 
-const SpriteIrrlicht* SpriteComponent_Irrlicht::get_animation() const
+const Sprite* SpriteComponent_Irrlicht::get_animation() const
 {
 	return m_sprite;
 }
