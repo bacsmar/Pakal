@@ -68,7 +68,9 @@ namespace Pakal
 					return s->new_from_buffer();
 				}
 				else
+				{
 					m_memory_streams.erase(streamIt);
+				}
 			}
 			//erase_if(m_memory_streams, [](const auto& stream) { return stream.second.expired(); });			
 			using DataType = std::pair<std::string, WeakPtr<MemoryStream>> ;
@@ -102,7 +104,9 @@ namespace Pakal
 				return memoryStream;
 			}
 			else
+			{
 				return stream;
+			}
 		}
 
 		LOG_ERROR("[ResourceManager] %s could not be loaded", resourcePath.c_str());

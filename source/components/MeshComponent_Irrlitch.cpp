@@ -13,8 +13,14 @@ BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 {
 	return m_system->execute_block([=]()
 	{
-		if (!settings.mesh_name.empty())   set_mesh(settings.mesh_name);
-		if (!settings.texture_name.empty())   set_texture(settings.texture_name);
+		if (!settings.mesh_name.empty())
+		{
+			set_mesh(settings.mesh_name);
+		}
+		if (!settings.texture_name.empty())
+		{
+			set_texture(settings.texture_name);
+		}
 		if (m_node)
 		{ 
 			set_position(settings.position);

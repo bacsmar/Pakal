@@ -37,6 +37,11 @@
 
 #endif
 
+#if  defined(PAKAL_WIN32_PLATFORM ) && defined (_DEBUG)
+	#pragma comment(lib, "pugixmlsd.lib")
+#elif  defined(PAKAL_WIN32_PLATFORM )
+#endif
+
 #if PAKAL_USE_SFML_INPUT == 1
 #include "InputManager_SFML.h"
 #endif

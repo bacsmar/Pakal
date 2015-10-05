@@ -29,7 +29,8 @@ Pakal::EventScheduler::~EventScheduler()
 
 void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition)
 {
-	if (condition()) return;
+	if (condition()) 
+		return;
 
 	auto currentTid = THIS_THREAD;
 	m_mutex.lock();
