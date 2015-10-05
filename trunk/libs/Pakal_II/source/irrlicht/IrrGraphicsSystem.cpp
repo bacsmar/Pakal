@@ -7,6 +7,7 @@
 
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
+#include "Components/SpriteComponent_Irrlicht.h"
 #include "ResourceManager.h"
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
@@ -74,7 +75,7 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-30), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-20), vector3df(0,0,0));		
 
 	// setting up events
 	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs a)
@@ -165,6 +166,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
 	factories.push_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
+	factories.push_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\SpriteComponent.h" />
+    <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h" />
     <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h" />
     <ClInclude Include="..\source\irrlicht\IrrlitchStream.h" />
+    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp" />
+    <ClInclude Include="..\source\irrlicht\Sprite_Irrlicht.hpp" />
     <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h" />
     <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h" />
     <ClInclude Include="..\source\ZipSource.h" />
@@ -95,9 +99,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\Clock.cpp" />
+    <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\InputManager_SFML.cpp" />
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
+    <ClCompile Include="..\source\irrlicht\Sprite_Irrlicht.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />

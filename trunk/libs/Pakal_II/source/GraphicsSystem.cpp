@@ -22,6 +22,10 @@ void GraphicsSystem::on_terminate()
 //////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::on_update(long long dt)
 {
+	for( auto & updatable : m_updatables)
+	{
+		updatable->update(dt);
+	}
 	on_update_graphics(dt);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -34,4 +38,21 @@ void GraphicsSystem::on_pause()
 void GraphicsSystem::on_resume()
 {
 	on_resume_graphics();
+}
+
+void GraphicsSystem::add_to_update_list(IUpdatable* updatable)
+{
+	this->execute_block([=]()
+	{
+		m_updatables.emplace_back(updatable);
+	});
+}
+
+void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
+{
+	this->execute_block([=]()
+	{
+		const auto &it = std::find(m_updatables.begin(), m_updatables.end(), updatable);
+		m_updatables.erase(it);
+	});
 }

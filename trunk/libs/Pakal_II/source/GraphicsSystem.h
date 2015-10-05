@@ -39,9 +39,22 @@ namespace Pakal
 			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}
 		};
 
+		class IUpdatable
+		{	
+		protected:
+			virtual ~IUpdatable() {}
+		public:
+			virtual void update(unsigned dt) = 0;
+		};
+
+		virtual void add_to_update_list(IUpdatable *updatable);
+		virtual void remove_from_update_list(IUpdatable *updatable);
+
 	protected:
 		Settings m_settings;
 		OSManager*	m_os_manager;
+
+		std::vector<IUpdatable*> m_updatables;
 
 		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager) : System(false), m_settings(settings), m_os_manager(os_manager) {  }
 		virtual ~GraphicsSystem(){}
