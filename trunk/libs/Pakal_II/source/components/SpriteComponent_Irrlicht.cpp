@@ -26,8 +26,12 @@ const char * SPRITE_FRAME_TOP = "y";
 const char * SPRITE_FRAME_WIDTH = "w";
 const char * SPRITE_FRAME_HEIGHT = "h";
 
+
+using namespace Pakal;
+
 Pakal::SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(Pakal::IrrGraphicsSystem *irrManager)
-	: m_Flipped(false), m_Texture(nullptr), m_system(irrManager), m_sprite_node(nullptr)
+	: m_frameTime(200), m_currentTime(0), m_currentFrame(0), m_isPaused(true),
+	m_isLooped(true), m_isFlipped(false), m_system(irrManager), m_sprite_node(nullptr)
 {
 	m_driver = irrManager->get_driver();
 	m_device = irrManager->get_device();
@@ -74,7 +78,8 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 
 	LOG_DEBUG("[SpriteComponent] texture: %s, defaultAnim: %s", textureName, defaultAnim.c_str());
 
-	if( (m_Texture = m_driver->getTexture(textureName)) == nullptr)
+	auto texture = m_driver->getTexture(textureName);
+	if(texture == nullptr)
 	{
 		LOG_ERROR("[SpriteComponent] texture: %s not found!", textureName);
 		return false;
@@ -97,7 +102,7 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 			m_sprites[animationName] = animation;
 		}
 		
-		animation->setSpriteSheet(*m_Texture);
+		animation->setSpriteSheet(*texture);
 		
 		for (auto&& frame : framesNode)
 		{			
@@ -115,11 +120,11 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 	const auto& defaultAnimation =  m_sprites.find(defaultAnim);	
 	if( defaultAnimation != m_sprites.end())
 	{
-		m_sprite_node->setAnimation( *defaultAnimation->second);
+		setAnimation( *defaultAnimation->second);
 	}
 	else
 	{
-		m_sprite_node->setAnimation( *m_sprites.begin()->second );
+		setAnimation( *m_sprites.begin()->second );
 	}	
 
 	return true;	
@@ -132,13 +137,17 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::initialize(const Settings& 
 
 		ASSERT(m_sprite_node == nullptr);
 		auto node = m_device->getSceneManager()->getRootSceneNode();
-		m_sprite_node = new SpriteNode_Irrlicht(node, m_device->getSceneManager(), -1, settings.frame_time_ms, settings.init_paused, settings.init_looped);
+		m_sprite_node = new SpriteNode_Irrlicht(node, m_device->getSceneManager(), -1);
+
+		m_frameTime = settings.frame_time_ms;
+		m_isPaused = settings.init_paused;
+		m_isLooped = settings.init_looped;
 
 		auto resource = ResourceManager::instance().open_resource(settings.resource_file, false);
 		load( resource.get() );
 
 		m_sprite_node->setPosition(core::vector3df(settings.initial_position.x, settings.initial_position.y, settings.initial_position.z));
-		m_sprite_node->setAnimation(settings.initial_animation);
+		setAnimation(settings.initial_animation);
 		m_system->add_to_update_list(this);
 	});
 }
@@ -153,10 +162,121 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::destroy()
 	});
 }
 
-void Pakal::SpriteComponent_Irrlicht::update(unsigned dt)
+void Pakal::SpriteComponent_Irrlicht::update(unsigned deltaTime)
 {
-	if (m_sprite_node)
+	// if not paused and we have a valid animation
+	if (!m_isPaused && m_sprite)
 	{
-		m_sprite_node->update(dt);
+		// add delta time
+		m_currentTime += deltaTime;
+
+		// if current time is bigger then the frame time advance one frame
+		if (m_currentTime >= m_frameTime)
+		{
+			// reset time, but keep the remainder
+			//m_currentTime = sf::microseconds(m_currentTime.asMicroseconds() % m_frameTime.asMicroseconds());
+			m_currentTime = ((int)(m_currentTime * 1000) % (int)(m_frameTime));
+
+			// get next Frame index
+			if (m_currentFrame + 1 < m_sprite->getSize())
+			{
+				++m_currentFrame;
+			}
+			else
+			{
+				// animation has ended
+				m_currentFrame = 0; // reset to start
+
+				if (!m_isLooped)
+				{
+					m_isPaused = true;
+				}
+			}
+
+			// set the current frame, not reseting the time
+			setFrame(m_currentFrame, false);
+		}
 	}
+}
+
+bool SpriteComponent_Irrlicht::isLooped() const
+{
+	return m_isLooped;
+}
+
+bool SpriteComponent_Irrlicht::isPlaying() const
+{
+	return !m_isPaused;
+}
+
+void SpriteComponent_Irrlicht::setFrame(std::size_t frameIndex, bool resetTime)
+{
+	m_sprite_node->setFrame(frameIndex, m_sprite);
+	if (resetTime)
+		m_currentTime = 0;
+}
+
+unsigned SpriteComponent_Irrlicht::getFrameTime() const
+{
+	return m_frameTime;
+}
+
+void SpriteComponent_Irrlicht::setAnimation(const SpriteIrrlicht& animation)
+{
+	m_sprite = &animation;
+	m_sprite_node->set_texture(m_sprite->getSpriteSheet());
+	m_currentFrame = 0;
+	setFrame(m_currentFrame);
+}
+
+void SpriteComponent_Irrlicht::setAnimation(const std::string& animationName)
+{
+	const auto& defaultAnimation = m_sprites.find(animationName);
+	if (defaultAnimation != m_sprites.end())
+	{
+		setAnimation(*defaultAnimation->second);
+	}
+	else
+	{
+		LOG_ERROR("[SpriteComponent] missing animation: %s", animationName.c_str());
+	}
+}
+
+void SpriteComponent_Irrlicht::setFrameTime(unsigned time)
+{
+	m_frameTime = time;
+}
+
+void SpriteComponent_Irrlicht::play()
+{
+	m_isPaused = false;
+}
+
+void SpriteComponent_Irrlicht::play(const SpriteIrrlicht& animation)
+{
+	if (getAnimation() != &animation)
+		setAnimation(animation);
+	play();
+}
+
+void SpriteComponent_Irrlicht::pause()
+{
+	m_isPaused = true;
+}
+
+void SpriteComponent_Irrlicht::stop()
+{
+	m_isPaused = true;
+	m_currentFrame = 0;
+	setFrame(m_currentFrame);
+}
+
+void SpriteComponent_Irrlicht::setLooped(bool looped)
+{
+	m_isLooped = looped;
+}
+
+const SpriteIrrlicht* SpriteComponent_Irrlicht::getAnimation() const
+{
+	return m_sprite;
 }
