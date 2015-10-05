@@ -38,7 +38,7 @@ namespace Pakal
 		virtual ~SpriteComponent_Irrlicht(void);		
 
 		virtual BasicTaskPtr initialize(const Settings& settings) override;
-		virtual BasicTaskPtr finalize() override;
+		virtual BasicTaskPtr terminate() override;
 
 		void set_animation(const std::string& animationName) override;
 		void set_animation(const Sprite& animation);

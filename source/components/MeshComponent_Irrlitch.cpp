@@ -51,7 +51,7 @@ BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 		if (m_node)
 			m_node->remove();
 
-		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());		
+		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());
 
 		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
 

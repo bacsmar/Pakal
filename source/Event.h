@@ -11,6 +11,8 @@
 
 namespace Pakal
 {
+	using ListenerId = unsigned long long;
+
 	namespace priv
 	{
 		template <class TArgs>
@@ -43,11 +45,11 @@ namespace Pakal
 
 			explicit Event_t() : m_enabled(true) {}
 
-			inline unsigned long long add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
+			inline ListenerId add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 				
-				unsigned long long key = EventSchedulerHelper::new_id();
+				unsigned long long key = EventSystemUtils::new_id();
 
 				SharedPtr<DelegateData<TArgs>> metaData =
 					m_delegates.emplace(key, std::make_shared<DelegateData<TArgs>>()).first->second;
@@ -61,7 +63,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(unsigned long long key)
+			inline void remove_listener(ListenerId key)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -129,7 +131,7 @@ namespace Pakal
 					if (thisThread == dd.second->tid || dd.second->tid == NULL_THREAD)
 						dd.second->delegate(arguments);
 					else
-						EventSchedulerHelper::execute_in_thread([dd, arguments]() { dd.second->delegate(arguments); }, dd.second->tid);
+						EventSystemUtils::execute_in_thread([dd, arguments]() { dd.second->delegate(arguments); }, dd.second->tid);
 				}
 			}
 
@@ -159,11 +161,11 @@ namespace Pakal
 				return m_delegates.empty();
 			}
 
-			inline unsigned long long add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
+			inline ListenerId add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
-				unsigned long long key = EventSchedulerHelper::new_id();
+				ListenerId key = EventSystemUtils::new_id();
 
 				SharedPtr<DelegateData<void>> metaData = 
 					m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;
@@ -176,7 +178,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(unsigned long long key)
+			inline void remove_listener(ListenerId key)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -235,7 +237,7 @@ namespace Pakal
 					if (thisThread == dd.second->tid || dd.second->tid == NULL_THREAD)
 						dd.second->delegate();
 					else
-						EventSchedulerHelper::execute_in_thread(dd.second->delegate, dd.second->tid);
+						EventSystemUtils::execute_in_thread(dd.second->delegate, dd.second->tid);
 				}
 			}
 

@@ -26,7 +26,7 @@ void GraphicsSystem::on_update(long long dt)
 		std::lock_guard<std::mutex> lock(m_updatablesMutex);
 		for (auto & updatable : m_updatables)
 		{
-			updatable->update(dt);
+			updatable->update(static_cast<unsigned>(dt));
 		}
 	}
 	on_update_graphics(dt);

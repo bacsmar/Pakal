@@ -1,26 +1,28 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2015 PakalEngine
-// File: SoundManager.h
-// Original Author: Salvador Noel Romo Garcia.
-// last modification: 13 jun 2015
-// Purpose: Base Class for sound managers
-///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "IManager.h"
-#include <string>
+#include "IComponentProvider.h"
+#include "math/tm.h"
 
 namespace Pakal
 {
-	class _PAKALExport SoundManager :
-		public Pakal::IManager
+
+	struct SoundSettings
+	{
+		float volume = 100;
+		float pitch = 1;
+		tmath::vector3df position;
+		bool relative_to_source = false;
+		
+		//valid only for MusicComponent
+		bool loop = false;
+	};
+
+	class _PAKALExport SoundManager : public IManager,  public IComponentProvider
 	{
 	public:
-		//void initialize() override;
-		//void terminate() override;
-	public:
-		SoundManager(void);
-		virtual ~SoundManager(void);
+		virtual ~SoundManager() {};
 
-		virtual void play_music(const std::string& filename) = 0;
+		virtual void set_volume(float volume) = 0;
+		virtual float get_volume() = 0;
 	};
 }

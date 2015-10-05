@@ -13,21 +13,20 @@
 
 #include "DirectorySource.h"
 #include "ZipSource.h"
+#include "path.h"
 
 namespace Pakal
 {
 
 	class _PAKALExport ResourceManager final : public  IManager
 	{
-
-	private:
 		ResourceManager() {}
 
 		template <class ResourceManager> friend class SingletonHolder;
 
 		std::map<std::string, std::function<ISource*()>> m_factories;
 		std::vector<ISource*> m_sources;
-		std::map<std::string,WeakPtr<MemoryStream>> m_memory_streams;
+		std::map<path,WeakPtr<MemoryStream>> m_memory_streams;
 
 		std::mutex m_memory_streams_mutex,m_sources_mutex;
 
@@ -65,22 +64,7 @@ namespace Pakal
 
 		}
 
-		std::string normalize_path(std::string str);
-
-		template< typename ContainerT, typename PredicateT >
-		void erase_if(ContainerT& items, const PredicateT& predicate) 
-		{
-			for (auto it = items.begin(); it != items.end(); ) 
-			{
-				if (predicate(*it))
-					it = items.erase(it);
-				else 
-					++it;
-			}
-		};
-
 	public:
-
 		static ResourceManager& instance();
 
 		void initialize() override;
@@ -128,10 +112,10 @@ namespace Pakal
 			return source ? SharedPtr<TSource>(source) : nullptr;
 		}
 
-		SharedPtr<IStream> open_resource(const std::string& resourcePath, bool inMemory);
+		SharedPtr<IStream> open_resource(const path& resourcePath, bool inMemory);
 
 		template<class TStream> 
-		SharedPtr<TStream> open_resource(const std::string& resourcePath, bool inMemory)
+		SharedPtr<TStream> open_resource(const path& resourcePath, bool inMemory)
 		{
 			SharedPtr<IStream> stream = open_resource(resourcePath, inMemory);
 

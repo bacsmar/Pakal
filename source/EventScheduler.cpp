@@ -125,7 +125,7 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_worker(const std::function
 {
 	BasicTaskPtr task = std::make_shared<BasicTask>(fn);
 
-	std::async(std::launch::async,[=]() { task->run(); });
+	m_pool.execute(std::bind(&BasicTask::run,task));
 	
 	return task;
 }

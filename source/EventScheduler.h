@@ -6,11 +6,11 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
-#include <future>
 
-#include <TaskFwd.h>
+#include "TaskFwd.h"
 #include "Task.h"
 #include "InboxQueue.h"
+#include "ThreadPool.h"
 
 namespace Pakal
 {
@@ -26,10 +26,11 @@ namespace Pakal
 		std::unordered_map<std::thread::id, InboxTask*> m_inboxes;
 		std::unordered_set<AsyncTaskDispatcher*> m_dispatchers;
 		std::mutex m_mutex;
+		ThreadPool m_pool;
 
 		InboxTask* find_inbox_for_thread(std::thread::id tid);	
 
-		EventScheduler()  {}
+		EventScheduler() {}
 		virtual	~EventScheduler();
 
 	public:
@@ -71,7 +72,7 @@ namespace Pakal
 		{
 			auto task = std::make_shared<Task<TArgs>>(fn);
 
-			std::async(std::launch::async, [=]() { task->run(); });
+			m_pool.execute(std::bind(&BasicTask::run, task));
 
 			return task;
 		}

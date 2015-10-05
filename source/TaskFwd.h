@@ -6,10 +6,10 @@
 
 namespace Pakal
 {
-	template<class TArgs>
-	class _PAKALExport Task;
+	class _PAKALExport BasicTask;
 
-	class _PAKALExport BasicTask;		
+	template<class TArgs> class _PAKALExport Task;
+
 	using BasicTaskPtr = std::shared_ptr<BasicTask>;
 
 	template <class T>

@@ -52,6 +52,17 @@ public:
 	{
 	}
 
+	////////////////////////////////////////////////////////////
+	/// \brief Construct from a number of microseconds
+	///
+	/// \param microseconds Number of microseconds
+	///
+	////////////////////////////////////////////////////////////
+	explicit Time(long long microseconds) :
+		m_microseconds(microseconds)
+	{
+	}
+
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
     ///
@@ -102,19 +113,8 @@ private:
     friend _PAKALExport Time milliseconds(unsigned);
     friend _PAKALExport Time microseconds(long long);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct from a number of microseconds
-    ///
-    /// This function is internal. To construct time values,
-    /// use sf::seconds, sf::milliseconds or sf::microseconds instead.
-    ///
-    /// \param microseconds Number of microseconds
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Time(long long microseconds) :
-		m_microseconds(microseconds)
-	{
-	}
+  
+
 
 private:
 

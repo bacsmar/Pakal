@@ -29,10 +29,10 @@ namespace Pakal
 {
 	namespace tmath
 	{
-		using vector2df = vectorn<float,2> ;
-		using vector2di = vectorn<int,2> ;
+		using vector2df = vectorn<float,2>;
+		using vector2di = vectorn<int,2>;
 		using vector2du = vectorn<unsigned, 2>;
-		using vector3df = vectorn<float,3> ;
+		using vector3df = vectorn<float,3>;
 		
 		struct recti
 		{

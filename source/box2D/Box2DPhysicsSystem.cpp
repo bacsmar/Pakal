@@ -27,7 +27,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
-	factories.push_back( CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
+	factories.emplace_back(CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
