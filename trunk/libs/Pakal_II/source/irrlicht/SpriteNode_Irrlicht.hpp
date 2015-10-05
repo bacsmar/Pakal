@@ -35,6 +35,8 @@ public:
 
 	virtual const core::aabbox3d<f32>& getBoundingBox() const override;
 
+	void detach();
+
 private:    
     
 	core::aabbox3d<f32> m_box;

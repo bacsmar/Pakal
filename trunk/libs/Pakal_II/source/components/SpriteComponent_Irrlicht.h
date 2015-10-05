@@ -35,32 +35,34 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(SpriteComponent_Irrlicht, SpriteComponent);		
 			
 		SpriteComponent_Irrlicht(IrrGraphicsSystem *irrManager);
-		virtual ~SpriteComponent_Irrlicht(void);
-
-		bool load(IStream * stream);				
+		virtual ~SpriteComponent_Irrlicht(void);		
 
 		virtual BasicTaskPtr initialize(const Settings& settings) override;
-		virtual BasicTaskPtr destroy() override;
+		virtual BasicTaskPtr finalize() override;
+
+		void set_animation(const std::string& animationName) override;
+		void set_animation(const SpriteIrrlicht& animation);
+		void setLooped(bool looped) override;
 
 		void update(unsigned dt) override;
 
-		inline bool get_flipped() const { return m_isFlipped; }
-		inline void set_flipped(bool val) { m_isFlipped = val; }
+		inline bool get_flipped() const override { return m_isFlipped; } 
+		inline void set_flipped(bool val) override { m_isFlipped = val; }
 
-	protected:			
+	protected:	
+		bool load(IStream * stream);
 
 		bool isLooped() const;
 		bool isPlaying() const;
+
 		void setFrame(std::size_t frameIndex, bool resetTime = true);
 		void setFrameTime(unsigned time);
 		unsigned getFrameTime() const;
-		void setAnimation(const SpriteIrrlicht& animation);
-		void setAnimation(const std::string& animationName);
+
 		void play();
 		void play(const SpriteIrrlicht& animation);
 		void pause();
-		void stop();
-		void setLooped(bool looped);		
+		void stop();		
 		const SpriteIrrlicht* getAnimation() const;
 
 		const SpriteIrrlicht* m_sprite;

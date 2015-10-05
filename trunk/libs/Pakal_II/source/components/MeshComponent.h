@@ -36,5 +36,7 @@ namespace Pakal
 
 		virtual void  set_angle(const tmath::vector3df& position) = 0;
 		virtual tmath::vector3df get_angle() = 0;
+	//protected:
+		virtual ~MeshComponent(){}
 	};	
 }
