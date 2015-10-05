@@ -96,7 +96,7 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 			m_sprites[animationName] = animation;
 		}
 		
-		animation->setSpriteSheet(*texture);
+		animation->set_sprite_sheet(*texture);
 		
 		for (auto&& frame : framesNode)
 		{			
@@ -107,7 +107,7 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 			int height	= frame.attribute(SPRITE_FRAME_HEIGHT).as_int(-1);
 			int offsetX	= frame.attribute("oX").as_int(0);
 			int offsetY	= frame.attribute("oY").as_int(0);
-			animation->addFrame(core::recti(left, top, width, height), core::vector2di(offsetX, offsetY) );			
+			animation->add_frame(core::recti(left, top, width, height), core::vector2di(offsetX, offsetY) );			
 		}				
 	}		
 
@@ -178,7 +178,7 @@ void Pakal::SpriteComponent_Irrlicht::update(unsigned deltaTime)
 			m_currentTime = ((int)(m_currentTime * 1000) % (int)(m_frameTime));
 
 			// get next Frame index
-			if (m_currentFrame + 1 < m_sprite->getSize())
+			if (m_currentFrame + 1 < m_sprite->get_size())
 			{
 				++m_currentFrame;
 			}
@@ -194,22 +194,22 @@ void Pakal::SpriteComponent_Irrlicht::update(unsigned deltaTime)
 			}
 
 			// set the current frame, not reseting the time
-			setFrame(m_currentFrame, false);
+			set_frame(m_currentFrame, false);
 		}
 	}
 }
 
-bool SpriteComponent_Irrlicht::isLooped() const
+bool SpriteComponent_Irrlicht::is_looped() const
 {
 	return m_isLooped;
 }
 
-bool SpriteComponent_Irrlicht::isPlaying() const
+bool SpriteComponent_Irrlicht::is_playing() const
 {
 	return !m_isPaused;
 }
 
-void SpriteComponent_Irrlicht::setFrame(std::size_t frameIndex, bool resetTime)
+void SpriteComponent_Irrlicht::set_frame(std::size_t frameIndex, bool resetTime)
 {
 	ASSERT(m_sprite_node);
 	m_sprite_node->setFrame(frameIndex, m_sprite);
@@ -217,7 +217,7 @@ void SpriteComponent_Irrlicht::setFrame(std::size_t frameIndex, bool resetTime)
 		m_currentTime = 0;
 }
 
-unsigned SpriteComponent_Irrlicht::getFrameTime() const
+unsigned SpriteComponent_Irrlicht::get_frame_time() const
 {
 	return m_frameTime;
 }
@@ -225,9 +225,9 @@ unsigned SpriteComponent_Irrlicht::getFrameTime() const
 void SpriteComponent_Irrlicht::set_animation(const SpriteIrrlicht& animation)
 {
 	m_sprite = &animation;
-	m_sprite_node->set_texture(m_sprite->getSpriteSheet());
+	m_sprite_node->set_texture(m_sprite->get_sprite_sheet());
 	m_currentFrame = 0;
-	setFrame(m_currentFrame);
+	set_frame(m_currentFrame);
 }
 
 void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
@@ -243,7 +243,7 @@ void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
 	}
 }
 
-void SpriteComponent_Irrlicht::setFrameTime(unsigned time)
+void SpriteComponent_Irrlicht::set_frame_fime(unsigned time)
 {
 	m_frameTime = time;
 }
@@ -255,7 +255,7 @@ void SpriteComponent_Irrlicht::play()
 
 void SpriteComponent_Irrlicht::play(const SpriteIrrlicht& animation)
 {
-	if (getAnimation() != &animation)
+	if (get_animation() != &animation)
 		set_animation(animation);
 	play();
 }
@@ -269,15 +269,15 @@ void SpriteComponent_Irrlicht::stop()
 {
 	m_isPaused = true;
 	m_currentFrame = 0;
-	setFrame(m_currentFrame);
+	set_frame(m_currentFrame);
 }
 
-void SpriteComponent_Irrlicht::setLooped(bool looped)
+void SpriteComponent_Irrlicht::set_looped(bool looped)
 {
 	m_isLooped = looped;
 }
 
-const SpriteIrrlicht* SpriteComponent_Irrlicht::getAnimation() const
+const SpriteIrrlicht* SpriteComponent_Irrlicht::get_animation() const
 {
 	return m_sprite;
 }

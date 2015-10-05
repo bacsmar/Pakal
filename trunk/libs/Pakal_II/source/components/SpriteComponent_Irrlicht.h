@@ -42,7 +42,7 @@ namespace Pakal
 
 		void set_animation(const std::string& animationName) override;
 		void set_animation(const SpriteIrrlicht& animation);
-		void setLooped(bool looped) override;
+		void set_looped(bool looped) override;
 
 		void update(unsigned dt) override;
 
@@ -52,18 +52,18 @@ namespace Pakal
 	protected:	
 		bool load(IStream * stream);
 
-		bool isLooped() const;
-		bool isPlaying() const;
+		bool is_looped() const;
+		bool is_playing() const;
 
-		void setFrame(std::size_t frameIndex, bool resetTime = true);
-		void setFrameTime(unsigned time);
-		unsigned getFrameTime() const;
+		void set_frame(std::size_t frameIndex, bool resetTime = true);
+		void set_frame_fime(unsigned time);
+		unsigned get_frame_time() const;
 
 		void play();
 		void play(const SpriteIrrlicht& animation);
 		void pause();
 		void stop();		
-		const SpriteIrrlicht* getAnimation() const;
+		const SpriteIrrlicht* get_animation() const;
 
 		const SpriteIrrlicht* m_sprite;
 
