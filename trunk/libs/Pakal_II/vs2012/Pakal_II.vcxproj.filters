@@ -52,12 +52,6 @@
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EngineSettings.cpp" />
-    <ClCompile Include="..\source\SoundManager.cpp">
-      <Filter>Managers\SoundManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp">
-      <Filter>Managers\SoundManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
@@ -78,6 +72,21 @@
     </ClCompile>
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
       <Filter>Components\MeshComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ThreadPool.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Timer.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp">
+      <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp">
+      <Filter>Components\SFXComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp">
+      <Filter>Components\MusicComponent</Filter>
     </ClCompile>
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
       <Filter>Components\SpriteComponent</Filter>
@@ -223,9 +232,6 @@
     <ClInclude Include="..\source\SoundManager.h">
       <Filter>Managers\SoundManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\sfml\SoundManager_SFML.h">
-      <Filter>Managers\SoundManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\ResourceManager.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
@@ -251,9 +257,6 @@
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\OSManager.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IOSManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Clock.h">
@@ -297,6 +300,36 @@
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\StreamSFML.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\path.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Utils.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ThreadPool.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Timer.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\SoundManagerSFML.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SFXComponent.h">
+      <Filter>Components\SFXComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
+      <Filter>Components\SFXComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\MusicComponent.h">
+      <Filter>Components\MusicComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
+      <Filter>Components\MusicComponent</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
       <Filter>Components\SpriteComponent</Filter>
@@ -371,6 +404,12 @@
     </Filter>
     <Filter Include="Managers\ResourceManager\Sources">
       <UniqueIdentifier>{575441c4-0da8-4220-861f-5cc8db12b3c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\SFXComponent">
+      <UniqueIdentifier>{45a61c37-d4c8-4650-9d45-0016a75a7fd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\MusicComponent">
+      <UniqueIdentifier>{90b50d09-2bb5-4fa1-a1e1-0d73c5b7eff5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Components\SpriteComponent">
       <UniqueIdentifier>{01500137-8e47-4064-ab89-e0c6ae7021a1}</UniqueIdentifier>

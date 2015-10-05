@@ -18,7 +18,7 @@ namespace Pakal
 
 		explicit DirectorySourceIrrlitch(irr::io::IFileSystem* fileSystem) : m_file_system(fileSystem), m_archive(nullptr) {}
 
-		bool initialize(const std::string& path, bool recursive) override
+		bool initialize(const path& path, bool recursive) override
 		{
 			return m_file_system->addFileArchive(path.c_str(), true, !recursive, irr::io::EFAT_FOLDER, "", &m_archive);
 		}
@@ -28,7 +28,7 @@ namespace Pakal
 			m_file_system->removeFileArchive(m_archive);
 		}
 
-		SharedPtr<IStream> open_resource(const std::string& pathToResource) override
+		SharedPtr<IStream> open_resource(const path& pathToResource) override
 		{
 			irr::io::IReadFile * nativeFile = m_archive->createAndOpenFile(pathToResource.c_str());
 

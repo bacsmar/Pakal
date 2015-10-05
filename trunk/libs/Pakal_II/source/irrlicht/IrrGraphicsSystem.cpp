@@ -165,8 +165,8 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.push_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
-	factories.push_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
+	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
+	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

@@ -10,7 +10,7 @@
 
 #if PAKAL_USE_SFML_AUDIO == 1
 
-#include "sfml/SoundManager_SFML.h"
+#include "sfml/SoundManagerSFML.h"
 #if defined(PAKAL_WIN32_PLATFORM )
 #if defined( _DEBUG)
 	#ifdef PAKAL_STATIC_LIB	//debug & static lib
@@ -52,7 +52,7 @@ Engine::Settings::Settings()  : uses_thread(true)
 {
 
 #if PAKAL_USE_IRRLICHT == 1
-	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->get_os_manager()); };
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->os_manager()); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1

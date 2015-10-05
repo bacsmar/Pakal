@@ -19,6 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\MusicComponent.h" />
+    <ClInclude Include="..\source\path.h" />
+    <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
+    <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
+    <ClInclude Include="..\source\sfml\StreamSFML.h" />
+    <ClInclude Include="..\source\SFXComponent.h" />
+    <ClInclude Include="..\source\ThreadPool.h" />
+    <ClInclude Include="..\source\Timer.h" />
+    <ClInclude Include="..\source\Utils.h" />
     <ClInclude Include="..\source\components\Sprite.h" />
     <ClInclude Include="..\source\components\SpriteComponent.h" />
     <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h" />
@@ -35,7 +44,6 @@
     <ClInclude Include="..\source\Clock.h" />
     <ClInclude Include="..\source\InputManager_SFML.h" />
     <ClInclude Include="..\source\IInputManager.h" />
-    <ClInclude Include="..\source\IOSManager.h" />
     <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\math\matrix.h" />
     <ClInclude Include="..\source\components\BodyComponent.h" />
@@ -55,7 +63,7 @@
     <ClInclude Include="..\source\ISystem.h" />
     <ClInclude Include="..\source\OSManager.h" />
     <ClInclude Include="..\source\ResourceManager.h" />
-    <ClInclude Include="..\source\sfml\SoundManager_SFML.h" />
+    <ClInclude Include="..\source\sfml\SoundManagerSFML.h" />
     <ClInclude Include="..\source\SoundManager.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
@@ -98,6 +106,10 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp" />
+    <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp" />
+    <ClCompile Include="..\source\ThreadPool.cpp" />
+    <ClCompile Include="..\source\Timer.cpp" />
     <ClCompile Include="..\source\Clock.cpp" />
     <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\InputManager_SFML.cpp" />
@@ -106,8 +118,7 @@
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
-    <ClCompile Include="..\source\sfml\SoundManager_SFML.cpp" />
-    <ClCompile Include="..\source\SoundManager.cpp" />
+    <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "BasicTask.h"
+#include "EventSystemUtils.h"
 
 
 namespace Pakal
@@ -129,6 +130,14 @@ namespace Pakal
 		static TaskPtr<T> from_result(const T& result)
 		{
 			return std::make_shared<Task<T>>(result);
+		}
+
+		static BasicTaskPtr delay(unsigned ms)
+		{
+			return EventSystemUtils::execute_in_worker([ms]()
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+			});
 		}
 	};	
 

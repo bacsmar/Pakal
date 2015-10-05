@@ -1,4 +1,5 @@
 #include "Timer.h"
+#include "LogMgr.h"
 
 namespace Pakal
 {
@@ -35,7 +36,8 @@ namespace Pakal
 		m_active = false;
 		stop();
 
-		m_thread->detach();
+		LOG_INFO("Timer waiting event_elapsed to finalize...");
+		m_thread->join();
 	}
 
 	void Timer::set_interval(unsigned ms) 

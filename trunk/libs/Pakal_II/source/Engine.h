@@ -4,7 +4,6 @@
 
 #include <unordered_set>
 #include <functional>
-#include <algorithm>
 
 #include "PhysicsSystem.h"
 #include "GraphicsSystem.h"
@@ -48,15 +47,15 @@ namespace Pakal
 
 		void run(IPakalApplication* application);
 
-		inline ComponentManager*	get_component_manager() const { return m_component_manager; }
-		inline GraphicsSystem*		get_graphics_system() const { return m_graphics_system; }
-		inline PhysicsSystem*		get_physics_system() const { return m_physics_system; }
+		inline ComponentManager*	component_manager() const { return m_component_manager; }
+		inline GraphicsSystem*		graphics_system() const { return m_graphics_system; }
+		inline PhysicsSystem*		physics_system() const { return m_physics_system; }
 		inline IPakalApplication*	get_application() const { return m_application; }
-		inline SoundManager*		get_sound_manager() const { return m_sound_manager; }
-		inline IInputManager*		get_input_manager() const { return m_input_manager; }
-		inline GameStateManager*	get_game_state_manager() const { return m_game_state_manager; }
-		inline OSManager*			get_os_manager()  { return &OSManager::instance(); } 
-		inline ResourceManager*		get_resource_manager()  { return &ResourceManager::instance(); } 
+		inline SoundManager*		sound_manager() const { return m_sound_manager; }
+		inline IInputManager*		input_manager() const { return m_input_manager; }
+		inline GameStateManager*	game_state_manager() const { return m_game_state_manager; }
+		inline OSManager*			os_manager()  { return &OSManager::instance(); } 
+		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); } 
 
 
 		const char* get_system_name() override { return "Engine"; };

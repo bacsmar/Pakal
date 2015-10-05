@@ -2,14 +2,10 @@
 
 #include "Config.h"
 #include <vector>
+#include "ComponentFactory.h"
 
 namespace Pakal
 {
-
-	class IComponentFactory;
-	class BasicTask;
-	class Component;
-
 	class _PAKALExport IComponentProvider
 	{
 	public:

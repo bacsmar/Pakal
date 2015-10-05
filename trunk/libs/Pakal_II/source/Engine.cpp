@@ -49,6 +49,7 @@ Engine::Engine(const Settings& settings) :
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
+	m_component_manager->register_provider(*m_sound_manager);
 
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
@@ -64,8 +65,8 @@ void Engine::run(IPakalApplication* application)
 	m_application = application;
 	
 	//Initialize managers
-	get_resource_manager()->initialize();
-	get_os_manager()->initialize();
+	resource_manager()->initialize();
+	os_manager()->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
@@ -123,12 +124,12 @@ void Engine::run(IPakalApplication* application)
 
 		if (get_state() == SystemState::Paused)
 		{
-			get_os_manager()->wait_for_os_events();
+			os_manager()->wait_for_os_events();
 			clock.restart();
 		}
 		else
 		{
-			get_os_manager()->process_window_events();
+			os_manager()->process_window_events();
 		}			
 
 		dt = clock.restart().asMilliseconds();
@@ -149,8 +150,8 @@ void Engine::run(IPakalApplication* application)
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
 	m_input_manager->terminate();
-	get_os_manager()->terminate();
-	get_resource_manager()->terminate();
+	os_manager()->terminate();
+	resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -162,14 +163,14 @@ void Engine::on_update(long long dt)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	m_listener_terminate = get_os_manager()->event_app_finished.add_listener([this]() { terminate(); });
+	m_listener_terminate = os_manager()->event_app_finished.add_listener([this]() { terminate(); });
 
 	m_application->start(this);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
-	get_os_manager()->event_app_finished.remove_listener(m_listener_terminate);
+	os_manager()->event_app_finished.remove_listener(m_listener_terminate);
 
 	m_application->end(this);
 }

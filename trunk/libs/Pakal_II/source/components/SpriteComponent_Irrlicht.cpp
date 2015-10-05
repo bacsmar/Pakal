@@ -30,7 +30,7 @@ const char * SPRITE_FRAME_HEIGHT = "h";
 using namespace Pakal;
 using namespace irr;
 
-Pakal::SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(Pakal::IrrGraphicsSystem *irrManager)
+SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(IrrGraphicsSystem *irrManager)
 	: m_frameTime(200), m_currentTime(0), m_currentFrame(0), m_isPaused(true),
 	m_isLooped(true), m_isFlipped(false), m_system(irrManager), m_sprite_node(nullptr)
 {
@@ -39,15 +39,15 @@ Pakal::SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(Pakal::IrrGraphicsSyst
 }
 
 
-Pakal::SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
+SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
 {			
 }
 
-bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
+bool SpriteComponent_Irrlicht::load( IStream* stream)
 {
 	pugi::xml_document xmlFile;
 	
-	std::vector<char> buffer(stream->size());	
+	std::vector<char> buffer(static_cast<unsigned>(stream->size()));	
 	stream->read( &buffer[0], stream->size());
 
 	pugi::xml_parse_result result = xmlFile.load_buffer(buffer.data(), buffer.size());
@@ -127,7 +127,7 @@ bool Pakal::SpriteComponent_Irrlicht::load( IStream* stream)
 	return true;	
 }
 
-Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::initialize(const Settings& settings)
+BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 {
 	return m_system->execute_block([=]() 
 	{
@@ -148,7 +148,7 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::initialize(const Settings& 
 	});
 }
 
-Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::finalize()
+BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 {
 	return m_system->execute_block([=]() 
 	{
@@ -165,7 +165,7 @@ Pakal::BasicTaskPtr Pakal::SpriteComponent_Irrlicht::finalize()
 	});
 }
 
-void Pakal::SpriteComponent_Irrlicht::update(unsigned deltaTime)
+void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 {
 	// if not paused and we have a valid animation
 	if (!m_isPaused && m_sprite)
@@ -212,7 +212,7 @@ bool SpriteComponent_Irrlicht::is_playing() const
 	return !m_isPaused;
 }
 
-void SpriteComponent_Irrlicht::set_frame(std::size_t frameIndex, bool resetTime)
+void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 {
 	ASSERT(m_sprite_node);
 	m_sprite_node->set_frame(frameIndex, m_sprite);
