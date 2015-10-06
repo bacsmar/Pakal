@@ -1,17 +1,33 @@
 #include "Engine.h"
 
+#include "SoundManager.h"
+
 #if PAKAL_USE_BOX2D == 1
-#include "box2D/Box2DPhysicsSystem.h"
+	#include "box2D/Box2DPhysicsSystem.h"
 #endif
 
 #if PAKAL_USE_IRRLICHT == 1
-#include "irrlicht/IrrGraphicsSystem.h"
+	#include "irrlicht/IrrGraphicsSystem.h"
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1
+	#include "sfml/SoundManagerSFML.h"
+#endif
 
-#include "sfml/SoundManagerSFML.h"
+#if PAKAL_USE_SFML_INPUT == 1
+	#include "InputManager_SFML.h"
+#endif
+
 #if defined(PAKAL_WIN32_PLATFORM )
+
+		// pugixml
+#if defined(_DEBUG)
+	#pragma comment(lib, "pugixmlsd.lib")
+#else
+	#pragma comment(lib, "pugixmls.lib")
+#endif	// pugixml
+
+#if PAKAL_USE_SFML == 1
 #if defined( _DEBUG)
 	#ifdef PAKAL_STATIC_LIB	//debug & static lib
 		#pragma comment(lib, "sfml-audio-s-d.lib")
@@ -23,7 +39,7 @@
 		#pragma comment(lib, "sfml-window-d.lib")
 	#endif
 #else
-	#ifdef PAKAL_STATIC_LIB	//debug & static lib
+	#ifdef PAKAL_STATIC_LIB	//release & static lib
 		#pragma comment(lib, "sfml-audio-s.lib") 
 		#pragma comment(lib, "sfml-system-s.lib")
 		#pragma comment(lib, "sfml-window-s.lib")
@@ -33,18 +49,9 @@
 		#pragma comment(lib, "sfml-window.lib")
 	#endif
 #endif
-#endif
+#endif	//PAKAL_USE_SFML
+#endif	//PAKAL_WIN32_PLATFORM
 
-#endif
-
-#if  defined(PAKAL_WIN32_PLATFORM ) && defined (_DEBUG)
-	#pragma comment(lib, "pugixmlsd.lib")
-#elif  defined(PAKAL_WIN32_PLATFORM )
-#endif
-
-#if PAKAL_USE_SFML_INPUT == 1
-#include "InputManager_SFML.h"
-#endif
 using namespace Pakal;
 
 
@@ -58,6 +65,8 @@ Engine::Settings::Settings()  : uses_thread(true)
 #if PAKAL_USE_BOX2D == 1
 	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
 #endif
+
+	sound_manager_allocator = [](Engine*) { return new NullSoundManager(); };
 
 #if PAKAL_USE_SFML_AUDIO == 1
 	sound_manager_allocator = [](Engine* engine){ return new SoundManagerSFML(); };

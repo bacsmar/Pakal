@@ -25,4 +25,15 @@ namespace Pakal
 		virtual void set_volume(float volume) = 0;
 		virtual float get_volume() = 0;
 	};
+
+	class NullSoundManager: public SoundManager
+	{
+	public:
+		void register_component_factories(std::vector<IComponentFactory*>& factories) override {};
+		void initialize() override {};
+		void terminate() override {};
+		~NullSoundManager() override {};
+		void set_volume(float volume) override {};
+		float get_volume() override { return 0.f; };
+	};
 }
