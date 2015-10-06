@@ -5,9 +5,6 @@
 
 using namespace Pakal;
 
-// wrapped function
-//extern int main(int argc, char *argv[]);
-
 //// SFML 
 ////////////////////////////////////////////////////////////
 namespace sf {
@@ -34,10 +31,36 @@ namespace sf {
 namespace Pakal 
 {
 	static OSManager *OSManagerInstance;
-	OSManager *get_osWrapper()
+	inline OSManager *get_osWrapper()
 	{		
 		ASSERT(OSManagerInstance);
 		return OSManagerInstance;
+	}
+
+	static void print_cur_config()
+	{
+		char lang[2], country[2];
+		AConfiguration_getLanguage(get_osWrapper()->configuration, lang);
+		AConfiguration_getCountry(get_osWrapper()->configuration, country);
+
+		LOG_ERROR("Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d "
+			"keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d "
+			"modetype=%d modenight=%d",
+			AConfiguration_getMcc(get_osWrapper()->configuration),
+			AConfiguration_getMnc(get_osWrapper()->configuration),
+			lang[0], lang[1], country[0], country[1],
+			AConfiguration_getOrientation(get_osWrapper()->configuration),
+			AConfiguration_getTouchscreen(get_osWrapper()->configuration),
+			AConfiguration_getDensity(get_osWrapper()->configuration),
+			AConfiguration_getKeyboard(get_osWrapper()->configuration),
+			AConfiguration_getNavigation(get_osWrapper()->configuration),
+			AConfiguration_getKeysHidden(get_osWrapper()->configuration),
+			AConfiguration_getNavHidden(get_osWrapper()->configuration),
+			AConfiguration_getSdkVersion(get_osWrapper()->configuration),
+			AConfiguration_getScreenSize(get_osWrapper()->configuration),
+			AConfiguration_getScreenLong(get_osWrapper()->configuration),
+			AConfiguration_getUiModeType(get_osWrapper()->configuration),
+			AConfiguration_getUiModeNight(get_osWrapper()->configuration));
 	}
 
 	void onStart(ANativeActivity* activity)
@@ -60,7 +83,15 @@ namespace Pakal
 	}
 	void onDestroy(ANativeActivity* activity)
 	{
-		get_osWrapper()->on_app_finished();
+		int orientation = AConfiguration_getOrientation( get_osWrapper()->configuration);
+		if( orientation == get_osWrapper()->orientation)
+		{
+			get_osWrapper()->on_app_finished();
+		}else
+		{
+			get_osWrapper()->is_processing_config_change = true;
+		}
+		
 	}
 
 	void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
@@ -113,7 +144,7 @@ namespace Pakal
 
 		AConfiguration_getOrientation(config);
 		AConfiguration_fromAssetManager(config, activity->assetManager);
-		//print_cur_config(android_app);
+		print_cur_config();
 	}
 	void* onSaveInstanceState(ANativeActivity* activity, size_t* outSize)
 	{
@@ -133,19 +164,49 @@ OsWrapperAndroid::~OsWrapperAndroid()
 OsWrapperAndroid::OsWrapperAndroid()
 {
 	configuration = AConfiguration_new();
+	is_processing_config_change = false;
 }
 //
+#include <condition_variable>
+// wrapped function
+//extern int main(int argc, char *argv[]);
+//std::condition_variable main_condition_variable;
+//std::mutex main_mutex;
+//
+//int _main(int argc, char *argv[])
+//{	
+//	static bool finished = false;
+//	std::unique_lock<std::mutex> lock(main_mutex);
+//	if (Pakal::OSManagerInstance == nullptr)
+//	{
+//		::main(0, NULL);
+//		finished = true;
+//		main_condition_variable.notify_one();
+//	}
+//	main_condition_variable.wait(lock, [&]() { return finished; });	
+//	return 0;
+//}
 
 void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize)
 {
-	// let sfml register the activity and stuff.. but.. 
-	if (Pakal::OSManagerInstance == nullptr)
+	if( Pakal::OSManagerInstance != nullptr && Pakal::OSManagerInstance->is_processing_config_change )
 	{
-		sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);
+		Pakal::OSManagerInstance->is_processing_config_change = false;
+		return;
 	}
+	// let sfml register the activity and stuff.. but.. 
+	sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);	
 		
-	Pakal::OSManagerInstance = &OSManager::instance();
-	OSManager::instance().activity = activity;
+	Pakal::OSManagerInstance = &OSManager::instance();	// set OSManager Instance
+
+	get_osWrapper()->activity = activity;
+	//OSManager::instance().configuration = AConfiguration_new();
+	int orientation = AConfiguration_getOrientation(get_osWrapper()->configuration );
+	get_osWrapper()->orientation = orientation;
+
+	AConfiguration_fromAssetManager(get_osWrapper()->configuration, get_osWrapper()->activity->assetManager);
+	print_cur_config();
+
 	// we are in charge of events
 	// These functions will update the activity states and therefore, will allow	
 	activity->callbacks->onStart   = Pakal::onStart;
