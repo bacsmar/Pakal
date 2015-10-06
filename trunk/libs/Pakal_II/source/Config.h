@@ -22,9 +22,9 @@
 #define PAKAL_USE_IRRLICHT 1
 
 //! compile with http://www.sfml-dev.org
-#define PAKAL_USE_SFML 0 
-#define PAKAL_USE_SFML_AUDIO 1 
+#define PAKAL_USE_SFML_AUDIO 0 
 #define PAKAL_USE_SFML_INPUT 1 
+#define PAKAL_USE_SFML (PAKAL_USE_SFML_AUDIO || PAKAL_USE_SFML_INPUT)
 
 //! compile with bullet physics
 #define PAKAL_USE_BULLET 0
