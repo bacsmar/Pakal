@@ -92,7 +92,7 @@
       <Filter>Components\SpriteComponent</Filter>
     </ClCompile>
     <ClCompile Include="..\source\OSManagerAbstract.cpp">
-      <Filter>Managers</Filter>
+      <Filter>Managers\OSManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -256,9 +256,6 @@
     <ClInclude Include="..\source\InputManager_SFML.h">
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\OSManager.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\Clock.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -343,8 +340,11 @@
     <ClInclude Include="..\source\components\Sprite.h">
       <Filter>Components\SpriteComponent</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\OSManager.h">
+      <Filter>Managers\OSManager</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\OSManagerAbstract.h">
-      <Filter>Managers</Filter>
+      <Filter>Managers\OSManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -416,6 +416,9 @@
     </Filter>
     <Filter Include="Components\SpriteComponent">
       <UniqueIdentifier>{01500137-8e47-4064-ab89-e0c6ae7021a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\OSManager">
+      <UniqueIdentifier>{f43854b0-f0ee-45be-966d-0c40c87ec9c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

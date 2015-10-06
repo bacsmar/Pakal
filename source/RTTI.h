@@ -13,7 +13,62 @@
 
 namespace Pakal
 {
+	class RTTI;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	struct TypeInfo
+	{
+		TypeInfo() = delete;
+		TypeInfo(const TypeInfo& other) = delete;
+		TypeInfo& operator=(const TypeInfo& other) = delete;
 
+		template<class T>
+		static const RTTI& get(T * obj)
+		{
+			ASSERT(obj != nullptr);
+			ASSERT((is_RTTI_valid<typename T::__RootClass>(obj)));
+			static_assert(!(std::is_same< typename T::__RootClass, T>::value), "RTTI missing");
+			return T::getRTTI();
+		}
+
+		template<class T>
+		static const RTTI& get()
+		{
+			ASSERT((is_RTTI_valid<T, typename T::__RootClass>()));
+			return T::getRTTI();
+		}
+
+		template <class Derived, class Root>
+		static bool is_derived()
+		{
+			// calling rootClassRTTI?  TypeInfo::is_derived<RootClass, Derived>() ?
+			// do you have RTTI in Derived && Root?
+			ASSERT(!(Derived::getRTTI() == Root::getRTTI()));
+
+			static_assert(!(std::is_same< Derived, Root>::value), "RTTI missing");
+
+			return Derived::getRTTI().template isDerivedFrom<Root>();
+		}
+
+		template <class T, class U>
+		static bool is_derived(U *obj)
+		{
+			ASSERT(obj);
+			static_assert(!(std::is_same< T, U>::value), "RTTI missing");
+			return obj->getRTTI().template isDerivedFrom<T>();
+		}
+
+		template <typename T, typename Root>
+		static bool is_RTTI_valid()
+		{
+			return (!(Root::getRTTI() == T::getRTTI())) || std::is_abstract<T>::value;
+		}
+		template <typename Root, typename T>
+		static bool is_RTTI_valid(T*)
+		{
+			return is_RTTI_valid<T, Root>();
+		}
+	};
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	class _PAKALExport RTTI
 	{
 	public:
@@ -27,7 +82,7 @@ namespace Pakal
 		template <class T>
 		bool isType() const
 		{
-			ASSERT_MSG(T::__BaseClass::template is_RTTI_valid<T>(), "Missing RTTI for T");
+			ASSERT((TypeInfo::is_RTTI_valid<T, typename T::__RootClass>()));
 			return isType(T::getRTTI());
 		}
 		template <class T>
@@ -39,7 +94,7 @@ namespace Pakal
 		template <class T>
 		bool isDerivedFrom() const
 		{
-			ASSERT_MSG(T::__BaseClass::template is_RTTI_valid<T>(), "Missing RTTI for T");
+			ASSERT((TypeInfo::is_RTTI_valid<T, typename T::__RootClass>()));
 			return isDerivedFrom(T::getRTTI());
 		}
 		template <class T>
@@ -70,70 +125,19 @@ namespace Pakal
 		void operator=(const RTTI &other) = delete;
 		RTTI(const RTTI &other) = delete;
 	};
-
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	inline bool operator==(const RTTI &left, const RTTI &right)
 	{
 		return &left == &right;
-	}
-
-	struct TypeInfo
-	{
-		TypeInfo() = delete;
-		TypeInfo(const TypeInfo& other) = delete;
-		TypeInfo& operator=(const TypeInfo& other) = delete;
-
-		template<class T>
-		static const RTTI& get( T * obj)
-		{			
-			ASSERT(obj != nullptr);			
-			ASSERT((is_RTTI_valid<typename T::__BaseClass>(obj)) );
-			static_assert(  !(std::is_same< typename T::__BaseClass, T>::value) , "RTTI missing");
-			return T::getRTTI();
-		}
-
-		template<class T>
-		static const RTTI& get()
-		{			
-			ASSERT( (is_RTTI_valid<T, typename T::__BaseClass>()) );
-			return T::getRTTI();
-		}
-
-		template <class T, class U>
-		static bool is_derived()
-		{
-			ASSERT( !(T::getRTTI() == U::getRTTI()) );
-
-			static_assert(!(std::is_same< T, U>::value), "RTTI missing");
-
-			return T::getRTTI().template isDerivedFrom<U>();
-		}
-
-		template <class T, class U>
-		static bool is_derived(U *obj)
-		{
-			ASSERT(obj);
-			static_assert(!(std::is_same< T, U>::value), "RTTI missing");
-			return obj->getRTTI().template isDerivedFrom<T>();
-		}
-
-		template <typename T, typename Root>
-		static bool is_RTTI_valid()
-		{			
-			return !(Root::getRTTI() == T::getRTTI());
-		}
-		template <typename Root, typename T>
-		static bool is_RTTI_valid(T*)
-		{
-			return is_RTTI_valid<T, Root>();
-		}
-	};
+	}	
 }
-
+// DECLARE_RTTI is intended for use with root ABSTRACT classes
 #define DECLARE_RTTI(x)  \
 	protected:\
 	friend TypeInfo; \
 	friend RTTI;\
-	using __BaseClass = x;\
+	using __RootClass = x;\
+	virtual void _implement_RTTI_please() = 0;\
 	static const Pakal::RTTI &getRTTI()\
 	{\
 		static Pakal::RTTI s_RTTI_Info(#x);\
@@ -154,6 +158,7 @@ namespace Pakal
 	protected:\
 	friend TypeInfo;\
 	friend RTTI;\
+	virtual void _implement_RTTI_please() override {};\
 	static const Pakal::RTTI &getRTTI()\
 	{\
 		/*static x *_##x = 0;*/\

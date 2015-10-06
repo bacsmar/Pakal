@@ -19,7 +19,7 @@ namespace Pakal
 	public:	
 		virtual ~IEntity(){}
 		virtual BasicTaskPtr initialize() = 0;
-		virtual BasicTaskPtr destroy() = 0;
+		virtual BasicTaskPtr terminate() = 0;
 	};
 
 	
