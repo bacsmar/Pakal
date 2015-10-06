@@ -61,9 +61,6 @@
     <ClCompile Include="..\source\InputManager_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\OSManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\Clock.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
@@ -93,6 +90,9 @@
     </ClCompile>
     <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
       <Filter>Components\SpriteComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\OSManagerAbstract.cpp">
+      <Filter>Managers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +342,9 @@
     </ClInclude>
     <ClInclude Include="..\source\components\Sprite.h">
       <Filter>Components\SpriteComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\OSManagerAbstract.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

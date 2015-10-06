@@ -14,14 +14,20 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr,
     m_texture(nullptr)
 {	
 	video::SColor scolor(255,255,255,255);			
-	m_material.Wireframe = false;
-	m_material.Lighting = false;	
-	m_material.AmbientColor = scolor;
-	m_material.DiffuseColor = scolor;
+	//m_material.Wireframe = false;
+	m_material.Lighting = true;	
+	//m_material.AmbientColor = scolor;
+	//m_material.DiffuseColor = scolor;
 	m_material.EmissiveColor  = scolor;
-	m_material.BackfaceCulling = false;	
+	m_material.GouraudShading = true;
+	m_material.ZBuffer = 1;
+	m_material.ZWriteEnable = 1;
+	m_material.FrontfaceCulling = false;
+	m_material.BackfaceCulling = true;	
 
-	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
+	//m_material.MaterialType = video::EMT_SOLID;	
 
 	m_box.reset(-1.0f,-1.0f,0.0f);
 	m_box.addInternalPoint(1.0f,1.0f,0.0f);
@@ -135,7 +141,7 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite* sprite
 
 void SpriteNode_Irrlicht::render()
 {
-	video::IVideoDriver* driver = SceneManager->getVideoDriver();	
+	video::IVideoDriver* driver = SceneManager->getVideoDriver();		
 
 	driver->setMaterial(m_material);
 	//float flip = (m_isFlipped -1.f)*m_isFlipped;
@@ -151,7 +157,7 @@ void SpriteNode_Irrlicht::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{		
-		SceneManager->registerNodeForRendering(this, ESNRP_SOLID);		
+		SceneManager->registerNodeForRendering(this, ESNRP_SOLID);
 	}
 
 	ISceneNode::OnRegisterSceneNode();

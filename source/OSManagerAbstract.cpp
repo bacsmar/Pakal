@@ -1,19 +1,22 @@
 #include "OSManager.h"
-
 #include "SingletonHolder.h"
 
 #include "SFML/Window.hpp"
 
+#if defined( PAKAL_WIN32_PLATFORM)
+#elif defined( PAKAL_ANDROID_PLATFORM)
+#endif
+
 using namespace Pakal;
 
-class WindowCreatorSFML : public OSManager::WindowImpl
+class WindowCreatorSFML : public OSManagerAbstract::WindowImpl
 {
-	OSManager*	m_os_manager;
+	OSManagerAbstract*	m_os_manager;
 	void*		m_window_handle;	
 	bool		m_window_created;
 	sf::Window	m_window;
 public:
-	explicit WindowCreatorSFML(OSManager* manager) : m_os_manager(manager), m_window_handle(nullptr), m_window_created(false) { }	
+	explicit WindowCreatorSFML(OSManagerAbstract* manager) : m_os_manager(manager), m_window_handle(nullptr), m_window_created(false) { }	
 
 	unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel) override
 	{
@@ -38,12 +41,12 @@ public:
 			switch (e.type)
 			{
 			case sf::Event::Closed:	
-				m_os_manager->on_window_destroyed(OSManager::WindowArgs());
+				m_os_manager->on_window_destroyed(OSManagerAbstract::WindowArgs());
 				m_os_manager->on_app_finished();
 				break;
 			case sf::Event::Resized:
 			{
-				OSManager::WindowArgs args;
+				OSManagerAbstract::WindowArgs args;
 				args.size_x = e.size.width;
 				args.size_y = e.size.height;
 				m_os_manager->on_window_resized(args);
@@ -81,22 +84,22 @@ public:
 	}
 };
 
-void OSManager::initialize()
+void OSManagerAbstract::initialize()
 {
 	m_windowImpl = new WindowCreatorSFML(this);
 }
 
-void OSManager::terminate()
+void OSManagerAbstract::terminate()
 {
 	SAFE_DEL(m_windowImpl);
 }
 
-void OSManager::wait_for_os_events()
+void OSManagerAbstract::wait_for_os_events()
 {
 	m_windowImpl->wait_for_os_events();
 }
 
-TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
+TaskPtr<OSManagerAbstract::WindowArgs> OSManagerAbstract::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {	
 	WindowArgs args;
 	args.windowId = m_windowImpl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);
@@ -110,59 +113,59 @@ TaskPtr<OSManager::WindowArgs> OSManager::setup_window(unsigned windowId, const 
 	return m_windows_setup_task.get_task(); 
 }
 
-void OSManager::on_window_created(const WindowArgs& arg)
+void OSManagerAbstract::on_window_created(const WindowArgs& arg)
 {
 	event_window_created.notify(arg);
 	m_windows_setup_task.set_completed(arg);
 }
 
-void OSManager::on_window_destroyed(const WindowArgs& arg)
+void OSManagerAbstract::on_window_destroyed(const WindowArgs& arg)
 {
 	m_windows_setup_task = TaskCompletionSource<WindowArgs>();
 	event_window_destroyed.notify(arg);
 }
 
-void OSManager::on_app_finished()
+void OSManagerAbstract::on_app_finished()
 {
 	event_app_finished.notify();
 }
 
-void OSManager::on_window_redraw_needed(const WindowArgs& arg)
+void OSManagerAbstract::on_window_redraw_needed(const WindowArgs& arg)
 {
 	event_window_redraw_needed.notify(arg);
 }
 
-void OSManager::on_window_resized(const WindowArgs& arg)
+void OSManagerAbstract::on_window_resized(const WindowArgs& arg)
 {
 	event_window_resized.notify(arg);
 }
 
-void OSManager::on_window_focused(bool focused)
+void OSManagerAbstract::on_window_focused(bool focused)
 {
 	event_window_focused.notify(focused);
 }
 
-void OSManager::on_app_paused()
+void OSManagerAbstract::on_app_paused()
 {
 	event_app_paused.notify();
 }
 
-void OSManager::on_app_resumed()
+void OSManagerAbstract::on_app_resumed()
 {
 	event_app_resumed.notify();
 }
 
-void OSManager::on_app_started()
+void OSManagerAbstract::on_app_started()
 {
 	event_app_started.notify();
 }
 
-void OSManager::on_app_stoped()
+void OSManagerAbstract::on_app_stoped()
 {
 	event_app_stoped.notify();
 }
 
-void OSManager::process_window_events()
+void OSManagerAbstract::process_window_events()
 {
 	m_windowImpl->process_os_events();
 }
@@ -173,10 +176,10 @@ OSManager& OSManager::instance()
 	return *sh.get();
 }
 
-OSManager::~OSManager()
+OSManagerAbstract::~OSManagerAbstract()
 {	
 }
 
-OSManager::OSManager()
+OSManagerAbstract::OSManagerAbstract()
 {	
 }
