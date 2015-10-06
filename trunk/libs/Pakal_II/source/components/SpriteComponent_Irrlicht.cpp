@@ -89,7 +89,7 @@ bool SpriteComponent_Irrlicht::load( IStream* stream)
 		const auto& it =  m_sprites.find(animationName);		
 		if( it != m_sprites.end() )
 		{
-			LOG_WARNING("[SpriteComponent]  animation %s already declared", animationName);
+			LOG_WARNING("[SpriteComponent]  animation %s already declared", animationName.c_str());
 			animation = it->second;
 		}else
 		{
@@ -140,7 +140,14 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		m_isLooped = settings.init_looped;
 
 		auto resource = ResourceManager::instance().open_resource(settings.resource_file, false);
-		load( resource.get() );
+		IStream* resourceStream = resource.get();
+
+		if( resourceStream)
+			load( resourceStream );
+		else
+		{
+			LOG_ERROR("[SpriteComponent]  invalid resource %s", settings.resource_file.c_str());
+		}
 
 		m_sprite_node->setPosition(core::vector3df(settings.initial_position.x, settings.initial_position.y, settings.initial_position.z));
 		set_animation(settings.initial_animation);

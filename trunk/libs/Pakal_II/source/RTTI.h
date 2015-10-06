@@ -10,7 +10,8 @@
 #pragma once
 #include "Config.h"
 
-namespace Pakal{
+namespace Pakal
+{
 
 	class _PAKALExport RTTI
 	{
@@ -23,45 +24,106 @@ namespace Pakal{
 		inline bool isType(const RTTI &rtti) const { return &rtti == this; }
 
 		template <class T>
-		bool isType() const { return isType(T::getRTTI()); }
+		bool isType() const
+		{
+			ASSERT_MSG(T::__BaseClass::is_RTTI_valid<T>(), "Missing RTTI for T");
+			return isType(T::getRTTI());
+		}
+		template <class T>
+		bool isType(T*) const
+		{			
+			return isType<T>();
+		}
+
+		template <class T>
+		bool isDerivedFrom() const
+		{
+			ASSERT_MSG(T::__BaseClass::is_RTTI_valid<T>(), "Missing RTTI for T");
+			return isDerivedFrom(T::getRTTI());
+		}
+		template <class T>
+		bool isDerivedFrom(T *) const
+		{			
+			return isDerivedFrom<T>();
+		}
+
+		friend bool operator==(const RTTI &left, const RTTI &right);
+		
+	private:
 
 		bool isDerivedFrom(const RTTI &from) const
 		{
 			const RTTI *base = this;
-			while ( base != nullptr)
+			while (base != nullptr)
 			{
-				if( base == &from)
+				if (base == &from)
 					return true;
 				base = base->m_parent;
 			}
 			return false;
 		}
 
-		template <class T>
-		bool isDerivedFrom() const { return isDerivedFrom(T::getRTTI()); }
-
-
-		friend bool operator==(const RTTI &left, const RTTI &right);
-		
-	private:
 		const char *m_name;		
 		const RTTI *m_parent;
 
-		void operator=(const RTTI &other){}
-		RTTI(const RTTI &other){}
+		void operator=(const RTTI &other) = delete;
+		RTTI(const RTTI &other) = delete;
 	};
 
 	inline bool operator==(const RTTI &left, const RTTI &right)
 	{
 		return &left == &right;
 	}
+
+	namespace TypeInfo
+	{
+		template<class T>
+		static const RTTI& get( T * obj)
+		{			
+			ASSERT(obj != nullptr);
+			ASSERT(obj->is_RTTI_valid<T>());
+			static_assert(  !(std::is_same< T::__BaseClass, T>::value) , "RTTI missing");
+			return T::getRTTI();
+		}
+
+		template<class T>
+		static const RTTI& get()
+		{
+			ASSERT(T::__BaseClass::is_RTTI_valid<T>());
+			return T::getRTTI();
+		}
+
+		template <class T, class U>
+		static bool is_derived()
+		{
+			ASSERT( !(T::getRTTI() == U::getRTTI()) );
+
+			static_assert(!(std::is_same< T, U>::value), "RTTI missing");
+
+			return T::getRTTI().isDerivedFrom<U>();
+		}
+
+		template <class T, class U>
+		static bool is_derived(U *obj)
+		{
+			ASSERT(obj);
+			static_assert(!(std::is_same< T, U>::value), "RTTI missing");
+			return obj->getRTTI().isDerivedFrom<T>();
+		}
+	};
 }
 
 #define DECLARE_RTTI(x)  \
+	using __BaseClass = x;\
 	static const Pakal::RTTI &getRTTI()\
 	{\
 		static Pakal::RTTI s_RTTI_Info(#x);\
 		return s_RTTI_Info;\
+	}\
+	template <class BaseClass>\
+	static const bool is_RTTI_valid()\
+	{\
+		return &BaseClass::getRTTI() != &getRTTI();\
 	}\
 	virtual const Pakal::RTTI &getType()\
 	{\
@@ -71,7 +133,7 @@ namespace Pakal{
 #define DECLARE_RTTI_WITH_BASE(x,base)  \
 	static const Pakal::RTTI &getRTTI()\
 	{\
-		/*x *_##x = 0;*/\
+		/*static x *_##x = 0;*/\
 		static Pakal::RTTI s_RTTI_Info(#x,base::getRTTI());\
 		return s_RTTI_Info;\
 	}\

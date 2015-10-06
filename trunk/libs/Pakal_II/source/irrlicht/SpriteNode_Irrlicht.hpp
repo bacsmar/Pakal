@@ -20,8 +20,8 @@ public:
 	irr::core::rectf getGlobalBounds() const;
 	void setColor(const irr::video::SColor& color);	
 
-	virtual irr::s32 getMaterialCount(){ return 1; }
-	virtual irr::video::SMaterial& getMaterial(irr::s32 i) { return m_material; } 
+	virtual irr::u32 getMaterialCount() const override { return 1; }
+	virtual irr::video::SMaterial& getMaterial(irr::u32 i) override { return m_material; } 
 
 	virtual void OnRegisterSceneNode() override;
 	virtual void render() override;

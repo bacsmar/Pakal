@@ -41,9 +41,10 @@ namespace Pakal
 	public:
 
 		explicit ComponentFactory(TInitializer* intializer) : m_initializer(intializer)
-		{
-			ASSERT(TImplementation::getRTTI().isDerivedFrom(TBase::getRTTI()));
-			ASSERT(TImplementation::getRTTI().isDerivedFrom(Component::getRTTI()));
+		{			
+			static_assert( (std::is_base_of<TBase, TImplementation>::value), "incompatible types");
+			static_assert( (std::is_base_of<Component, TImplementation>::value), "incompatible types");
+			ASSERT_MSG( TImplementation::is_RTTI_valid<TBase>(), "TImplementation's RTTI is missing");
 		} 
 
 		virtual ~ComponentFactory(){}

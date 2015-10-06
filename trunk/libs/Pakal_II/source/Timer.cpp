@@ -23,7 +23,8 @@ namespace Pakal
 
 	Timer::Timer(): m_running(false), m_active(true) , m_interval(100)
 	{
-		m_thread = std::make_unique<std::thread>(&Timer::thread_loop,this);
+		m_thread = UniquePtr<std::thread>(new std::thread(&Timer::thread_loop, this) );
+		//m_thread = std::make_unique<std::thread>(&Timer::thread_loop,this);
 	}
 
 	Timer::Timer(unsigned ms): Timer()

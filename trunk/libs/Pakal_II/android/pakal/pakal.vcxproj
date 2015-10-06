@@ -72,9 +72,9 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs;$(SolutionDir)libs\pugixml\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CLanguageStandard>Default</CLanguageStandard>
       <CompileAs>Default</CompileAs>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
@@ -91,11 +91,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs\pugixml\src;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\pugixml\src\pugiconfig.hpp" />
+    <ClInclude Include="..\..\..\pugixml\src\pugixml.hpp" />
     <ClInclude Include="..\..\source\android\OsWrapperAndroid.h" />
     <ClInclude Include="..\..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\..\source\BaseGameState.h" />
@@ -112,6 +114,9 @@
     <ClInclude Include="..\..\source\components\MeshComponent.h" />
     <ClInclude Include="..\..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\..\source\components\Shapes.h" />
+    <ClInclude Include="..\..\source\components\Sprite.h" />
+    <ClInclude Include="..\..\source\components\SpriteComponent.h" />
+    <ClInclude Include="..\..\source\components\SpriteComponent_Irrlicht.h" />
     <ClInclude Include="..\..\source\Config.h" />
     <ClInclude Include="..\..\source\DoubleBufferedList.h" />
     <ClInclude Include="..\..\source\Engine.h" />
@@ -134,6 +139,7 @@
     <ClInclude Include="..\..\source\irrlicht\IrrGraphicsSystem.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrlitchStream.h" />
     <ClInclude Include="..\..\source\irrlicht\IrrRendererInfo.h" />
+    <ClInclude Include="..\..\source\irrlicht\SpriteNode_Irrlicht.hpp" />
     <ClInclude Include="..\..\source\irrlicht\StreamIrrlitch.h" />
     <ClInclude Include="..\..\source\irrlicht\ZipSourceIrrlitch.h" />
     <ClInclude Include="..\..\source\IStream.h" />
@@ -152,22 +158,28 @@
     <ClInclude Include="..\..\source\math\vector4.h" />
     <ClInclude Include="..\..\source\math\vectorn.h" />
     <ClInclude Include="..\..\source\OSManager.h" />
+    <ClInclude Include="..\..\source\OSManager_t.h" />
     <ClInclude Include="..\..\source\PakalMath.h" />
     <ClInclude Include="..\..\source\PakalTime.h" />
     <ClInclude Include="..\..\source\PhysicsSystem.h" />
     <ClInclude Include="..\..\source\Platform.h" />
     <ClInclude Include="..\..\source\ResourceManager.h" />
     <ClInclude Include="..\..\source\RTTI.h" />
-    <ClInclude Include="..\..\source\sfml\SoundManager_SFML.h" />
+    <ClInclude Include="..\..\source\sfml\MusicComponentSFML.h" />
+    <ClInclude Include="..\..\source\sfml\SFXComponentSFML.h" />
+    <ClInclude Include="..\..\source\sfml\SoundManagerSFML.h" />
     <ClInclude Include="..\..\source\SingletonHolder.h" />
     <ClInclude Include="..\..\source\SoundManager.h" />
     <ClInclude Include="..\..\source\System.h" />
     <ClInclude Include="..\..\source\Task.h" />
     <ClInclude Include="..\..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\..\source\TaskFwd.h" />
+    <ClInclude Include="..\..\source\ThreadPool.h" />
+    <ClInclude Include="..\..\source\Timer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\pugixml\src\pugixml.cpp" />
     <ClCompile Include="..\..\source\android\OsWrapperAndroid.cpp" />
     <ClCompile Include="..\..\source\AsyncTaskDispatcher.cpp" />
     <ClCompile Include="..\..\source\BasicTask.cpp" />
@@ -178,6 +190,7 @@
     <ClCompile Include="..\..\source\ComponentManager.cpp" />
     <ClCompile Include="..\..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\..\source\components\MeshComponent_Irrlitch.cpp" />
+    <ClCompile Include="..\..\source\components\SpriteComponent_Irrlicht.cpp" />
     <ClCompile Include="..\..\source\Engine.cpp" />
     <ClCompile Include="..\..\source\EngineSettings.cpp" />
     <ClCompile Include="..\..\source\EntitySystem.cpp" />
@@ -189,14 +202,18 @@
     <ClCompile Include="..\..\source\InboxQueue.cpp" />
     <ClCompile Include="..\..\source\InputManager_SFML.cpp" />
     <ClCompile Include="..\..\source\irrlicht\IrrGraphicsSystem.cpp" />
+    <ClCompile Include="..\..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
     <ClCompile Include="..\..\source\LogMgr.cpp" />
-    <ClCompile Include="..\..\source\OSManager.cpp" />
+    <ClCompile Include="..\..\source\OSManager_t.cpp" />
     <ClCompile Include="..\..\source\PakalTime.cpp" />
     <ClCompile Include="..\..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\..\source\ResourceManager.cpp" />
-    <ClCompile Include="..\..\source\sfml\SoundManager_SFML.cpp" />
-    <ClCompile Include="..\..\source\SoundManager.cpp" />
+    <ClCompile Include="..\..\source\sfml\MusicComponentSFML.cpp" />
+    <ClCompile Include="..\..\source\sfml\SFXComponentSFML.cpp" />
+    <ClCompile Include="..\..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\..\source\System.cpp" />
+    <ClCompile Include="..\..\source\ThreadPool.cpp" />
+    <ClCompile Include="..\..\source\Timer.cpp" />
     <ClCompile Include="..\..\source\unix\ClockImpl.cpp" />
   </ItemGroup>
   <ItemGroup>

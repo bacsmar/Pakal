@@ -65,14 +65,14 @@ namespace Pakal
 				}
 			}
 
-			utils::erase_if(m_memory_streams, [](const std::pair<std::string, WeakPtr<MemoryStream>>& stream ) { return stream.second.expired(); });
+			utils::erase_if(m_memory_streams, [](const std::pair<path, WeakPtr<MemoryStream>>& stream ) { return stream.second.expired(); });
 		}
 
 		SharedPtr<IStream> stream = nullptr;
 
 		m_sources_mutex.lock();
 		for (ISource* source : m_sources) 
-			if (stream = source->open_resource(resourcePath)) 
+			if ( (stream = source->open_resource(resourcePath)) ) 
 				break;
 		m_sources_mutex.unlock();
 
