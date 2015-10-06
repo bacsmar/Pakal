@@ -17,8 +17,8 @@ namespace Pakal
 
 	class _PAKALExport BodyComponent_Box2D final : public BodyComponent
 	{
-	public:
 		DECLARE_RTTI_WITH_BASE(BodyComponent_Box2D,BodyComponent);
+	public:
 
 		explicit BodyComponent_Box2D(Box2DPhysicsSystem* sys): m_system(sys), m_body(nullptr), m_fixture(nullptr) {}
 		~BodyComponent_Box2D();

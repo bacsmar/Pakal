@@ -10,10 +10,10 @@ namespace Pakal
 {
 	class _PAKALExport DirectorySourceIrrlitch : public DirectorySource
 	{
+		DECLARE_RTTI_WITH_BASE(DirectorySourceIrrlitch, DirectorySource);
 		irr::io::IFileSystem* m_file_system;
 		irr::io::IFileArchive* m_archive;
 	public:
-		DECLARE_RTTI_WITH_BASE(DirectorySourceIrrlitch, DirectorySource);
 
 
 		explicit DirectorySourceIrrlitch(irr::io::IFileSystem* fileSystem) : m_file_system(fileSystem), m_archive(nullptr) {}

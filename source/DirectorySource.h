@@ -5,8 +5,8 @@ namespace Pakal
 {
 	class _PAKALExport DirectorySource : public ISource
 	{
-	public:
 		DECLARE_RTTI_WITH_BASE(DirectorySource, ISource);
+	public:		
 
 		virtual bool initialize(const path& path, bool recursive) = 0;
 		virtual void terminate() = 0;

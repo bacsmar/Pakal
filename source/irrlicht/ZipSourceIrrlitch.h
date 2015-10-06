@@ -10,10 +10,10 @@ namespace Pakal
 {
 	class _PAKALExport ZipSourceIrrlitch : public ZipSource
 	{
+		DECLARE_RTTI_WITH_BASE(ZipSourceIrrlitch, ZipSource);
 		irr::io::IFileSystem* m_file_system;
 		irr::io::IFileArchive* m_archive;
 	public:
-		DECLARE_RTTI_WITH_BASE(ZipSourceIrrlitch, ZipSource);
 
 		explicit ZipSourceIrrlitch(irr::io::IFileSystem* fileSystem) : m_file_system(fileSystem), m_archive(nullptr) {}
 

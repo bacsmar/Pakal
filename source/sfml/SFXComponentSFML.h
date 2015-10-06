@@ -11,12 +11,12 @@ namespace Pakal
 
 	class _PAKALExport SFXComponentSFML : public SFXComponent
 	{
+		DECLARE_RTTI_WITH_BASE(SFXComponentSFML, SFXComponent);
 		SoundManagerSFML* m_manager;
 
 		std::map<unsigned, SharedPtr<sf::SoundBuffer>> m_sounds;
 
 	public:
-		DECLARE_RTTI_WITH_BASE(SFXComponentSFML, SFXComponent);
 
 		SFXComponentSFML(SoundManagerSFML* manager) : m_manager(manager) { }
 

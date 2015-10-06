@@ -13,6 +13,7 @@
 #include <string>
 
 #include "IManager.h"
+#include "RTTI.h"
 
 namespace Pakal
 {
@@ -34,7 +35,7 @@ namespace Pakal
 		template <class T>
 		T* create_component()
 		{
- 			Component* ic = create_component(T::getRTTI().getName());
+ 			Component* ic = create_component( TypeInfo::get<T>().getName());
 			return static_cast<T*>(ic);
 		}
 

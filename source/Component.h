@@ -18,10 +18,10 @@ namespace Pakal
 
 	class _PAKALExport Component
 	{
+		DECLARE_RTTI(Component)
 		IEntity* m_parent;
 
 	public:
-		DECLARE_RTTI(Component)
 
 		virtual ~Component(){}	
 		Component()  {}		

@@ -36,7 +36,7 @@ namespace Pakal
 		{
 			static_assert(std::is_base_of<ISource, TSource>::value, "type parameter of this class must derive from ISource");
 
-			std::string name = TSource::getRTTI().getName();
+			std::string name = TypeInfo::get<TSource>().getName();
 
 			auto factory = m_factories.find(name);
 
@@ -76,7 +76,7 @@ namespace Pakal
 		{
 			static_assert(std::is_base_of<ISource, TSource>::value, "type parameter of this class must derive from ISource");
 
-			std::string name = TSource::getRTTI().getName();
+			std::string name = TypeInfo::get<TSource>().getName();
 
 			if (m_factories.find(name) != m_factories.end())
 			{

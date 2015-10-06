@@ -13,8 +13,7 @@ namespace Pakal
 	
 	class _PAKALExport MeshComponent_Irrlitch : public MeshComponent
 	{
-	public:
-		DECLARE_RTTI_WITH_BASE(MeshComponent_Irrlitch,MeshComponent)
+		DECLARE_RTTI_WITH_BASE(MeshComponent_Irrlitch, MeshComponent)	
 	protected:
 		IrrGraphicsSystem*			m_system;
 

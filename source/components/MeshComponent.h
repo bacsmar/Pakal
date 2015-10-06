@@ -11,8 +11,8 @@ namespace Pakal
 
 	class _PAKALExport MeshComponent : public Component
 	{
-	public:		
-		DECLARE_RTTI_WITH_BASE(MeshComponent,Component);
+		DECLARE_RTTI_WITH_BASE(MeshComponent, Component);
+	public:				
 
 		struct Settings
 		{
