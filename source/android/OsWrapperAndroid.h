@@ -19,7 +19,11 @@ namespace Pakal
 {
 	class _PAKALExport OsWrapperAndroid  : public OSManagerAbstract
 	{
-
+		enum Orientation
+		{
+			Portrait,
+			Landscape,
+		};
 		friend class OSManager_t;
 	protected:
 		virtual ~OsWrapperAndroid();
@@ -29,7 +33,8 @@ namespace Pakal
 		std::string get_system_sources() override;
 		ANativeActivity*	activity;
 		AConfiguration*		configuration;
-
+		unsigned			orientation;
+		bool				is_processing_config_change;
 	};
 
 
