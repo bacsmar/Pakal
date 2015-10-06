@@ -158,7 +158,7 @@
     <ClInclude Include="..\..\source\math\vector4.h" />
     <ClInclude Include="..\..\source\math\vectorn.h" />
     <ClInclude Include="..\..\source\OSManager.h" />
-    <ClInclude Include="..\..\source\OSManager_t.h" />
+    <ClInclude Include="..\..\source\OSManagerAbstract.h" />
     <ClInclude Include="..\..\source\PakalMath.h" />
     <ClInclude Include="..\..\source\PakalTime.h" />
     <ClInclude Include="..\..\source\PhysicsSystem.h" />
@@ -204,7 +204,7 @@
     <ClCompile Include="..\..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
     <ClCompile Include="..\..\source\LogMgr.cpp" />
-    <ClCompile Include="..\..\source\OSManager_t.cpp" />
+    <ClCompile Include="..\..\source\OSManagerAbstract.cpp" />
     <ClCompile Include="..\..\source\PakalTime.cpp" />
     <ClCompile Include="..\..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\..\source\ResourceManager.cpp" />
@@ -225,6 +225,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\sfml-config\main\main.vcxproj">
       <Project>{2a40931b-762c-4656-b3fa-73448b18718f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\sfml-config\sfml-audio\sfml-audio.vcxproj">
+      <Project>{a51707a0-ee5b-4174-8fba-1a81bd9dccdc}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\sfml-config\sfml-window\sfml-window.vcxproj">
       <Project>{41537961-2cab-4260-8e7b-7d4657b42047}</Project>

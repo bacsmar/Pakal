@@ -19,8 +19,8 @@ namespace Pakal
 
 	class _PAKALExport BodyComponent : public Component
 	{
-	public:	
 		DECLARE_RTTI_WITH_BASE(BodyComponent,Component);
+	public:	
 	struct Settings
 	{
 		BodyType type;

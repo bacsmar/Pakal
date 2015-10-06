@@ -30,9 +30,9 @@ namespace Pakal
 	
 	class _PAKALExport SpriteComponent_Irrlicht : public SpriteComponent, public GraphicsSystem::IUpdatable
 	{
+		DECLARE_RTTI_WITH_BASE(SpriteComponent_Irrlicht, SpriteComponent);		
 		friend class Entity;
 	public:
-		DECLARE_RTTI_WITH_BASE(SpriteComponent_Irrlicht, SpriteComponent);		
 			
 		SpriteComponent_Irrlicht(IrrGraphicsSystem *irrManager);
 		virtual ~SpriteComponent_Irrlicht(void);		

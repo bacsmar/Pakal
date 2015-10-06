@@ -8,6 +8,7 @@ namespace Pakal
 {
 	class _PAKALExport MusicComponentSFML : public MusicComponent
 	{
+		DECLARE_RTTI_WITH_BASE(MusicComponentSFML, MusicComponent);
 		SharedPtr<StreamSFML> m_buffer;
 		sf::Music m_player;
 

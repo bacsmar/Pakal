@@ -20,6 +20,7 @@ namespace Pakal
 
 	class _PAKALExport MusicComponent : public Component
 	{
+		DECLARE_RTTI_WITH_BASE(MusicComponent, Component);
 	public:
 		virtual bool initialize(const path& resourcePath, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual bool initialize(SharedPtr<IStream> resourceStream, const SoundSettings& settings = SoundSettings()) = 0;

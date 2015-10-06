@@ -1,6 +1,7 @@
 #include "OsWrapperAndroid.h"
 #include "OSManager.h"
 #include <android/configuration.h>
+#include "ResourceManager.h"
 
 using namespace Pakal;
 
@@ -167,4 +168,9 @@ void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void*
 
 	activity->callbacks->onSaveInstanceState = Pakal::onSaveInstanceState;
 	activity->callbacks->onLowMemory = Pakal::onLowMemory;
+}
+
+std::string OsWrapperAndroid::get_system_sources()
+{
+	return std::string(activity->obbPath) + "/";
 }

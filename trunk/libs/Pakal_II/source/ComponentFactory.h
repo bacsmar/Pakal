@@ -18,14 +18,21 @@ namespace Pakal
 {
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	class IComponentFactory
+	template <class T>
+	class IFactory
 	{
 	public:
-		virtual Component* create() = 0;
+		virtual T* create() = 0;
 
 		virtual const char* get_typename() = 0;
 
-		virtual ~IComponentFactory() {}
+		virtual ~IFactory() {}
+	};
+
+	class IComponentFactory : public IFactory<Component>
+	{
+	public:
+		virtual ~IComponentFactory(){}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase,class TImplementation, class TInitializer = void>
@@ -44,7 +51,7 @@ namespace Pakal
 		{			
 			static_assert( (std::is_base_of<TBase, TImplementation>::value), "incompatible types");
 			static_assert( (std::is_base_of<Component, TImplementation>::value), "incompatible types");
-			ASSERT_MSG( TImplementation::is_RTTI_valid<TBase>(), "TImplementation's RTTI is missing");
+			ASSERT_MSG( (TypeInfo::is_RTTI_valid<TImplementation, TBase>()) , "TImplementation's RTTI is missing");
 		} 
 
 		virtual ~ComponentFactory(){}
@@ -56,7 +63,8 @@ namespace Pakal
 
 		virtual const char* get_typename() override
 		{
-			return TBase::getRTTI().getName();
+			return TypeInfo::get<TBase>().getName();
+			//return TBase::getRTTI().getName();
 		}
 				
 	protected:

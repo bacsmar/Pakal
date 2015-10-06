@@ -11,8 +11,8 @@ namespace Pakal
 
 	class _PAKALExport ISource
 	{
-	public:
 		DECLARE_RTTI(ISource);
+	public:
 
 		virtual ~ISource() {}
 

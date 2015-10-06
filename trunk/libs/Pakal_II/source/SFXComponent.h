@@ -11,8 +11,8 @@ namespace Pakal
 {
 	class _PAKALExport SFXComponent : public Component
 	{
-	public:
 		DECLARE_RTTI_WITH_BASE(SFXComponent, Component);
+	public:
 
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;

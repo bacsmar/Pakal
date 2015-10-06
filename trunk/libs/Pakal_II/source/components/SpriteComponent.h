@@ -7,8 +7,8 @@ namespace Pakal
 {
 	class SpriteComponent : public Component
 	{
-	public:
 		DECLARE_RTTI_WITH_BASE(SpriteComponent, Component);
+	public:
 		struct Settings
 		{
 			std::string resource_file;
