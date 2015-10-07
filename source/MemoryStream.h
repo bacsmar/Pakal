@@ -13,7 +13,7 @@ namespace Pakal
 		SharedPtr<char> m_data;
 		std::streamoff m_position;
 		std::streamoff m_size;
-		std::string m_name;
+		path m_name;
 
 
 	public:
@@ -59,7 +59,7 @@ namespace Pakal
 		}
 		inline std::streamoff tell() override { return m_position; }
 		inline std::streamoff size() override { return m_size; }
-		inline const std::string& resource_name() override { return m_name; }
+		inline const path& resource_name() override { return m_name; }
 	};
 
 }

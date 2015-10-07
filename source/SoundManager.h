@@ -33,7 +33,7 @@ namespace Pakal
 		void initialize() override {};
 		void terminate() override {};
 		~NullSoundManager() override {};
-		void set_volume(float volume) override {};
+		void set_volume(float) override {};
 		float get_volume() override { return 0.f; };
 	};
 }

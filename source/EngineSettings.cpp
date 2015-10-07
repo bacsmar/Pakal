@@ -66,10 +66,10 @@ Engine::Settings::Settings()  : uses_thread(true)
 	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
 #endif
 
-	sound_manager_allocator = [](Engine*) { return new NullSoundManager(); };
-
 #if PAKAL_USE_SFML_AUDIO == 1
 	sound_manager_allocator = [](Engine* engine){ return new SoundManagerSFML(); };
+#else
+	sound_manager_allocator = [](Engine*) { return new NullSoundManager(); };
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1

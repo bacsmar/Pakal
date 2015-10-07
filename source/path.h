@@ -11,6 +11,10 @@ namespace Pakal
 		std::string m_path;
 
 	public:
+		path()
+		{
+		}
+
 		path(const char* str) : m_path(str)
 		{
 			std::replace(m_path.begin(), m_path.end(), '\\', '/');

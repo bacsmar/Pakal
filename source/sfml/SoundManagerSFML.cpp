@@ -69,7 +69,7 @@ namespace Pakal
 		}
 
 		//if not found in cache then create it and load it.
-		SharedPtr<StreamSFML> stream = rmgr.open_resource<StreamSFML>(resourcePath, false);
+		SharedPtr<StreamSFML> stream = rmgr.open_read_resource<StreamSFML>(resourcePath, false);
 		SharedPtr<sf::SoundBuffer> buffer = std::make_shared<sf::SoundBuffer>();
 
 		if (stream != nullptr && buffer->loadFromStream(*stream))
@@ -162,14 +162,14 @@ namespace Pakal
 		std::lock_guard<std::mutex> l(m_buffer_mutex);
 
 		LOG_INFO("Cleaning expired buffers...");
-		utils::erase_if(m_buffers, [](const std::pair<path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
+		map_utils::erase_if(m_buffers, [](const std::pair<path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
 	}
 
 	void SoundManagerSFML::clean_players() 
 	{
 		std::lock_guard<std::mutex> l(m_players_mutex);
 
-		utils::erase_if(m_active_players, [](const UniquePtr<sf::Sound>& player) { return player->getStatus() == sf::SoundSource::Stopped;  });
+		map_utils::erase_if(m_active_players, [](const UniquePtr<sf::Sound>& player) { return player->getStatus() == sf::SoundSource::Stopped;  });
 
 		if (m_active_players.empty())
 		{

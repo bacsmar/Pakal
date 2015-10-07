@@ -346,6 +346,12 @@
     <ClInclude Include="..\source\OSManagerAbstract.h">
       <Filter>Managers\OSManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\OSManager.h">
+      <Filter>Managers\OSManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\FileStream.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
