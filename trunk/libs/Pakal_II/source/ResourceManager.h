@@ -102,9 +102,7 @@ namespace Pakal
 			return nullptr;
 		}
 
-		void remove_source(ISource* source);
-
-		template<class TSource,class... arguments> 
+		template<class TSource, class... arguments>
 		SharedPtr<TSource> create_source(arguments&&... args)
 		{
 			TSource* source = internal_create<TSource>(std::forward<arguments>(args)...);
@@ -112,12 +110,16 @@ namespace Pakal
 			return source ? SharedPtr<TSource>(source) : nullptr;
 		}
 
-		SharedPtr<IStream> open_resource(const path& resourcePath, bool inMemory);
+		void remove_source(ISource* source);
+
+		SharedPtr<IStream> open_write_resource(const path& resourcePath, WriteMode mode);
+
+		SharedPtr<IStream> open_read_resource(const path& resourcePath, bool inMemory);
 
 		template<class TStream> 
-		SharedPtr<TStream> open_resource(const path& resourcePath, bool inMemory)
+		SharedPtr<TStream> open_read_resource(const path& resourcePath, bool inMemory)
 		{
-			SharedPtr<IStream> stream = open_resource(resourcePath, inMemory);
+			SharedPtr<IStream> stream = open_read_resource(resourcePath, inMemory);
 
 			return stream != nullptr ? std::make_shared<TStream>(stream) : nullptr;
 		}

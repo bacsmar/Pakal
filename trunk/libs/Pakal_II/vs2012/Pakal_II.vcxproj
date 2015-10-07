@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\FileStream.h" />
     <ClInclude Include="..\source\MusicComponent.h" />
     <ClInclude Include="..\source\path.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />

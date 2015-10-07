@@ -139,7 +139,7 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		m_isPaused = settings.init_paused;
 		m_isLooped = settings.init_looped;
 
-		auto resource = ResourceManager::instance().open_resource(settings.resource_file, false);
+		auto resource = ResourceManager::instance().open_read_resource(settings.resource_file, false);
 		IStream* resourceStream = resource.get();
 
 		if( resourceStream)

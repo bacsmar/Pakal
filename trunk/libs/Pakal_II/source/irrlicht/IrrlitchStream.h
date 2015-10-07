@@ -9,7 +9,7 @@ namespace Pakal
 	class _PAKALExport IrrlitchStream : public IStream
 	{
 		irr::io::IReadFile* m_source;
-		std::string m_resource_name;
+		path m_resource_name;
 
 	public:
 		explicit IrrlitchStream(irr::io::IReadFile* source) : m_source(source)
@@ -34,7 +34,7 @@ namespace Pakal
 		{
 			return m_source->seek(static_cast<long>(position), relative);
 		}
-		const std::string& resource_name() override
+		const path& resource_name() override
 		{
 			return m_resource_name;
 		}

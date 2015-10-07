@@ -17,7 +17,7 @@ namespace Pakal
 
 	bool SFXComponentSFML::add(unsigned id, const path& resourcePath)
 	{
-		ASSERT(!utils::contains(m_sounds,id));
+		ASSERT(!map_utils::contains(m_sounds,id));
 			
 		auto buffer = m_manager->load_sfx(resourcePath);
 
@@ -32,7 +32,7 @@ namespace Pakal
 
 	bool SFXComponentSFML::add(unsigned id, SharedPtr<IStream> resourceStream)
 	{
-		ASSERT(!utils::contains(m_sounds, id));
+		ASSERT(!map_utils::contains(m_sounds, id));
 
 		auto buffer = m_manager->load_sfx(resourceStream);
 

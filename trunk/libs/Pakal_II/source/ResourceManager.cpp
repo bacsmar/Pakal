@@ -1,7 +1,8 @@
 #include "ResourceManager.h"
-#include <memory>
 #include "Utils.h"
+#include "FileStream.h"
 
+#include <memory>
 
 namespace Pakal
 {
@@ -44,7 +45,14 @@ namespace Pakal
 
 	}
 
-	SharedPtr<IStream> ResourceManager::open_resource(const path& resourcePath, bool inMemory)
+	SharedPtr<IStream> ResourceManager::open_write_resource(const path& resourcePath, WriteMode mode)
+	{
+		auto stream = std::make_shared<FileStream>(resourcePath, mode);
+
+		return stream->is_open() ? stream : nullptr;
+	}
+
+	SharedPtr<IStream> ResourceManager::open_read_resource(const path& resourcePath, bool inMemory)
 	{
 		if (inMemory)
 		{
@@ -65,16 +73,19 @@ namespace Pakal
 				}
 			}
 
-			utils::erase_if(m_memory_streams, [](const std::pair<path, WeakPtr<MemoryStream>>& stream ) { return stream.second.expired(); });
+			map_utils::erase_if(m_memory_streams, [](const std::pair<path, WeakPtr<MemoryStream>>& stream ) { return stream.second.expired(); });
 		}
 
-		SharedPtr<IStream> stream = nullptr;
 
-		m_sources_mutex.lock();
-		for (ISource* source : m_sources) 
-			if ( (stream = source->open_resource(resourcePath)) ) 
-				break;
-		m_sources_mutex.unlock();
+		SharedPtr<IStream> stream = open_write_resource(resourcePath, WriteMode::__ReadOnly | WriteMode::Binary);
+		if (stream == nullptr)
+		{
+			m_sources_mutex.lock();
+			for (ISource* source : m_sources)
+				if ((stream = source->open_resource(resourcePath)))
+					break;
+			m_sources_mutex.unlock();
+		}
 
 		if (stream != nullptr)
 		{
@@ -95,7 +106,7 @@ namespace Pakal
 		}
 
 		LOG_ERROR("[ResourceManager] %s could not be loaded", resourcePath.c_str());
-
 		return nullptr;
+
 	}
 }
