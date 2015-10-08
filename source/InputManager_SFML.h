@@ -6,13 +6,13 @@
 namespace Pakal
 {
 	class _PAKALExport InputManager_SFML : public IInputManager
-	{		
-		//sf::Window m_window;
-
+	{
 	public:
 		InputManager_SFML();
 
 		void initialize() override;
-		void terminate() override;		
+		void terminate() override;
+
+		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
 	};
 }

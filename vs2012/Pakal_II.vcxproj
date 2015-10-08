@@ -20,8 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\FileStream.h" />
+    <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\MusicComponent.h" />
     <ClInclude Include="..\source\path.h" />
+    <ClInclude Include="..\source\sfml\GamepadComponent_SFML.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
     <ClInclude Include="..\source\sfml\StreamSFML.h" />
@@ -108,6 +110,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\sfml\GamepadComponent_SFML.cpp" />
     <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp" />
     <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp" />
     <ClCompile Include="..\source\ThreadPool.cpp" />

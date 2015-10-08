@@ -1,6 +1,8 @@
 #include  "InputManager_SFML.h"
 #include "LogMgr.h"
 
+#include "sfml/GamepadComponent_SFML.h"
+
 
 using namespace Pakal;
 
@@ -15,6 +17,10 @@ void InputManager_SFML::initialize()
 }
 
 void InputManager_SFML::terminate()
+{	
+}
+
+void InputManager_SFML::register_component_factories(std::vector<IComponentFactory*>& factories)
 {
-	//if (m_window_created) close_window();
+	factories.emplace_back(CreateComponentFactory<GamepadComponent, GamepadComponent_SFML>());
 }

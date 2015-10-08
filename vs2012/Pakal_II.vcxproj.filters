@@ -94,6 +94,9 @@
     <ClCompile Include="..\source\OSManagerAbstract.cpp">
       <Filter>Managers\OSManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\sfml\GamepadComponent_SFML.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -351,6 +354,12 @@
     </ClInclude>
     <ClInclude Include="..\source\FileStream.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GamepadComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\GamepadComponent_SFML.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
