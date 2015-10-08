@@ -34,6 +34,25 @@ namespace Pakal
 	{
 		factories.emplace_back(CreateComponentFactory<SFXComponent, SFXComponentSFML>(this));
 		factories.emplace_back(CreateComponentFactory<MusicComponent, MusicComponentSFML>());
+
+		////SFXComponentSFML component(nullptr);
+
+		//class test : public Component
+		//{};
+
+		////bool yes = TypeInfo::is_derived<SFXComponentSFML, Component>();
+		//bool yes = TypeInfo::get<SFXComponentSFML>().isDerivedFrom<Component>();
+		////bool yes1 = TypeInfo::is_derived<Component, test>();
+		//bool yes1 = TypeInfo::is_derived<test, Component>();
+
+		////bool maybe = TypeInfo::get(&component).isDerivedFrom<MusicComponentSFML>();
+
+		////MusicComponentSFML mc;
+		////TypeInfo::get(&mc).isDerivedFrom<Component>();
+
+		////bool asdasd = TypeInfo::get(&component).isType<Component>();
+
+		////bool no = TypeInfo::is_derived<MusicComponent>( &component);
 	}
 
 	void SoundManagerSFML::set_volume(float volume)

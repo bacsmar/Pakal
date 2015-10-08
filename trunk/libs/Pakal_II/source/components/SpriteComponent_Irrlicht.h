@@ -40,46 +40,37 @@ namespace Pakal
 		virtual BasicTaskPtr initialize(const Settings& settings) override;
 		virtual BasicTaskPtr terminate() override;
 
-		void set_animation(const std::string& animationName) override;
-		void set_animation(const Sprite& animation);
-		void set_looped(bool looped) override;
+		void set_animation(const std::string& animationName) override;				
+		bool is_looped() const override;
+		void play() override;
+		void pause() override;
+		void stop() override;
+		bool is_playing() const override;
 
 		void update(unsigned dt) override;
 
-		inline bool get_flipped() const override { return m_isFlipped; } 
-		inline void set_flipped(bool val) override { m_isFlipped = val; }
+		inline bool get_flipped() const override { return m_is_flipped; } 
+		inline void set_flipped(bool val) override { m_is_flipped = val; }
 
 	protected:	
-		bool load(IStream * stream);
+		bool load(IStream * stream);		
 
-		bool is_looped() const;
-		bool is_playing() const;
-
-		void set_frame(std::size_t frameIndex, bool resetTime = true);
-		void set_frame_fime(unsigned time);
-		unsigned get_frame_time() const;
-
-		void play();
+		void set_animation(const Sprite& animation);
 		void play(const Sprite& animation);
-		void pause();
-		void stop();		
+		void set_sprite_node_frame(std::size_t frameIndex, bool resetTime = true);
+		
+		unsigned	get_frame_time() const;
+		
 		const Sprite* get_animation() const;
-
-		const Sprite* m_sprite;
-
-		unsigned			m_frameTime;
+		
 		unsigned			m_currentTime;
-
 		std::size_t			m_currentFrame;
-		bool				m_isPaused;
-		bool				m_isLooped;
-		bool				m_isFlipped;
-
-		irr::IrrlichtDevice*		m_device;		
-		irr::video::IVideoDriver*	m_driver;
-		IrrGraphicsSystem*			m_system;
+		bool				m_isPaused;		
+		bool				m_is_flipped;
+		const Sprite*		m_sprite = nullptr;
+		IrrGraphicsSystem*	m_system;
 				
-		SpriteNode_Irrlicht *m_sprite_node;
+		SpriteNode_Irrlicht*		m_sprite_node;
 		std::unordered_map<std::string, Sprite*>	m_sprites;
 	};	
 

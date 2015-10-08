@@ -50,6 +50,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
 	m_component_manager->register_provider(*m_sound_manager);
+	m_component_manager->register_provider(*m_input_manager);
 
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
