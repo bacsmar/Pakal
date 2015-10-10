@@ -12,6 +12,7 @@
 //#include <type_traits>
 #include "Component.h"
 #include "LogMgr.h"
+#include <functional>
 
 
 namespace Pakal
@@ -34,6 +35,9 @@ namespace Pakal
 	public:
 		virtual ~IComponentFactory(){}
 	};
+
+	using IComponentFactory2 = std::function<Component*()>;
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase,class TImplementation, class TInitializer = void>
 	class ComponentFactory : public IComponentFactory
@@ -51,7 +55,7 @@ namespace Pakal
 		{			
 			static_assert( (std::is_base_of<TBase, TImplementation>::value), "incompatible types");
 			static_assert( (std::is_base_of<Component, TImplementation>::value), "incompatible types");
-			ASSERT_MSG( (TypeInfo::is_RTTI_valid<TImplementation, TBase>()) , "TImplementation's RTTI is missing");
+			//ASSERT_MSG( (TypeInfo::is_RTTI_valid<TImplementation, TBase>()) , "TImplementation's RTTI is missing");
 		} 
 
 		virtual ~ComponentFactory(){}

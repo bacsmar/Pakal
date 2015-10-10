@@ -94,8 +94,20 @@
     <ClCompile Include="..\source\OSManagerAbstract.cpp">
       <Filter>Managers\OSManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\sfml\GamepadComponent_SFML.cpp">
+    <ClCompile Include="..\source\components\AutomataComponent.cpp">
       <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StateMachine.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\GamepadComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -187,8 +199,6 @@
     <ClInclude Include="..\source\ComponentManager.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IManager.h" />
-    <ClInclude Include="..\source\ISystem.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
     <ClInclude Include="..\source\GraphicsSystem.h">
       <Filter>Systems\GraphicsSystem</Filter>
@@ -358,8 +368,29 @@
     <ClInclude Include="..\source\components\GamepadComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\sfml\GamepadComponent_SFML.h">
+    <ClInclude Include="..\source\components\AutomataComponent.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\State.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\StateMachine.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\InputDevice.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\Keyboard_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\Gamepad_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ISystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IManager.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
