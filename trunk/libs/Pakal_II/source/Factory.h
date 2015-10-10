@@ -23,7 +23,7 @@ namespace Pakal
 		std::function<T*()> create;
 
 		virtual const char* get_typename() = 0;
-
+		explicit IFactory(const std::function<T*()>& fn): create(fn){}
 		virtual ~IFactory() {}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ namespace Pakal
 		struct Factory : IFactory<TRoot>
 		{
 			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
-			explicit Factory(const std::function<TRoot*()>& fn) { create = fn; }
+			explicit Factory(const std::function<TRoot*()>& fn) : IFactory<TRoot>(fn){}
 		};
 		return new Factory(_fn);
 	}	

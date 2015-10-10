@@ -14,10 +14,11 @@
 
 #include "IManager.h"
 #include "RTTI.h"
+#include "ComponentFactory.h"
 
 namespace Pakal
 {
-	class IComponentFactory;
+	//class IComponentFactory;
 	class Component;
 	class IComponentProvider;
 
