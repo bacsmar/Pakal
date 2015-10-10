@@ -9,42 +9,22 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-//#include <type_traits>
-#include "Component.h"
-#include "LogMgr.h"
-#include <functional>
-
+#include "Factory.h"
 
 namespace Pakal
 {
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class T>
-	class IFactory
-	{
-	public:
-		std::function<T*()> create;
-
-		virtual const char* get_typename() = 0;
-
-		virtual ~IFactory() {}
-	};
+	class Component;	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	class IComponentFactory : public IFactory<Component>
 	{
 	public:
 		virtual ~IComponentFactory(){}
-	};	
+	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase>
 	inline IComponentFactory * CreateComponentFactory( const std::function<Component*()>& _fn)
 	{
-		struct CF : IComponentFactory
-		{
-			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
-			explicit CF(const std::function<Component*()>& fn) { create = fn; }
-		};
-		return new CF(_fn);
+		return static_cast<IComponentFactory*>(CreateFactory<Component, TBase>(_fn));
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase, class TImplementation, class TInitializer>

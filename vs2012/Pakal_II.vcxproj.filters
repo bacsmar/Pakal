@@ -392,6 +392,9 @@
     <ClInclude Include="..\source\IManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\Factory.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
