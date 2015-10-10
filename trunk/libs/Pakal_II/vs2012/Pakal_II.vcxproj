@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\components\AutomataComponent.h" />
+    <ClInclude Include="..\source\Factory.h" />
     <ClInclude Include="..\source\FileStream.h" />
     <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\InputDevice.h" />
