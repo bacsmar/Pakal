@@ -24,6 +24,7 @@ namespace Pakal
 	{
 	public:
 		virtual T* create() = 0;
+		//std::function<T*()> create;
 
 		virtual const char* get_typename() = 0;
 
@@ -34,70 +35,43 @@ namespace Pakal
 	{
 	public:
 		virtual ~IComponentFactory(){}
-	};
-
-	using IComponentFactory2 = std::function<Component*()>;
+	};	
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TBase,class TImplementation, class TInitializer = void>
-	class ComponentFactory : public IComponentFactory
-	{
-	protected:
-		
-		template<class T>
-		inline TImplementation*  _create (T* initializer) { return new TImplementation(initializer); }
-		
-		inline TImplementation*  _create (void*) { return new TImplementation(); }
-
-	public:
-
-		explicit ComponentFactory(TInitializer* intializer) : m_initializer(intializer)
-		{			
-			static_assert( (std::is_base_of<TBase, TImplementation>::value), "incompatible types");
-			static_assert( (std::is_base_of<Component, TImplementation>::value), "incompatible types");
-			//ASSERT_MSG( (TypeInfo::is_RTTI_valid<TImplementation, TBase>()) , "TImplementation's RTTI is missing");
-		} 
-
-		virtual ~ComponentFactory(){}
-
-		virtual Component* create() override
-		{
-			return _create(m_initializer);
-		}
-
-		virtual const char* get_typename() override
-		{
-			return TypeInfo::get<TBase>().getName();
-			//return TBase::getRTTI().getName();
-		}
-				
-	protected:
-		TInitializer* m_initializer;
-	};
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TBase,class TImplementation, class TInitializer>
+	template <class TBase, class TImplementation, class TInitializer>
 	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
-		return new ComponentFactory<TBase,TImplementation,TInitializer>(initializer);		
+		struct CF : public IComponentFactory
+		{
+			Component* create() override
+			{
+				TBase *b = new TImplementation(m_initializer);
+				return b;
+			}
+
+			explicit CF(TInitializer* initializer) : m_initializer(initializer){}
+			TInitializer* m_initializer;
+
+			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
+		};		
+
+		return new CF(initializer);
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TBase,class TImplementation>
+	template <class TBase, class TImplementation>
 	IComponentFactory * CreateComponentFactory()
 	{
-		return new ComponentFactory<TBase,TImplementation,void>(nullptr);
-	};
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TImplementation, class TInitializer>
-	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
-	{
-		return new ComponentFactory<TImplementation,TImplementation,TInitializer>(initializer);		
-	};
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	template <class TImplementation>
-	IComponentFactory * CreateComponentFactory()
-	{
-		return new ComponentFactory<TImplementation,TImplementation,void>(nullptr);
-	};
-	
+		class CF : public IComponentFactory
+		{		
+			Component* create() override 
+			{ 
+				TBase *b = new TImplementation();
+				return b;
+			}
+		
+			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
+		};
+		return new CF;		
+	};	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 }
