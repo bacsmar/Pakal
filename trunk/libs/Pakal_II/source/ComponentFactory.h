@@ -23,55 +23,40 @@ namespace Pakal
 	class IFactory
 	{
 	public:
-		virtual T* create() = 0;
-		//std::function<T*()> create;
+		std::function<T*()> create;
 
 		virtual const char* get_typename() = 0;
 
 		virtual ~IFactory() {}
 	};
-
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	class IComponentFactory : public IFactory<Component>
 	{
 	public:
 		virtual ~IComponentFactory(){}
 	};	
-
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	template <class TBase>
+	inline IComponentFactory * CreateComponentFactory( const std::function<Component*()>& _fn)
+	{
+		struct CF : IComponentFactory
+		{
+			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
+			explicit CF(const std::function<Component*()>& fn) { create = fn; }
+		};
+		return new CF(_fn);
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase, class TImplementation, class TInitializer>
 	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
-		struct CF : public IComponentFactory
-		{
-			Component* create() override
-			{
-				TBase *b = new TImplementation(m_initializer);
-				return b;
-			}
-
-			explicit CF(TInitializer* initializer) : m_initializer(initializer){}
-			TInitializer* m_initializer;
-
-			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
-		};		
-
-		return new CF(initializer);
+		return CreateComponentFactory<TBase>([=]() -> Component* { return new TImplementation(initializer); });
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase, class TImplementation>
 	IComponentFactory * CreateComponentFactory()
 	{
-		class CF : public IComponentFactory
-		{		
-			Component* create() override 
-			{ 
-				TBase *b = new TImplementation();
-				return b;
-			}
-		
-			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
-		};
-		return new CF;		
+		return CreateComponentFactory<TBase>( []() -> Component* { return new TImplementation(); });
 	};	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 }
