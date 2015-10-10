@@ -63,7 +63,6 @@ ITouchDevice* InputManager_SFML::get_touch_device(unsigned id)
 }
 
 void InputManager_SFML::register_component_factories(std::vector<IComponentFactory*>& factories)
-{
-	//factories.emplace_back(CreateComponentFactory<GamepadComponent, GamepadComponent_SFML>());
+{	
 	factories.emplace_back(CreateComponentFactory<GamepadComponent, GamepadComponent>(this));
 }

@@ -18,7 +18,6 @@
 
 namespace Pakal
 {
-	//class IComponentFactory;
 	class Component;
 	class IComponentProvider;
 
@@ -29,6 +28,13 @@ namespace Pakal
 		void terminate() override {};
 
 		void register_factory(IComponentFactory* factory, bool replacePreviousFactory = false);
+
+		template <class TBase>
+		inline void register_factory(std::function<Component*()>& fn , bool replacePreviousFactory = false)
+		{
+			register_factory(CreateFactory<Component, TBase>(fn), replacePreviousFactory);
+		}
+
 		void register_provider(IComponentProvider &provider);
 
 		Component* create_component(const char* componentName);
