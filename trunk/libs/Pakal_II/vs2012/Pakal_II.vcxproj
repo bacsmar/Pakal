@@ -19,15 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\source\FileStream.h" />
     <ClInclude Include="..\source\components\GamepadComponent.h" />
+    <ClInclude Include="..\source\InputDevice.h" />
     <ClInclude Include="..\source\MusicComponent.h" />
     <ClInclude Include="..\source\path.h" />
-    <ClInclude Include="..\source\sfml\GamepadComponent_SFML.h" />
+    <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
+    <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
     <ClInclude Include="..\source\sfml\StreamSFML.h" />
     <ClInclude Include="..\source\SFXComponent.h" />
+    <ClInclude Include="..\source\State.h" />
+    <ClInclude Include="..\source\StateMachine.h" />
     <ClInclude Include="..\source\ThreadPool.h" />
     <ClInclude Include="..\source\Timer.h" />
     <ClInclude Include="..\source\Utils.h" />
@@ -110,9 +115,13 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\sfml\GamepadComponent_SFML.cpp" />
+    <ClCompile Include="..\source\components\AutomataComponent.cpp" />
+    <ClCompile Include="..\source\components\GamepadComponent.cpp" />
+    <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp" />
+    <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp" />
     <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp" />
     <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp" />
+    <ClCompile Include="..\source\StateMachine.cpp" />
     <ClCompile Include="..\source\ThreadPool.cpp" />
     <ClCompile Include="..\source\Timer.cpp" />
     <ClCompile Include="..\source\Clock.cpp" />
