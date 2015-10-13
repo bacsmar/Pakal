@@ -22,8 +22,8 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr,
 	m_material.FrontfaceCulling = false;		// enable both faces drawing
 	m_material.BackfaceCulling = false;
 
-	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
+	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
 	//m_material.MaterialType = video::EMT_SOLID;	
 
 	m_box.reset(-1.0f,-1.0f,0.0f);
@@ -98,7 +98,7 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite
 		auto height = m_frame_rect.LowerRightCorner.Y;
 		auto width = m_frame_rect.LowerRightCorner.X;
 
-		float left = static_cast<float>(m_frame_rect.UpperLeftCorner.X) + 0.0001f;
+		float left = static_cast<float>(m_frame_rect.UpperLeftCorner.X) +0.0001f;
 		float right = left + static_cast<float>(width);
 		float top = static_cast<float>(m_frame_rect.UpperLeftCorner.Y);
 		float bottom = top + static_cast<float>(height);		
@@ -143,13 +143,7 @@ void SpriteNode_Irrlicht::render()
 {
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();		
 
-	//m_material.EmissiveColor = m_material.AmbientColor;
 	driver->setMaterial(m_material);	
-
-	//float flip = (!m_flipped - 0.5f) * 2.f; // <- flip = m_flipped ? -1.0 : 1.0;
-	//core::vector3df scale(flip, -1.f, 1.f);
-	//AbsoluteTransformation.setScale(scale);	
-
 	core::vector3df scale( static_cast<float>( m_flip_factor), -1.f, 1.f);
 	AbsoluteTransformation.setScale(scale);
 

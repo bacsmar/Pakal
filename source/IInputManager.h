@@ -7,8 +7,6 @@
 
 namespace Pakal
 {
-	//class InputDevice;	
-
 	class _PAKALExport IInputManager : public IManager, public IComponentProvider
 	{
 	public:

@@ -37,7 +37,7 @@ b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_body(b2Body* body)
 {
-	//std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	return m_world->DestroyBody(body);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ b2Joint* Box2DPhysicsSystem::create_joint(const b2JointDef* def)
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::destroy_joint(b2Joint* joint)
 {
-	//std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	return m_world->DestroyJoint(joint);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::do_debug_draw()
 {
-//	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
+	std::lock_guard<std::mutex> lock( m_debug_draw_mutex);
 	if( m_world) m_world->DrawDebugData();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -86,9 +86,7 @@ void Box2DPhysicsSystem::init_world()
 
 	//m_world->SetContactListener(m_contact_listener);
 	//m_world->SetContactFilter(m_contact_filter);
-	//m_world->SetDestructionListener(m_destruction_listener);
-
-	m_debug_draw = nullptr;
+	//m_world->SetDestructionListener(m_destruction_listener);	
 
 	m_world->SetDebugDraw(m_debug_draw);
 
@@ -96,6 +94,7 @@ void Box2DPhysicsSystem::init_world()
 
 void Box2DPhysicsSystem::clear_world()
 {
+	std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
 	SAFE_DEL(m_debug_draw);
 	SAFE_DEL(m_contact_listener);
 	SAFE_DEL(m_contact_filter);
@@ -108,12 +107,12 @@ void Box2DPhysicsSystem::update_world(long long dt)
 {
 	static float targetTimeInSeconds = (1.f / 60); 
 	static float targetTime = targetTimeInSeconds * 1000.f; // in milliseconds
-
 	
 	m_time_elapsed += dt;
 
 	if (m_time_elapsed > targetTime)
 	{
+		std::lock_guard<std::mutex> lock(m_debug_draw_mutex);
 		m_world->Step(targetTimeInSeconds, m_settings.velocity_iterations, m_settings.position_iterations);
 		m_time_elapsed = 0;
 	}

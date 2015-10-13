@@ -73,6 +73,11 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
 
+	for (auto &r : m_debug_renderers)
+	{
+		r->set_drawer(m_render_info);
+	}
+
 	LOG_INFO("[Graphic System] done");
 
 	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-20), vector3df(0,0,0));		
@@ -130,8 +135,6 @@ void IrrGraphicsSystem::draw()
 	{
 		r->do_debug_draw();
 	}
-
-
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
@@ -171,6 +174,5 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)
 {
-	debugDrawer->set_drawer( m_render_info );
 	m_debug_renderers.push_back( debugDrawer );	
 }

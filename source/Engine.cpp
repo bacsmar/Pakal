@@ -45,7 +45,9 @@ Engine::Engine(const Settings& settings) :
 	m_input_manager		 = settings.input_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
-	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
+	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);	
+
+	//m_graphics_system->add_debug_drawer(m_physics_system->get_debug_drawer());
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
@@ -80,7 +82,7 @@ void Engine::run(IPakalApplication* application)
 		initializationTasks.push_back(s->initialize());
 	}
 	TaskUtils::wait_all(initializationTasks);
-
+	
 	// Initialize engine
 	initialize()->wait();
 
