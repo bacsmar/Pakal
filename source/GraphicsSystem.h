@@ -10,6 +10,8 @@ namespace Pakal
 {
 	class IDebugDrawerClient;
 	class GraphicComponent;
+	class IUIManager;
+	class IInputManager;
 
 	class _PAKALExport GraphicsSystem : public System, public IComponentProvider
 	{
@@ -24,10 +26,11 @@ namespace Pakal
 		
 	public:
 
-		virtual void				set_window_caption(const wchar_t*) {};
-		virtual const char*			get_system_name() override = 0;
+		virtual void			set_window_caption(const wchar_t*) {};
+		virtual const char*		get_system_name() override = 0;
 
-		virtual void				add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
+		virtual void			add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
+		inline IUIManager*		get_ui_interface() { return m_ui_manager; };
 
 		struct Settings
 		{
@@ -35,29 +38,31 @@ namespace Pakal
 			int bits;
 			bool full_screen;
 			bool vsync;
+			std::function<IUIManager*(GraphicsSystem* gs, IInputManager * im)>		ui_manager_allocator;
 
 			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}
 		};
 
-		class IUpdatable
-		{	
-		protected:
+		// TODO: IUpdatable? this class needs a more convenient name
+		struct IUpdatable
+		{
 			virtual ~IUpdatable() {}
-		public:
 			virtual void update(unsigned dt) = 0;
-		};
+		};		
 
 		virtual void add_to_update_list(IUpdatable *updatable);
 		virtual void remove_from_update_list(IUpdatable *updatable);
 
 	protected:
-		Settings m_settings;
-		OSManager*	m_os_manager;
+		Settings			m_settings;
+		OSManager*			m_os_manager = nullptr;
+		IUIManager*			m_ui_manager = nullptr;
 
-		std::mutex m_updatablesMutex;
-		std::vector<IUpdatable*> m_updatables;
+		std::mutex					m_updatablesMutex;
+		std::vector<IUpdatable*>	m_updatables;
 
-		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager) : System(false), m_settings(settings), m_os_manager(os_manager) {  }
+		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager);
+
 		virtual ~GraphicsSystem(){}
 
 

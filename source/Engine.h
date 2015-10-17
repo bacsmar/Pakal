@@ -19,6 +19,7 @@ namespace Pakal
 	class IManager;
 	class SoundManager;
 	class IInputManager;
+	class IUIManager;
 
 	class _PAKALExport Engine final : public System
 	{
@@ -35,8 +36,7 @@ namespace Pakal
 			std::function<GraphicsSystem*(Engine*,const GraphicsSystem::Settings& settings)> graphic_system_allocator;
 			std::function<PhysicsSystem*(Engine*,const PhysicsSystem::Settings& settings)>	physics_system_allocator;
 			std::function<SoundManager*(Engine*)>	sound_manager_allocator;
-			std::function<IInputManager*(Engine*)>	input_manager_allocator;
-
+			std::function<IInputManager*(Engine*)>	input_manager_allocator;			
 
 			Settings();
 		};
@@ -55,7 +55,8 @@ namespace Pakal
 		inline IInputManager*		input_manager() const { return m_input_manager; }
 		inline GameStateManager*	game_state_manager() const { return m_game_state_manager; }
 		inline OSManager*			os_manager()  { return &OSManager::instance(); } 
-		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); } 
+		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); }
+		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }
 
 
 		const char* get_system_name() override { return "Engine"; };
@@ -90,7 +91,7 @@ namespace Pakal
 		GameStateManager*	m_game_state_manager;
 		ComponentManager*	m_component_manager;
 		SoundManager*		m_sound_manager;
-		IInputManager*		m_input_manager;
+		IInputManager*		m_input_manager;		
 
 		std::vector<ISystem*> m_systems;
 

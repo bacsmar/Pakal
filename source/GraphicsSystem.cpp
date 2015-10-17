@@ -1,5 +1,7 @@
 #include "GraphicsSystem.h"
 
+#include "IUIManager.h"
+
 using namespace Pakal;
 
 
@@ -10,12 +12,14 @@ void GraphicsSystem::on_initialize()
 	m_os_manager
 		->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)
 		->continue_with(std::bind(&GraphicsSystem::on_init_graphics,this,std::placeholders::_1),THIS_THREAD)
-		->wait();
+		->wait();	
+	m_ui_manager->initialize();
 }
 //////////////////////////////////////////////////////////////////////////
 
 void GraphicsSystem::on_terminate()
 {
+	m_ui_manager->terminate();
 	on_terminate_graphics();
 }
 
@@ -30,6 +34,7 @@ void GraphicsSystem::on_update(long long dt)
 		}
 	}
 	on_update_graphics(dt);
+	//m_ui_manager->draw_ui(); should be done in derived...
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -59,4 +64,9 @@ void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
 	
 	m_updatables.erase(it);
 	
+}
+
+GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager): System(false), m_settings(settings), m_os_manager(os_manager)
+{
+	m_ui_manager = settings.ui_manager_allocator(this, nullptr);	
 }

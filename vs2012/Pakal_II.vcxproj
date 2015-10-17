@@ -24,8 +24,14 @@
     <ClInclude Include="..\source\FileStream.h" />
     <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\InputDevice.h" />
+    <ClInclude Include="..\source\IUIManager.h" />
     <ClInclude Include="..\source\MusicComponent.h" />
     <ClInclude Include="..\source\path.h" />
+    <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h" />
+    <ClInclude Include="..\source\rocketgui\RocketGUI.h" />
+    <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h" />
+    <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h" />
+    <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h" />
     <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
     <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
@@ -118,6 +124,10 @@
   <ItemGroup>
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />
+    <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp" />
+    <ClCompile Include="..\source\rocketgui\RocketGUI.cpp" />
+    <ClCompile Include="..\source\rocketgui\IrrRocketRenderer.cpp" />
+    <ClCompile Include="..\source\rocketgui\PakalRocketFileInterface.cpp" />
     <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp" />
     <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp" />
     <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp" />
@@ -273,7 +283,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/Pakal_II/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>

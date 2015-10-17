@@ -18,6 +18,13 @@
 	#include "InputManager_SFML.h"
 #endif
 
+#if PAKAL_USE_ROCKET == 1
+	#include "rocketgui/IrrRocketGUI.h"
+	#pragma comment(lib, "RocketControls.lib")
+	#pragma comment(lib, "RocketCore.lib")
+#endif
+
+
 #if defined(PAKAL_WIN32_PLATFORM )
 
 		// pugixml
@@ -59,6 +66,11 @@ Engine::Settings::Settings()  : uses_thread(true)
 {
 
 #if PAKAL_USE_IRRLICHT == 1
+
+	#if PAKAL_USE_ROCKET == 1
+		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs, IInputManager * im) { return new IrrRocketUI(gs, im);  };
+	#endif
+	
 	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->os_manager()); };
 #endif
 
@@ -75,5 +87,4 @@ Engine::Settings::Settings()  : uses_thread(true)
 #if PAKAL_USE_SFML_INPUT == 1
 	input_manager_allocator = [](Engine* engine){ return new InputManager_SFML(); };
 #endif
-
 }
