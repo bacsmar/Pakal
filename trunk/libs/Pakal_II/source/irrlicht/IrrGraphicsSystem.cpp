@@ -15,9 +15,6 @@
 #include "irrlicht/DirectorySourceIrrlitch.h"
 #include "irrlicht/ZipSourceIrrlitch.h"
 
-#include "IUIManager.h"
-
-
 using namespace irr;
 using namespace irr::core;
 using namespace scene;
@@ -132,7 +129,8 @@ void IrrGraphicsSystem::draw()
 	os::Timer::tick(); // do not remove
 	smgr->drawAll();
 	guienv->drawAll();
-	m_ui_manager->draw_ui();
+
+	draw_ui_interface();
 
 	for( auto &r : m_debug_renderers)
 	{

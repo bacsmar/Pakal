@@ -33,8 +33,7 @@ void GraphicsSystem::on_update(long long dt)
 			updatable->update(static_cast<unsigned>(dt));
 		}
 	}
-	on_update_graphics(dt);
-	//m_ui_manager->draw_ui(); should be done in derived...
+	on_update_graphics(dt);	
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -69,4 +68,9 @@ void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
 GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager): System(false), m_settings(settings), m_os_manager(os_manager)
 {
 	m_ui_manager = settings.ui_manager_allocator(this, nullptr);	
+}
+
+void GraphicsSystem::draw_ui_interface()
+{
+	m_ui_manager->draw_ui();
 }

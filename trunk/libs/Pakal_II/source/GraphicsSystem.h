@@ -65,11 +65,11 @@ namespace Pakal
 
 		virtual ~GraphicsSystem(){}
 
-
 		virtual void on_init_graphics(const OSManager::WindowArgs& args) = 0;
 		virtual void on_update_graphics(long long dt) = 0;
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;
 		virtual void on_resume_graphics() = 0;
+		void draw_ui_interface();
 	};
 }
