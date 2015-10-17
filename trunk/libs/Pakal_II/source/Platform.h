@@ -15,9 +15,11 @@
 #define PAKAL_VERSION_MAJOR 2
 #define PAKAL_VERSION_MINOR 0
 #define PAKAL_VERSION_PATCH 0
-#define PAKAL_VERSION_NAME "2.0.0"
 
 #define PAKAL_VERSION ((PAKAL_VERSION_MAJOR << 16) | (PAKAL_VERSION_MINOR << 8) | PAKAL_VERSION_PATCH)
+#define PAKAL_xstr(s) PAKAL_str(s)
+#define PAKAL_str(s) #s
+#define PAKAL_VERSION_NAME PAKAL_xstr(PAKAL_VERSION_MAJOR)"."PAKAL_xstr(PAKAL_VERSION_MINOR)"."PAKAL_xstr(PAKAL_VERSION_PATCH)
 
 //------------------------------------------------------------------//
 //#define PAKAL_STATIC_LIB	//
@@ -118,6 +120,8 @@
 #ifdef _DEBUG
 	void assert_with_message(void* condition, const char *format, ...);
 	void assert_with_message(bool condition, const char *format, ...);
+	/*template <class T>
+	inline void assert_with_message(T condition, const char *format, ...){ assert(condition); }*/
 
 	#define __ASSERT_QUOTE__(x) #x
 	#define __ASSERT_TO_STRING__(x) __ASSERT_QUOTE__(x)

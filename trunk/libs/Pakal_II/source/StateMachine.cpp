@@ -5,7 +5,7 @@
 using namespace Pakal;
 
 StateMachine::StateMachine(void)
-{
+{	
 }
 
 

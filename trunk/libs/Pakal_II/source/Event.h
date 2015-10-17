@@ -11,7 +11,7 @@
 
 namespace Pakal
 {
-	using ListenerId = unsigned long long;
+	using ulonglong = unsigned long long;
 
 	namespace priv
 	{
@@ -45,7 +45,7 @@ namespace Pakal
 
 			explicit Event_t() : m_enabled(true) {}
 
-			inline ListenerId add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
+			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 				
@@ -63,7 +63,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(ListenerId key)
+			inline void remove_listener(ulonglong key)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -161,11 +161,11 @@ namespace Pakal
 				return m_delegates.empty();
 			}
 
-			inline ListenerId add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
+			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
-				ListenerId key = EventSystemUtils::new_id();
+				ulonglong key = EventSystemUtils::new_id();
 
 				SharedPtr<DelegateData<void>> metaData = 
 					m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;
@@ -178,7 +178,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(ListenerId key)
+			inline void remove_listener(ulonglong key)
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 

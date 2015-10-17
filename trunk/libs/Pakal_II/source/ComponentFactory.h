@@ -2,9 +2,9 @@
 // Copyright (C) 2015 The PakalEngine Open Source Project
 // File: IComponentFactory.h
 // Original Author: Salvador Noel Romo Garcia.
-// Creation Date: 01-11-2012
+// Creation Date: 03-sep-2015
 //
-// Purpose: Interface to create Icomponent
+// Purpose: implementing IFactory for components
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 

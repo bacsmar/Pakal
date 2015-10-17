@@ -21,7 +21,7 @@ namespace Pakal
 		std::list<UniquePtr<sf::Sound>> m_active_players;
 
 		Timer m_timer;
-		ListenerId m_clean_players_id = 0;
+		ulonglong m_clean_players_id = 0;
 
 		ResourceManager& rmgr = ResourceManager::instance();
 		

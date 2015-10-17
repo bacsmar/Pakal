@@ -109,6 +109,18 @@
     <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\rocketgui\IrrRocketRenderer.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\PakalRocketFileInterface.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketGUI.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -395,6 +407,24 @@
     <ClInclude Include="..\source\Factory.h">
       <Filter>Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\IUIManager.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketGUI.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -468,6 +498,9 @@
     </Filter>
     <Filter Include="Managers\OSManager">
       <UniqueIdentifier>{f43854b0-f0ee-45be-966d-0c40c87ec9c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\UIManager">
+      <UniqueIdentifier>{ae1b0036-dfc5-4971-b7ab-7b3ff3eba818}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

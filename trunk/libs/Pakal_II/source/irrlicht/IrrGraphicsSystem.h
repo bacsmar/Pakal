@@ -24,7 +24,7 @@ namespace Pakal
 	class OSManager;
 
 	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem
-	{
+	{		
 	public:
 		inline irr::IrrlichtDevice		* get_device() const { return device;	}
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
@@ -40,10 +40,10 @@ namespace Pakal
 		unsigned long long m_destroyed_callback_id;
 		unsigned long long m_created_callback_id;
 
-		irr::IrrlichtDevice			* device;
-		irr::video::IVideoDriver	* driver;
-		irr::scene::ISceneManager	* smgr;
-		irr::gui::IGUIEnvironment	* guienv;
+		irr::IrrlichtDevice			* device = nullptr;
+		irr::video::IVideoDriver	* driver = nullptr;
+		irr::scene::ISceneManager	* smgr = nullptr;
+		irr::gui::IGUIEnvironment	* guienv = nullptr;
 
 		RendererInfo				*m_render_info;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
@@ -63,6 +63,5 @@ namespace Pakal
 
 		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;
 		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) override;
-
 	};	
 }
