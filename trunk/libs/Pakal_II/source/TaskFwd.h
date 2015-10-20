@@ -28,5 +28,6 @@ namespace Pakal
 
 	const std::thread::id NULL_THREAD = std::thread::id();
 	#define  THIS_THREAD  std::this_thread::get_id()
+	#define nameof(x) #x
 
 }
