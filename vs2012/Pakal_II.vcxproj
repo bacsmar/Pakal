@@ -19,6 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\Archive.h" />
+    <ClInclude Include="..\source\Attribute.h" />
+    <ClInclude Include="..\source\Element.h" />
+    <ClInclude Include="..\source\TextReader.h" />
+    <ClInclude Include="..\source\TextWriter.h" />
+    <ClInclude Include="..\source\XmlReader.h" />
+    <ClInclude Include="..\source\XmlWriter.h" />
     <ClInclude Include="..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\source\Factory.h" />
     <ClInclude Include="..\source\FileStream.h" />
@@ -122,6 +129,12 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\Attribute.cpp" />
+    <ClCompile Include="..\source\Element.cpp" />
+    <ClCompile Include="..\source\TextReader.cpp" />
+    <ClCompile Include="..\source\TextWriter.cpp" />
+    <ClCompile Include="..\source\XmlReader.cpp" />
+    <ClCompile Include="..\source\XmlWriter.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />
     <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp" />

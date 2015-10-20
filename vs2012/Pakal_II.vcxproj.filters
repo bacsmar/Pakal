@@ -121,6 +121,24 @@
     <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp">
       <Filter>Managers\UIManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Attribute.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Element.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TextWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\XmlWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TextReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\XmlReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -377,6 +395,27 @@
     <ClInclude Include="..\source\FileStream.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\Archive.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\TextWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Attribute.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Element.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\XmlWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\TextReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\XmlReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\components\GamepadComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -498,6 +537,9 @@
     </Filter>
     <Filter Include="Managers\OSManager">
       <UniqueIdentifier>{f43854b0-f0ee-45be-966d-0c40c87ec9c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Persist">
+      <UniqueIdentifier>{8e749bfe-8737-4c31-bcc4-3975c92ed943}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers\UIManager">
       <UniqueIdentifier>{ae1b0036-dfc5-4971-b7ab-7b3ff3eba818}</UniqueIdentifier>
