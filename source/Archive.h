@@ -5,6 +5,14 @@
 #include "Utils.h"
 #include <iterator>
 
+#if __cplusplus <= 201103L
+namespace std
+{
+	template<bool _Test,
+	class _Ty = void>
+		using enable_if_t = typename enable_if<_Test, _Ty>::type;
+}
+#endif
 
 namespace Pakal
 {
@@ -20,33 +28,18 @@ namespace Pakal
 
 		Archive(const Archive& other) = delete;
 		Archive& operator=(const Archive& other) = delete;
-
+	public:
 		
-		template<typename, typename T>
-		struct has_persist 
+		template<typename T>
+		struct has_persist
 		{
-			static_assert(std::integral_constant<T, false>::value,"Second template parameter needs to be of function type.");
-		};
+			template <class C>
+			static char(&f(typename std::enable_if<
+				std::is_same<void, decltype(std::declval<C>().persist(std::declval<Archive*>()))>::value, void>::type*))[1];
 
-		template<typename C, typename Ret, typename... Args>
-		struct has_persist<C, Ret(Args...)> 
-		{
-		private:
-			template<typename T>
-			static constexpr auto check(T*)
-				-> typename
-				std::is_same<
-				decltype( std::declval<T>().persist(std::declval<Args>()...)),
-				Ret    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-				>::type;  // attempt to call it and see if the return type is correct
+			template<typename C> static char(&f(...))[2];
 
-			template<typename>
-			static constexpr std::false_type check(...);
-
-			typedef decltype(check<C>(0)) type;
-
-		public:
-			static constexpr bool value = type::value;
+			static constexpr bool value = sizeof(f<T>(nullptr)) == 1;
 		};
 
 		template< typename C, typename std::enable_if< !trait_utils::has_reserve< C >::value>::type* = nullptr >
@@ -63,7 +56,7 @@ namespace Pakal
 		void optional_repare(C& container);
 
 		template<class T>
-		void Archive::container_value(const char* name, T& object);
+		void container_value(const char* name, T& object);
 
 		template<class C, typename std::enable_if<!trait_utils::is_associative_container<C>::value>::type* = nullptr>
 		void container_insert_reference(const char* name, C& container);
@@ -100,7 +93,7 @@ namespace Pakal
 		virtual void value(const char* name, std::string& value) = 0;
 
 		//for an object that has a member called persist
-		template<class T, typename std::enable_if<has_persist<T,void(Archive*)>::value>::type* = nullptr>
+		template<class T, typename std::enable_if<has_persist<T>::value>::type* = nullptr>
 		void value(const char* name, T& object);
 
 		//for an enum, is treated as an int
@@ -108,7 +101,7 @@ namespace Pakal
 		void value(const char* name, T& object, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr);
 
 		//for stl container or array with default childName to "item"
-		template<class T, typename = std::enable_if_t<has_persist<T, void(Archive*)>::value == false && std::is_enum<T>::value == false> >
+		template<class T, typename = std::enable_if_t<has_persist<T>::value == false && std::is_enum<T>::value == false> >
 		void value(const char* name, T& object);
 
 		//for stl container that is not associative
@@ -131,11 +124,11 @@ namespace Pakal
 		void value(const char* name, T*& object);
 
 		//for stl container of pointers just store the addresses
-		template <template<typename ...> class stl_container, typename T, typename...etc, typename = std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T, etc...>>::value>>
+		template <template<typename ...> class stl_container, typename T, typename...etc, typename = std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>>
 		void value(const char* name, const char* childName, stl_container<T*,etc...>& container);
 
 		//for associative stl container just store the addresses of the value field, 
-		template <template<typename ...> class stl_container,typename Key,typename Value,typename...etc, typename  std::enable_if<trait_utils::iterates_with_pair<stl_container<Key,Value,etc...>>::value>::type* = nullptr>
+		template <template<typename ...> class stl_container,typename Key,typename Value,typename...etc, typename  std::enable_if<trait_utils::iterates_with_pair<stl_container<Key,Value*,etc...>>::value>::type* = nullptr>
 		void value(const char* name, const char* childName, stl_container<Key,Value*,etc...>& container);
 
 		//for an array of pointers, just store the adresses
@@ -185,7 +178,7 @@ namespace Pakal
 		}
 	}
 
-	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, typename std::enable_if<trait_utils::iterates_with_pair<stl_container<Key, Value, etc...>>::value>::type*>
+	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, typename std::enable_if<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>::type*>
 	void Archive::value(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container)
 	{
 		static_assert(!std::is_pointer<Key>::value, "pointers are not currently supported as key on a map");
@@ -243,7 +236,7 @@ namespace Pakal
 		end_object_value(&values);
 	}
 
-	template<class T, typename std::enable_if< Archive::has_persist<T, void(Archive*)>::value >::type*>
+	template<class T, typename std::enable_if< Archive::has_persist<T>::value >::type*>
 	void Archive::value(const char* name, T& object)
 	{
 		begin_object(name);
@@ -366,7 +359,7 @@ namespace Pakal
 	template<class T>
 	void Archive::container_value(const char* name, T& object) 
 	{
-		if (has_persist<T, void(Archive*)>::value || trait_utils::is_container<T>::value)
+		if (has_persist<T>::value || trait_utils::is_container<T>::value)
 		{
 			value(name, object);
 		}

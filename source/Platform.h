@@ -19,7 +19,7 @@
 #define PAKAL_VERSION ((PAKAL_VERSION_MAJOR << 16) | (PAKAL_VERSION_MINOR << 8) | PAKAL_VERSION_PATCH)
 #define PAKAL_xstr(s) PAKAL_str(s)
 #define PAKAL_str(s) #s
-#define PAKAL_VERSION_NAME PAKAL_xstr(PAKAL_VERSION_MAJOR)"."PAKAL_xstr(PAKAL_VERSION_MINOR)"."PAKAL_xstr(PAKAL_VERSION_PATCH)
+#define PAKAL_VERSION_NAME PAKAL_xstr(PAKAL_VERSION_MAJOR) "." PAKAL_xstr(PAKAL_VERSION_MINOR) "." PAKAL_xstr(PAKAL_VERSION_PATCH)
 
 //------------------------------------------------------------------//
 //#define PAKAL_STATIC_LIB	//
