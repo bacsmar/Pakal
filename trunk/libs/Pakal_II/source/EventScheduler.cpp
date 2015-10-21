@@ -22,7 +22,7 @@ Pakal::EventScheduler::~EventScheduler()
 		dispatcher->m_inbox = nullptr;
 	}
 
-	std::lock_guard<std::mutex> lock(m_mutex);
+	mutex_guard lock(m_mutex);
 	m_dispatchers.clear();
 	m_inboxes.clear();	
 }
@@ -82,7 +82,7 @@ void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* 
 {
 	ASSERT(m_dispatchers.find(dispatcher) == m_dispatchers.end());
 
-	std::lock_guard<std::mutex> lock(m_mutex);
+	mutex_guard lock(m_mutex);
 
 	auto inbox = find_inbox_for_thread(tid);
 
@@ -102,7 +102,7 @@ void Pakal::EventScheduler::deregister_dispatcher(AsyncTaskDispatcher* dispatche
 	dispatcher->m_inbox->swap_buffer();
 	ASSERT(dispatcher->m_inbox->empty());
 
-	std::lock_guard<std::mutex> lock(m_mutex);
+	mutex_guard lock(m_mutex);
 
 	m_dispatchers.erase(dispatcher);
 

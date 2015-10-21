@@ -20,7 +20,6 @@ namespace Pakal
 	class Component;
 	class IDebugDrawerClient;
 	struct RendererInfo;
-	class IStream;
 	class OSManager;
 
 	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem

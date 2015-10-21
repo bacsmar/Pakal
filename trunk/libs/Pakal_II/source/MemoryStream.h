@@ -1,65 +1,49 @@
 #pragma once
 
 #include "Config.h"
-#include "IStream.h"
 #include "TaskFwd.h"
+#include "Utils.h"
 
 #include <memory>
+#include <strstream>
 
 namespace Pakal
 {
-	class _PAKALExport MemoryStream : public IStream
+	class _PAKALExport memory_istream : public std::istream
 	{
-		SharedPtr<char> m_data;
-		std::streamoff m_position;
-		std::streamoff m_size;
-		path m_name;
+		SharedPtr<std::string> m_data;
+		std::strstreambuf m_buffer;
 
+		memory_istream(const memory_istream& other) = delete;
+		memory_istream& operator=(const memory_istream& other) = delete;
 
 	public:
-
-		MemoryStream() {}
-
-		explicit MemoryStream(IStream* source) : m_position(0), m_size(source->size()), m_name(source->resource_name())
+		static SharedPtr<memory_istream> from_istream(std::istream* source)
 		{
-			m_data = std::shared_ptr<char>(new char[static_cast<unsigned>(source->size())], std::default_delete<char[]>());
+			auto originalPos = source->tellg();
+			auto size = file_utils::stream_size(*source);
+			
+			source->seekg(0, beg);
 
-			source->seek(0);
-			source->read(m_data.get(), m_size);
+			auto ptr = std::make_shared<memory_istream>(std::make_shared<std::string>(static_cast<unsigned>(size),'0'));
+
+			source->read(&ptr->m_data->at(0), size);
+
+			source->seekg(originalPos, beg);
+
+			return ptr;
+		}
+		static SharedPtr<memory_istream> from_buffer(SharedPtr<memory_istream>& buffer)
+		{
+			return std::make_shared<memory_istream>(buffer->m_data);
 		}
 
-		SharedPtr<MemoryStream> new_from_buffer()
-		{
-			auto copy = std::make_shared<MemoryStream>();
+		explicit memory_istream(SharedPtr<std::string> data) : 
+			std::istream(&m_buffer), 
+			m_data(data), 
+			m_buffer(std::strstreambuf(m_data->c_str(), m_data->size()))
+		{}
 
-			copy->m_position = 0;
-			copy->m_data = m_data;
-			copy->m_name = m_name;
-			copy->m_size = m_size;
-
-			return copy;
-		}
-
-
-		inline std::streamoff read(void* data, std::streamoff size) override
-		{
-			ASSERT(tell() + size <= m_size);
-
-			const char* startData = m_data.get() + m_position;
-			std::memcpy(data, startData, static_cast<size_t>(size));
-
-			return size;
-		}
-
-		inline bool seek(std::streamoff position, bool relative) override
-		{
-			m_position = relative ? m_position + position : position;
-			ASSERT(m_position < m_size && m_position > -1);
-			return true;
-		}
-		inline std::streamoff tell() override { return m_position; }
-		inline std::streamoff size() override { return m_size; }
-		inline const path& resource_name() override { return m_name; }
 	};
 
 }

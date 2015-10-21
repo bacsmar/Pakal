@@ -1,15 +1,48 @@
 #pragma once
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
 namespace Pakal
 {
+	namespace file_utils
+	{
+		inline std::streamoff stream_size(std::istream& stream)
+		{
+			auto originalPosition = stream.tellg();
+
+			stream.seekg(0, std::ios::end);
+
+			auto size = stream.tellg();
+
+			stream.seekg(originalPosition, std::ios::beg);
+
+			return size;
+		}
+	}
+
 	namespace trait_utils
 	{
+
+		template< typename ... Args >
+		std::string stringer(Args const& ... args)
+		{
+			std::ostringstream stream;
+			using List = int[];
+
+			List d = { 0, ((void)(stream << args << " "), 0) ... };
+
+			return stream.str();
+		}
+
+
 		template<typename T>
 		struct has_reserve
 		{
 			template <class C>
 			static char(&f(typename std::enable_if<
-				std::is_same<void, decltype(std::declval<T>().reserve(std::declval<size_t>()))>::value, void>::type*))[1];
+				std::is_same<void, decltype(std::declval<C>().reserve(std::declval<size_t>()))>::value, void>::type*))[1];
 
 			template<typename C> static char(&f(...))[2];
 

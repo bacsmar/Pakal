@@ -16,7 +16,7 @@ namespace Pakal
 
 	public:
 		bool initialize(const path& resourcePath, const SoundSettings& settings) override;
-		bool initialize(SharedPtr<IStream> resourceStream, const SoundSettings& settings) override;
+		bool initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings) override;
 		void terminate() override;
 
 		~MusicComponentSFML();

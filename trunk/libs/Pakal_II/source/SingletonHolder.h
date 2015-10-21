@@ -27,7 +27,7 @@ namespace Pakal
 			/// hold by the SingletonHolder. The first call
 			/// to get will create the singleton.
 		{
-			std::lock_guard<std::mutex> lock(_m);
+			mutex_guard lock(_m);
 			if (!_pS) _pS = new T;
 			return _pS;
 		}

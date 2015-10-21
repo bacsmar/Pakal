@@ -41,14 +41,11 @@ SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
 {			
 }
 
-bool SpriteComponent_Irrlicht::load( IStream* stream)
+bool SpriteComponent_Irrlicht::load(std::istream* stream)
 {
 	pugi::xml_document xmlFile;
 	
-	std::vector<char> buffer(static_cast<unsigned>(stream->size()));	
-	stream->read( &buffer[0], stream->size());
-
-	pugi::xml_parse_result result = xmlFile.load_buffer(buffer.data(), buffer.size());
+	pugi::xml_parse_result result = xmlFile.load(*stream);
 
 	if( result.status != pugi::status_ok )
 	{
@@ -139,10 +136,11 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		m_isPaused = settings.init_paused;
 
 		auto resource = ResourceManager::instance().open_read_resource(settings.resource_file, false);
-		IStream* resourceStream = resource.get();
 
-		if( resourceStream)
-			load( resourceStream );
+		if (resource)
+		{
+			load(resource.get());
+		}
 		else
 		{
 			LOG_ERROR("[SpriteComponent]  invalid resource %s", settings.resource_file.c_str());

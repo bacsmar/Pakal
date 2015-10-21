@@ -25,7 +25,7 @@ namespace Pakal
 		void initialize() override {};
 		void terminate() override;
 		bool add(unsigned id, const path& resourcePath) override;
-		bool add(unsigned id, SharedPtr<IStream> resourceStream) override;
+		bool add(unsigned id, SharedPtr<std::istream> resourceStream,const path& resourceName) override;
 		void remove(unsigned id) override;
 		void play(unsigned id, const SoundSettings& settings) override;
 

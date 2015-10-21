@@ -29,7 +29,7 @@ namespace Pakal
 	{
 		std::function<void()> job;
 
-		std::lock_guard<std::mutex> lock(m_jobs_mutex);
+		mutex_guard lock(m_jobs_mutex);
 		if (m_jobs.size()> 0)
 		{
 			job = m_jobs.front();
@@ -51,7 +51,7 @@ namespace Pakal
 
 			if (waitExpired)
 			{
-				std::lock_guard<std::mutex> l(m_workers_mutex);
+				mutex_guard l(m_workers_mutex);
 
 				if (m_available_workers > 1)
 				{
@@ -82,7 +82,7 @@ namespace Pakal
 
 	void ThreadPool::add_worker()
 	{
-		std::lock_guard<std::mutex> lock(m_workers_mutex);
+		mutex_guard lock(m_workers_mutex);
 
 		++m_available_workers;
 		auto thread = std::make_shared<std::thread>(&ThreadPool::worker_loop, this);

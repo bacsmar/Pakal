@@ -11,6 +11,7 @@ namespace Pakal
 	class _PAKALExport DirectorySourceIrrlitch : public DirectorySource
 	{
 		DECLARE_RTTI_WITH_BASE(DirectorySourceIrrlitch, DirectorySource);
+
 		irr::io::IFileSystem* m_file_system;
 		irr::io::IFileArchive* m_archive;
 	public:
@@ -28,7 +29,7 @@ namespace Pakal
 			m_file_system->removeFileArchive(m_archive);
 		}
 
-		SharedPtr<IStream> open_resource(const path& pathToResource) override
+		SharedPtr<std::istream> open_resource(const path& pathToResource) override
 		{
 			irr::io::IReadFile * nativeFile = m_archive->createAndOpenFile(pathToResource.c_str());
 

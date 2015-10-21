@@ -7,7 +7,7 @@ namespace Pakal
 	{
 		auto currentTid = THIS_THREAD;
 
-		std::lock_guard<std::mutex> lock(m_continuation_mutex);
+		mutex_guard lock(m_continuation_mutex);
 
 		for (auto& c : m_continuations)
 		{
@@ -22,7 +22,7 @@ namespace Pakal
 
 	void BasicTask::queue_continuation(const ContinuationData&& continuation)
 	{
-		std::lock_guard<std::mutex> lock(m_continuation_mutex);
+		mutex_guard lock(m_continuation_mutex);
 		m_continuations.emplace_back(continuation);
 	}
 

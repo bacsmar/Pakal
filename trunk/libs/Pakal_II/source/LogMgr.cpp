@@ -8,6 +8,7 @@
 #include <android/log.h>
 #endif
 #include "SingletonHolder.h"
+#include "TaskFwd.h"
 
 using namespace Pakal;
 
@@ -39,7 +40,7 @@ namespace Pakal
 
 	void LogMgr::operator<<(const std::string& msj )
 	{
-		std::lock_guard<std::mutex> guard(logMutex);
+		mutex_guard guard(logMutex);
 		log(LOG_INFO, msj.c_str());
 	}
 
@@ -65,7 +66,7 @@ namespace Pakal
 	{
 
 #if PAKAL_USE_LOG == 1
-		std::lock_guard<std::mutex> guard(logMutex);
+		mutex_guard guard(logMutex);
 		if (m_log == nullptr) return;
 
 #ifdef COLOURED_LOG
@@ -121,7 +122,7 @@ namespace Pakal
 
 	void LogMgr::setFile( const std::string &_filename )
 	{		
-		std::lock_guard<std::mutex> guard(logMutex);
+		mutex_guard guard(logMutex);
 		mFileName = _filename;
 
 		if( mFileName.empty() == true)

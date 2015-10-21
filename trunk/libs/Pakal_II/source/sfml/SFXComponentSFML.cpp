@@ -30,11 +30,11 @@ namespace Pakal
 		return false;
 	}
 
-	bool SFXComponentSFML::add(unsigned id, SharedPtr<IStream> resourceStream)
+	bool SFXComponentSFML::add(unsigned id, SharedPtr<std::istream> resourceStream, const path& resourceName)
 	{
 		ASSERT(!map_utils::contains(m_sounds, id));
 
-		auto buffer = m_manager->load_sfx(resourceStream);
+		auto buffer = m_manager->load_sfx(resourceStream,resourceName);
 
 		if (buffer != nullptr)
 		{

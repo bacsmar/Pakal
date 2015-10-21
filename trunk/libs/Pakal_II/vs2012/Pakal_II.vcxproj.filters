@@ -314,9 +314,6 @@
     <ClInclude Include="..\source\components\MeshComponent.h">
       <Filter>Components\MeshComponent</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\IStream.h">
-      <Filter>Managers\ResourceManager\Streams</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\MemoryStream.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
@@ -391,9 +388,6 @@
     </ClInclude>
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers\OSManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\FileStream.h">
-      <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Archive.h">
       <Filter>Foundation\Persist</Filter>

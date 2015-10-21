@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TextReader.h"
-#include <fstream>
+#include "ResourceManager.h"
 
 namespace pugi
 {
@@ -20,10 +20,10 @@ namespace Pakal
 		template <class Type> void read(const char* fileName,const char* name,Type& object)
 		{
 			ASSERT(fileName != nullptr);
-			std::ifstream stream;
-			stream.open(fileName);
+			
+			auto stream = ResourceManager::instance().open_read_resource(fileName,false);
+
 			read(stream, name, object);
-			stream.close();
 		}
 
 		template <class Type> void read(std::istream& stream, const char* name,Type& object)

@@ -19,7 +19,6 @@ namespace Pakal
 
 		bool initialize(const path& path, bool recursive, const std::string& password = "") override
 		{
-			LOG_DEBUG("[ZipSource] zip archive: %s", path.c_str());
 			return m_file_system->addFileArchive(path.c_str(), true, !recursive, irr::io::EFAT_ZIP, password.c_str(), &m_archive);
 		}
 
@@ -28,7 +27,7 @@ namespace Pakal
 			m_file_system->removeFileArchive(m_archive);
 		}
 
-		SharedPtr<IStream> open_resource(const path& pathToResource) override
+		SharedPtr<std::istream> open_resource(const path& pathToResource) override
 		{
 			irr::io::IReadFile* nativeFile = m_archive->createAndOpenFile(pathToResource.c_str());
 

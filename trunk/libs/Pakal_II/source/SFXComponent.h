@@ -4,7 +4,6 @@
 #include "TaskFwd.h"
 #include "Component.h"
 #include "path.h"
-#include "IStream.h"
 #include "SoundManager.h"
 
 namespace Pakal
@@ -18,7 +17,7 @@ namespace Pakal
 		virtual void terminate() = 0;
 
 		virtual bool add(unsigned id, const path& resourcePath) = 0;
-		virtual bool add(unsigned id, SharedPtr<IStream> resourceStream) = 0;
+		virtual bool add(unsigned id, SharedPtr<std::istream> resourceStream, const path& resourceName) = 0;
 
 		virtual void remove(unsigned id) = 0;
 

@@ -25,7 +25,6 @@ namespace Pakal
 	
 	class Entity;
 	class IrrGraphicsSystem;
-	class IStream;
 	class Sprite;
 	
 	class _PAKALExport SpriteComponent_Irrlicht : public SpriteComponent, public GraphicsSystem::IUpdatable
@@ -53,7 +52,7 @@ namespace Pakal
 		inline void set_flipped(bool val) override { m_is_flipped = val; }
 
 	protected:	
-		bool load(IStream * stream);		
+		bool load(std::istream* stream);		
 
 		void set_animation(const Sprite& animation);
 		void play(const Sprite& animation);

@@ -3,7 +3,6 @@
 
 #include "TaskFwd.h"
 #include "SFML/Audio.hpp"
-#include "IStream.h"
 #include "ResourceManager.h"
 #include "Timer.h"
 
@@ -38,7 +37,7 @@ namespace Pakal
 		void hint_buffer_removed();
 
 		SharedPtr<sf::SoundBuffer> load_sfx(const path& resourcePath);
-		SharedPtr<sf::SoundBuffer> load_sfx(SharedPtr<IStream> resourceStream);
+		SharedPtr<sf::SoundBuffer> load_sfx(SharedPtr<std::istream> resourceStream,const path& resourceName);
 
 		void play_sfx(SharedPtr<sf::SoundBuffer> buffer, const SoundSettings& settings);
 

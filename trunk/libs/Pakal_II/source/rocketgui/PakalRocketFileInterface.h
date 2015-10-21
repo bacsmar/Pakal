@@ -4,11 +4,8 @@
 #include <Rocket/Core/FileInterface.h>
 #include <unordered_map>
 #include <TaskFwd.h>
-#include <IStream.h>
 
-namespace Pakal{
-	class ResourceManager;
-}
+
 namespace Pakal
 {
 	class _PAKALExport PakalRocketFileInterface : public Rocket::Core::FileInterface
@@ -35,7 +32,6 @@ namespace Pakal
 		size_t Tell(Rocket::Core::FileHandle file) override;
 
 	protected:
-		Pakal::ResourceManager* m_file_system = nullptr;
-		std::unordered_map<int, SharedPtr<IStream> > m_opened_files;
+		std::unordered_map<Rocket::Core::FileHandle,SharedPtr<std::istream>> m_opened_files;
 	};
 }
