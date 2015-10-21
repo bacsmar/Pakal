@@ -4,7 +4,7 @@
 
 using namespace Pakal;
 
-PakalRocketFileInterface::PakalRocketFileInterface() : m_file_system(&ResourceManager::instance())
+PakalRocketFileInterface::PakalRocketFileInterface() 
 {
 }
 
@@ -14,10 +14,12 @@ PakalRocketFileInterface::~PakalRocketFileInterface()
 
 Rocket::Core::FileHandle PakalRocketFileInterface::Open(const Rocket::Core::String& path)
 {	
-	auto file = m_file_system->open_read_resource(path.CString(), false);
-	if( file.get() )
+	auto file = ResourceManager::instance().open_read_resource(path.CString(), false);
+
+	if(file)
 	{
 		auto index = reinterpret_cast<Rocket::Core::FileHandle>(file.get());
+
 		m_opened_files[index] = file;
 		return index;
 	}
@@ -36,29 +38,30 @@ void PakalRocketFileInterface::Close(Rocket::Core::FileHandle file)
 size_t PakalRocketFileInterface::Read(void* buffer, size_t size, Rocket::Core::FileHandle file)
 {
 	ASSERT(file != 0);
-	auto f = reinterpret_cast<Pakal::IStream*>(file);
-	return static_cast<size_t>(f->read(buffer, size));
+
+	auto f = reinterpret_cast<std::istream*>(file);
+	
+	f->read(static_cast<char*>(buffer), size);
+
+	return static_cast<size_t>(f->gcount());
 }
 
 bool PakalRocketFileInterface::Seek(Rocket::Core::FileHandle file, long offset, int origin)
 {
 	ASSERT(file != 0);
-	auto rfile = reinterpret_cast<Pakal::IStream*>(file);
 
+	std::istream * rfile = reinterpret_cast<std::istream*>(file);
 
-	if (origin == SEEK_SET)
-		return rfile->seek(offset, false);
+	rfile->seekg(offset, origin);
 
-	if (origin == SEEK_CUR)
-		return rfile->seek(offset, true);	
-	// SEEK_END
-	rfile->seek(rfile->size(), false);
-	return rfile->seek(offset, true);	
+	return rfile->good();
 }
 
 size_t PakalRocketFileInterface::Tell(Rocket::Core::FileHandle file)
 {
 	ASSERT(file != 0);
-	auto f = reinterpret_cast<Pakal::IStream*>(file);
-	return static_cast<size_t>(f->tell());
+
+	auto f = reinterpret_cast<std::istream*>(file);
+	
+	return static_cast<size_t>(f->tellg());
 }

@@ -28,7 +28,6 @@
     <ClInclude Include="..\source\XmlWriter.h" />
     <ClInclude Include="..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\source\Factory.h" />
-    <ClInclude Include="..\source\FileStream.h" />
     <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\InputDevice.h" />
     <ClInclude Include="..\source\IUIManager.h" />
@@ -62,7 +61,6 @@
     <ClInclude Include="..\source\ZipSource.h" />
     <ClInclude Include="..\source\DirectorySource.h" />
     <ClInclude Include="..\source\ISource.h" />
-    <ClInclude Include="..\source\IStream.h" />
     <ClInclude Include="..\source\MemoryStream.h" />
     <ClInclude Include="..\source\Clock.h" />
     <ClInclude Include="..\source\InputManager_SFML.h" />
@@ -178,6 +176,7 @@
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />
   </ItemGroup>
+
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10973BBF-12C3-4F4F-98CB-D2D8CB870919}</ProjectGuid>
     <RootNamespace>pakal</RootNamespace>

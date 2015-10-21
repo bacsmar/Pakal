@@ -7,7 +7,7 @@ namespace Pakal
 		return initialize(rmgr.open_read_resource(resourcePath, false),settings);
 	}
 
-	bool MusicComponentSFML::initialize(SharedPtr<IStream> resourceStream, const SoundSettings& settings)
+	bool MusicComponentSFML::initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings)
 	{
 		m_buffer = std::make_shared<StreamSFML>(resourceStream);
 

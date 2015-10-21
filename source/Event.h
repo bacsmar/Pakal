@@ -47,7 +47,7 @@ namespace Pakal
 
 			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 				
 				unsigned long long key = EventSystemUtils::new_id();
 
@@ -65,7 +65,7 @@ namespace Pakal
 
 			inline void remove_listener(ulonglong key)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				auto it = m_delegates.find(key);
 
@@ -77,7 +77,7 @@ namespace Pakal
 
 			inline bool empty() const
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				return m_delegates.empty();
 			}
@@ -85,7 +85,7 @@ namespace Pakal
 		protected:
 			inline void disable()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				m_enabled = false;
 
@@ -94,7 +94,7 @@ namespace Pakal
 
 			inline void enable()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				m_enabled = true;
 
@@ -103,7 +103,7 @@ namespace Pakal
 
 			inline void clear()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				for (auto it : m_delegates) it.second->is_subscribed = false;
 
@@ -156,14 +156,14 @@ namespace Pakal
 
 			inline bool empty() const
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				return m_delegates.empty();
 			}
 
 			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				ulonglong key = EventSystemUtils::new_id();
 
@@ -180,7 +180,7 @@ namespace Pakal
 
 			inline void remove_listener(ulonglong key)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				auto it = m_delegates.find(key);
 
@@ -191,14 +191,14 @@ namespace Pakal
 		protected:
 			inline void disable()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 				m_enabled = false;
 				for (auto it : m_delegates) it.second->is_enabled = m_enabled;
 			}
 
 			inline void enable()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				m_enabled = true;
 
@@ -208,7 +208,7 @@ namespace Pakal
 
 			inline void clear()
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				mutex_guard lock(m_mutex);
 
 				for(auto it : m_delegates) it.second->is_subscribed = false;
 

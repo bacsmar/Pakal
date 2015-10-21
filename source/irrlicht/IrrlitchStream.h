@@ -1,47 +1,60 @@
 #pragma once
 
 #include "Config.h"
-#include "IStream.h"
 #include "IReadFile.h"
 
 namespace Pakal
 {
-	class _PAKALExport IrrlitchStream : public IStream
+	class _PAKALExport IrrlitchStream : public std::istream
 	{
-		irr::io::IReadFile* m_source;
-		path m_resource_name;
+		class irrlitch_buff : public std::streambuf
+		{
+
+			irr::io::IReadFile* m_source;
+
+		protected:			
+	
+			int_type underflow() override
+			{
+				ASSERT_MSG(false, "operation not supported by irritch engine, pay me money to make the pakal version which will support this");
+				return traits_type::eof();
+			}
+			std::streamsize xsgetn(char* _Ptr, std::streamsize _Count) override
+			{
+				return m_source->read(_Ptr, static_cast<irr::u32>(_Count));;
+			}
+			pos_type seekoff(off_type off, ios_base::seekdir dir , ios_base::openmode which) override
+			{
+				if (dir == beg)
+				{
+					m_source->seek(static_cast<long>(off), false);
+				}
+				else if (dir == cur)
+				{
+					m_source->seek(static_cast<long>(off), true);
+				}
+				else if (dir == end)
+				{
+					m_source->seek( m_source->getSize() -  static_cast<long>(off), false);
+				}
+
+				return m_source->getPos();
+			}
+			pos_type seekpos(pos_type pos, ios_base::openmode which) override
+			{
+				return seekoff(pos, beg, which);
+			}
+
+		public:
+
+			irrlitch_buff(irr::io::IReadFile* source) : m_source(source) {}
+			~irrlitch_buff() { m_source->drop(); }
+
+		};
+
+		irrlitch_buff m_buff;
 
 	public:
-		explicit IrrlitchStream(irr::io::IReadFile* source) : m_source(source)
-		{
-			m_resource_name = m_source->getFileName().c_str();
-		}
-
-		std::streamoff read(void* data, std::streamoff size) override
-		{
-			return m_source->read(data, static_cast<irr::u32>(size));
-		}
-
-		std::streamoff tell() override
-		{
-			return m_source->getPos();
-		}
-		std::streamoff size() override
-		{
-			return m_source->getSize();
-		}
-		bool seek(std::streamoff position, bool relative) override
-		{
-			return m_source->seek(static_cast<long>(position), relative);
-		}
-		const path& resource_name() override
-		{
-			return m_resource_name;
-		}
-
-		~IrrlitchStream()
-		{
-			m_source->drop();
-		}
+		explicit IrrlitchStream(irr::io::IReadFile* source) : std::istream(&m_buff), m_buff(source) {}
 	};
 }

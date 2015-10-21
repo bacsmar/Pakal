@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <thread>
+#include <mutex>
 
 namespace Pakal
 {
@@ -24,7 +25,7 @@ namespace Pakal
 	template <class T>
 	using WeakPtr = std::weak_ptr<T>;
 
-
+	using mutex_guard = std::lock_guard<std::mutex>;
 
 	const std::thread::id NULL_THREAD = std::thread::id();
 	#define  THIS_THREAD  std::this_thread::get_id()

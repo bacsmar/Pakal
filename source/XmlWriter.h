@@ -1,11 +1,11 @@
 #pragma once
 
 #include "TextWriter.h"
-#include <fstream>
+#include "ResourceManager.h"
 
 namespace Pakal
 {
-	class _PAKALExport XmlWriter : public TextWriter
+	class _PAKALExport XmlWriter : private TextWriter
 	{
 		void write(std::ostream& ostream,const Element* element);
 		void write_element(std::ostream& stream,const Element* element, int depth);
@@ -16,10 +16,10 @@ namespace Pakal
 		template <class Type> void write(const char* filename, const char* name, Type& object)
 		{
 			ASSERT(filename != nullptr);
-			std::ofstream stream;
-			stream.open(filename);
+
+			auto stream = ResourceManager::instance().open_write_resource(filename);
+			
 			write(stream, name, object);
-			stream.close();
 		}
 
 		template <class Type> void write(std::ostream& stream, const char* name, Type& object)

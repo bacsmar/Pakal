@@ -27,7 +27,7 @@ void GraphicsSystem::on_terminate()
 void GraphicsSystem::on_update(long long dt)
 {
 	{	// updatables lock
-		std::lock_guard<std::mutex> lock(m_updatablesMutex);
+		mutex_guard lock(m_updatablesMutex);
 		for (auto & updatable : m_updatables)
 		{
 			updatable->update(static_cast<unsigned>(dt));
@@ -49,14 +49,14 @@ void GraphicsSystem::on_resume()
 
 void GraphicsSystem::add_to_update_list(IUpdatable* updatable)
 {
-	std::lock_guard<std::mutex> lock(m_updatablesMutex);
+	mutex_guard lock(m_updatablesMutex);
 	m_updatables.emplace_back(updatable);
 	
 }
 
 void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
 {
-	std::lock_guard<std::mutex> lock(m_updatablesMutex);
+	mutex_guard lock(m_updatablesMutex);
 	const auto &it = std::find(m_updatables.begin(), m_updatables.end(), updatable);
 	
 	ASSERT(it != m_updatables.end());

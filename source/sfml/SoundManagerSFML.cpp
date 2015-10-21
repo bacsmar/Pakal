@@ -23,8 +23,8 @@ namespace Pakal
 		m_timer.stop();
 		m_timer.event_elapsed.remove_listener(m_clean_players_id);
 
-		std::lock_guard<std::mutex> lock2(m_buffer_mutex);
-		std::lock_guard<std::mutex> lock(m_players_mutex);
+		mutex_guard lock2(m_buffer_mutex);
+		mutex_guard lock(m_players_mutex);
 
 		m_buffers.clear();
 		m_active_players.clear();
@@ -34,25 +34,6 @@ namespace Pakal
 	{
 		factories.emplace_back(CreateComponentFactory<SFXComponent, SFXComponentSFML>(this));
 		factories.emplace_back(CreateComponentFactory<MusicComponent, MusicComponentSFML>());
-
-		////SFXComponentSFML component(nullptr);
-
-		//class test : public Component
-		//{};
-
-		////bool yes = TypeInfo::is_derived<SFXComponentSFML, Component>();
-		//bool yes = TypeInfo::get<SFXComponentSFML>().isDerivedFrom<Component>();
-		////bool yes1 = TypeInfo::is_derived<Component, test>();
-		//bool yes1 = TypeInfo::is_derived<test, Component>();
-
-		////bool maybe = TypeInfo::get(&component).isDerivedFrom<MusicComponentSFML>();
-
-		////MusicComponentSFML mc;
-		////TypeInfo::get(&mc).isDerivedFrom<Component>();
-
-		////bool asdasd = TypeInfo::get(&component).isType<Component>();
-
-		////bool no = TypeInfo::is_derived<MusicComponent>( &component);
 	}
 
 	void SoundManagerSFML::set_volume(float volume)
@@ -74,7 +55,7 @@ namespace Pakal
 	{
 		//try retireve from cache
 		{
-			std::lock_guard<std::mutex> lock(m_buffer_mutex);
+			mutex_guard lock(m_buffer_mutex);
 
 			auto bufferPos = m_buffers.find(resourcePath);
 
@@ -88,37 +69,18 @@ namespace Pakal
 		}
 
 		//if not found in cache then create it and load it.
-		SharedPtr<StreamSFML> stream = rmgr.open_read_resource<StreamSFML>(resourcePath, false);
-		SharedPtr<sf::SoundBuffer> buffer = std::make_shared<sf::SoundBuffer>();
+		SharedPtr<std::istream> stream = rmgr.open_read_resource(resourcePath, false);
 
-		if (stream != nullptr && buffer->loadFromStream(*stream))
-		{
-			std::lock_guard<std::mutex> lock(m_buffer_mutex);
-
-			auto bufferPos = m_buffers.find(resourcePath);
-
-			if (bufferPos != m_buffers.end())
-			{
-				if (auto b = bufferPos->second.lock())
-					return b;
-
-				m_buffers.erase(bufferPos);
-			}
-
-			m_buffers[resourcePath] = buffer;
-			return buffer;
-		}
-
-		return nullptr;
+		return load_sfx(stream, resourcePath);
 	}
 
-	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(SharedPtr<IStream> resourceStream)
+	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(SharedPtr<std::istream> resourceStream,const path& resourceName)
 	{
 		//try retireve from cache
 		{
-			std::lock_guard<std::mutex> lock(m_buffer_mutex);
+			mutex_guard lock(m_buffer_mutex);
 
-			auto bufferPos = m_buffers.find(resourceStream->resource_name());
+			auto bufferPos = m_buffers.find(resourceName);
 
 			if (bufferPos != m_buffers.end())
 			{
@@ -135,19 +97,10 @@ namespace Pakal
 
 		if (buffer->loadFromStream(*stream))
 		{
-			std::lock_guard<std::mutex> lock(m_buffer_mutex);
+			mutex_guard lock(m_buffer_mutex);
 
-			auto bufferPos = m_buffers.find(resourceStream->resource_name());
+			m_buffers[resourceName] = buffer;
 
-			if (bufferPos != m_buffers.end())
-			{
-				if (auto b = bufferPos->second.lock())
-					return b;
-				
-				m_buffers.erase(bufferPos);
-			}
-
-			m_buffers[resourceStream->resource_name()] = buffer;
 			return buffer;
 		}
 
@@ -166,7 +119,7 @@ namespace Pakal
 		sound->setPosition(settings.position.x, settings.position.y, settings.position.z);
 		sound->play();
 
-		std::lock_guard<std::mutex> lock(m_players_mutex);
+		mutex_guard lock(m_players_mutex);
 
 		if (m_active_players.empty())
 		{
@@ -178,7 +131,7 @@ namespace Pakal
 
 	void SoundManagerSFML::clean_expired_buffers()
 	{
-		std::lock_guard<std::mutex> l(m_buffer_mutex);
+		mutex_guard l(m_buffer_mutex);
 
 		LOG_INFO("Cleaning expired buffers...");
 		map_utils::erase_if(m_buffers, [](const std::pair<path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
@@ -186,7 +139,7 @@ namespace Pakal
 
 	void SoundManagerSFML::clean_players() 
 	{
-		std::lock_guard<std::mutex> l(m_players_mutex);
+		mutex_guard l(m_players_mutex);
 
 		map_utils::erase_if(m_active_players, [](const UniquePtr<sf::Sound>& player) { return player->getStatus() == sf::SoundSource::Stopped;  });
 

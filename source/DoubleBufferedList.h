@@ -24,19 +24,19 @@ namespace Pakal
 	public:
 		void swap_buffer()
 		{
-			std::lock_guard<std::mutex> lock(m_pop_mutex);
-			std::lock_guard<std::mutex> lock2(m_push_mutex);
+			mutex_guard lock(m_pop_mutex);
+			mutex_guard lock2(m_push_mutex);
 			std::swap(m_push_list, m_pop_list);
 		}
 
 		inline bool empty()
 		{
-			std::lock_guard<std::mutex> lock(m_pop_mutex);
+			mutex_guard lock(m_pop_mutex);
 			return m_pop_list.empty();
 		}
 		inline size_t size()
 		{
-			std::lock_guard<std::mutex> lock(m_pop_mutex);
+			mutex_guard lock(m_pop_mutex);
 			return m_pop_list.size();
 		}
 
@@ -53,7 +53,7 @@ namespace Pakal
 
 		inline void push(T t)
 		{
-			std::lock_guard<std::mutex> lock(BaseClass::m_push_mutex);
+			mutex_guard lock(BaseClass::m_push_mutex);
 			BaseClass::m_push_list.push(t);
 			BaseClass::m_condition.notify_one();
 		}
@@ -67,7 +67,7 @@ namespace Pakal
 				BaseClass::swap_buffer();
 			}
 
-			std::lock_guard<std::mutex> lock(BaseClass::m_pop_mutex);
+			mutex_guard lock(BaseClass::m_pop_mutex);
 			T e = BaseClass::m_pop_list.front();
 			BaseClass::m_pop_list.pop();
 			return e;
@@ -81,12 +81,12 @@ namespace Pakal
 	public:
 		inline void insert(T t)
 		{
-			std::lock_guard<std::mutex> lock(BaseClass::m_push_mutex);
+			mutex_guard lock(BaseClass::m_push_mutex);
 			BaseClass::m_push_list.insert(t);
 		}
 		inline void erase(T t)
 		{
-			std::lock_guard<std::mutex> lock(BaseClass::m_pop_mutex);
+			mutex_guard lock(BaseClass::m_pop_mutex);
 			BaseClass::m_pop_list.erase(t);
 		}
 	};

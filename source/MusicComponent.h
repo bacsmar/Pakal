@@ -4,7 +4,6 @@
 #include "Component.h"
 #include "path.h"
 #include "SoundManager.h"
-#include "IStream.h"
 #include "TaskFwd.h"
 #include "PakalTime.h"
 
@@ -23,7 +22,7 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(MusicComponent, Component);
 	public:
 		virtual bool initialize(const path& resourcePath, const SoundSettings& settings = SoundSettings()) = 0;
-		virtual bool initialize(SharedPtr<IStream> resourceStream, const SoundSettings& settings = SoundSettings()) = 0;
+		virtual bool initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual void terminate() = 0;
 
 		virtual void play() = 0;
