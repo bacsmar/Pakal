@@ -19,7 +19,7 @@ namespace Pakal
 
 			auto stream = ResourceManager::instance().open_write_resource(filename);
 			
-			write(stream, name, object);
+			write(*stream, name, object);
 		}
 
 		template <class Type> void write(std::ostream& stream, const char* name, Type& object)

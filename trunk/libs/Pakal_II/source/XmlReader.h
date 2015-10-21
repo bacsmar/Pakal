@@ -23,7 +23,7 @@ namespace Pakal
 			
 			auto stream = ResourceManager::instance().open_read_resource(fileName,false);
 
-			read(stream, name, object);
+			read(*stream, name, object);
 		}
 
 		template <class Type> void read(std::istream& stream, const char* name,Type& object)
