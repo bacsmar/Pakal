@@ -111,4 +111,7 @@ namespace Pakal
 		SharedPtr<std::ostream> open_write_resource(const path& resourcePath);	
 
 	};
+
+#define rmgr ResourceManager::instance()
+
 }

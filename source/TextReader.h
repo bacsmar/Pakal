@@ -3,7 +3,6 @@
 #include "Archive.h"
 #include <stack>
 #include <map>
-#include <vector>
 
 namespace Pakal
 {
@@ -15,7 +14,6 @@ namespace Pakal
 		std::stack<Element*> m_context;
 
 		std::map<void*,void*> m_solved;
-		std::map<void*, std::vector<void**>> m_unsolved;
 
 	protected:
 		explicit TextReader();
@@ -25,8 +23,8 @@ namespace Pakal
 		inline Element* get_root() { return m_root; };
 
 		void begin_object(const char* name) override;
-		void end_object_reference(void*& address) override;
-		void end_object_value(void* address) override;
+		void end_object_as_reference(void*& address) override;
+		void end_object_as_value(const void* address) override;
 
 		size_t object_size() override;
 	public:

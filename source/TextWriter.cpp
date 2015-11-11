@@ -16,23 +16,23 @@ void TextWriter::begin_object(const char* name)
 		m_context.push(get_current_element()->add_element(Element(name)));
 }
 
-void TextWriter::end_object_reference(void*& address)
+void TextWriter::end_object_as_reference(void*& address)
 {
 	get_current_element()->address(address);
 	m_references.insert(address);
 	m_context.pop();
 }
 
-void TextWriter::end_object_value(void* address)
+void TextWriter::end_object_as_value(const void* address)
 {
-	get_current_element()->address(address);
+	get_current_element()->address(const_cast<void*>(address));
 	m_context.pop();
 }
 
 
 size_t TextWriter::object_size()
 {
-	return get_current_element()->elements().size();
+	return get_current_element() ? get_current_element()->elements().size() : 0;
 }
 
 void TextWriter::solve_references()

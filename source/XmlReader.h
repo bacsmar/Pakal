@@ -2,6 +2,7 @@
 
 #include "TextReader.h"
 #include "ResourceManager.h"
+#include "Element.h"
 
 namespace pugi
 {
@@ -28,6 +29,17 @@ namespace Pakal
 
 		template <class Type> void read(std::istream& stream, const char* name,Type& object)
 		{
+			//get values
+			set_type(ArchiveType::Reader);
+			parse(stream, get_root());
+			Archive::value<Type>(name, object);
+
+			//reset the stream
+			stream.clear();
+			stream.seekg(0);
+
+			//get references
+			set_type(ArchiveType::Resolver);
 			parse(stream, get_root());
 			Archive::value<Type>(name, object);
 		}
