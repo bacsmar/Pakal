@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "TaskFwd.h"
+#include "Utils.h"
 #include "SFML/System/InputStream.hpp"
 
 
@@ -31,14 +32,7 @@ namespace Pakal
 		}
 		sf::Int64 getSize() override
 		{
-			auto curr = m_source->tellg();
-
-			m_source->seekg(0, m_source->end);
-			sf::Int64 pos = static_cast<sf::Int64>(m_source->tellg());
-
-			m_source->seekg(curr, m_source->beg);
-
-			return pos;
+			return static_cast<sf::Int64>(file_utils::stream_size(*m_source));
 		}
 
 	};

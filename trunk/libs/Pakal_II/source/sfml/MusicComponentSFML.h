@@ -12,8 +12,6 @@ namespace Pakal
 		SharedPtr<StreamSFML> m_buffer;
 		sf::Music m_player;
 
-		ResourceManager& rmgr = ResourceManager::instance();
-
 	public:
 		bool initialize(const path& resourcePath, const SoundSettings& settings) override;
 		bool initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings) override;

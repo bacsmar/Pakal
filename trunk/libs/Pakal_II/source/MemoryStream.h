@@ -20,7 +20,6 @@ namespace Pakal
 	public:
 		static SharedPtr<memory_istream> from_istream(std::istream* source)
 		{
-			auto originalPos = source->tellg();
 			auto size = file_utils::stream_size(*source);
 			
 			source->seekg(0, beg);
@@ -28,8 +27,6 @@ namespace Pakal
 			auto ptr = std::make_shared<memory_istream>(std::make_shared<std::string>(static_cast<unsigned>(size),'0'));
 
 			source->read(&ptr->m_data->at(0), size);
-
-			source->seekg(originalPos, beg);
 
 			return ptr;
 		}

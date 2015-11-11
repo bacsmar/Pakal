@@ -3,13 +3,18 @@
 #include "TextWriter.h"
 #include "ResourceManager.h"
 
+namespace pugi
+{
+	class xml_node;
+}
+
+
 namespace Pakal
 {
 	class _PAKALExport XmlWriter : private TextWriter
 	{
-		void write(std::ostream& ostream,const Element* element);
-		void write_element(std::ostream& stream,const Element* element, int depth);
-		void write_indent(std::ostream& stream, int indent);
+		void write(std::ostream& ostream, Element* element);
+		void write_element(pugi::xml_node* node, Element* element);
 
 
 	public:

@@ -5,6 +5,8 @@
 #include "Utils.h"
 #include <iterator>
 
+
+#if  !defined(_MSC_VER) || _MSC_VER < 1900
 #if __cplusplus <= 201103L
 namespace std
 {
@@ -13,6 +15,12 @@ namespace std
 		using enable_if_t = typename enable_if<_Test, _Ty>::type;
 }
 #endif
+#endif
+
+/*
+Arrays, json format, test,
+*/
+
 
 namespace Pakal
 {
@@ -20,15 +28,15 @@ namespace Pakal
 	{
 		Reader,
 		Writer,
+		Resolver,
 	};
 
 	class _PAKALExport Archive
 	{
-		const ArchiveType m_type;
+		ArchiveType m_type;
 
 		Archive(const Archive& other) = delete;
 		Archive& operator=(const Archive& other) = delete;
-	public:
 		
 		template<typename T>
 		struct has_persist
@@ -42,38 +50,33 @@ namespace Pakal
 			static constexpr bool value = sizeof(f<T>(nullptr)) == 1;
 		};
 
-		template< typename C, typename std::enable_if< !trait_utils::has_reserve< C >::value>::type* = nullptr >
+		template< typename C, std::enable_if_t<!trait_utils::has_reserve<C>::value>* = nullptr >
 		void try_reserve(C&, std::size_t) {}
-		template< typename C, typename = std::enable_if_t<trait_utils::has_reserve< C >::value>> 
+		template< typename C, std::enable_if_t<trait_utils::has_reserve<C>::value>* = nullptr> 
 		void try_reserve(C& c, std::size_t n)
 		{
 			c.reserve(c.size() + n);
 		}
 
-		template< typename C, typename std::enable_if< !trait_utils::is_associative_container<C>::value>::type* = nullptr >
-		void optional_repare(C&) {}
-		template< typename C, typename = std::enable_if_t<trait_utils::is_associative_container< C >::value>>
-		void optional_repare(C& container);
+		template<class T, std::enable_if_t<has_persist<T>::value>* = nullptr>
+		void container_value(const T& object);
 
-		template<class T>
-		void container_value(const char* name, T& object);
-
-		template<class C, typename std::enable_if<!trait_utils::is_associative_container<C>::value>::type* = nullptr>
-		void container_insert_reference(const char* name, C& container);
-
-		template<class C, typename = std::enable_if_t<trait_utils::is_associative_container< C >::value>>
-		void container_insert_reference(const char* name, C& container);
-
+		template<class T, std::enable_if_t<!has_persist<T>::value>* = nullptr >
+		void container_value(const T& object);
 
 	protected:
 		virtual void begin_object(const char* name) = 0;
-		virtual void end_object_reference(void*& address) = 0;
-		virtual void end_object_value(void* address) = 0;
+		virtual void end_object_as_reference(void*& address) = 0;
+		virtual void end_object_as_value(const void* address) = 0;
+
 		virtual size_t object_size() = 0;
-	public:	
+
+		inline void set_type(ArchiveType type) { m_type = type; }
 
 		explicit Archive(ArchiveType type) : m_type(type) { }
 		virtual ~Archive() {}
+
+	public:	
 
 		inline ArchiveType get_type() { return m_type;  }
 
@@ -93,316 +96,399 @@ namespace Pakal
 		virtual void value(const char* name, std::string& value) = 0;
 
 		//for an object that has a member called persist
-		template<class T, typename std::enable_if<has_persist<T>::value>::type* = nullptr>
+		template<class T, std::enable_if_t<has_persist<T>::value>* = nullptr>
 		void value(const char* name, T& object);
 
 		//for an enum, is treated as an int
-		template<class T>
-		void value(const char* name, T& object, typename std::enable_if<std::is_enum<T>::value>::type* = nullptr);
+		template<class T, std::enable_if_t<std::is_enum<T>::value>* = nullptr>
+		void value(const char* name, T& object);
 
 		//for stl container or array with default childName to "item"
-		template<class T, typename = std::enable_if_t<has_persist<T>::value == false && std::is_enum<T>::value == false> >
+		template<class T, std::enable_if_t<has_persist<T>::value == false && std::is_enum<T>::value == false>* = nullptr >
 		void value(const char* name, T& object);
 
 		//for stl container that is not associative
-		template <template<typename ...> class stl_container, typename T,typename...etc, typename = std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T,etc...>>::value>>
+		template <template<typename ...> class stl_container, typename T,typename...etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T,etc...>>::value>* = nullptr>
 		void value(const char* name, const char* childName, stl_container<T, etc...>& container);
 		
 		//for an associative stl container like a map
-		template <template<typename ...> class stl_container, typename Key,typename Value,typename...etc, typename std::enable_if<trait_utils::iterates_with_pair<stl_container<Key,Value,etc...>>::value>::type* = nullptr>
+		template <template<typename ...> class stl_container, typename Key,typename Value,typename...etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key,Value,etc...>>::value>* = nullptr>
 		void value(const char* name, const char* childName, stl_container<Key,Value,etc...>& container);
 
-		//for an array 
-		template <class T, size_t Length>
-		void value(const char* name, const char* childName, T (&container)[Length]);
+		////for an array 
+		//template <class T, size_t Length>
+		//void value(const char* name, const char* childName, T (&container)[Length]);
+
+		//----------------Pointers as values--------------------------------------------
+
+		template<class T>
+		void value(const char* name, T*& object);
+
+		template <template<typename ...> class stl_container, typename T, typename...etc ,std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>* = nullptr>
+		void value(const char* name, const char* childName, stl_container<T*, etc...>& container);
+
+		template <template<typename ...> class stl_container, typename Key, typename Value, typename...etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>* = nullptr>
+		void value(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container);
+
+	/*	template <class T, size_t Length>
+		void value(const char* name, const char* childName, T*(&values)[Length]);*/
 
 
-		//---------Pointers are treated as references------------------------------
+		//---------Pointers as references------------------------------
 
 		//for a pointer to an object just store the address
 		template <class T> 
-		void value(const char* name, T*& object);
+		void refer(const char* name, T*& object);
 
 		//for stl container of pointers just store the addresses
-		template <template<typename ...> class stl_container, typename T, typename...etc, typename = std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>>
-		void value(const char* name, const char* childName, stl_container<T*,etc...>& container);
+		template <template<typename ...> class stl_container, typename T, typename...etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>* = nullptr>
+		void refer(const char* name, const char* childName, stl_container<T*,etc...>& container);
 
 		//for associative stl container just store the addresses of the value field, 
-		template <template<typename ...> class stl_container,typename Key,typename Value,typename...etc, typename  std::enable_if<trait_utils::iterates_with_pair<stl_container<Key,Value*,etc...>>::value>::type* = nullptr>
-		void value(const char* name, const char* childName, stl_container<Key,Value*,etc...>& container);
+		template <template<typename ...> class stl_container,typename Key,typename Value,typename...etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key,Value*,etc...>>::value>* = nullptr>
+		void refer(const char* name, const char* childName, stl_container<Key,Value*,etc...>& container);
 
 		//for an array of pointers, just store the adresses
-		template <class T, size_t Length> 
-		void value(const char* name, const char* childName, T*(&values)[Length]);
+		//template <class T, size_t Length> 
+		//void refer(const char* name, const char* childName, T*(&values)[Length]);
 
 	};
 
-	template<class T>
-	void Archive::value(const char* name, T*& object)
-	{
-		begin_object(name);
-		end_object_reference(*reinterpret_cast<void**>(static_cast<void*>(&object)));
-	}
-
-	template<template <typename ...> class stl_container, typename T, typename ... etc, typename>
-	void Archive::value(const char* name, const char* childName, stl_container<T*, etc...>& container)
-	{
-		switch (m_type)
-		{
-			case ArchiveType::Reader: 
-			{	
-				begin_object(name);
-					size_t count = object_size();
-					try_reserve(container, count);
-
-					for (size_t i = 0; i < count; i++)
-					{
-						//here I need to delegate the job because sets and vectors work very diferently so I need 2 functions
-						container_insert_reference(childName, container);
-					}
-				end_object_value(&container);
-			}
-			break;
-			case ArchiveType::Writer: 
-			{
-				begin_object(name);
-					for (const T* e : container)
-					{
-						T* ptr = const_cast<T*>(e);
-						
-						value(childName,ptr);
-					}
-				end_object_value(&container);
-			} 
-			break;
-		}
-	}
-
-	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, typename std::enable_if<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>::type*>
-	void Archive::value(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container)
-	{
-		static_assert(!std::is_pointer<Key>::value, "pointers are not currently supported as key on a map");
-
-		switch (m_type)
-		{
-			case ArchiveType::Reader: 
-			{
-				begin_object(name);
-					size_t count = object_size();
-					for (size_t i = 0; i < count; i++)
-					{
-						begin_object(childName);
-
-							Key&& key = Key();
-							value("key", key);
-
-							auto& pair = *container.insert(std::make_pair(key, nullptr)).first;
-
-							value("value", pair.second);
-
-						end_object_value(&pair);
-					}
-				end_object_value(&container);
-			}
-			break;
-			case ArchiveType::Writer: 
-			{
-				begin_object(name);
-					for (auto& e : container)
-					{
-						begin_object(childName);
-
-							Key& fst = const_cast<Key&>(e.first);
-							value("key", fst);
-							value("value", e.second);
-
-						end_object_value(&e);
-					}
-				end_object_value(&container);
-			}
-			break;
-		}
-	}
-
-	template<class T, size_t Length>
-	void Archive::value(const char* name, const char* childName, T*(& values)[Length])
-	{
-		begin_object(name);
-			size_t count = m_type == ArchiveType::Reader ? (object_size() > Length ? Length : object_size()) : Length;
-			for (size_t i = 0; i < count; i++)
-			{
-				value(childName, values[i]);
-			}
-		end_object_value(&values);
-	}
-
-	template<class T, typename std::enable_if< Archive::has_persist<T>::value >::type*>
+	template<class T, std::enable_if_t<Archive::has_persist<T>::value>*>
 	void Archive::value(const char* name, T& object)
 	{
 		begin_object(name);
 			object.persist(this);
-		end_object_value(&object);
+		end_object_as_value(&object);
 	}
 
-	template<class T>
-	void Archive::value(const char* name, T& Enum, typename std::enable_if<std::is_enum<T>::value>::type*)
+	template<class T, std::enable_if_t<std::is_enum<T>::value>*>
+	void Archive::value(const char* name, T& Enum)
 	{
-		int n = static_cast<int>(Enum);
-		value(name,n);
+		auto n = static_cast<typename std::underlying_type<T>::type>(Enum);
+		value(name, n);
 		Enum = static_cast<T>(n);
 	}
 
-	template<class T, typename>
-	void Archive::value(const char* name, T& object) 
+	template<class T, std::enable_if_t<Archive::has_persist<T>::value == false && std::is_enum<T>::value == false>* >
+	void Archive::value(const char* name, T& object)
 	{
 		static_assert(trait_utils::is_container<T>::value || std::is_array<T>::value, "T/Key must have a persist method or to be a stl container or an array or a pointer or an enum");
-		
+
 		value(name, "item", object);
 	}
 
-	template<template <typename ...> class stl_container, typename T, typename ... etc, typename>
+	template<template<typename...> class stl_container, typename T, typename... etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T, etc...>>::value>*>
 	void Archive::value(const char* name, const char* childName, stl_container<T, etc...>& container)
 	{
+		begin_object(name);
+
 		switch (m_type)
 		{
-			case ArchiveType::Reader: 
+			case ArchiveType::Reader:
 			{
-				begin_object(name);
-					size_t count = object_size();
-					try_reserve(container, count);
+				size_t count = object_size();
+				try_reserve(container, count);
 
-					for (size_t i = 0; i < count; i++)
-					{						
-						const T& value = *container.insert(container.end(), T());
-						T& ref = const_cast<T&>(value);
-						container_value(childName, ref);
-					}
-				end_object_value(&container);
-
-				//if this is a set then reinsert all the elements because they changed after insertion
-				optional_repare(container);
-				
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+						T&& value = T();
+						container_value(value);
+					end_object_as_value(&*container.insert(container.end(), value));
+				}
 			}
 			break;
-			case ArchiveType::Writer: 
+			case ArchiveType::Writer:
+			case ArchiveType::Resolver:
 			{
-				begin_object(name);
-					for (const T& element : container)
-					{
-						T& e = const_cast<T&>(element);
-						container_value(childName, e);
-					}
-				end_object_value(&container);
+				for (const T& element : container)
+				{
+					begin_object(childName);
+						container_value(element);
+					end_object_as_value(&element);
+				}
 			}
 			break;
-		}	
+		}
+
+		end_object_as_value(&container);
 	}
 
-	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, typename std::enable_if<trait_utils::iterates_with_pair<stl_container<Key,Value,etc...>>::value>::type*>
-	void Archive::value(const char* name, const char* childName, stl_container<Key, Value, etc...>& container) 
+	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key, Value, etc...>>::value>*>
+	void Archive::value(const char* name, const char* childName, stl_container<Key, Value, etc...>& container)	
 	{
 		static_assert(!std::is_pointer<Key>::value, "pointers are not currently supported as key on a map");
 
+		begin_object(name);
+
 		switch (m_type)
 		{
-			case ArchiveType::Reader: 
-			{
-				begin_object(name);
-					size_t count = object_size();
+			case ArchiveType::Reader:
+			{		
+				size_t count = object_size();
 
-					for (size_t i = 0; i < count; i++)
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
 					{
-						begin_object(childName);
-
+						begin_object("key");
 							Key&& key = Key();
-							value("key", key);
+							container_value(key);
 
-							auto& pair = *container.insert(std::make_pair(key, Value())).first;
-							
-							value("value", pair.second);
-							
-						end_object_value(&pair);
+							auto& addresses = *container.insert(std::make_pair(key, Value())).first;
+						end_object_as_value(&addresses.first);
+
+						begin_object("value");
+							container_value(addresses.second);
+						end_object_as_value(&addresses.second);
 					}
-				end_object_value(&container);
+					end_object_as_value(nullptr);
+				}
+			}
+			break;
+			case ArchiveType::Writer:
+			case ArchiveType::Resolver:
+			{
+				for (auto& element : container)
+				{
+					begin_object(childName);
+					{
+						begin_object("key");
+							container_value(element.first);
+						end_object_as_value(&element.first);
+
+						begin_object("value");
+							container_value(element.second);
+						end_object_as_value(&element.second);
+					}
+					end_object_as_value(&element);
+				}
+			}
+			break;
+		}
+
+		end_object_as_value(&container);
+	}
+
+	template<class T>
+	void Archive::value(const char* name, T*& object)
+	{
+		if (this->m_type == ArchiveType::Reader)
+		{
+			object = new T();
+		}
+
+		value(name, *object);
+	}
+
+	template<template <typename ...> class stl_container, typename T, typename ... etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>*>
+	void Archive::value(const char* name, const char* childName, stl_container<T*, etc...>& container)
+	{
+		begin_object(name);
+
+		switch (m_type)
+		{
+			case ArchiveType::Reader:
+			{
+				size_t count = object_size();
+				try_reserve(container, count);
+
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+						T* object = new T();
+						container_value(*object);
+						container.insert(container.end(), object);
+					end_object_as_value(object);
+				}
+			}
+			break;
+			case ArchiveType::Writer:
+			case ArchiveType::Resolver:
+			{
+				for (const T* element : container)
+				{
+					begin_object(childName);
+						container_value(*element);
+					end_object_as_value(element);
+				}
+			}
+			break;
+		}
+
+		end_object_as_value(&container);
+	}
+
+	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>*>
+	void Archive::value(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container)
+	{
+		static_assert(!std::is_pointer<Key>::value, "pointers are not currently supported as key on a map");
+
+		begin_object(name);
+
+		switch (m_type)
+		{
+			case ArchiveType::Reader:
+			{
+				size_t count = object_size();
+
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+					{
+						begin_object("key");
+							Key&& key = Key();
+							container_value(key);
+
+							auto& addresses = *container.insert(std::make_pair(key,new Value())).first;
+						end_object_as_value(&addresses.first);
+
+						begin_object("value");
+							container_value(*addresses.second);
+						end_object_as_value(addresses.second);
+					}
+					end_object_as_value(nullptr);
+				}
+			}
+			break;
+			case ArchiveType::Writer:
+			case ArchiveType::Resolver:
+			{
+				for (auto& element : container)
+				{
+					begin_object(childName);
+					{
+						begin_object("key");
+							container_value(element.first);
+						end_object_as_value(&element.first);
+
+						begin_object("value");
+							container_value(*element.second);
+						end_object_as_value(element.second);
+					}
+					end_object_as_value(&element);
+				}
+			}
+			break;
+		}
+
+		end_object_as_value(&container);
+	}
+
+	template<class T>
+	void Archive::refer(const char* name, T*& object)
+	{
+		begin_object(name);
+		end_object_as_reference(*reinterpret_cast<void**>(static_cast<void*>(&object)));
+	}
+
+	template<template <typename ...> class stl_container, typename T, typename ... etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>*>
+	void Archive::refer(const char* name, const char* childName, stl_container<T*, etc...>& container)
+	{
+		begin_object(name);
+
+		switch (m_type)
+		{
+			case ArchiveType::Resolver: 
+			{	
+				size_t count = object_size();
+				try_reserve(container, count);
+
+				for (size_t i = 0; i < count; i++)
+				{
+					T* pointer = nullptr;
+					refer(childName, pointer);
+					container.insert(container.end(), pointer);
+				}
 			}
 			break;
 			case ArchiveType::Writer: 
 			{
-				begin_object(name);
-					for (auto& element : container)
-					{
-						begin_object(childName);
-							Key& fst = const_cast<Key&>(element.first);
-							value("key", fst);
-							value("value", element.second);
-						end_object_value(&element);
-					}
-				end_object_value(&container);
-			}
+				for (const T* e : container)
+				{
+					T* ptr = const_cast<T*>(e);
+					refer(childName,ptr);
+				}
+			} 
+			break;
+			case ArchiveType::Reader: 
 			break;
 		}
+
+		end_object_as_value(&container);
+
 	}
 
-	template<class T, size_t Length>
-	void Archive::value(const char* name, const char* childName, T(&container)[Length])
+	template<template <typename ...> class stl_container, typename Key, typename Value, typename ... etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>*>
+	void Archive::refer(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container)
 	{
+		static_assert(!std::is_pointer<Key>::value, "pointers are not currently supported as key on a map");
+
 		begin_object(name);
-		size_t count = m_type == ArchiveType::Reader ? (object_size() > Length ? Length : object_size()) : Length;
-		for (size_t i = 0; i < count; i++)
+
+
+		switch (m_type)
 		{
-			container_value(childName, container[i]);
+			case ArchiveType::Resolver: 
+			{
+				size_t count = object_size();
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+					{
+						begin_object("key");
+							Key&& key = Key();
+							container_value(key);
+
+							auto& addresses = *container.insert(std::make_pair(key, nullptr)).first;
+						end_object_as_value(&addresses.first);
+
+						refer("value", addresses.second);
+					}
+					end_object_as_value(nullptr);
+				}
+			}
+			break;
+			case ArchiveType::Writer: 
+			{
+				for (auto& e : container)
+				{
+					begin_object(childName);
+					{
+						begin_object("key");
+							container_value(e.first);
+						end_object_as_value(&e.first);
+
+						begin_object("value");
+						end_object_as_reference(e.second);
+					}
+					end_object_as_value(&e);
+				}
+			}
+			break;
+			case ArchiveType::Reader:
+			break;
 		}
 
-		end_object_value(&container);
+		end_object_as_value(&container);
 	}
 
-	template<class T>
-	void Archive::container_value(const char* name, T& object) 
+	template<class T, std::enable_if_t<Archive::has_persist<T>::value>*>
+	void Archive::container_value(const T& obj)
 	{
-		if (has_persist<T>::value || trait_utils::is_container<T>::value)
-		{
-			value(name, object);
-		}
-		else
-		{
-			begin_object(name);
-				value("value", object);
-			end_object_value(&object);
-		}
+		T& object = const_cast<T&>(obj);
+
+		object.persist(this);
 	}
 
-	template<class C, typename std::enable_if<!trait_utils::is_associative_container<C>::value>::type*>
-	void Archive::container_insert_reference(const char* name, C& container) 
+	template<class T, std::enable_if_t<!Archive::has_persist<T>::value>*>
+	void Archive::container_value(const T& obj)
 	{
-		auto*& address = *container.insert(container.end(), nullptr);
+		//static_assert(!trait_utils::is_container<T>::value, "nested containers are not supported for the moment");
 
-		value(name, address);
-	}
-
-	template<class C, typename>
-	void Archive::container_insert_reference(const char* name, C& container) 
-	{
-		void* resolvedAddress = nullptr;
-
-		value(name, resolvedAddress);
-
-		if (resolvedAddress != nullptr)
-		{
-			container.insert(container.end(), typename C::key_type(resolvedAddress));
-		}
-		else
-		{
-			ASSERT_MSG(false, "is not possible to create an associative container with unresolved references until I receive some donations");
-		}
-	}
-
-	template<typename C, typename>
-	void Archive::optional_repare(C& container)
-	{
-		C backup;
-		backup.insert(container.begin(), container.end());
-		container.clear();
-		container.insert(backup.begin(), backup.end());
+		T& object = const_cast<T&>(obj);
+		value("value", object);
 	}
 
 }

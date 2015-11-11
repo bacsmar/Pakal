@@ -20,7 +20,7 @@ void TextReader::begin_object(const char* name)
 	m_context.push(get_current_element()->find_element(name));
 }
 
-void TextReader::end_object_value(void* address)
+void TextReader::end_object_as_value(const void* address)
 {
 	if (!get_current_element())
 	{
@@ -32,27 +32,14 @@ void TextReader::end_object_value(void* address)
 	{
 		void* oldAddress = attr->address();
 
-		m_solved[oldAddress] = address;
-
-		auto it = m_unsolved.find(oldAddress);
-		if (it != m_unsolved.end())
-		{
-			auto& pending = it->second;
-
-			for (void** pointer : pending)
-			{
-				*pointer = address;
-			}
-			m_unsolved.erase(it);
-		}
+		m_solved[oldAddress] = const_cast<void*>(address);
 	}
 
 	get_current_element()->remove_from_parent();
 	m_context.pop();
 }
 
-
-void TextReader::end_object_reference(void*& address)
+void TextReader::end_object_as_reference(void*& address)
 {
 	if (!get_current_element())
 	{
@@ -69,7 +56,7 @@ void TextReader::end_object_reference(void*& address)
 	}
 	else
 	{
-		m_unsolved[oldAddress].push_back(&address);
+		ASSERT_MSG(false,"unresolved reference");
 	}
 
 	get_current_element()->remove_from_parent();
@@ -78,7 +65,7 @@ void TextReader::end_object_reference(void*& address)
 
 size_t TextReader::object_size()
 {
-	return get_current_element()->elements().size();
+	return get_current_element() ? get_current_element()->elements().size() : 0;
 }
 
 void TextReader::value(const char* name, bool& value)

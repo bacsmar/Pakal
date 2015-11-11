@@ -21,8 +21,6 @@ namespace Pakal
 
 		Timer m_timer;
 		ulonglong m_clean_players_id = 0;
-
-		ResourceManager& rmgr = ResourceManager::instance();
 		
 		void clean_players();
 		void clean_expired_buffers();

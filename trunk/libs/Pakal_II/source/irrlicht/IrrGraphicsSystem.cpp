@@ -64,8 +64,6 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
 
-	auto& rmgr = ResourceManager::instance();
-
 	rmgr.register_source<DirectorySource>([this]() { return new DirectorySourceIrrlitch(device->getFileSystem()); });
 	rmgr.register_source<ZipSource>([this]() { return new ZipSourceIrrlitch(device->getFileSystem()); });
 	
