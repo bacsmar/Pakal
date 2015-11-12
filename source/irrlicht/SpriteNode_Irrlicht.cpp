@@ -103,10 +103,10 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite
 		float top = static_cast<float>(m_frame_rect.UpperLeftCorner.Y);
 		float bottom = top + static_cast<float>(height);		
 		
-        m_vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + relativePos);													
-        m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );							
-        m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );	
-        m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );							
+        m_vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + relativePos);
+        m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );
+        m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );
+        m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );
 
 		m_flip_factor = 1;
 		if(flipped)

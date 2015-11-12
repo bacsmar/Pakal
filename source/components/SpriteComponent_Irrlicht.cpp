@@ -93,7 +93,7 @@ bool SpriteComponent_Irrlicht::load(std::istream* stream)
 		}
 		
 		animation->duration = animationNode.attribute("duration").as_uint(100);
-		animation->is_looped = animationNode.attribute("looped").as_bool();
+		animation->is_looped = animationNode.attribute("looped").as_bool();		
 		
 		for (const auto& frame : animationNode)
 		{			
@@ -102,10 +102,13 @@ bool SpriteComponent_Irrlicht::load(std::istream* stream)
 			int top		= frame.attribute(SPRITE_FRAME_TOP).as_int(-1);
 			int width	= frame.attribute(SPRITE_FRAME_WIDTH).as_int(-1);
 			int height	= frame.attribute(SPRITE_FRAME_HEIGHT).as_int(-1);
-			int offsetX	= frame.attribute("oX").as_int(0);
-			int offsetY	= frame.attribute("oY").as_int(0);
-			animation->add_frame(tmath::recti(left, top, width, height), tmath::vector2di(offsetX, offsetY) );			
-		}				
+
+			float offsetX	= frame.attribute("oX").as_int() - frame.attribute("pX").as_float();
+			float offsetY	= frame.attribute("oY").as_int() - frame.attribute("pY").as_float();
+
+			animation->add_frame(tmath::recti(left, top, width, height), tmath::vector2df(offsetX, offsetY) );			
+		}		
+		
 	}
 
 	m_sprite_node->set_texture(texture);
@@ -190,13 +193,15 @@ void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 			}
 			else
 			{
-				// animation has ended
-				m_currentFrame = 0; // reset to start
-
 				if (!m_sprite->is_looped)
 				{
 					m_isPaused = true;
 					fire_event_animation_ended();
+				}
+				else
+				{
+					// animation has ended
+					m_currentFrame = 0; // reset to start 
 				}
 			}
 

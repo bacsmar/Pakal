@@ -85,6 +85,6 @@ Engine::Settings::Settings()  : uses_thread(true)
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
-	input_manager_allocator = [](Engine* engine){ return new InputManager_SFML(); };
+	input_manager_allocator = [](Engine* engine){ return new InputManager_SFML(engine->os_manager()); };
 #endif
 }
