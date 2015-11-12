@@ -24,8 +24,6 @@ namespace Pakal
 		void address(void* addr);
 
 		const std::string& name() const;
-		bool is_leaf() const;
-
 
 		std::list<Attribute>& attributes();
 		const std::list<Attribute>& attributes() const;

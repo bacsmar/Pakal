@@ -18,7 +18,7 @@ namespace std
 #endif
 
 /*
-Arrays, json format, test,
+json format, test,
 */
 
 
@@ -116,8 +116,8 @@ namespace Pakal
 		void value(const char* name, const char* childName, stl_container<Key,Value,etc...>& container);
 
 		////for an array 
-		//template <class T, size_t Length>
-		//void value(const char* name, const char* childName, T (&container)[Length]);
+		template <class T, size_t Length>
+		void value(const char* name, const char* childName, T (&container)[Length]);
 
 		//----------------Pointers as values--------------------------------------------
 
@@ -130,8 +130,8 @@ namespace Pakal
 		template <template<typename ...> class stl_container, typename Key, typename Value, typename...etc, std::enable_if_t<trait_utils::iterates_with_pair<stl_container<Key, Value*, etc...>>::value>* = nullptr>
 		void value(const char* name, const char* childName, stl_container<Key, Value*, etc...>& container);
 
-	/*	template <class T, size_t Length>
-		void value(const char* name, const char* childName, T*(&values)[Length]);*/
+		template <class T, size_t Length>
+		void value(const char* name, const char* childName, T*(&container)[Length]);
 
 
 		//---------Pointers as references------------------------------
@@ -149,8 +149,8 @@ namespace Pakal
 		void refer(const char* name, const char* childName, stl_container<Key,Value*,etc...>& container);
 
 		//for an array of pointers, just store the adresses
-		//template <class T, size_t Length> 
-		//void refer(const char* name, const char* childName, T*(&values)[Length]);
+		template <class T, size_t Length> 
+		void refer(const char* name, const char* childName, T*(&values)[Length]);
 
 	};
 
@@ -271,6 +271,28 @@ namespace Pakal
 		end_object_as_value(&container);
 	}
 
+	template<class T, size_t Length>
+	void Archive::value(const char* name, const char* childName, T(& container)[Length])
+	{
+		begin_object(name);
+
+		size_t count = Length;
+
+		if (m_type == ArchiveType::Reader || m_type == ArchiveType::Resolver)
+		{
+			count = object_size() > Length ? Length : object_size();
+		}
+
+		for (size_t i = 0; i < count; i++)
+		{
+			begin_object(childName);
+				container_value(container[i]);
+			end_object_as_value(&container[i]);
+		}
+
+		end_object_as_value(&container);
+	}
+
 	template<class T>
 	void Archive::value(const char* name, T*& object)
 	{
@@ -376,6 +398,48 @@ namespace Pakal
 		end_object_as_value(&container);
 	}
 
+	template<class T, size_t Length>
+	void Archive::value(const char* name, const char* childName, T*(&container)[Length])
+	{
+		begin_object(name);
+
+		size_t count = Length;
+
+		if (m_type == ArchiveType::Reader || m_type == ArchiveType::Resolver)
+		{
+			count = object_size() > Length ? Length : object_size();
+		}
+
+		switch (m_type)
+		{
+			case ArchiveType::Reader:
+			{
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+						T* object = new T();
+						container_value(*object);
+						container[i] = object;
+					end_object_as_value(object);
+				}
+			}
+			break;
+			case ArchiveType::Resolver:
+			case ArchiveType::Writer:
+			{
+				for (size_t i = 0; i < count; i++)
+				{
+					begin_object(childName);
+						container_value(*container[i]);
+					end_object_as_value(container[i]);
+				}
+			}
+			break;
+		}
+
+		end_object_as_value(&container);
+	}
+
 	template<class T>
 	void Archive::refer(const char* name, T*& object)
 	{
@@ -468,6 +532,33 @@ namespace Pakal
 			}
 			break;
 			case ArchiveType::Reader:
+			break;
+		}
+
+		end_object_as_value(&container);
+	}
+
+	template<class T, size_t Length>
+	void Archive::refer(const char* name, const char* childName, T*(& container)[Length])
+	{
+		begin_object(name);
+
+		size_t count = m_type == ArchiveType::Resolver 
+			? (object_size() > Length ? Length : object_size()) 
+			: Length;
+
+		switch (m_type)
+		{
+			case ArchiveType::Resolver:
+			case ArchiveType::Writer:
+			{
+				for (size_t i = 0; i < count; i++)
+				{
+					refer(childName, container[i]);
+				}
+			}
+			break;
+			case ArchiveType::Reader: 
 			break;
 		}
 
