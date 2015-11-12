@@ -20,7 +20,7 @@ namespace Pakal
 			tmath::vector3df initial_position;
 		};
 
-		Event<SpriteComponent, void> event_animation_ended;
+		Event<void> event_animation_ended;
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
 		virtual BasicTaskPtr terminate() = 0;

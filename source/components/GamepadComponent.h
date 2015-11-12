@@ -49,10 +49,10 @@ namespace Pakal
 			unsigned x, y;
 		};
 
-		Event<GamepadComponent, ButtonArgs> event_button_pressed;
-		Event<GamepadComponent, ButtonArgs> event_button_released;
-		Event<GamepadComponent, AxisArgs>	event_axis_moved;
-		Event<GamepadComponent, TouchArgs>	event_touch;
+		Event<ButtonArgs> event_button_pressed;
+		Event<ButtonArgs> event_button_released;
+		Event<AxisArgs>	event_axis_moved;
+		Event<TouchArgs>	event_touch;
 
 		virtual bool is_button_pressed(Buttons button);
 		virtual float get_axis_state(Axis axis);

@@ -17,6 +17,6 @@ namespace Pakal
 		virtual IAxisDevice*	get_axis_device(unsigned id) = 0;
 		virtual ITouchDevice*	get_touch_device(unsigned id) = 0;
 
-		Event<IInputManager, void> event_mouse_moved;
+		Event<void> event_mouse_moved;
 	};
 }
