@@ -63,9 +63,9 @@ namespace Pakal {
 		}
 	public:
 
-		Pakal::Event<State, void> event_update;
-		Pakal::Event<StateMachine, void> event_enter;
-		Pakal::Event<StateMachine, void> event_exit;
+		Pakal::Event<void> event_update;
+		Pakal::Event<void> event_enter;
+		Pakal::Event<void> event_exit;
 
 		inline const Transition& add_transition(const std::function<bool()>& conditions, State * finalState)
 		{

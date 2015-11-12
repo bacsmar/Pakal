@@ -43,16 +43,16 @@ namespace Pakal
 		};
 
 		
-		Event<OSManagerAbstract,WindowArgs>	event_window_created;
-		Event<OSManagerAbstract,WindowArgs>	event_window_destroyed;
-		Event<OSManagerAbstract,WindowArgs>	event_window_redraw_needed;
-		Event<OSManagerAbstract,WindowArgs>	event_window_resized;
-		Event<OSManagerAbstract,bool>		event_window_focused;
-		Event<OSManagerAbstract,void>		event_app_finished;
-		Event<OSManagerAbstract,void>		event_app_paused;
-		Event<OSManagerAbstract,void>		event_app_resumed;
-		Event<OSManagerAbstract,void>		event_app_started;
-		Event<OSManagerAbstract,void>		event_app_stoped;
+		Event<WindowArgs>	event_window_created;
+		Event<WindowArgs>	event_window_destroyed;
+		Event<WindowArgs>	event_window_redraw_needed;
+		Event<WindowArgs>	event_window_resized;
+		Event<bool>		event_window_focused;
+		Event<void>		event_app_finished;
+		Event<void>		event_app_paused;
+		Event<void>		event_app_resumed;
+		Event<void>		event_app_started;
+		Event<void>		event_app_stoped;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  process_window_events();

@@ -33,7 +33,7 @@ namespace Pakal
 		void thread_loop();
 
 	public:
-		Event<Timer, void> event_elapsed;
+		Event<void> event_elapsed;
 
 		Timer();
 		Timer(unsigned ms);

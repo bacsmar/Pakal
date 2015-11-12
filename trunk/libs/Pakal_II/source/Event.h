@@ -245,9 +245,12 @@ namespace Pakal
 
 	}
 	
-	template <class TOwner, class TArgs>
+	template <class TArgs>
 	class Event : public priv::Event_t<TArgs>
 	{
-		friend TOwner;
+	public:
+		using priv::Event_t<TArgs>::notify;
+		using priv::Event_t<TArgs>::enable;
+		using priv::Event_t<TArgs>::disable;
 	};
 }
