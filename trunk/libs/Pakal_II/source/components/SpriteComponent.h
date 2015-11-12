@@ -29,7 +29,13 @@ namespace Pakal
 		// is the current animation looped?
 		virtual bool is_looped() const = 0;
 		virtual bool get_flipped() const = 0;
+
 		virtual void set_flipped(bool val) = 0;
+		virtual void set_rotation( float degrees) = 0;		
+		virtual void set_scale(const tmath::vector2df& factor) = 0;
+
+		virtual float get_rotation() const = 0;
+		virtual tmath::vector2df get_scale() const = 0;
 
 		virtual void play() = 0;
 		virtual void pause() = 0;

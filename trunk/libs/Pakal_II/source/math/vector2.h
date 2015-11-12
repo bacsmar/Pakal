@@ -43,6 +43,8 @@ namespace Pakal
 
 			vectorn<T,2>(T x_, T y_) : x(x_), y(y_) { }
 
+			vectorn<T, 2>(T n_) : x(n_), y(n_) { }
+
 			vectorn<T,2>(const T* v) : x(v[0]), y(v[1]) { }
 
 			vectorn<T,2>(const vectorn<T,2>& v) : x(v.x), y(v.y) { }
