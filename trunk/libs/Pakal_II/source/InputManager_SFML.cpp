@@ -2,14 +2,16 @@
 #include "LogMgr.h"
 
 #include "components/GamepadComponent.h"
+#include "SFML/Window.hpp"
 #include "SFML/Keyboard_SFML.h"
 #include "SFML/Gamepad_SFML.h"
+#include "OSManager.h"
 
 
 using namespace Pakal;
 
-InputManager_SFML::InputManager_SFML() 
-{	
+InputManager_SFML::InputManager_SFML(OSManager* os_manager) : m_os_manager(os_manager)
+{
 }
 
 void InputManager_SFML::initialize()
@@ -21,8 +23,6 @@ void InputManager_SFML::initialize()
 
 	for (unsigned i = 0; i < sf::Joystick::Count; i++)
 	{
-		//if (sf::Joystick::isConnected(0) == false)
-		//	continue;
 		auto identification = sf::Joystick::getIdentification(i);
 		auto gamepad = new Gamepad_SFML();
 		gamepad->set_device_id( i + 1 );
@@ -30,6 +30,8 @@ void InputManager_SFML::initialize()
 		m_button_devices.emplace_back(gamepad);
 		m_axis_devices.emplace_back(gamepad);
 	}
+
+	//m_os_manager->
 }
 
 void InputManager_SFML::terminate()

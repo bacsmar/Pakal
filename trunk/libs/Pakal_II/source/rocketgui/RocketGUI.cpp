@@ -30,24 +30,7 @@ bool RocketUI::load_document(const char* documentPath, bool show, bool autoresiz
 			}
 			document->RemoveReference();
 		}
-	});
-
-	//std::string base;
-	//base.append(documentPath);
-
-	//Rocket::Core::ElementDocument* document = RocketContext->LoadDocument(base.c_str());
-
-	//if (document)
-	//{
-	//	if (show)
-	//	{
-	//		document->Focus();
-	//		document->Show();
-	//	}
-	//	document->RemoveReference();
-
-	//	return true;
-	//}
+	});	
 
 	return false;
 }

@@ -14,7 +14,7 @@ namespace Pakal
 	public:
 
 		// add a frame rect to animation
-		inline void add_frame(Pakal::tmath::recti offset, Pakal::tmath::vector2di  relative_pos = { 0,0 })
+		inline void add_frame(Pakal::tmath::recti offset, Pakal::tmath::vector2df  relative_pos = { 0,0 })
 		{
 			m_frames.emplace_back(Frame{ offset, relative_pos });
 		}
@@ -29,7 +29,7 @@ namespace Pakal
 			return m_frames[index].frame_offset;
 		}
 		//
-		inline const Pakal::tmath::vector2di& get_frame_pos(std::size_t index) const
+		inline const Pakal::tmath::vector2df& get_frame_pos(std::size_t index) const
 		{
 			return m_frames[index].relative_pos;
 		}		
@@ -41,7 +41,7 @@ namespace Pakal
 		struct Frame
 		{
 			Pakal::tmath::recti		frame_offset;
-			Pakal::tmath::vector2di	relative_pos;
+			Pakal::tmath::vector2df	relative_pos;
 		};
 
 		std::vector<Frame> m_frames;		
