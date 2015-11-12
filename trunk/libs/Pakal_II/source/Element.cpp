@@ -27,17 +27,6 @@ void Element::address(void* addr)
 	m_address = addr;
 }
 
-bool Element::is_leaf() const
-{
-	std::list<Element>::const_iterator i = m_elements.begin();
-	while (i != m_elements.end() && i->elements().empty() && i->attributes().empty())
-	{
-		++i;
-	}
-
-	return i == m_elements.end();
-}
-
 std::list<Attribute>& Element::attributes()
 {
 	return m_attributes;
