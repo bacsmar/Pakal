@@ -48,8 +48,14 @@ namespace Pakal
 
 		void update(unsigned dt) override;
 
-		inline bool get_flipped() const override { return m_is_flipped; } 
-		inline void set_flipped(bool val) override { m_is_flipped = val; }
+		inline bool get_flipped() const override { return m_is_flipped; }
+
+		inline void set_flipped(bool val) override;
+		virtual void set_rotation(float degrees) override;
+		virtual void set_scale(const tmath::vector2df& factor) override;
+
+		virtual float get_rotation() const override;
+		virtual tmath::vector2df get_scale() const override;
 
 	protected:	
 		bool load(std::istream* stream);		

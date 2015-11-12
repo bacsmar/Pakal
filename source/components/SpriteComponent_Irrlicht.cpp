@@ -41,6 +41,38 @@ SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
 {			
 }
 
+void SpriteComponent_Irrlicht::set_flipped(bool val)
+{
+	m_is_flipped = val;
+
+	auto currentRotation = m_sprite_node->getRotation();
+	currentRotation.Y = static_cast<f32>(m_is_flipped) * 180;
+	m_sprite_node->setRotation(currentRotation);
+}
+
+void SpriteComponent_Irrlicht::set_rotation(float degrees)
+{
+	auto currentRotation = m_sprite_node->getRotation();
+	currentRotation.Z = degrees;
+	m_sprite_node->setRotation(currentRotation);
+}
+
+void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
+{		
+	m_sprite_node->setScale(core::vector3df(factor.x, factor.y, 1));
+}
+
+float SpriteComponent_Irrlicht::get_rotation() const
+{
+	return m_sprite_node->getRotation().Z;
+}
+
+tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
+{
+	auto currentScale = m_sprite_node->getScale();
+	return { currentScale.X, currentScale.Y };
+}
+
 bool SpriteComponent_Irrlicht::load(std::istream* stream)
 {
 	pugi::xml_document xmlFile;
@@ -228,7 +260,10 @@ void SpriteComponent_Irrlicht::set_sprite_node_frame(size_t frameIndex, bool res
 	ASSERT(m_sprite != nullptr);
 	m_system->execute_block([=]()
 	{
-		m_sprite_node->set_frame(frameIndex, *m_sprite, m_is_flipped);
+		m_sprite_node->set_frame(frameIndex, *m_sprite);
+		//m_sprite_node->setRotation( core::vector3df(180, static_cast<f32>(m_is_flipped) * 180 ,0) );
+		//m_sprite_node->setRotation( core::vector3df(180, 180 ,0) );
+		//m_sprite_node->setScale(core::vector3df(0.5, 0.5, 0.5));
 		if (resetTime)
 			m_currentTime = 0;
 	});	

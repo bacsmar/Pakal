@@ -29,7 +29,7 @@ public:
 
 	void detach();
 	void set_texture(irr::video::ITexture *texture);
-	void set_frame(std::size_t frameIndex, const Pakal::Sprite& sprite, bool flipped);
+	void set_frame(std::size_t frameIndex, const Pakal::Sprite& sprite);
 
 private:	
 	char m_flip_factor = 1;

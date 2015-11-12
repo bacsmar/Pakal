@@ -78,10 +78,10 @@ void SpriteNode_Irrlicht::detach()
 
 inline core::vector3df vector2Dto3D(const core::vector2df &v2d)
 {
-	return core::vector3df(v2d.X, v2d.Y, 0.0f);
+	return core::vector3df(v2d.X, -v2d.Y, 0.0f);
 }
 
-void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite, bool flipped)
+void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite)
 {
     {
         //calculate new vertex positions and texture coordiantes
@@ -107,18 +107,7 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite
         m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );
         m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );
         m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );
-
-		m_flip_factor = 1;
-		if(flipped)
-		{
-			m_vertices[0].Pos += vector2Dto3D(core::vector2df(static_cast<float>(-width), 0.f));
-			m_vertices[1].Pos += vector2Dto3D(core::vector2df(static_cast<float>(-width), 0.f));
-			m_vertices[2].Pos += vector2Dto3D(core::vector2df(static_cast<float>(-width), 0.f));
-			m_vertices[3].Pos += vector2Dto3D(core::vector2df(static_cast<float>(-width), 0.f));
-
-			m_flip_factor = -1;
-		}
-
+		
 		// these are for texture coords (UV)
 		core::dimension2du d = m_texture->getSize();
 		left /= d.Width;
@@ -143,11 +132,9 @@ void SpriteNode_Irrlicht::render()
 {
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();		
 
-	driver->setMaterial(m_material);	
-	core::vector3df scale( static_cast<float>( m_flip_factor), -1.f, 1.f);
-	AbsoluteTransformation.setScale(scale);
+	driver->setMaterial(m_material);
 
-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);		
+	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 	//driver->draw2DVertexPrimitiveList(m_vertices, 4, m_indices, 2, video::EVT_STANDARD, scene::EPT_TRIANGLES);	
 	driver->drawVertexPrimitiveList(m_vertices, 4, m_indices, 2);
 }
