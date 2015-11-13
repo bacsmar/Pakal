@@ -36,10 +36,10 @@ namespace Pakal
 		
 		struct recti
 		{
-			recti():UpperLeftCorner(0,0), LowerRightCorner(0,0){}
-			recti(int x, int y, int x2, int y2) : UpperLeftCorner(x,y), LowerRightCorner(x2, y2){}
-			vector2di UpperLeftCorner;
-			vector2di LowerRightCorner;
+			recti() {}
+			recti(int x, int y, int width, int height) : left_corner(x,y), size(width, height){}
+			vector2di left_corner;
+			vector2di size;
 		};
 	}
 }

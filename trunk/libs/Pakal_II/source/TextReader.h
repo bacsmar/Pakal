@@ -26,7 +26,12 @@ namespace Pakal
 		void end_object_as_reference(void*& address) override;
 		void end_object_as_value(const void* address) override;
 
-		size_t object_size() override;
+		inline bool has_unsolved_references()
+		{
+			return !m_solved.empty();
+		}
+
+		size_t children_name_count(const char* name) override;
 	public:
 		void value(const char* name, bool& value) override;
 		void value(const char* name, char& value) override;

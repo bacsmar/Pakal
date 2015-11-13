@@ -47,6 +47,17 @@ const std::list<Element>& Element::elements() const
 	return m_elements;
 }
 
+std::size_t Element::elements_with_name(const char* name)
+{
+	int size = 0;
+	for(auto& e : m_elements)
+	{
+		size += static_cast<int>(e.name() == name);
+	}
+
+	return size;
+}
+
 void Element::remove_from_parent()
 {
 	std::list<Element>::iterator i = m_parent->m_elements.begin();

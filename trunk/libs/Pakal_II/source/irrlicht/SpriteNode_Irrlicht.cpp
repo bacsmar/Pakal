@@ -9,8 +9,8 @@ using namespace irr;
 using namespace scene;
 using namespace Pakal;
 
-SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr, s32 id)
-	: ISceneNode(parent,mgr, id),
+SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
+	: ISceneNode(parent,mgr),
     m_texture(nullptr)
 {
 	m_material.Lighting = true;	
@@ -81,19 +81,21 @@ inline core::vector3df vector2Dto3D(const core::vector2df &v2d)
 	return core::vector3df(v2d.X, -v2d.Y, 0.0f);
 }
 
-void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite)
+void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const SpriteAnimation& sprite)
 {
     {
         //calculate new vertex positions and texture coordiantes
-        auto	rect = sprite.get_frame_offset(frameIndex);		
+        auto rect = sprite.get_frame(frameIndex).texture_rect;		
 
-		m_frame_rect.LowerRightCorner.X = rect.LowerRightCorner.x;
-		m_frame_rect.LowerRightCorner.Y = rect.LowerRightCorner.y;
-		m_frame_rect.UpperLeftCorner.X = rect.UpperLeftCorner.x;
-		m_frame_rect.UpperLeftCorner.Y = rect.UpperLeftCorner.y;
+		m_frame_rect.UpperLeftCorner.X = rect.left_corner.x;
+		m_frame_rect.UpperLeftCorner.Y = rect.left_corner.y;
 
-		auto relativepos_i = sprite.get_frame_pos(frameIndex);		
-		core::vector2df		relativePos = { static_cast<irr::f32>(relativepos_i.x) , static_cast<irr::f32>(relativepos_i.y) };		
+		m_frame_rect.LowerRightCorner.X = rect.size.x;
+		m_frame_rect.LowerRightCorner.Y = rect.size.y;
+
+
+		tmath::vector2df rpos = sprite.get_frame(frameIndex).relative_pos();		
+		core::vector2df	 relativePos = { rpos.x , rpos.y };
 
 		auto height = m_frame_rect.LowerRightCorner.Y;
 		auto width = m_frame_rect.LowerRightCorner.X;
@@ -135,7 +137,6 @@ void SpriteNode_Irrlicht::render()
 	driver->setMaterial(m_material);
 
 	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-	//driver->draw2DVertexPrimitiveList(m_vertices, 4, m_indices, 2, video::EVT_STANDARD, scene::EPT_TRIANGLES);	
 	driver->drawVertexPrimitiveList(m_vertices, 4, m_indices, 2);
 }
 

@@ -14,26 +14,28 @@ namespace Pakal
 		struct Settings
 		{
 			std::string resource_file;
-			std::string initial_animation;
-			float frame_time_factor = 1.f;
+			tmath::vector3df position;
+			tmath::vector3df size;
 			bool init_paused = false;			
-			tmath::vector3df initial_position;
+			float speed = 1;
 		};
 
 		Event<void> event_animation_ended;
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
 		virtual BasicTaskPtr terminate() = 0;
+
+		virtual void set_animation(const std::string& name) = 0;
 		
-		virtual void set_animation(const std::string& animationName) = 0;
-		// is the current animation looped?
-		virtual bool is_looped() const = 0;
-		virtual bool get_flipped() const = 0;
-
 		virtual void set_flipped(bool val) = 0;
-		virtual void set_rotation( float degrees) = 0;		
-		virtual void set_scale(const tmath::vector2df& factor) = 0;
+		virtual void set_looped(bool val) = 0;
 
+		virtual bool is_looped() const = 0;
+		virtual bool is_flipped() const = 0;
+
+		virtual void set_rotation(float degrees) = 0;
+		virtual void set_scale(const tmath::vector2df& factor) = 0;
+	
 		virtual float get_rotation() const = 0;
 		virtual tmath::vector2df get_scale() const = 0;
 
@@ -41,10 +43,6 @@ namespace Pakal
 		virtual void pause() = 0;
 		virtual void stop() = 0;
 		virtual bool is_playing() const = 0;
-	protected:
-		inline void fire_event_animation_ended()
-		{
-			event_animation_ended.notify();
-		}
+
 	};
 }

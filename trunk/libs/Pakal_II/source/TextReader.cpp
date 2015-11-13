@@ -48,24 +48,16 @@ void TextReader::end_object_as_reference(void*& address)
 	}
 
 	void* oldAddress = get_current_element()->find_attribute("address")->address();
-	void* newAddress = nullptr;
 
-	if (map_utils::try_get(m_solved, oldAddress, newAddress))
-	{
-		address = newAddress;
-	}
-	else
-	{
-		ASSERT_MSG(false,"unresolved reference");
-	}
+	address = m_solved[oldAddress];
 
 	get_current_element()->remove_from_parent();
 	m_context.pop();
 }
 
-size_t TextReader::object_size()
+size_t TextReader::children_name_count(const char* name)
 {
-	return get_current_element() ? get_current_element()->elements().size() : 0;
+	return get_current_element() ? get_current_element()->elements_with_name(name) : 0;
 }
 
 void TextReader::value(const char* name, bool& value)

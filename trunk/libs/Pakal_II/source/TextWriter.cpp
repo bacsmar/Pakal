@@ -29,10 +29,9 @@ void TextWriter::end_object_as_value(const void* address)
 	m_context.pop();
 }
 
-
-size_t TextWriter::object_size()
+size_t TextWriter::children_name_count(const char* name)
 {
-	return get_current_element() ? get_current_element()->elements().size() : 0;
+	return get_current_element() ? get_current_element()->elements_with_name(name) : 0;
 }
 
 void TextWriter::solve_references()
