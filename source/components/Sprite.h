@@ -6,44 +6,87 @@
 #pragma once
 #include <vector>
 #include "math/tm.h"
+#include "Archive.h"
 
 namespace Pakal
 {
-	class Sprite
+
+	class SpriteAnimation
 	{
+		struct Frame
+		{
+			tmath::recti		texture_rect;
+			tmath::vector2df	offset;
+			tmath::vector2df	pivot;
+
+			inline tmath::vector2df relative_pos() const
+			{
+				return offset - pivot;
+			}
+
+			void persist(Archive* archive)
+			{
+
+				archive->value("x", texture_rect.left_corner.x);
+				archive->value("y", texture_rect.left_corner.y);
+
+				archive->value("w", texture_rect.size.x);
+				archive->value("h", texture_rect.size.y);
+
+				archive->value("oX", offset.x);
+				archive->value("oY", offset.y);
+
+				archive->value("pX", pivot.x);
+				archive->value("pY", pivot.y);
+			}
+		};
+
+		std::vector<Frame> m_frames;
+
 	public:
 
-		// add a frame rect to animation
-		inline void add_frame(Pakal::tmath::recti offset, Pakal::tmath::vector2df  relative_pos = { 0,0 })
+		std::string name;
+		unsigned	duration = 100;
+		bool		looped = false;
+		
+		inline void add_frame(tmath::recti rect, tmath::vector2df  offset = { 0,0 })
 		{
-			m_frames.emplace_back(Frame{ offset, relative_pos });
+			m_frames.emplace_back(Frame{ rect, offset });
 		}
-		// get number of frames
-		inline std::size_t get_size() const
+
+		inline size_t get_size() const
 		{
 			return m_frames.size();
 		}
-		// 
-		inline const Pakal::tmath::recti& get_frame_offset(std::size_t index) const
+
+		inline const Frame& get_frame(size_t index) const
 		{
-			return m_frames[index].frame_offset;
+			return m_frames[index];
 		}
-		//
-		inline const Pakal::tmath::vector2df& get_frame_pos(std::size_t index) const
-		{
-			return m_frames[index].relative_pos;
-		}		
-		// frame_time = frame_count/duration
-		unsigned	duration = 100;
-		bool		is_looped = false;
 
-	private:
-		struct Frame
+		void persist(Archive* archive)
 		{
-			Pakal::tmath::recti		frame_offset;
-			Pakal::tmath::vector2df	relative_pos;
-		};
+			archive->value("name", name);
+			archive->value("looped", looped);
+			archive->value("duration", duration);
+			archive->value("","frame",m_frames);
+		}
 
-		std::vector<Frame> m_frames;		
 	};
+
+	struct SpriteLoader
+	{
+		std::string texture_name;
+		std::string default_animation;
+
+		std::vector<SpriteAnimation*> animations;
+
+		void persist(Archive* archive)
+		{
+			archive->value("texture", texture_name);
+			archive->value("default", default_animation);
+			archive->value("","animation",animations);
+		}
+	};
+
 }

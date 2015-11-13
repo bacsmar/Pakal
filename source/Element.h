@@ -31,6 +31,8 @@ namespace Pakal
 		std::list<Element>& elements();
 		const std::list<Element>& elements() const;
 
+		std::size_t elements_with_name(const char* name);
+
 		void remove_from_parent();
 
 		Element* add_element(Element&& element);

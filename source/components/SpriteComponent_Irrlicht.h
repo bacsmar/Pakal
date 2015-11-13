@@ -18,65 +18,58 @@
 
 
 
-class SpriteNode_Irrlicht;
 
 namespace Pakal
 {
-	
-	class Entity;
 	class IrrGraphicsSystem;
-	class Sprite;
-	
+	class SpriteAnimation;
+	class SpriteNode_Irrlicht;
+
 	class _PAKALExport SpriteComponent_Irrlicht : public SpriteComponent, public GraphicsSystem::IUpdatable
 	{
 		DECLARE_RTTI_WITH_BASE(SpriteComponent_Irrlicht, SpriteComponent);		
-		friend class Entity;
-	public:
-			
-		SpriteComponent_Irrlicht(IrrGraphicsSystem *irrManager);
-		virtual ~SpriteComponent_Irrlicht(void);		
+
+		unsigned			m_current_time;
+		std::size_t			m_current_frame;
+		bool				m_paused;
+		IrrGraphicsSystem*	m_system;
+		SpriteAnimation*	m_current_animation;
+
+		SpriteNode_Irrlicht*	m_renderer;
+		std::unordered_map<std::string, SpriteAnimation*>	m_animations;
+
+		void load(std::istream& stream);
+
+		void set_animation(SpriteAnimation& animation);
+		void set_frame(size_t index, bool resetTime = true);
+
+	public:	
+		SpriteComponent_Irrlicht(IrrGraphicsSystem* system);
+		~SpriteComponent_Irrlicht();		
 
 		virtual BasicTaskPtr initialize(const Settings& settings) override;
 		virtual BasicTaskPtr terminate() override;
 
-		void set_animation(const std::string& animationName) override;				
+		void set_animation(const std::string& name) override;
+
+		void set_flipped(bool value) override;
+		void set_looped(bool value) override;
+
+		bool is_flipped() const override;
 		bool is_looped() const override;
+
+		void set_rotation(float degrees) override;
+		void set_scale(const tmath::vector2df& factor) override;
+
+		float get_rotation() const override;
+		tmath::vector2df get_scale() const override;
+
 		void play() override;
 		void pause() override;
 		void stop() override;
 		bool is_playing() const override;
 
 		void update(unsigned dt) override;
-
-		inline bool get_flipped() const override { return m_is_flipped; }
-
-		inline void set_flipped(bool val) override;
-		virtual void set_rotation(float degrees) override;
-		virtual void set_scale(const tmath::vector2df& factor) override;
-
-		virtual float get_rotation() const override;
-		virtual tmath::vector2df get_scale() const override;
-
-	protected:	
-		bool load(std::istream* stream);		
-
-		void set_animation(const Sprite& animation);
-		void play(const Sprite& animation);
-		void set_sprite_node_frame(std::size_t frameIndex, bool resetTime = true);
-		
-		unsigned	get_frame_time() const;
-		
-		const Sprite* get_animation() const;
-		
-		unsigned			m_currentTime;
-		std::size_t			m_currentFrame;
-		bool				m_isPaused;		
-		bool				m_is_flipped;
-		const Sprite*		m_sprite = nullptr;
-		IrrGraphicsSystem*	m_system;
-				
-		SpriteNode_Irrlicht*		m_sprite_node;
-		std::unordered_map<std::string, Sprite*>	m_sprites;
 	};	
 
 }

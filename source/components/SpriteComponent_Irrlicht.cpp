@@ -1,12 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2011 The PakalEngine Open Source Project
-// File: ASpriteComponent.h
-// Original Author: Salvador Noel Romo Garcia.
-// Creation Date: 01-11-2012
-//
-// Purpose: 
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "SpriteComponent_Irrlicht.h"
 
 #include "Components/Sprite.h"
@@ -14,273 +5,209 @@
 #include "irrlicht/IrrGraphicsSystem.h"
 
 #include "LogMgr.h"
-#include "pugixml.hpp"
+#include "XmlReader.h"
 #include "ResourceManager.h"
-
-const char * SPRITE_FILE_HEADER = "SpriteSheetAnimation";
-const char * SPRITE_FILE_TEXTURE = "texture";
-const char * SPRITE_FILE_DEFAULT_ANIM = "default";
-
-const char * SPRITE_FRAME_LEFT = "x";
-const char * SPRITE_FRAME_TOP = "y";
-const char * SPRITE_FRAME_WIDTH = "w";
-const char * SPRITE_FRAME_HEIGHT = "h";
 
 
 using namespace Pakal;
 using namespace irr;
+using namespace core;
 
-SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(IrrGraphicsSystem *irrManager)
-	: m_currentTime(0), m_currentFrame(0), m_isPaused(true),
-	m_is_flipped(false), m_system(irrManager), m_sprite_node(nullptr)
-{
-}
+SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(IrrGraphicsSystem* system)
+	: m_current_time(0), m_current_frame(0), m_paused(true), m_system(system), m_node(nullptr)
+{ }
 
-
-SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht( void )
-{			
-}
+SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht() 
+{ }
 
 void SpriteComponent_Irrlicht::set_flipped(bool val)
 {
-	m_is_flipped = val;
+	vector3df currentRotation = m_node->getRotation();
+	currentRotation.Y = val ? 0.f : 180.f;
+	m_node->setRotation(currentRotation);
+}
 
-	auto currentRotation = m_sprite_node->getRotation();
-	currentRotation.Y = static_cast<f32>(m_is_flipped) * 180;
-	m_sprite_node->setRotation(currentRotation);
+void SpriteComponent_Irrlicht::set_looped(bool value)
+{
+	m_sprite->looped = value;
+}
+
+bool SpriteComponent_Irrlicht::is_flipped() const
+{
+	return m_node->getRotation().Y == 0.f;
 }
 
 void SpriteComponent_Irrlicht::set_rotation(float degrees)
 {
-	auto currentRotation = m_sprite_node->getRotation();
+	vector3df currentRotation = m_node->getRotation();
 	currentRotation.Z = degrees;
-	m_sprite_node->setRotation(currentRotation);
+	m_node->setRotation(currentRotation);
 }
 
 void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
 {		
-	m_sprite_node->setScale(core::vector3df(factor.x, factor.y, 1));
+	m_node->setScale(vector3df(factor.x, factor.y, 1));
 }
 
 float SpriteComponent_Irrlicht::get_rotation() const
 {
-	return m_sprite_node->getRotation().Z;
+	return m_node->getRotation().Z;
 }
 
 tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
 {
-	auto currentScale = m_sprite_node->getScale();
+	auto currentScale = m_node->getScale();
 	return { currentScale.X, currentScale.Y };
 }
 
-bool SpriteComponent_Irrlicht::load(std::istream* stream)
-{
-	pugi::xml_document xmlFile;
-	
-	pugi::xml_parse_result result = xmlFile.load(*stream);
-
-	if( result.status != pugi::status_ok )
-	{
-		LOG_DEBUG("[SpriteComponent] Invalid stream file");
-		return false;
-	}
-
-	// search for the signature
-	pugi::xml_node animationsNode = xmlFile.child(SPRITE_FILE_HEADER);
-
-	if( animationsNode == nullptr)
-	{
-		LOG_DEBUG("[SpriteComponent] Invalid signature");
-		return false;
-	}
-
-	const char* textureName = animationsNode.attribute("texture").as_string();
-
-	std::string defaultAnim = animationsNode.attribute( SPRITE_FILE_DEFAULT_ANIM ).as_string();
-
-	LOG_DEBUG("[SpriteComponent] texture: %s, defaultAnim: %s", textureName, defaultAnim.c_str());
-
-	auto texture = m_system->get_driver()->getTexture(textureName);
-	if(texture == nullptr)
-	{
-		LOG_ERROR("[SpriteComponent] texture: %s not found!", textureName);
-		return false;
-	}
-
-	//<animation name="name" frame_time="5">
-	for (const auto& animationNode : animationsNode)
-	{
-		std::string animationName = animationNode.attribute("name").as_string();		
-		Sprite *animation = nullptr;
-
-		const auto& it =  m_sprites.find(animationName);		
-		if( it != m_sprites.end() )
-		{
-			LOG_WARNING("[SpriteComponent]  animation %s already declared", animationName.c_str());
-			animation = it->second;
-		}else
-		{
-			animation = new Sprite();
-			m_sprites[animationName] = animation;
-		}
-		
-		animation->duration = animationNode.attribute("duration").as_uint(100);
-		animation->is_looped = animationNode.attribute("looped").as_bool();		
-		
-		for (const auto& frame : animationNode)
-		{			
-			//<frame left="0" top="0" width="64" height="64"/>
-			int left	= frame.attribute(SPRITE_FRAME_LEFT).as_int(-1);
-			int top		= frame.attribute(SPRITE_FRAME_TOP).as_int(-1);
-			int width	= frame.attribute(SPRITE_FRAME_WIDTH).as_int(-1);
-			int height	= frame.attribute(SPRITE_FRAME_HEIGHT).as_int(-1);
-
-			float offsetX	= frame.attribute("oX").as_int() - frame.attribute("pX").as_float();
-			float offsetY	= frame.attribute("oY").as_int() - frame.attribute("pY").as_float();
-
-			animation->add_frame(tmath::recti(left, top, width, height), tmath::vector2df(offsetX, offsetY) );			
-		}		
-		
-	}
-
-	m_sprite_node->set_texture(texture);
-
-	ASSERT(m_sprites.empty() == false);
-
-	const auto& defaultAnimation =  m_sprites.find(defaultAnim);	
-	if( defaultAnimation != m_sprites.end())
-	{
-		set_animation( *defaultAnimation->second);
-	}
-	else
-	{
-		set_animation( *m_sprites.begin()->second );
-	}	
-
-	return true;	
-}
 
 BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 {
 	return m_system->execute_block([=]() 
 	{
-		ASSERT(m_sprite_node == nullptr);
-		auto node = m_system->get_device()->getSceneManager()->getRootSceneNode();
-		m_sprite_node = new SpriteNode_Irrlicht(node, m_system->get_device()->getSceneManager(), -1);
-		
-		m_isPaused = settings.init_paused;
+		ASSERT(m_node == nullptr);
 
-		auto resource = ResourceManager::instance().open_read_resource(settings.resource_file, false);
+		m_node = 
+			new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager());
 
-		if (resource)
+		m_paused = settings.init_paused;
+
+		if (auto resource = rmgr.open_read_resource(settings.resource_file, false))
 		{
-			load(resource.get());
+			load(*resource);
 		}
 		else
 		{
 			LOG_ERROR("[SpriteComponent]  invalid resource %s", settings.resource_file.c_str());
 		}
 
-		m_sprite_node->setPosition(core::vector3df(settings.initial_position.x, settings.initial_position.y, settings.initial_position.z));
-		set_animation(settings.initial_animation);
+		m_node->setPosition(vector3df(settings.position.x, settings.position.y, settings.position.z));
 		m_system->add_to_update_list(this);
+
 	});
 }
 
 BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 {
+	ASSERT(m_node);
+
 	return m_system->execute_block([=]() 
 	{
 		m_system->remove_from_update_list(this);
-		ASSERT(m_sprite_node);
-		m_sprite_node->detach();
-		m_sprite_node->drop();
+		
+		m_node->detach();
+		m_node->drop();
 		for (const auto& it : m_sprites)
 		{
 			delete it.second;
 		}
 		m_sprites.clear();
-
 	});
 }
+
+void SpriteComponent_Irrlicht::load(std::istream& stream)
+{
+	SpriteLoader loader;
+
+	XmlReader reader;
+	reader.read(stream, "SpriteSheetAnimation", loader);
+
+
+	auto texture = m_system->get_driver()->getTexture(loader.texture_name.c_str());
+	if (texture == nullptr)
+	{
+		LOG_ERROR("[SpriteComponent] texture: %s not found!", loader.texture_name.c_str());
+		return;
+	}
+	m_node->set_texture(texture);
+
+	for(SpriteAnimation* animation : loader.animations)
+	{
+		m_sprites[animation->name] = animation;
+	}
+
+	const auto& defaultAnimation = m_sprites.find(loader.default_animation);
+	if (defaultAnimation != m_sprites.end())
+	{
+		set_animation(*defaultAnimation->second);
+	}
+	else
+	{
+		set_animation(*m_sprites.begin()->second);
+	}
+}
+
 
 void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 {
 	// if not paused and we have a valid animation
-	if (!m_isPaused && m_sprite)
+	if (!m_paused && m_sprite)
 	{
 		// add delta time
-		m_currentTime += deltaTime;
+		m_current_time += deltaTime;
 
 		// if current time is bigger then the frame time advance one frame		
-		if (m_currentTime >= m_sprite->duration)
+		if (m_current_time >= m_sprite->duration)
 		{
 			// reset time, but keep the remainder			
-			m_currentTime = (m_currentTime ) % (m_sprite->duration);
+			m_current_time = m_current_time % m_sprite->duration;
 
 			// get next Frame index
-			if (m_currentFrame + 1 < m_sprite->get_size())
+			if (m_current_frame + 1 < m_sprite->get_size())
 			{
-				++m_currentFrame;
+				++m_current_frame;
 			}
 			else
 			{
-				if (!m_sprite->is_looped)
+				if (!m_sprite->looped)
 				{
-					m_isPaused = true;
-					fire_event_animation_ended();
+					m_paused = true;
+					event_animation_ended.notify();
 				}
 				else
 				{
 					// animation has ended
-					m_currentFrame = 0; // reset to start 
+					m_current_frame = 0; // reset to start 
 				}
 			}
 
 			// set the current frame, not reseting the time			
-			set_sprite_node_frame(m_currentFrame, false);			
+			set_frame(m_current_frame, false);			
 		}
 	}
 }
 
 bool SpriteComponent_Irrlicht::is_looped() const
 {
-	ASSERT(m_sprite != nullptr);
-	return m_sprite->is_looped;
+	return m_sprite->looped;
 }
 
 bool SpriteComponent_Irrlicht::is_playing() const
 {
-	return !m_isPaused;
+	return !m_paused;
 }
 
-void SpriteComponent_Irrlicht::set_sprite_node_frame(size_t frameIndex, bool resetTime)
+void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 {
-	ASSERT(m_sprite_node != nullptr);
-	ASSERT(m_sprite != nullptr);
+	ASSERT(m_node != nullptr && m_sprite != nullptr);
+	
 	m_system->execute_block([=]()
 	{
-		m_sprite_node->set_frame(frameIndex, *m_sprite);
-		//m_sprite_node->setRotation( core::vector3df(180, static_cast<f32>(m_is_flipped) * 180 ,0) );
-		//m_sprite_node->setRotation( core::vector3df(180, 180 ,0) );
-		//m_sprite_node->setScale(core::vector3df(0.5, 0.5, 0.5));
+		m_node->set_frame(frameIndex, *m_sprite);
+
 		if (resetTime)
-			m_currentTime = 0;
+		{
+			m_current_time = 0;
+		}
 	});	
 }
 
-unsigned SpriteComponent_Irrlicht::get_frame_time() const
-{
-	ASSERT(m_sprite != nullptr);
-	return m_sprite->duration;
-}
-
-void SpriteComponent_Irrlicht::set_animation(const Sprite& animation)
+void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
 {
 	m_sprite = &animation;
-	m_currentFrame = 0;
-	m_isPaused = false;
-	set_sprite_node_frame(m_currentFrame);
+	m_current_frame = 0;
+	m_paused = false;
+	set_frame(m_current_frame);
 }
 
 void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
@@ -298,29 +225,17 @@ void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
 
 void SpriteComponent_Irrlicht::play()
 {
-	m_isPaused = false;
-}
-
-void SpriteComponent_Irrlicht::play(const Sprite& animation)
-{
-	if (get_animation() != &animation)
-		set_animation(animation);
-	play();
+	m_paused = false;
 }
 
 void SpriteComponent_Irrlicht::pause()
 {
-	m_isPaused = true;
+	m_paused = true;
 }
 
 void SpriteComponent_Irrlicht::stop()
 {
-	m_isPaused = true;
-	m_currentFrame = 0;
-	set_sprite_node_frame(m_currentFrame);
-}
-
-const Sprite* SpriteComponent_Irrlicht::get_animation() const
-{
-	return m_sprite;
+	m_paused = true;
+	m_current_frame = 0;
+	set_frame(m_current_frame);
 }

@@ -34,14 +34,18 @@ namespace Pakal
 			parse(stream, get_root());
 			Archive::value<Type>(name, object);
 
-			//reset the stream
-			stream.clear();
-			stream.seekg(0);
+			if (has_unsolved_references())
+			{
+				//reset the stream
+				stream.clear();
+				stream.seekg(0);
 
-			//get references
-			set_type(ArchiveType::Resolver);
-			parse(stream, get_root());
-			Archive::value<Type>(name, object);
+				//solve the references
+				set_type(ArchiveType::Resolver);
+				parse(stream, get_root());
+				Archive::value<Type>(name, object);
+			}
+
 		}
 
 	};

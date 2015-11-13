@@ -23,8 +23,8 @@ namespace Pakal
 
 	public:
 
-		virtual ~Component(){}	
 		Component()  {}		
+		virtual ~Component(){}	
 		
 		inline void set_parent_entity(IEntity* entity) { m_parent = entity; };
 		inline IEntity* get_parent_entity() { return m_parent; };
