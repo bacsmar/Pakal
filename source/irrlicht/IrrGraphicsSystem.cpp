@@ -64,8 +64,8 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
 
-	rmgr.register_source<DirectorySource>([this]() { return new DirectorySourceIrrlitch(device->getFileSystem()); });
-	rmgr.register_source<ZipSource>([this]() { return new ZipSourceIrrlitch(device->getFileSystem()); });
+	ResourceMgr.register_source<DirectorySource>([this]() { return new DirectorySourceIrrlitch(device->getFileSystem()); });
+	ResourceMgr.register_source<ZipSource>([this]() { return new ZipSourceIrrlitch(device->getFileSystem()); });
 	
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
@@ -119,7 +119,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 void IrrGraphicsSystem::begin_scene()
 {
 	ASSERT(driver != nullptr);
-	driver->beginScene(true, true, SColor(255,200,200,200));
+	driver->beginScene(ECBF_COLOR|| ECBF_DEPTH, SColor(255,200,200,200));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::draw()

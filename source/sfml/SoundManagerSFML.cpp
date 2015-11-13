@@ -69,7 +69,7 @@ namespace Pakal
 		}
 
 		//if not found in cache then create it and load it.
-		SharedPtr<std::istream> stream = rmgr.open_read_resource(resourcePath, false);
+		SharedPtr<std::istream> stream = ResourceMgr.open_read_resource(resourcePath, false);
 
 		return load_sfx(stream, resourcePath);
 	}
