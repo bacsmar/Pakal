@@ -29,7 +29,7 @@ void SpriteComponent_Irrlicht::set_flipped(bool val)
 
 void SpriteComponent_Irrlicht::set_looped(bool value)
 {
-	m_sprite->looped = value;
+	m_current_animation->looped = value;
 }
 
 bool SpriteComponent_Irrlicht::is_flipped() const
@@ -97,11 +97,11 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 		
 		m_node->detach();
 		m_node->drop();
-		for (const auto& it : m_sprites)
+		for (const auto& it : m_animations)
 		{
 			delete it.second;
 		}
-		m_sprites.clear();
+		m_animations.clear();
 	});
 }
 
@@ -123,17 +123,17 @@ void SpriteComponent_Irrlicht::load(std::istream& stream)
 
 	for(SpriteAnimation* animation : loader.animations)
 	{
-		m_sprites[animation->name] = animation;
+		m_animations[animation->name] = animation;
 	}
 
-	const auto& defaultAnimation = m_sprites.find(loader.default_animation);
-	if (defaultAnimation != m_sprites.end())
+	const auto& defaultAnimation = m_animations.find(loader.default_animation);
+	if (defaultAnimation != m_animations.end())
 	{
 		set_animation(*defaultAnimation->second);
 	}
 	else
 	{
-		set_animation(*m_sprites.begin()->second);
+		set_animation(*m_animations.begin()->second);
 	}
 }
 
@@ -141,25 +141,25 @@ void SpriteComponent_Irrlicht::load(std::istream& stream)
 void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 {
 	// if not paused and we have a valid animation
-	if (!m_paused && m_sprite)
+	if (!m_paused && m_current_animation)
 	{
 		// add delta time
 		m_current_time += deltaTime;
 
 		// if current time is bigger then the frame time advance one frame		
-		if (m_current_time >= m_sprite->duration)
+		if (m_current_time >= m_current_animation->duration)
 		{
 			// reset time, but keep the remainder			
-			m_current_time = m_current_time % m_sprite->duration;
+			m_current_time = m_current_time % m_current_animation->duration;
 
 			// get next Frame index
-			if (m_current_frame + 1 < m_sprite->get_size())
+			if (m_current_frame + 1 < m_current_animation->get_size())
 			{
 				++m_current_frame;
 			}
 			else
 			{
-				if (!m_sprite->looped)
+				if (!m_current_animation->looped)
 				{
 					m_paused = true;
 					event_animation_ended.notify();
@@ -179,7 +179,7 @@ void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 
 bool SpriteComponent_Irrlicht::is_looped() const
 {
-	return m_sprite->looped;
+	return m_current_animation->looped;
 }
 
 bool SpriteComponent_Irrlicht::is_playing() const
@@ -189,11 +189,11 @@ bool SpriteComponent_Irrlicht::is_playing() const
 
 void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 {
-	ASSERT(m_node != nullptr && m_sprite != nullptr);
+	ASSERT(m_node != nullptr && m_current_animation != nullptr);
 	
 	m_system->execute_block([=]()
 	{
-		m_node->set_frame(frameIndex, *m_sprite);
+		m_node->set_frame(frameIndex, *m_current_animation);
 
 		if (resetTime)
 		{
@@ -204,7 +204,7 @@ void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 
 void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
 {
-	m_sprite = &animation;
+	m_current_animation = &animation;
 	m_current_frame = 0;
 	m_paused = false;
 	set_frame(m_current_frame);
@@ -212,8 +212,8 @@ void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
 
 void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
 {
-	const auto& animation = m_sprites.find(animationName);
-	if (animation != m_sprites.end())
+	const auto& animation = m_animations.find(animationName);
+	if (animation != m_animations.end())
 	{
 		set_animation(*animation->second);
 	}
