@@ -139,6 +139,7 @@
     <ClCompile Include="..\source\XmlReader.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\EngineComponents.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />

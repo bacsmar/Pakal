@@ -54,6 +54,8 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*m_sound_manager);
 	m_component_manager->register_provider(*m_input_manager);
 
+	register_default_components();
+	
 	add_system(m_graphics_system);
 	add_system(m_physics_system);
 }
@@ -157,7 +159,6 @@ void Engine::run(IPakalApplication* application)
 	resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
-
 void Engine::on_update(long long dt)
 {
 	m_game_state_manager->update();
