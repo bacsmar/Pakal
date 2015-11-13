@@ -39,8 +39,7 @@ namespace Pakal
 			std::function<IInputManager*(Engine*)>	input_manager_allocator;			
 
 			Settings();
-		};
-
+		};		
 
 		explicit Engine(const Settings& settings);
 		~Engine();
@@ -56,8 +55,7 @@ namespace Pakal
 		inline GameStateManager*	game_state_manager() const { return m_game_state_manager; }
 		inline OSManager*			os_manager()  { return &OSManager::instance(); } 
 		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); }
-		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }
-
+		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }		
 
 		const char* get_system_name() override { return "Engine"; };
 
@@ -82,6 +80,7 @@ namespace Pakal
 		void on_terminate() override;
 		void on_pause() override;
 		void on_resume() override;
+		void register_default_components();
 
 		IPakalApplication*  m_application;
 

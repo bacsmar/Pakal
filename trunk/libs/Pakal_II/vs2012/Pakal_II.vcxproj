@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="..\source\Attribute.cpp" />
     <ClCompile Include="..\source\Element.cpp" />
+    <ClCompile Include="..\source\EngineComponents.cpp" />
     <ClCompile Include="..\source\TextReader.cpp" />
     <ClCompile Include="..\source\TextWriter.cpp" />
     <ClCompile Include="..\source\XmlReader.cpp" />
@@ -176,7 +177,6 @@
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10973BBF-12C3-4F4F-98CB-D2D8CB870919}</ProjectGuid>
     <RootNamespace>pakal</RootNamespace>

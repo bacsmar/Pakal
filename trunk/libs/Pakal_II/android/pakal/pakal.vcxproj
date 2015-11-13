@@ -109,6 +109,7 @@
     <ClInclude Include="..\..\source\Component.h" />
     <ClInclude Include="..\..\source\ComponentFactory.h" />
     <ClInclude Include="..\..\source\ComponentManager.h" />
+    <ClInclude Include="..\..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\..\source\components\BodyComponent.h" />
     <ClInclude Include="..\..\source\components\BodyComponent_Box2D.h" />
     <ClInclude Include="..\..\source\components\MeshComponent.h" />
@@ -170,6 +171,8 @@
     <ClInclude Include="..\..\source\sfml\SoundManagerSFML.h" />
     <ClInclude Include="..\..\source\SingletonHolder.h" />
     <ClInclude Include="..\..\source\SoundManager.h" />
+    <ClInclude Include="..\..\source\State.h" />
+    <ClInclude Include="..\..\source\StateMachine.h" />
     <ClInclude Include="..\..\source\System.h" />
     <ClInclude Include="..\..\source\Task.h" />
     <ClInclude Include="..\..\source\TaskCompletionSource.h" />
@@ -188,6 +191,7 @@
     <ClCompile Include="..\..\source\Clock.cpp" />
     <ClCompile Include="..\..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\..\source\ComponentManager.cpp" />
+    <ClCompile Include="..\..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\..\source\components\SpriteComponent_Irrlicht.cpp" />
@@ -211,6 +215,7 @@
     <ClCompile Include="..\..\source\sfml\MusicComponentSFML.cpp" />
     <ClCompile Include="..\..\source\sfml\SFXComponentSFML.cpp" />
     <ClCompile Include="..\..\source\sfml\SoundManagerSFML.cpp" />
+    <ClCompile Include="..\..\source\StateMachine.cpp" />
     <ClCompile Include="..\..\source\System.cpp" />
     <ClCompile Include="..\..\source\ThreadPool.cpp" />
     <ClCompile Include="..\..\source\Timer.cpp" />
