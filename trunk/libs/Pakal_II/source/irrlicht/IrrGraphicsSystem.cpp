@@ -77,7 +77,7 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 
 	LOG_INFO("[Graphic System] done");
 
-	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-20), vector3df(0,0,0));		
+	smgr->addCameraSceneNode(nullptr, vector3df(0,0,-10), vector3df(0,0,0));		
 
 	// setting up events
 	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs a)

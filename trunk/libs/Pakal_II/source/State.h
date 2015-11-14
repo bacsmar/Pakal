@@ -56,16 +56,18 @@ namespace Pakal {
 			for (auto & transition : m_transitions)
 			{
 				if (transition.execute())
+				{
 					return transition.get_final_state();
+				}					
 			}
-			event_update.notify();
+			//event_update.notify();
 			return this;
 		}
 	public:
 
-		Pakal::Event<void> event_update;
-		Pakal::Event<void> event_enter;
-		Pakal::Event<void> event_exit;
+		//Pakal::Event<void> event_update;
+		Pakal::Event<void> event_enter;	// fired by StateMachine
+		Pakal::Event<void> event_exit;	// fired by StateMachine
 
 		inline const Transition& add_transition(const std::function<bool()>& conditions, State * finalState)
 		{

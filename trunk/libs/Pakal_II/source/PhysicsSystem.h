@@ -34,8 +34,9 @@ namespace Pakal
 			int velocity_iterations;
 			int position_iterations;
 			bool uses_thread;
+			bool debug_draw;
 
-			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(false), velocity_iterations(8), position_iterations(3), uses_thread(true) {}
+			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(false), velocity_iterations(8), position_iterations(3), uses_thread(true), debug_draw(false){}
 		};
 
 	protected:

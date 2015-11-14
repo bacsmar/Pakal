@@ -35,13 +35,16 @@ namespace Pakal
 		IrrGraphicsSystem*	m_system;
 		SpriteAnimation*	m_current_animation;
 
-		SpriteNode_Irrlicht*	m_renderer;
+		SpriteNode_Irrlicht*	m_node;
 		std::unordered_map<std::string, SpriteAnimation*>	m_animations;
-
 		void load(std::istream& stream);
 
 		void set_animation(SpriteAnimation& animation);
-		void set_frame(size_t index, bool resetTime = true);
+		void set_frame(size_t index, bool resetTime = true);		
+
+		float m_size_factor;
+		float m_normalization_factor;
+		void normalize_size(tmath::vector2du size);
 
 	public:	
 		SpriteComponent_Irrlicht(IrrGraphicsSystem* system);
@@ -60,6 +63,10 @@ namespace Pakal
 
 		void set_rotation(float degrees) override;
 		void set_scale(const tmath::vector2df& factor) override;
+		virtual void set_size(float size) override;
+
+		void set_position(tmath::vector3df position) override;
+		tmath::vector3df get_position() const override;
 
 		float get_rotation() const override;
 		tmath::vector2df get_scale() const override;

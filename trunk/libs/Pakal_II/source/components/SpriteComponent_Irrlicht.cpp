@@ -14,7 +14,7 @@ using namespace irr;
 using namespace core;
 
 SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(IrrGraphicsSystem* system)
-	: m_current_time(0), m_current_frame(0), m_paused(true), m_system(system), m_node(nullptr)
+	: m_current_time(0), m_current_frame(0), m_paused(true), m_system(system), m_node(nullptr), m_size_factor(1.f), m_normalization_factor(1.f)
 { }
 
 SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht() 
@@ -46,7 +46,24 @@ void SpriteComponent_Irrlicht::set_rotation(float degrees)
 
 void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
 {		
-	m_node->setScale(vector3df(factor.x, factor.y, 1));
+	m_node->setScale(vector3df(factor.x, factor.y, 1) * m_normalization_factor);
+}
+
+void SpriteComponent_Irrlicht::set_size(float size)
+{
+	m_size_factor = size;
+	m_node->setScale(m_node->getScale() * m_normalization_factor * m_size_factor);
+}
+
+void SpriteComponent_Irrlicht::set_position(tmath::vector3df position)
+{
+	m_node->setPosition(core::vector3df(position.x,position.y,position.z));
+}
+
+tmath::vector3df SpriteComponent_Irrlicht::get_position() const
+{
+	auto& posVector = m_node->getPosition();
+	return tmath::vector3df(posVector.X,posVector.Y, posVector.Z);
 }
 
 float SpriteComponent_Irrlicht::get_rotation() const
@@ -56,7 +73,7 @@ float SpriteComponent_Irrlicht::get_rotation() const
 
 tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
 {
-	auto currentScale = m_node->getScale();
+	auto currentScale = m_node->getScale() * m_normalization_factor;
 	return { currentScale.X, currentScale.Y };
 }
 
@@ -71,8 +88,10 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 			new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager());
 
 		m_paused = settings.init_paused;
+		m_size_factor = settings.size;
+		m_node->setPosition(vector3df(settings.position.x, settings.position.y, settings.position.z));
 
-		if (auto resource = rmgr.open_read_resource(settings.resource_file, false))
+		if (auto resource = ResourceMgr.open_read_resource(settings.resource_file, false))
 		{
 			load(*resource);
 		}
@@ -80,8 +99,6 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		{
 			LOG_ERROR("[SpriteComponent]  invalid resource %s", settings.resource_file.c_str());
 		}
-
-		m_node->setPosition(vector3df(settings.position.x, settings.position.y, settings.position.z));
 		m_system->add_to_update_list(this);
 
 	});
@@ -125,6 +142,11 @@ void SpriteComponent_Irrlicht::load(std::istream& stream)
 	{
 		m_animations[animation->name] = animation;
 	}
+
+	normalize_size({ loader.ref_width, loader.ref_height});
+	//m_size_factor = loader.size_factor;
+	//m_node->setScale(m_node->getScale() * m_normalization_factor * m_size_factor);
+	set_size(loader.size_factor);
 
 	const auto& defaultAnimation = m_animations.find(loader.default_animation);
 	if (defaultAnimation != m_animations.end())
@@ -200,6 +222,17 @@ void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 			m_current_time = 0;
 		}
 	});	
+}
+
+void SpriteComponent_Irrlicht::normalize_size(tmath::vector2du size)
+{
+	f64 length = size.x*size.x + size.y*size.y;
+	if (length == 0)
+	{
+		LOG_WARNING("[SpriteComponent] missing reference size in SpriteSheet");
+		return;
+	}
+	m_normalization_factor = (f32)core::reciprocal_squareroot(length);
 }
 
 void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
