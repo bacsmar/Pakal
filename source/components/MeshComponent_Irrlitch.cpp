@@ -94,8 +94,13 @@ tmath::vector3df MeshComponent_Irrlitch::get_size()
 void MeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
 {
 	auto v =  m_node->getTransformedBoundingBox().getExtent();
-
-	v = irr::core::vector3df(1,1,1) / v;
+	
+	irr::f64 length = v.X*v.X + v.Y*v.Y + v.Z*v.Z;
+	if (length == 0)
+	{
+		return;
+	}
+	v = (irr::f32)irr::core::reciprocal_squareroot(length) * v;
 
 	v.X *= size.x;
 	v.Y *= size.y;

@@ -20,6 +20,11 @@ Pakal::Keyboard_SFML::Keyboard_SFML()
 	m_buttons[GamepadComponent::Buttons::Button_B] = sf::Keyboard::Key::B;
 	m_buttons[GamepadComponent::Buttons::Button_X] = sf::Keyboard::Key::X;
 	m_buttons[GamepadComponent::Buttons::Button_Y] = sf::Keyboard::Key::Y;
+
+	m_buttons[GamepadComponent::Buttons::Button_DOWN] = sf::Keyboard::Key::Down;
+	m_buttons[GamepadComponent::Buttons::Button_RIGHT] = sf::Keyboard::Key::Right;
+	m_buttons[GamepadComponent::Buttons::Button_LEFT] = sf::Keyboard::Key::Left;
+	m_buttons[GamepadComponent::Buttons::Button_UP] = sf::Keyboard::Key::Up;
 }
 
 Pakal::Keyboard_SFML::~Keyboard_SFML()

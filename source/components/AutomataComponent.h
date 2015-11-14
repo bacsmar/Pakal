@@ -5,7 +5,7 @@
 namespace Pakal
 {	
 	class StateMachine;
-	class AutomataComponent : public Pakal::Component
+	class AutomataComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(AutomataComponent, Component);
 	public:

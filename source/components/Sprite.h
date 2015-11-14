@@ -78,11 +78,17 @@ namespace Pakal
 	{
 		std::string texture_name;
 		std::string default_animation;
+		unsigned ref_width = 0;
+		unsigned ref_height = 0;
+		float size_factor = 1;
 
 		std::vector<SpriteAnimation*> animations;
 
 		void persist(Archive* archive)
 		{
+			archive->value("refHeight", ref_height);
+			archive->value("refWidth", ref_width);
+			archive->value("size_factor", size_factor);
 			archive->value("texture", texture_name);
 			archive->value("default", default_animation);
 			archive->value("","animation",animations);

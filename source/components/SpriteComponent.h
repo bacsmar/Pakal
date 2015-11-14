@@ -15,9 +15,9 @@ namespace Pakal
 		{
 			std::string resource_file;
 			tmath::vector3df position;
-			tmath::vector3df size;
 			bool init_paused = false;			
 			float speed = 1;
+			float size = 1;
 		};
 
 		Event<void> event_animation_ended;
@@ -35,9 +35,14 @@ namespace Pakal
 
 		virtual void set_rotation(float degrees) = 0;
 		virtual void set_scale(const tmath::vector2df& factor) = 0;
+
+		virtual void set_size(float size) = 0;
 	
 		virtual float get_rotation() const = 0;
 		virtual tmath::vector2df get_scale() const = 0;
+
+		virtual void set_position(tmath::vector3df position) = 0;
+		virtual tmath::vector3df  get_position() const = 0;
 
 		virtual void play() = 0;
 		virtual void pause() = 0;

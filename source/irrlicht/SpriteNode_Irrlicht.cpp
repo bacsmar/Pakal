@@ -51,12 +51,9 @@ void SpriteNode_Irrlicht::set_texture(irr::video::ITexture* texture)
 	m_texture = texture;
 }
 
-irr::core::rectf SpriteNode_Irrlicht::getLocalBounds() const
-{	
-    float width = static_cast<float>(std::abs(m_frame_rect.getWidth()));
-    float height = static_cast<float>(std::abs(m_frame_rect.getHeight()));
-
-    return irr::core::rectf(0.f, 0.f, width, height);
+core::rectf SpriteNode_Irrlicht::getLocalBounds() const
+{
+    return irr::core::rectf(0.f, 0.f, (f32)m_frame_rect.LowerRightCorner.X, (f32)m_frame_rect.LowerRightCorner.Y); 
 }
 
 irr::core::rectf SpriteNode_Irrlicht::getGlobalBounds() const
@@ -115,7 +112,7 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const SpriteAnimatio
 		left /= d.Width;
 		right /= d.Width;
 		top /= d.Height;
-		bottom /= d.Height;
+		bottom /= d.Height;	
 
         m_vertices[0].TCoords = core::vector2df(left, top);
         m_vertices[1].TCoords = core::vector2df(left, bottom);
