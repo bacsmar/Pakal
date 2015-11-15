@@ -99,7 +99,7 @@ namespace Pakal
 		template<class T, std::enable_if_t<has_persist<T>::value>* = nullptr>
 		void value(const char* name, T& object);
 
-		//for an enum, is treated as an int
+		//for an enum, is treated as the underlying type 
 		template<class T, std::enable_if_t<std::is_enum<T>::value>* = nullptr>
 		void value(const char* name, T& object);
 
@@ -285,7 +285,7 @@ namespace Pakal
 
 		if (m_type == ArchiveType::Reader || m_type == ArchiveType::Resolver)
 		{
-			count = children_name_count(childName) > Length ? Length : children_name_count();
+			count = children_name_count(childName) > Length ? Length : children_name_count(childName);
 		}
 
 		for (size_t i = 0; i < count; i++)
@@ -418,7 +418,7 @@ namespace Pakal
 
 		if (m_type == ArchiveType::Reader || m_type == ArchiveType::Resolver)
 		{
-			count = children_name_count(childName) > Length ? Length : children_name_count();
+			count = children_name_count(childName) > Length ? Length : children_name_count(childName);
 		}
 
 		switch (m_type)
@@ -456,7 +456,7 @@ namespace Pakal
 	void Archive::refer(const char* name, T*& object)
 	{
 		begin_object(name);
-		end_object_as_reference(*reinterpret_cast<void**>(static_cast<void*>(&object)));
+		end_object_as_reference(*reinterpret_cast<void**>(&object));
 	}
 
 	template<template <typename ...> class stl_container, typename T, typename ... etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>*>
@@ -560,7 +560,7 @@ namespace Pakal
 			begin_object(name);
 
 		size_t count = m_type == ArchiveType::Resolver 
-			? (children_name_count() > Length ? Length : children_name_count(childName)) 
+			? (children_name_count(childName) > Length ? Length : children_name_count(childName)) 
 			: Length;
 
 		switch (m_type)
