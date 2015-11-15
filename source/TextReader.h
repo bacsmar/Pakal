@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Archive.h"
+#include "Element.h"
+
 #include <stack>
 #include <map>
+
 
 namespace Pakal
 {
@@ -11,6 +14,7 @@ namespace Pakal
 	class _PAKALExport TextReader : public Archive
 	{
 		Element* m_root;
+		Element	 m_empty;
 		std::stack<Element*> m_context;
 
 		std::map<void*,void*> m_solved;

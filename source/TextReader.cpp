@@ -1,5 +1,4 @@
 #include "TextReader.h"
-#include "Element.h"
 
 using namespace Pakal;
 
@@ -17,12 +16,14 @@ TextReader::~TextReader()
 
 void TextReader::begin_object(const char* name)
 {
-	m_context.push(get_current_element()->find_element(name));
+	Element* current = get_current_element()->find_element(name);
+
+	m_context.push(current ? current : &m_empty );
 }
 
 void TextReader::end_object_as_value(const void* address)
 {
-	if (!get_current_element())
+	if (get_current_element() == &m_empty)
 	{
 		m_context.pop();
 		return;
