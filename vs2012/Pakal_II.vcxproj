@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\source\Archive.h" />
     <ClInclude Include="..\source\Attribute.h" />
+    <ClInclude Include="..\source\components\SpritePhysics.h" />
     <ClInclude Include="..\source\Element.h" />
     <ClInclude Include="..\source\TextReader.h" />
     <ClInclude Include="..\source\TextWriter.h" />

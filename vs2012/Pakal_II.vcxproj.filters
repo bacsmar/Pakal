@@ -459,6 +459,9 @@
     <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h">
       <Filter>Managers\UIManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysics.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
