@@ -56,35 +56,35 @@ namespace Pakal
 			}
 
 			// assignment operations
-			inline const vectorn<T,NUM> operator =(const vectorn<T,NUM>& v)
+			inline const vectorn<T,NUM>& operator =(const vectorn<T,NUM>& v)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] = v.cmp[idx];
 				return *this;
 			}
 
-			inline const vectorn<T,NUM> operator+=(const vectorn<T,NUM>& v)
+			inline const vectorn<T,NUM>& operator+=(const vectorn<T,NUM>& v)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] += v.cmp[idx];
 				return *this;
 			}
 
-			inline const vectorn<T,NUM> operator-=(const vectorn<T,NUM>& v)
+			inline const vectorn<T,NUM>& operator-=(const vectorn<T,NUM>& v)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] -= v.cmp[idx];
 				return *this;
 			}
 
-			inline const vectorn<T,NUM> operator*=(const T& num)
+			inline const vectorn<T,NUM>& operator*=(const T& num)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] *= num;
 				return *this;
 			}
 
-			inline const vectorn<T,NUM> operator/=(const T& num)
+			inline const vectorn<T,NUM>& operator/=(const T& num)
 			{
 				const T r = static_cast<T>(1.0) / num;
 				for (int idx = 0; idx < NUM; ++idx)

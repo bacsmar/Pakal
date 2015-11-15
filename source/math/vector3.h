@@ -50,7 +50,7 @@ namespace Pakal
 			vectorn<T,3>(const vectorn<T,3>& v) : x(v.x), y(v.y), z(v.z) { }
 
 			// assignment operations
-			inline const vectorn<T,3> operator+=(const vectorn<T,3>& v)
+			inline const vectorn<T,3>& operator+=(const vectorn<T,3>& v)
 			{
 				x += v.x;
 				y += v.y;
@@ -58,7 +58,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,3> operator-=(const vectorn<T,3>& v)
+			inline const vectorn<T,3>& operator-=(const vectorn<T,3>& v)
 			{
 				x -= v.x;
 				y -= v.y;
@@ -66,7 +66,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,3> operator*=(const T& num)
+			inline const vectorn<T,3>& operator*=(const T& num)
 			{
 				x *= num;
 				y *= num;
@@ -74,7 +74,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,3> operator/=(const T& num)
+			inline const vectorn<T,3>& operator/=(const T& num)
 			{
 				const T r = static_cast<T>(1.0) / num;
 				x *= r;
