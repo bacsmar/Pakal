@@ -45,15 +45,14 @@ void SpriteComponent_Irrlicht::set_rotation(float degrees)
 }
 
 void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
-{		
-	//m_node->setScale(vector3df(factor.x, factor.y, 1) * m_normalization_factor);
+{
 	m_node->setScale(vector3df(factor.x, factor.y, 1));
 }
 
 void SpriteComponent_Irrlicht::set_size(float size)
 {
 	m_size_factor = size;
-	m_node->setScale(m_node->getScale() * m_normalization_factor * m_size_factor);
+	m_node->setScale(irr::core::vector3df(1.f,1.f,1.f) * m_normalization_factor * m_size_factor);
 }
 
 void SpriteComponent_Irrlicht::set_position(tmath::vector3df position)
@@ -74,7 +73,6 @@ float SpriteComponent_Irrlicht::get_rotation() const
 
 tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
 {
-	//auto currentScale = m_node->getScale() * m_normalization_factor;
 	auto currentScale = m_node->getScale();
 	return { currentScale.X, currentScale.Y };
 }
