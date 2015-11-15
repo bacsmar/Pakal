@@ -46,7 +46,8 @@ void SpriteComponent_Irrlicht::set_rotation(float degrees)
 
 void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
 {		
-	m_node->setScale(vector3df(factor.x, factor.y, 1) * m_normalization_factor);
+	//m_node->setScale(vector3df(factor.x, factor.y, 1) * m_normalization_factor);
+	m_node->setScale(vector3df(factor.x, factor.y, 1));
 }
 
 void SpriteComponent_Irrlicht::set_size(float size)
@@ -73,7 +74,8 @@ float SpriteComponent_Irrlicht::get_rotation() const
 
 tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
 {
-	auto currentScale = m_node->getScale() * m_normalization_factor;
+	//auto currentScale = m_node->getScale() * m_normalization_factor;
+	auto currentScale = m_node->getScale();
 	return { currentScale.X, currentScale.Y };
 }
 
@@ -129,7 +131,6 @@ void SpriteComponent_Irrlicht::load(std::istream& stream)
 	XmlReader reader;
 	reader.read(stream, "SpriteSheetAnimation", loader);
 
-
 	auto texture = m_system->get_driver()->getTexture(loader.texture_name.c_str());
 	if (texture == nullptr)
 	{
@@ -138,14 +139,12 @@ void SpriteComponent_Irrlicht::load(std::istream& stream)
 	}
 	m_node->set_texture(texture);
 
-	for(SpriteAnimation* animation : loader.animations)
+	for(auto animation : loader.animations)
 	{
 		m_animations[animation->name] = animation;
 	}
 
 	normalize_size({ loader.ref_width, loader.ref_height});
-	//m_size_factor = loader.size_factor;
-	//m_node->setScale(m_node->getScale() * m_normalization_factor * m_size_factor);
 	set_size(loader.size_factor);
 
 	const auto& defaultAnimation = m_animations.find(loader.default_animation);
