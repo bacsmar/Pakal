@@ -50,28 +50,28 @@ namespace Pakal
 			vectorn<T,2>(const vectorn<T,2>& v) : x(v.x), y(v.y) { }
 
 			// assignment operations
-			inline const vectorn<T,2> operator+=(const vectorn<T,2>& v)
+			inline const vectorn<T,2>& operator+=(const vectorn<T,2>& v)
 			{
 				x += v.x;
 				y += v.y;
 				return *this;
 			}
 
-			inline const vectorn<T,2> operator-=(const vectorn<T,2>& vVector)
+			inline const vectorn<T,2>& operator-=(const vectorn<T,2>& vVector)
 			{
 				x -= vVector.x;
 				y -= vVector.y;
 				return *this;
 			}
 
-			inline const vectorn<T,2> operator*=(const T& num)
+			inline const vectorn<T,2>& operator*=(const T& num)
 			{
 				x *= num;
 				y *= num;
 				return *this;
 			}
 
-			inline const vectorn<T,2> operator/=(const T& num)
+			inline const vectorn<T,2>& operator/=(const T& num)
 			{
 				const T r = 1.0 / num;
 				x *= r;
