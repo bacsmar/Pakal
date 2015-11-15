@@ -54,7 +54,7 @@ namespace Pakal
 			vectorn<T,4>(const vectorn<T,4>& v) : x(v.x), y(v.y), z(v.z), w(v.w) { }
 
 			// assignment operations
-			inline const vectorn<T,4> operator+=(const vectorn<T,4>& v)
+			inline const vectorn<T,4>& operator+=(const vectorn<T,4>& v)
 			{
 				x += v.x;
 				y += v.y;
@@ -63,7 +63,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,4> operator-=(const vectorn<T,4>& v)
+			inline const vectorn<T,4>& operator-=(const vectorn<T,4>& v)
 			{
 				x -= v.x;
 				y -= v.y;
@@ -72,7 +72,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,4> operator*=(const T& num)
+			inline const vectorn<T,4>& operator*=(const T& num)
 			{
 				x *= num;
 				y *= num;
@@ -81,7 +81,7 @@ namespace Pakal
 				return *this;
 			}
 
-			inline const vectorn<T,4> operator/=(const T& num)
+			inline const vectorn<T,4>& operator/=(const T& num)
 			{
 				const T r = (T)1.0 / num;
 				x *= r;
