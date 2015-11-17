@@ -66,8 +66,10 @@ namespace Pakal
 
 	protected:
 		virtual void begin_object(const char* name) = 0;
-		virtual void end_object_as_reference(void*& address) = 0;
+		virtual void end_object_as_reference() = 0;
 		virtual void end_object_as_value(const void* address) = 0;
+
+		virtual void refer_object(const char* name, void*& value) = 0;
 
 		virtual size_t children_name_count(const char* name) = 0;
 
@@ -173,7 +175,7 @@ namespace Pakal
 	template<class T, std::enable_if_t<Archive::has_persist<T>::value == false && std::is_enum<T>::value == false>* >
 	void Archive::value(const char* name, T& object)
 	{
-		static_assert(trait_utils::is_container<T>::value || std::is_array<T>::value, "T/Key must have a persist method or to be a stl container or an array or a pointer or an enum");
+		static_assert(trait_utils::is_container<T>::value || std::is_array<T>::value, "T/Key must have a persist method or to be a stl container or an array or a pointer or an enum or a basic type");
 
 		value(name, "item", object);
 	}
@@ -455,8 +457,7 @@ namespace Pakal
 	template<class T>
 	void Archive::refer(const char* name, T*& object)
 	{
-		begin_object(name);
-		end_object_as_reference(*reinterpret_cast<void**>(&object));
+		refer_object(name, *reinterpret_cast<void**>(&object));
 	}
 
 	template<template <typename ...> class stl_container, typename T, typename ... etc, std::enable_if_t<!trait_utils::iterates_with_pair<stl_container<T*, etc...>>::value>*>
@@ -474,9 +475,12 @@ namespace Pakal
 
 				for (size_t i = 0; i < count; i++)
 				{
-					T* pointer = nullptr;
-					refer(childName, pointer);
-					container.insert(container.end(), pointer);
+					begin_object(childName);
+						T* pointer = nullptr;
+						refer("address", pointer);
+						container.insert(container.end(), pointer);
+					end_object_as_reference();
+					
 				}
 			}
 			break;
@@ -484,8 +488,10 @@ namespace Pakal
 			{
 				for (const T* e : container)
 				{
-					T* ptr = const_cast<T*>(e);
-					refer(childName,ptr);
+					begin_object(childName);
+						T* ptr = const_cast<T*>(e);
+						refer("address",ptr);
+					end_object_as_reference();
 				}
 			} 
 			break;
@@ -538,8 +544,7 @@ namespace Pakal
 							container_value(e.first);
 						end_object_as_value(&e.first);
 
-						begin_object("value");
-						end_object_as_reference(e.second);
+						refer("value",e.second);
 					}
 					end_object_as_value(&e);
 				}
@@ -570,7 +575,9 @@ namespace Pakal
 			{
 				for (size_t i = 0; i < count; i++)
 				{
-					refer(childName, container[i]);
+					begin_object(childName);
+						refer("address", container[i]);
+					end_object_as_reference();
 				}
 			}
 			break;
