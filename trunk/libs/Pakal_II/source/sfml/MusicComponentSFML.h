@@ -1,5 +1,5 @@
 #pragma once
-#include "MusicComponent.h"
+#include "components/MusicComponent.h"
 #include "sfml/StreamSFML.h"
 #include "SFML/Audio.hpp"
 #include "ResourceManager.h"
