@@ -8,7 +8,7 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(DirectorySource, ISource);
 	public:		
 
-		virtual bool initialize(const path& path, bool recursive) = 0;
+		virtual bool initialize(const Path& path, bool recursive) = 0;
 		virtual void terminate() = 0;
 	};
 

@@ -3,7 +3,7 @@
 
 #include "LogMgr.h"
 #include "Utils.h"
-#include "path.h"
+#include "PakalPath.h"
 #include "IManager.h"
 #include "ISource.h"
 #include "MemoryStream.h"
@@ -25,7 +25,7 @@ namespace Pakal
 		template <class ResourceManager> friend class SingletonHolder;
 
 		std::vector<SharedPtr<ISource>> m_sources;
-		std::map<path,WeakPtr<memory_istream>> m_memory_streams;
+		std::map<Path,WeakPtr<memory_istream>> m_memory_streams;
 		std::map<std::string, std::function<ISource*()>> m_factories;
 
 		std::mutex m_memory_streams_mutex,m_sources_mutex;
@@ -99,16 +99,16 @@ namespace Pakal
 		void remove_source(ISource* source);
 
 		template<class TStream>
-		SharedPtr<TStream> open_read_resource(const path& resourcePath, bool inMemory)
+		SharedPtr<TStream> open_read_resource(const Path& resourcePath, bool inMemory)
 		{
 			SharedPtr<std::istream> stream = open_read_resource(resourcePath, inMemory);
 
 			return stream != nullptr ? std::make_shared<TStream>(stream) : nullptr;
 		}
 
-		SharedPtr<std::istream> open_read_resource(const path& resourcePath, bool inMemory);
+		SharedPtr<std::istream> open_read_resource(const Path& resourcePath, bool inMemory);
 
-		SharedPtr<std::ostream> open_write_resource(const path& resourcePath);	
+		SharedPtr<std::ostream> open_write_resource(const Path& resourcePath);	
 
 	};
 

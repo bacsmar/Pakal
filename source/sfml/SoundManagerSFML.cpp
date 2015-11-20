@@ -51,7 +51,7 @@ namespace Pakal
 		clean_expired_buffers();
 	}
 
-	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(const path& resourcePath)
+	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(const Path& resourcePath)
 	{
 		//try retireve from cache
 		{
@@ -74,7 +74,7 @@ namespace Pakal
 		return load_sfx(stream, resourcePath);
 	}
 
-	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(SharedPtr<std::istream> resourceStream,const path& resourceName)
+	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(SharedPtr<std::istream> resourceStream,const Path& resourceName)
 	{
 		//try retireve from cache
 		{
@@ -134,7 +134,7 @@ namespace Pakal
 		mutex_guard l(m_buffer_mutex);
 
 		LOG_INFO("Cleaning expired buffers...");
-		map_utils::erase_if(m_buffers, [](const std::pair<path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
+		map_utils::erase_if(m_buffers, [](const std::pair<Path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
 	}
 
 	void SoundManagerSFML::clean_players() 
