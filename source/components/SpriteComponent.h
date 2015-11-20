@@ -7,7 +7,7 @@
 
 namespace Pakal
 {
-	class SpriteComponent : public Component
+	class _PAKALExport SpriteComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(SpriteComponent, Component);
 	public:
@@ -34,12 +34,13 @@ namespace Pakal
 		virtual bool is_flipped() const = 0;
 
 		virtual void set_rotation(float degrees) = 0;
-		virtual void set_scale(const tmath::vector2df& factor) = 0;
+		virtual float get_rotation() const = 0;
 
 		virtual void set_size(float size) = 0;
-	
-		virtual float get_rotation() const = 0;
-		virtual tmath::vector2df get_scale() const = 0;
+			
+		virtual tmath::vector3df get_scale() const = 0;
+		virtual float get_normalization_factor() const = 0;
+		virtual void set_scale(const tmath::vector3df& factor) = 0;
 
 		virtual void set_position(tmath::vector3df position) = 0;
 		virtual tmath::vector3df  get_position() const = 0;

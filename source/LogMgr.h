@@ -80,30 +80,8 @@ namespace Pakal{
 
 		enum LogLevel{ LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL};
 		
+		void inline log(const std::string&msg) { log(LOG_INFO, msg.c_str()); }
 		void log( int level, const char *format, ... );
 		void log(int level, const char *format, va_list& args);
 	};
 }
-
-#if PAKAL_USE_SCRIPTS == 1
-
-class  TLog
-{
-	Pakal::LogMgr *pManager;
-public:	
-	TLog() { pManager = Pakal::LogMgr::instance(); }
-	// funciones miembro de las clases huesped
-	inline void log(const std::string& msg) { LOG_INFO("[Script] %s", msg.c_str()); }
-};
-
-#include "oolua.h"
-
-OOLUA_CLASS_NO_BASES(TLog)//class has no bases
-OOLUA_NO_TYPEDEFS
-OOLUA_ONLY_DEFAULT_CONSTRUCTOR	
-OOLUA_MEM_FUNC(void,log, const std::string&)
-//OOLUA_MEM_FUNC_CONST(Pakal::UIManager, instance, void)
-OOLUA_CLASS_END
-
-// no Olvide registrar en el cpp ->
-#endif

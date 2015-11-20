@@ -6,7 +6,7 @@
 #pragma once
 #include <vector>
 #include "math/tm.h"
-#include "Archive.h"
+#include "persist/Archive.h"
 
 namespace Pakal
 {

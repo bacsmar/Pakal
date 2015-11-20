@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Component.h"
+#include <string>
 
 namespace Pakal
 {	
-	class StateMachine;
+	class StateMachine;	
 	class AutomataComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(AutomataComponent, Component);
@@ -14,13 +15,14 @@ namespace Pakal
 
 		void update();
 
-		inline StateMachine* get_states() const
+		inline StateMachine* get_state_machine() const
 		{
 			return m_stateMachine;
 		}
 
+		bool load_from_file(const std::string& file);
+
 	private:
-		StateMachine *m_stateMachine;	
-		
+		StateMachine *m_stateMachine;
 	};
 }

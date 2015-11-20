@@ -34,11 +34,18 @@ namespace Pakal
 			{
 				on_update(dt);
 				m_fps_counter.register_frame(dt);
+				limit_fps(dt);
 			}
 
 			dt = clock.restart().asMilliseconds();
 		} 
 	}
+
+	void System::limit_fps(const long long& frame_time_ms)
+	{
+		if (frame_time_ms < m_desired_frame_time_ms)
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_desired_frame_time_ms - frame_time_ms));
+	}	
 
 	System::~System()
 	{
@@ -61,6 +68,7 @@ namespace Pakal
 		{
 			on_update(dt);
 			m_fps_counter.register_frame(dt);
+			limit_fps(dt);
 		}
 	}
 

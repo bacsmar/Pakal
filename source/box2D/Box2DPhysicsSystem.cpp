@@ -5,6 +5,7 @@
 #include "ComponentFactory.h"
 #include "components/BodyComponent.h"
 #include "Components/BodyComponent_Box2D.h"
+#include "Components/SpritebodyComponent_Box2D.h"
 
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
@@ -28,6 +29,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
 	factories.emplace_back(CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
+	factories.emplace_back(CreateComponentFactory<SpritebodyComponent, SpritebodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
@@ -114,7 +116,7 @@ void Box2DPhysicsSystem::update_world(long long dt)
 	{
 		mutex_guard lock(m_debug_draw_mutex);
 		m_world->Step(targetTimeInSeconds, m_settings.velocity_iterations, m_settings.position_iterations);
-		m_time_elapsed = 0;
+		m_time_elapsed -= static_cast<long long>(targetTime);
 	}
 
 }

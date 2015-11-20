@@ -56,7 +56,7 @@
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
-      <Filter>Components\BodyComponent</Filter>
+      <Filter>Components\Body</Filter>
     </ClCompile>
     <ClCompile Include="..\source\InputManager_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
@@ -68,7 +68,7 @@
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
-      <Filter>Components\MeshComponent</Filter>
+      <Filter>Components\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="..\source\ThreadPool.cpp">
       <Filter>Foundation</Filter>
@@ -80,16 +80,16 @@
       <Filter>Managers\SoundManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp">
-      <Filter>Components\SFXComponent</Filter>
+      <Filter>Components\SFX</Filter>
     </ClCompile>
     <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp">
-      <Filter>Components\MusicComponent</Filter>
+      <Filter>Components\Music</Filter>
     </ClCompile>
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="..\source\OSManagerAbstract.cpp">
       <Filter>Managers\OSManager</Filter>
@@ -99,9 +99,6 @@
     </ClCompile>
     <ClCompile Include="..\source\StateMachine.cpp">
       <Filter>Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\GamepadComponent.cpp">
-      <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
@@ -121,25 +118,40 @@
     <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp">
       <Filter>Managers\UIManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\Attribute.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Element.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\TextWriter.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\XmlWriter.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\TextReader.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\XmlReader.cpp">
-      <Filter>Foundation\Persist</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\EngineComponents.cpp" />
+    <ClCompile Include="..\source\State.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LuaProxies.cpp">
+      <Filter>Foundation\LuaProxies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\ScriptComponent.cpp">
+      <Filter>Components\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp">
+      <Filter>Components\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\GamepadComponent.cpp">
+      <Filter>Components\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\Attribute.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\Element.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\TextReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\TextWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\XmlReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\XmlWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -286,13 +298,13 @@
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components\BodyComponent</Filter>
+      <Filter>Components\Body</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
-      <Filter>Components\BodyComponent</Filter>
+      <Filter>Components\Body</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\Shapes.h">
-      <Filter>Components\BodyComponent</Filter>
+      <Filter>Components\Body</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IInputManager.h">
       <Filter>Managers\InputManager</Filter>
@@ -310,10 +322,10 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
-      <Filter>Components\MeshComponent</Filter>
+      <Filter>Components\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\MeshComponent.h">
-      <Filter>Components\MeshComponent</Filter>
+      <Filter>Components\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\source\MemoryStream.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
@@ -358,28 +370,28 @@
       <Filter>Managers\SoundManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\SFXComponent.h">
-      <Filter>Components\SFXComponent</Filter>
+      <Filter>Components\SFX</Filter>
     </ClInclude>
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
-      <Filter>Components\SFXComponent</Filter>
+      <Filter>Components\SFX</Filter>
     </ClInclude>
     <ClInclude Include="..\source\MusicComponent.h">
-      <Filter>Components\MusicComponent</Filter>
+      <Filter>Components\Music</Filter>
     </ClInclude>
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
-      <Filter>Components\MusicComponent</Filter>
+      <Filter>Components\Music</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\SpriteComponent.h">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\Sprite.h">
-      <Filter>Components\SpriteComponent</Filter>
+      <Filter>Components\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers\OSManager</Filter>
@@ -389,30 +401,6 @@
     </ClInclude>
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers\OSManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Archive.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\TextWriter.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Attribute.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Element.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\XmlWriter.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\TextReader.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\XmlReader.h">
-      <Filter>Foundation\Persist</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\GamepadComponent.h">
-      <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\AutomataComponent.h">
       <Filter>Components</Filter>
@@ -459,8 +447,47 @@
     <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h">
       <Filter>Managers\UIManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\LuaProxies.h">
+      <Filter>Foundation\LuaProxies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\ScriptComponent.h">
+      <Filter>Components\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritebodyComponent.h">
+      <Filter>Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritebodyComponent_Box2D.h">
+      <Filter>Components\Sprite</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\components\SpritePhysics.h">
-      <Filter>Components</Filter>
+      <Filter>Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GamepadComponent.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Archive.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Attribute.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Element.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\TextReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\TextWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Utils.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\XmlReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\XmlWriter.h">
+      <Filter>Foundation\Persist</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -506,32 +533,14 @@
     <Filter Include="Math">
       <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Components\BodyComponent">
-      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers\InputManager">
       <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\MeshComponent">
-      <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\InputComponent">
-      <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers\ResourceManager\Streams">
       <UniqueIdentifier>{37a880bd-3fcc-4055-880b-9a7d212733ea}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers\ResourceManager\Sources">
       <UniqueIdentifier>{575441c4-0da8-4220-861f-5cc8db12b3c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\SFXComponent">
-      <UniqueIdentifier>{45a61c37-d4c8-4650-9d45-0016a75a7fd1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\MusicComponent">
-      <UniqueIdentifier>{90b50d09-2bb5-4fa1-a1e1-0d73c5b7eff5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\SpriteComponent">
-      <UniqueIdentifier>{01500137-8e47-4064-ab89-e0c6ae7021a1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Managers\OSManager">
       <UniqueIdentifier>{f43854b0-f0ee-45be-966d-0c40c87ec9c3}</UniqueIdentifier>
@@ -541,6 +550,30 @@
     </Filter>
     <Filter Include="Managers\UIManager">
       <UniqueIdentifier>{ae1b0036-dfc5-4971-b7ab-7b3ff3eba818}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\LuaProxies">
+      <UniqueIdentifier>{6bff8fc3-bb4a-4767-be96-1ec75b788833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Music">
+      <UniqueIdentifier>{90b50d09-2bb5-4fa1-a1e1-0d73c5b7eff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\SFX">
+      <UniqueIdentifier>{45a61c37-d4c8-4650-9d45-0016a75a7fd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Script">
+      <UniqueIdentifier>{0aedea03-ba10-428c-94c5-8c0448e612bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Sprite">
+      <UniqueIdentifier>{01500137-8e47-4064-ab89-e0c6ae7021a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Input">
+      <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Body">
+      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Mesh">
+      <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

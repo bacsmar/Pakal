@@ -5,7 +5,7 @@
 #include "irrlicht/IrrGraphicsSystem.h"
 
 #include "LogMgr.h"
-#include "XmlReader.h"
+#include "persist/XmlReader.h"
 #include "ResourceManager.h"
 
 
@@ -23,7 +23,7 @@ SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht()
 void SpriteComponent_Irrlicht::set_flipped(bool val)
 {
 	vector3df currentRotation = m_node->getRotation();
-	currentRotation.Y = val ? 0.f : 180.f;
+	currentRotation.Y = val ? 180.f : 0.f;
 	m_node->setRotation(currentRotation);
 }
 
@@ -44,7 +44,7 @@ void SpriteComponent_Irrlicht::set_rotation(float degrees)
 	m_node->setRotation(currentRotation);
 }
 
-void SpriteComponent_Irrlicht::set_scale(const tmath::vector2df& factor)
+void SpriteComponent_Irrlicht::set_scale(const tmath::vector3df& factor)
 {
 	m_node->setScale(vector3df(factor.x, factor.y, 1));
 }
@@ -71,12 +71,26 @@ float SpriteComponent_Irrlicht::get_rotation() const
 	return m_node->getRotation().Z;
 }
 
-tmath::vector2df SpriteComponent_Irrlicht::get_scale() const
+tmath::vector3df SpriteComponent_Irrlicht::get_scale() const
 {
 	auto currentScale = m_node->getScale();
-	return { currentScale.X, currentScale.Y };
+	return { currentScale.X, currentScale.Y ,1.f};
 }
 
+float SpriteComponent_Irrlicht::get_normalization_factor() const
+{
+	return m_normalization_factor;
+}
+
+void SpriteComponent_Irrlicht::set_height(tmath::vector2du ref_size, float height, bool keep_relation)
+{
+	f64 length = ref_size.x*ref_size.x + ref_size.y*ref_size.y;
+	auto normalization_factor = (f32)core::reciprocal_squareroot(length);
+
+	auto sen = std::sin(ref_size.y * normalization_factor);
+
+	// height / sen
+}
 
 BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 {

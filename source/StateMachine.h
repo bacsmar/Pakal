@@ -3,30 +3,38 @@
 #include "Config.h"
 
 #include "State.h"
+#include <unordered_set>
 #include <set>
 
 namespace Pakal
 {
+	class ScriptComponent;
+	class Archive;
+
 	class  StateMachine
 	{
-		std::set<State*> m_States;
-		State *currentState = nullptr;
+		std::set<State*> m_states;
+		State *m_current_state = nullptr;
+		std::string m_script_file;
 	public:
-		StateMachine(void);
+		StateMachine();
 		virtual ~StateMachine(void);
 
-		inline void		set_current_state(State *s) { currentState = s; }
-		inline State*	get_current_state() const { return currentState; }
+		void			set_current_state(const std::string& name);
+		inline void		set_current_state(State *s) { m_current_state = s; }		
+		inline State*	get_current_state() const { return m_current_state; }		
 
-		State*	create_state();
+		State*	create_state(const std::string& name);
 		void	remove_state(State *);
 
 		size_t	size() const;
 		// range-based for
-		decltype(m_States)::iterator	begin();
-		decltype(m_States)::iterator	end();
+		decltype(m_states)::iterator	begin();
+		decltype(m_states)::iterator	end();
 
 		void update();
+		void set_script(ScriptComponent& script);
+		virtual void persist(Archive* archive);
 	};
 
 }
