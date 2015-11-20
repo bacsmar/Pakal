@@ -54,6 +54,6 @@ namespace Pakal
 
 	void SFXComponentSFML::play(unsigned id, const SoundSettings& settings)
 	{
-		m_manager->play_sfx(m_sounds[id], settings);
+		m_manager->play_sfx(m_sounds.at(id), settings);
 	}
 }

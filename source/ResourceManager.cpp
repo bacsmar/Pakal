@@ -67,7 +67,7 @@ namespace Pakal
 		SharedPtr<std::istream> stream;
 
 		//try to open it from current dir
-		auto localStream = std::make_shared<std::ifstream>(resourcePath.c_str());
+		auto localStream = std::make_shared<std::ifstream>(resourcePath.c_str(),std::ios_base::in | std::ios_base::binary);
 		if (localStream->is_open())
 		{			
 			stream =  std::static_pointer_cast<std::istream>(localStream);
