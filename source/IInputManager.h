@@ -18,5 +18,6 @@ namespace Pakal
 		virtual ITouchDevice*	get_touch_device(unsigned id) = 0;
 
 		Event<void> event_mouse_moved;
+		Event<unsigned> event_button_pressed;
 	};
 }

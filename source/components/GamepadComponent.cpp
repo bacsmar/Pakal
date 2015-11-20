@@ -25,8 +25,15 @@ void Pakal::GamepadComponent::connect()
 
 	m_buttonDevices.emplace_back( m_input_manager->get_button_device(0) );	// keyboard
 
-	m_buttonDevices.emplace_back( m_input_manager->get_button_device(1) );
-	m_axisDevices.emplace_back(m_input_manager->get_axis_device(1));
+	if( auto buttonDev = m_input_manager->get_button_device(1))
+	{
+		m_buttonDevices.emplace_back(buttonDev);
+	}
+
+	if( auto axisDev = m_input_manager->get_axis_device(1))
+	{
+		m_axisDevices.emplace_back(axisDev);
+	}
 }
 
 Pakal::GamepadComponent::~GamepadComponent()

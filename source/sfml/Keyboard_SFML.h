@@ -17,6 +17,6 @@ namespace Pakal
 
 	private:
 		std::vector<sf::Keyboard::Key>		m_buttons;
-		unsigned m_device_id;
+		unsigned m_device_id = 0;
 	};	
 }
