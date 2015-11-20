@@ -22,9 +22,11 @@ namespace Pakal
 		}
 		sf::Int64 seek(sf::Int64 position) override
 		{
+			m_source->clear();
+
 			m_source->seekg(position, m_source->beg);
 
-			return m_source->gcount();
+			return m_source->tellg();
 		}
 		sf::Int64 tell() override
 		{
