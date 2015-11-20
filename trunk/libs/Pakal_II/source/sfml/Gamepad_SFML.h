@@ -2,6 +2,7 @@
 #include "InputDevice.h"
 #include <vector>
 #include <SFML/Window/Joystick.hpp>
+#include <functional>
 
 namespace Pakal
 {
@@ -21,7 +22,7 @@ namespace Pakal
 		Gamepad_SFML();
 		~Gamepad_SFML() override;
 	private:
-		std::vector<unsigned>			m_buttons;
+		std::vector< std::function<bool()> >			m_buttons;
 		std::vector<sf::Joystick::Axis>	m_axis;
 		unsigned m_device_id = 0;
 	};	
