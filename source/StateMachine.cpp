@@ -39,9 +39,9 @@ void StateMachine::update()
 	if( newState != m_current_state && newState)
 	{
 		//LOG_INFO("from %X to state %X", m_current_state, newState);
-		m_current_state->event_exit.notify();
+		m_current_state->event_exit();
 		m_current_state = newState;
-		m_current_state->event_enter.notify();
+		m_current_state->event_enter();
 	}
 }
 

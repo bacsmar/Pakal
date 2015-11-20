@@ -18,7 +18,7 @@ namespace Pakal {
 		//State* m_initial_state;
 		State* m_target_state = nullptr;
 		bool m_enabled = true;
-		std::function<bool()> m_condition;
+		std::function<bool()> m_condition = []() { return false; };
 		std::string fn_condition;
 	public:
 		inline bool is_enabled() const
@@ -89,8 +89,8 @@ namespace Pakal {
 	public:
 
 		//Pakal::Event<void> event_update;
-		Pakal::Event<void> event_enter;	// fired by StateMachine
-		Pakal::Event<void> event_exit;	// fired by StateMachine
+		std::function<void()> event_enter = [](){}; //fired by StateMachine
+		std::function<void()> event_exit = [](){};	//fired by StateMachine
 
 		inline const Transition& add_transition(const std::function<bool()>& conditions, State * finalState)
 		{
