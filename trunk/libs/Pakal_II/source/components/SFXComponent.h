@@ -3,7 +3,7 @@
 #include "Config.h"
 #include "TaskFwd.h"
 #include "Component.h"
-#include "path.h"
+#include "PakalPath.h"
 #include "SoundManager.h"
 
 namespace Pakal
@@ -16,8 +16,8 @@ namespace Pakal
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;
 
-		virtual bool add(unsigned id, const path& resourcePath) = 0;
-		virtual bool add(unsigned id, SharedPtr<std::istream> resourceStream, const path& resourceName) = 0;
+		virtual bool add(unsigned id, const Path& resourcePath) = 0;
+		virtual bool add(unsigned id, SharedPtr<std::istream> resourceStream, const Path& resourceName) = 0;
 
 		virtual void remove(unsigned id) = 0;
 

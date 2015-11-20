@@ -6,6 +6,8 @@
 #include "components/SpriteComponent.h"
 #include "components/GamepadComponent.h"
 #include "components/SpritebodyComponent.h"
+#include "components/SFXComponent.h"
+#include "components/ScriptComponent.h"
 
 namespace OOLUA
 {

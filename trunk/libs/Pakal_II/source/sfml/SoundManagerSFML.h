@@ -16,7 +16,7 @@ namespace Pakal
 	{
 		std::mutex m_buffer_mutex,m_players_mutex;
 
-		std::map<path, WeakPtr<sf::SoundBuffer>> m_buffers;
+		std::map<Path, WeakPtr<sf::SoundBuffer>> m_buffers;
 		std::list<UniquePtr<sf::Sound>> m_active_players;
 
 		Timer m_timer;
@@ -34,8 +34,8 @@ namespace Pakal
 
 		void hint_buffer_removed();
 
-		SharedPtr<sf::SoundBuffer> load_sfx(const path& resourcePath);
-		SharedPtr<sf::SoundBuffer> load_sfx(SharedPtr<std::istream> resourceStream,const path& resourceName);
+		SharedPtr<sf::SoundBuffer> load_sfx(const Path& resourcePath);
+		SharedPtr<sf::SoundBuffer> load_sfx(SharedPtr<std::istream> resourceStream,const Path& resourceName);
 
 		void play_sfx(SharedPtr<sf::SoundBuffer> buffer, const SoundSettings& settings);
 

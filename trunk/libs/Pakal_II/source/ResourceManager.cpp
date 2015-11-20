@@ -41,7 +41,7 @@ namespace Pakal
 		m_sources.erase(sourcePos);
 	}
 
-	SharedPtr<std::istream> ResourceManager::open_read_resource(const path& resourcePath, bool inMemory)
+	SharedPtr<std::istream> ResourceManager::open_read_resource(const Path& resourcePath, bool inMemory)
 	{
 		//try to open it from cache
 		if (inMemory)
@@ -58,7 +58,7 @@ namespace Pakal
 				}
 				else
 				{
-					map_utils::erase_if(m_memory_streams, [](const std::pair<path, WeakPtr<memory_istream>>& str) { return str.second.expired(); });
+					map_utils::erase_if(m_memory_streams, [](const std::pair<Path, WeakPtr<memory_istream>>& str) { return str.second.expired(); });
 				}
 			}
 		}
@@ -113,7 +113,7 @@ namespace Pakal
 		}
 	}
 
-	SharedPtr<std::ostream> ResourceManager::open_write_resource(const path& resourcePath)
+	SharedPtr<std::ostream> ResourceManager::open_write_resource(const Path& resourcePath)
 	{
 		auto stream = std::make_shared<std::ofstream>(resourcePath.c_str());
 

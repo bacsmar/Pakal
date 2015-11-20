@@ -2,7 +2,7 @@
 
 namespace Pakal
 {
-	bool MusicComponentSFML::initialize(const path& resourcePath, const SoundSettings& settings)
+	bool MusicComponentSFML::initialize(const Path& resourcePath, const SoundSettings& settings)
 	{
 		return initialize(ResourceMgr.open_read_resource(resourcePath, false),settings);
 	}

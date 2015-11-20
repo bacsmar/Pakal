@@ -3,7 +3,7 @@
 #include "Config.h"
 #include "RTTI.h"
 #include "TaskFwd.h"
-#include "path.h"
+#include "PakalPath.h"
 
 namespace Pakal
 {
@@ -15,6 +15,6 @@ namespace Pakal
 
 		virtual ~ISource() {}
 
-		virtual SharedPtr<std::istream> open_resource(const path& pathToResource) = 0;
+		virtual SharedPtr<std::istream> open_resource(const Path& pathToResource) = 0;
 	};
 }

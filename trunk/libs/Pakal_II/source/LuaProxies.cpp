@@ -1,8 +1,5 @@
 #include "LuaProxies.h"
 
-#include "Components/SpriteComponent.h"
-#include "components/ScriptComponent.h"
-
 #if PAKAL_USE_SCRIPTS == 1
 
 OOLUA_EXPORT_FUNCTIONS(SpriteComponent, set_animation, set_flipped)

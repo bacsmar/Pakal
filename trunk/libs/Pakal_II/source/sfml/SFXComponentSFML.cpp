@@ -15,7 +15,7 @@ namespace Pakal
 		m_manager->hint_buffer_removed();
 	}
 
-	bool SFXComponentSFML::add(unsigned id, const path& resourcePath)
+	bool SFXComponentSFML::add(unsigned id, const Path& resourcePath)
 	{
 		ASSERT(!map_utils::contains(m_sounds,id));
 			
@@ -30,7 +30,7 @@ namespace Pakal
 		return false;
 	}
 
-	bool SFXComponentSFML::add(unsigned id, SharedPtr<std::istream> resourceStream, const path& resourceName)
+	bool SFXComponentSFML::add(unsigned id, SharedPtr<std::istream> resourceStream, const Path& resourceName)
 	{
 		ASSERT(!map_utils::contains(m_sounds, id));
 

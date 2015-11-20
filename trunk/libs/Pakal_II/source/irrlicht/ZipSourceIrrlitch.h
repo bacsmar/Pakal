@@ -17,7 +17,7 @@ namespace Pakal
 
 		explicit ZipSourceIrrlitch(irr::io::IFileSystem* fileSystem) : m_file_system(fileSystem), m_archive(nullptr) {}
 
-		bool initialize(const path& path, bool recursive, const std::string& password = "") override
+		bool initialize(const Path& path, bool recursive, const std::string& password = "") override
 		{
 			return m_file_system->addFileArchive(path.c_str(), true, !recursive, irr::io::EFAT_ZIP, password.c_str(), &m_archive);
 		}
@@ -27,7 +27,7 @@ namespace Pakal
 			m_file_system->removeFileArchive(m_archive);
 		}
 
-		SharedPtr<std::istream> open_resource(const path& pathToResource) override
+		SharedPtr<std::istream> open_resource(const Path& pathToResource) override
 		{
 			irr::io::IReadFile* nativeFile = m_archive->createAndOpenFile(pathToResource.c_str());
 
