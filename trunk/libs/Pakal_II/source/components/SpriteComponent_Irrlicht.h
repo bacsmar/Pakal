@@ -62,14 +62,18 @@ namespace Pakal
 		bool is_looped() const override;
 
 		void set_rotation(float degrees) override;
-		void set_scale(const tmath::vector2df& factor) override;
-		virtual void set_size(float size) override;
+		void set_scale(const tmath::vector3df& factor) override;
+		void set_size(float size) override;
 
 		void set_position(tmath::vector3df position) override;
 		tmath::vector3df get_position() const override;
 
 		float get_rotation() const override;
-		tmath::vector2df get_scale() const override;
+		tmath::vector3df get_scale() const override;
+
+		float get_normalization_factor() const override;
+
+		void set_height(tmath::vector2du ref_size, float height, bool keep_relation);
 
 		void play() override;
 		void pause() override;

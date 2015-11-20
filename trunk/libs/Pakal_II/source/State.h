@@ -8,14 +8,18 @@ namespace Pakal {
 	class State;
 	class Transition;
 	class StateMachine;
-
+	class ScriptComponent;
+	class Archive;
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class Transition
 	{
 		friend State;
+		friend Archive;
 		//State* m_initial_state;
-		State* m_final_state;
-		std::function<bool()> m_condition;
+		State* m_target_state = nullptr;
 		bool m_enabled = true;
+		std::function<bool()> m_condition;
+		std::string fn_condition;
 	public:
 		inline bool is_enabled() const
 		{
@@ -26,29 +30,48 @@ namespace Pakal {
 			m_enabled = val;
 		}
 
+		inline void set_condition(const std::function<bool()>& condition)
+		{
+			m_condition = condition;
+		}
+
+		void persist(Archive* archive);
+
+		void set_script(ScriptComponent& script);
+
 	protected:
+		Transition()
+		{
+		}
 		Transition(State *initial_state, const std::function<bool()>& condition, State *final_state)
 		{
 			//m_initial_state = initial_state;
-			m_final_state = final_state;
+			m_target_state = final_state;
 			m_condition = condition;
 		}
-		inline State * get_final_state()
+		inline State * get_target_state() const
 		{
-			return m_final_state;
+			return m_target_state;
 		}
 		inline bool execute()
 		{
-			return m_condition() && is_enabled();
+			return is_enabled() && m_condition() ;
 		}
 	};
-
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class State
 	{
 		friend StateMachine;
+		friend Archive;
+	protected:
+		std::string m_name;
 		std::vector<Transition>  m_transitions;
+		std::string on_enter_str;
+		std::string on_exit_str;
 
-		State(void) {}
+		explicit State(const std::string& name) : m_name(name){}
+		explicit State(){}
+
 		~State(void) {}
 
 		inline State *update()
@@ -57,8 +80,8 @@ namespace Pakal {
 			{
 				if (transition.execute())
 				{
-					return transition.get_final_state();
-				}					
+					return transition.get_target_state();
+				}
 			}
 			//event_update.notify();
 			return this;
@@ -74,6 +97,12 @@ namespace Pakal {
 			m_transitions.emplace_back(Transition{ this, conditions, finalState });
 			return m_transitions.back();
 		}
+
+		inline const std::string& get_name() const { return m_name; }
+
+		void persist(Archive* archive);
+
+		void set_script(ScriptComponent& script);		
 	};
 
 }

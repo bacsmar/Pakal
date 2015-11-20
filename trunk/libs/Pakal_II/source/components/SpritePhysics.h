@@ -6,7 +6,7 @@
 #pragma once
 #include <vector>
 #include "math/tm.h"
-#include "Archive.h"
+#include "persist/Archive.h"
 
 namespace Pakal
 {
@@ -57,9 +57,9 @@ namespace Pakal
 			float density;
 			float friction;
 			float restitution;
+			bool is_sensor = false;
 			std::string type;
 			std::vector<Polygon> m_polygons;
-		//	std::vector<Circle> m_circle;
 			Circle m_circle;
 
 			inline size_t get_size() const
@@ -69,13 +69,13 @@ namespace Pakal
 
 			void persist(Archive* archive)
 			{
-				archive->value("density", density);				
-				archive->value("friction", friction);				
-				archive->value("restitution", restitution);				
+				archive->value("density", density);
+				archive->value("friction", friction);
+				archive->value("restitution", restitution);
 				archive->value("type", type);
 				archive->value("polygons","polygon", m_polygons);
-				//archive->value("","circle", m_circle);
 				archive->value("circle", m_circle);
+				archive->value("is_sensor", is_sensor);
 			}
 			// get memory consumption
 			inline size_t get_memory_consumption() const

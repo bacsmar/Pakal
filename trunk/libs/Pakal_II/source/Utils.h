@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef PAKAL_UTILS_H_
+#	define PAKAL_UTILS_H_
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -19,6 +22,12 @@ namespace Pakal
 			stream.seekg(originalPosition, std::ios::beg);
 
 			return size;
+		}
+		inline void read_to_string(std::istream& stream, std::string& out_string)
+		{
+			out_string.resize( static_cast<size_t>(stream_size(stream)) ); 
+
+			stream.read(&out_string[0], out_string.size());
 		}
 	}
 
@@ -186,3 +195,4 @@ namespace Pakal
 
 }
 
+#endif

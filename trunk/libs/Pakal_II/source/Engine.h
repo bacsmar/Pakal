@@ -30,6 +30,7 @@ namespace Pakal
 		struct _PAKALExport Settings
 		{
 			bool uses_thread;
+			unsigned max_fps = 1000;
 			PhysicsSystem::Settings physic_system_settings;
 			GraphicsSystem::Settings graphic_system_settings;
 

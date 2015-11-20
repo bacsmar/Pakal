@@ -12,12 +12,6 @@
 
 using namespace Pakal;
 
-#if PAKAL_USE_SCRIPTS == 1
-//	LUA, definicion
-EXPORT_OOLUA_FUNCTIONS_NON_CONST(TLog,log)
-EXPORT_OOLUA_FUNCTIONS_0_CONST(TLog)
-#endif
-
 #ifdef PAKAL_WIN32_PLATFORM
 	#define COLOURED_LOG
 #endif

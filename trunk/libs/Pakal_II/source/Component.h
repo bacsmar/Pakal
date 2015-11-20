@@ -19,11 +19,9 @@ namespace Pakal
 	class _PAKALExport Component
 	{
 		DECLARE_RTTI(Component)
-		IEntity* m_parent;
+		IEntity* m_parent = nullptr;
 
-	public:
-
-		Component()  {}		
+	public:		
 		virtual ~Component(){}	
 		
 		inline void set_parent_entity(IEntity* entity) { m_parent = entity; };

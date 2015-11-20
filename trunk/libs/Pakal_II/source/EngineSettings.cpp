@@ -24,6 +24,10 @@
 	#pragma comment(lib, "RocketCore.lib")
 #endif
 
+#if PAKAL_USE_SCRIPTS
+#pragma comment(lib, "oolua.lib")
+#pragma comment(lib, "lua.lib")
+#endif
 
 #if defined(PAKAL_WIN32_PLATFORM )
 

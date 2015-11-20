@@ -129,7 +129,12 @@ void B2DebugDrawIrr::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount,
     }
     glEnd();
     */
-    const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
+	const core::vector2df &translation = mImpl->translation;
+
+	//auto camera = mDevice->getSceneManager()->getActiveCamera();	
+	//const auto& translation = camera->getAbsoluteTransformation().getTranslation();
+
+	const auto& screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     const video::SColor c1((u32)128, (u32)(color.r * 0.5f * 255), (u32)(color.g * 0.5f * 255), (u32)(color.b * 0.5f * 255));
     const video::SColor c2((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
@@ -137,10 +142,11 @@ void B2DebugDrawIrr::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount,
     core::array<u16> &is = mImpl->initIndices();
     for (int a = 0; a < vertexCount; ++a)
     {
-        video::S3DVertex v((vertices[a].x + translation.X) * scale + screenCenter.X, (vertices[a].y + translation.Y) * scale + screenCenter.Y, 0, 0, 0, 0, c1, 0, 0);
+        video::S3DVertex v( (vertices[a].x + translation.X) * scale + screenCenter.X, (vertices[a].y + translation.Y) * scale + screenCenter.Y, 0, 0, 0, 0, c1, 0, 0);
+		//camera->getAbsoluteTransformation().transformVect(v.Pos, v.Pos);
         vs.push_back(v);
         is.push_back(a);
-    }
+    }		
 
     video::SMaterial mat;
     mat.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;

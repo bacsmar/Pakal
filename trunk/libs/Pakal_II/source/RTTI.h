@@ -148,6 +148,7 @@ namespace Pakal
 	{\
 		return !(BaseClass::getRTTI() == getRTTI());\
 	}\
+	public:\
 	virtual const Pakal::RTTI &getType()\
 	{\
 		return x::getRTTI();\

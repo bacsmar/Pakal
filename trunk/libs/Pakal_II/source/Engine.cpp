@@ -45,7 +45,11 @@ Engine::Engine(const Settings& settings) :
 	m_input_manager		 = settings.input_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
-	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);	
+	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
+
+	m_physics_system->set_target_fps(settings.physic_system_settings.max_fps);
+	m_graphics_system->set_target_fps(settings.graphic_system_settings.max_fps);
+	this->set_target_fps(settings.max_fps);
 
 	if( settings.physic_system_settings.debug_draw)
 	{
@@ -59,8 +63,8 @@ Engine::Engine(const Settings& settings) :
 
 	register_default_components();
 	
-	add_system(m_graphics_system);
 	add_system(m_physics_system);
+	add_system(m_graphics_system);
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::run(IPakalApplication* application)

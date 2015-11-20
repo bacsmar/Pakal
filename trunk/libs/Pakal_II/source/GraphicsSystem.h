@@ -38,6 +38,7 @@ namespace Pakal
 			int bits;
 			bool full_screen;
 			bool vsync;
+			unsigned max_fps = 1000;
 			std::function<IUIManager*(GraphicsSystem* gs, IInputManager * im)>		ui_manager_allocator;
 
 			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}

@@ -15,7 +15,7 @@
 #define PAKAL_COMPILE_WITH_EDITOR 0
 
 //! compile with LUA Scripts
-#define PAKAL_USE_SCRIPTS 0
+#define PAKAL_USE_SCRIPTS 1
 //! compile with ogre3D
 #define PAKAL_USE_OGRE 0
 //! compile with Irrlicht
