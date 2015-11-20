@@ -34,6 +34,7 @@ namespace Pakal
 		}
 		sf::Int64 getSize() override
 		{
+			m_source->clear();
 			return static_cast<sf::Int64>(file_utils::stream_size(*m_source));
 		}
 

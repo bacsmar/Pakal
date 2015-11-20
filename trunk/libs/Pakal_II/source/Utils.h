@@ -13,8 +13,6 @@ namespace Pakal
 	{
 		inline std::streamoff stream_size(std::istream& stream)
 		{
-			stream.clear();
-
 			auto originalPosition = stream.tellg();
 
 			stream.seekg(0, std::ios::end);
