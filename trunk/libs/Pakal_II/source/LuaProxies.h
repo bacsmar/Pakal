@@ -16,6 +16,7 @@ namespace OOLUA
 	using GamepadComponent = Pakal::GamepadComponent;
 	using SpritebodyComponent = Pakal::SpritebodyComponent;
 	using vector2df = Pakal::tmath::vector2df;
+	using SFXComponent = Pakal::SFXComponent;
 } // namespace OOLUA
 
 #if PAKAL_USE_SCRIPTS == 1
@@ -26,6 +27,12 @@ OOLUA_TAGS(OOLUA::No_public_constructors, OOLUA::Abstract)
 OOLUA_MFUNC(set_animation)
 OOLUA_MFUNC(set_flipped)
 OOLUA_MFUNC_CONST(is_playing)
+OOLUA_PROXY_END
+
+OOLUA_PROXY(SFXComponent)//class has no bases
+OOLUA_TAGS(OOLUA::No_public_constructors, OOLUA::Abstract)
+OOLUA_MEM_FUNC(bool, add, unsigned, const std::string&)
+OOLUA_MEM_FUNC(void, play, unsigned)
 OOLUA_PROXY_END
 
 

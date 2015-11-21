@@ -17,9 +17,9 @@ Pakal::Keyboard_SFML::Keyboard_SFML()
 {
 	m_buttons.resize(static_cast<unsigned>(GamepadComponent::Buttons::Button_count));
 	m_buttons[GamepadComponent::Buttons::Button_A] = sf::Keyboard::Key::A;
-	m_buttons[GamepadComponent::Buttons::Button_B] = sf::Keyboard::Key::B;
+	m_buttons[GamepadComponent::Buttons::Button_B] = sf::Keyboard::Key::S;
 	m_buttons[GamepadComponent::Buttons::Button_X] = sf::Keyboard::Key::X;
-	m_buttons[GamepadComponent::Buttons::Button_Y] = sf::Keyboard::Key::Y;
+	m_buttons[GamepadComponent::Buttons::Button_Y] = sf::Keyboard::Key::Z;
 
 	m_buttons[GamepadComponent::Buttons::Button_DOWN] = sf::Keyboard::Key::Down;
 	m_buttons[GamepadComponent::Buttons::Button_RIGHT] = sf::Keyboard::Key::Right;

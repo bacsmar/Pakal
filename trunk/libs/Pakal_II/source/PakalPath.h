@@ -14,12 +14,7 @@ namespace Pakal
 		Path()
 		{
 		}
-
-		Path(const char* str) : m_path(str)
-		{
-			std::replace(m_path.begin(), m_path.end(), '\\', '/');
-			std::transform(m_path.begin(), m_path.end(), m_path.begin(), ::tolower);
-		}
+		
 		Path& operator=(const Path& other)
 		{
 			if (this == &other)
@@ -35,7 +30,12 @@ namespace Pakal
 			return *this;
 		}
 
-		Path(const std::string& str) : Path(str.c_str()) {}
+		Path(const std::string& str) : m_path(str)
+		{
+			std::replace(m_path.begin(), m_path.end(), '\\', '/');
+			std::transform(m_path.begin(), m_path.end(), m_path.begin(), ::tolower);
+		}
+		Path(const char* str) : Path( std::string(str)) {}
 		Path(const Path& other) : m_path { other.m_path } {}
 		Path(Path&& other) : m_path { std::move(other.m_path) } {}
 
