@@ -5,6 +5,9 @@
 OOLUA_EXPORT_FUNCTIONS(SpriteComponent, set_animation, set_flipped)
 OOLUA_EXPORT_FUNCTIONS_CONST(SpriteComponent,is_playing)
 
+OOLUA_EXPORT_FUNCTIONS(SFXComponent, add, play)
+EXPORT_OOLUA_FUNCTIONS_0_CONST(SFXComponent)
+
 OOLUA_EXPORT_FUNCTIONS(GamepadComponent, is_button_pressed)
 //OOLUA_EXPORT_FUNCTIONS_CONST(GamepadComponent)
 //OOLUA_EXPORT_FUNCTIONS(Enums, set_enum, get_enum)
@@ -48,6 +51,17 @@ namespace Pakal
 	void oolua_script_interface_for<GamepadComponent>(GamepadComponent* obj, OOLUA::Script& script, const std::string& name)
 	{
 		script.register_class<GamepadComponent>();
+
+		auto result = OOLUA::push(script.state(), obj, OOLUA::Cpp);
+
+		if (result)
+			lua_setglobal(script.state(), name.c_str());
+	}
+
+	template <>
+	void oolua_script_interface_for<SFXComponent>(SFXComponent* obj, OOLUA::Script& script, const std::string& name)
+	{
+		script.register_class<SFXComponent>();
 
 		auto result = OOLUA::push(script.state(), obj, OOLUA::Cpp);
 

@@ -54,6 +54,16 @@ namespace Pakal
 
 	void SFXComponentSFML::play(unsigned id, const SoundSettings& settings)
 	{
-		m_manager->play_sfx(m_sounds.at(id), settings);
+		SharedPtr<sf::SoundBuffer> buffer;
+
+		if( map_utils::try_get(m_sounds,id,buffer))
+		{
+			m_manager->play_sfx(buffer, settings);
+		}
+		else
+		{
+			LOG_ERROR("[SFXComponent] can't play sound id %d", id);
+			ASSERT_MSG( false);
+		}
 	}
 }
