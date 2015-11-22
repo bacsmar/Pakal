@@ -19,7 +19,7 @@ namespace Pakal {
 
 		State* m_target_state = nullptr;
 		bool m_enabled = true;
-		std::function<bool()> m_condition = []() { return false; };
+		std::function<bool()> m_condition;
 		std::string fn_condition;
 	public:
 		inline bool is_enabled() const
@@ -41,9 +41,10 @@ namespace Pakal {
 		void set_script(ScriptComponent& script);
 
 	protected:
-		Transition()
+		Transition() : m_condition([]() { return false; })
 		{
 		}
+
 		Transition(const std::function<bool()>& condition, State *final_state)
 		{
 			m_target_state = final_state;
@@ -76,7 +77,7 @@ namespace Pakal {
 		std::map<unsigned, State*> m_command_transitions;
 
 		explicit State(const std::string& name) : m_name(name){}
-		explicit State(){}
+		explicit State() : event_enter([]() {}), event_exit([](){}){}
 
 		~State(void) {}
 
@@ -96,9 +97,10 @@ namespace Pakal {
 			auto state = m_command_transitions.find(command);
 			return state != m_command_transitions.end() ? state->second : this;
 		}
+		
 	public:
-		std::function<void()> event_enter = [](){}; //fired by StateMachine
-		std::function<void()> event_exit = [](){};	//fired by StateMachine
+		std::function<void()> event_enter;
+		std::function<void()> event_exit;
 
 		inline void add_transition_cmd(unsigned command, State*  finalState)
 		{
