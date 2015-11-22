@@ -38,7 +38,18 @@ void StateMachine::update()
 	ASSERT(newState);
 	if( newState != m_current_state && newState)
 	{
-		//LOG_INFO("from %X to state %X", m_current_state, newState);
+		m_current_state->event_exit();
+		m_current_state = newState;
+		m_current_state->event_enter();
+	}
+}
+
+void StateMachine::process_command(unsigned command)
+{
+	ASSERT(m_current_state);
+	State *newState = m_current_state->process_command(command);
+	if (newState != m_current_state)
+	{
 		m_current_state->event_exit();
 		m_current_state = newState;
 		m_current_state->event_enter();
