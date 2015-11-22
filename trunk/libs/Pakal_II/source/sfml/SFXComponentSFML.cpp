@@ -63,7 +63,7 @@ namespace Pakal
 		else
 		{
 			LOG_ERROR("[SFXComponent] can't play sound id %d", id);
-			ASSERT_MSG( false);
+			ASSERT( false);
 		}
 	}
 }
