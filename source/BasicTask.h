@@ -41,7 +41,7 @@ namespace Pakal
 	public:
 
 		BasicTask()  { m_completed = true; }
-		BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
+		explicit BasicTask(const std::function<void()>& job) : m_job(job) { m_completed = false; };
 
 		BasicTask(const BasicTask&) = delete;
 		BasicTask& operator=(const BasicTask&) = delete;
