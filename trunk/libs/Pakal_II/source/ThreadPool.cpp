@@ -30,7 +30,7 @@ namespace Pakal
 		std::function<void()> job;
 
 		mutex_guard lock(m_jobs_mutex);
-		if (m_jobs.size()> 0)
+		if (!m_jobs.empty())
 		{
 			job = m_jobs.front();
 			m_jobs.pop();

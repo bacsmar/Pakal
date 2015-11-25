@@ -8,7 +8,7 @@ namespace Pakal
 	class _PAKALExport InputManager_SFML : public IInputManager
 	{
 	public:
-		InputManager_SFML(OSManager* os_manager);
+		explicit InputManager_SFML(OSManager* os_manager);
 
 		void initialize() override;
 		void terminate() override;

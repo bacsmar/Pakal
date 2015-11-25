@@ -36,7 +36,7 @@ namespace Pakal
 		Event<void> event_elapsed;
 
 		Timer();
-		Timer(unsigned ms);
+		explicit Timer(unsigned ms);
 		~Timer();
 
 		Timer(const Timer& other) = delete;

@@ -57,7 +57,7 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 
 				pshape->Set(vertices,p->vertices.size());
 
-				delete vertices;
+				delete []vertices;
 
 				shape = pshape;
 			} 
