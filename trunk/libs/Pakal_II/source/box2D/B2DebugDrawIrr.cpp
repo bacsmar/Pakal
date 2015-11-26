@@ -28,6 +28,7 @@
 
 #include "B2DebugDrawIrr.h"
 #include "irrlicht.h"
+#include <vector>
 
 using namespace std;
 using namespace irr;
@@ -55,7 +56,10 @@ B2DebugDrawIrr::B2DebugDrawIrr(irr::IrrlichtDevice *device, irr::video::IVideoDr
 {
     assert(mDevice);
     assert(mDriver);
-    mImpl = new B2DDIrrImpl();
+    mImpl = new B2DDIrrImpl();	
+	auto center = mDriver->getViewPort().getCenter();
+	mImpl->screenCenter.X = static_cast<f32>(center.X);
+	mImpl->screenCenter.Y = static_cast<f32>(center.Y);
     assert(mImpl);
 }
 
@@ -81,6 +85,14 @@ void B2DebugDrawIrr::setScreenCenter(float x, float y)
     mImpl->screenCenter.set(x, y);
 }
 
+void B2DebugDrawIrr::update_camera()
+{
+	if( mDevice)
+	{
+		auto camera = mDevice->getSceneManager()->getActiveCamera();
+		camera->render();
+	}	
+}
 
 void B2DebugDrawIrr::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
@@ -107,46 +119,51 @@ void B2DebugDrawIrr::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, cons
     mDriver->draw2DVertexPrimitiveList(vs.pointer(), vertexCount, is.pointer(), vertexCount, video::EVT_STANDARD, scene::EPT_LINE_LOOP, video::EIT_16BIT);
 }
 
+
+float GetScreenScaleFactor(const core::vector3df& worldpnt, scene::ICameraSceneNode* camera)
+{
+	if (camera->isOrthogonal())
+		return 2.0f / camera->getProjectionMatrix()[0];
+	core::vector3df viewpnt = worldpnt;
+	camera->getViewMatrix().transformVect(viewpnt);
+	return  2.0f * viewpnt.Z / camera->getProjectionMatrix()[0];
+}
+
+void B2DebugDrawIrr::Calculate2dFrom3D(core::vector3df& point, const core::matrix4& viewProjectionMatrix, const core::vector2df& screenCenter)
+{
+	f32 transformedPos[4] = { point.X, point.Y, point.Z, 1.0f };
+	viewProjectionMatrix.multiplyWith1x4Matrix(transformedPos);
+	const f32 zDiv = transformedPos[3] == 0.0f ? 1.0f : core::reciprocal(transformedPos[3]);
+
+
+	point.X = screenCenter.X + core::round32(screenCenter.X * (transformedPos[0] * zDiv));
+	point.Y = screenCenter.Y - core::round32(screenCenter.Y * (transformedPos[1] * zDiv));
+}
+
 void B2DebugDrawIrr::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
-    /*
-    glEnable(GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(0.5f * color.r, 0.5f * color.g, 0.5f * color.b, 0.5f);
-    glBegin(GL_TRIANGLE_FAN);
-    for (int32 i = 0; i < vertexCount; ++i)
-    {
-        glVertex2f(vertices[i].x, vertices[i].y);
-    }
-    glEnd();
-    glDisable(GL_BLEND);
+	auto camera = mDevice->getSceneManager()->getActiveCamera();		
+	auto viewProjectionMatrix = camera->getProjectionMatrix() * camera->getViewMatrix();    
 
-    glColor4f(color.r, color.g, color.b, 1.0f);
-    glBegin(GL_LINE_LOOP);
-    for (int32 i = 0; i < vertexCount; ++i)
-    {
-        glVertex2f(vertices[i].x, vertices[i].y);
-    }
-    glEnd();
-    */
-	const core::vector2df &translation = mImpl->translation;
-
-	//auto camera = mDevice->getSceneManager()->getActiveCamera();	
-	//const auto& translation = camera->getAbsoluteTransformation().getTranslation();
-
-	const auto& screenCenter = mImpl->screenCenter;
-    const float scale = mImpl->scale;
     const video::SColor c1((u32)128, (u32)(color.r * 0.5f * 255), (u32)(color.g * 0.5f * 255), (u32)(color.b * 0.5f * 255));
     const video::SColor c2((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
+
     core::array<video::S3DVertex> &vs = mImpl->initVertices();
     core::array<u16> &is = mImpl->initIndices();
+
     for (int a = 0; a < vertexCount; ++a)
-    {
-        video::S3DVertex v( (vertices[a].x + translation.X) * scale + screenCenter.X, (vertices[a].y + translation.Y) * scale + screenCenter.Y, 0, 0, 0, 0, c1, 0, 0);
-		//camera->getAbsoluteTransformation().transformVect(v.Pos, v.Pos);
+    {        
+        video::S3DVertex v( (vertices[a].x ) , (vertices[a].y ) , 0, 0, 0, 0, c1, 0, 0);
+		Calculate2dFrom3D(v.Pos, viewProjectionMatrix, mImpl->screenCenter);
+		 
         vs.push_back(v);
-        is.push_back(a);
-    }		
+        is.push_back(vertexCount-a-1);
+    }
+
+	//mDriver->setTransform(video::ETS_PROJECTION, camera->getProjectionMatrix());
+	//mDriver->setTransform(video::ETS_VIEW, camera->getViewMatrix());
+	//mDriver->setTransform(video::ETS_WORLD, viewProjectionMatrix);
+	//mDriver->setTransform(video::ETS_PROJECTION, viewProjectionMatrix);
 
     video::SMaterial mat;
     mat.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
@@ -178,7 +195,7 @@ void B2DebugDrawIrr::DrawCircle(const b2Vec2& center, float32 radius, const b2Co
     glEnd();
     */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
-    const float scale = mImpl->scale;
+    const float scale = mImpl->scale * 5;
     core::array<video::S3DVertex> &vs = mImpl->initVertices();
     core::array<u16> &is = mImpl->initIndices();
     const video::SColor c((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
@@ -188,6 +205,7 @@ void B2DebugDrawIrr::DrawCircle(const b2Vec2& center, float32 radius, const b2Co
     for (int a = 0; a < vertexCount; ++a)
     {
         const b2Vec2 vp = center + radius * b2Vec2(cosf(theta), sinf(theta)) + b2Vec2(translation.X, translation.Y);
+        //video::S3DVertex v(vp.x * scale + screenCenter.X, vp.y * scale + screenCenter.Y, 0, 0, 0, 0, c, 0, 0);
         video::S3DVertex v(vp.x * scale + screenCenter.X, vp.y * scale + screenCenter.Y, 0, 0, 0, 0, c, 0, 0);
         vs.push_back(v);
         is.push_back(a);
@@ -198,42 +216,12 @@ void B2DebugDrawIrr::DrawCircle(const b2Vec2& center, float32 radius, const b2Co
 
 void B2DebugDrawIrr::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
 {
-    /*
-    const float32 k_segments = 16.0f;
-    const float32 k_increment = 2.0f * b2_pi / k_segments;
-    float32 theta = 0.0f;
-    glEnable(GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(0.5f * color.r, 0.5f * color.g, 0.5f * color.b, 0.5f);
-    glBegin(GL_TRIANGLE_FAN);
-    for (int32 i = 0; i < k_segments; ++i)
-    {
-        b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-        glVertex2f(v.x, v.y);
-        theta += k_increment;
-    }
-    glEnd();
-    glDisable(GL_BLEND);
 
-    theta = 0.0f;
-    glColor4f(color.r, color.g, color.b, 1.0f);
-    glBegin(GL_LINE_LOOP);
-    for (int32 i = 0; i < k_segments; ++i)
-    {
-        b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-        glVertex2f(v.x, v.y);
-        theta += k_increment;
-    }
-    glEnd();
+	auto camera = mDevice->getSceneManager()->getActiveCamera();
+	auto viewProjectionMatrix = camera->getProjectionMatrix() * camera->getViewMatrix();
 
-    b2Vec2 p = center + radius * axis;
-    glBegin(GL_LINES);
-    glVertex2f(center.x, center.y);
-    glVertex2f(p.x, p.y);
-    glEnd();
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
-    const float scale = mImpl->scale;
+    const float scale = mImpl->scale * 5;
     const video::SColor c1((u32)128, (u32)(color.r * 0.5f * 255), (u32)(color.g * 0.5f * 255), (u32)(color.b * 0.5f * 255));
     const video::SColor c2((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
     core::array<video::S3DVertex> &vs = mImpl->initVertices();
@@ -244,9 +232,11 @@ void B2DebugDrawIrr::DrawSolidCircle(const b2Vec2& center, float32 radius, const
     for (int a = 0; a < vertexCount; ++a)
     {
         b2Vec2 vp = center + radius * b2Vec2(cosf(theta), sinf(theta)) + b2Vec2(translation.X, translation.Y);
-        video::S3DVertex v(vp.x * scale + screenCenter.X, vp.y * scale + screenCenter.Y, 0, 0, 0, 0, c1, 0, 0);
+        //video::S3DVertex v(vp.x * scale + screenCenter.X, -vp.y * scale + screenCenter.Y, 0, 0, 0, 0, c1, 0, 0);
+        video::S3DVertex v(vp.x , vp.y , 0, 0, 0, 0, c1, 0, 0);
+		Calculate2dFrom3D(v.Pos, viewProjectionMatrix, mImpl->screenCenter);
         vs.push_back(v);
-        is.push_back(a);
+        is.push_back(vertexCount-a-1);
         theta += k_increment;
     }
 
