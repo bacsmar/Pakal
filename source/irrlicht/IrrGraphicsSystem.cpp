@@ -131,12 +131,12 @@ void IrrGraphicsSystem::draw()
 	smgr->drawAll();
 	guienv->drawAll();
 
-	draw_ui_interface();
-
-	for( auto &r : m_debug_renderers)
+	for (auto &r : m_debug_renderers)
 	{
 		r->do_debug_draw();
 	}
+
+	draw_ui_interface();	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()

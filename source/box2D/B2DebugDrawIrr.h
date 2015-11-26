@@ -25,10 +25,15 @@
 #define B2DEBUGDRAWIRR_H
 
 #include <Box2D.h>
+#include "irrlicht.h"
 
 struct b2AABB;
 
-namespace irr { class IrrlichtDevice; namespace video { class IVideoDriver; } }
+namespace irr
+{
+	class IrrlichtDevice; 
+	namespace video { class IVideoDriver; }	
+}
 
 
 // This class implements debug drawing callbacks that are invoked
@@ -40,7 +45,8 @@ public:
     ~B2DebugDrawIrr();
 
     void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
-    void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
+	void Calculate2dFrom3D(irr::core::vector3df& point, const irr::core::matrix4& viewProjectionMatrix, const irr::core::vector2df& screenCenter);
+	void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
     void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) override;
     void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) override;
     void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) override;
@@ -52,6 +58,7 @@ public:
     void setTranslation(float x, float y);
     void setScale(float scale);
     void setScreenCenter(float x, float y);
+	void update_camera();
 
 protected:
     irr::IrrlichtDevice *mDevice;

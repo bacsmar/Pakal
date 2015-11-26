@@ -61,7 +61,13 @@ inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 void Box2DPhysicsSystem::do_debug_draw()
 {
 	mutex_guard lock( m_debug_draw_mutex);
-	if( m_world) m_world->DrawDebugData();
+	if (m_world) 
+	{
+#if PAKAL_USE_IRRLICHT
+		((B2DebugDrawIrr*)m_debug_draw)->update_camera();
+#endif
+		m_world->DrawDebugData();
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
