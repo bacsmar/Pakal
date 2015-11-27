@@ -16,7 +16,7 @@ namespace Pakal
 
 	class _PAKALExport IEntity
 	{
-	public:	
+	protected:	
 		virtual ~IEntity(){}
 		virtual BasicTaskPtr initialize() = 0;
 		virtual BasicTaskPtr terminate() = 0;

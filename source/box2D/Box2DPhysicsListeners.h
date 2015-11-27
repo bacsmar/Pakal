@@ -5,13 +5,14 @@
 
 namespace Pakal
 {	
+	class Component;
 	//////////////////////////////////////////////////////////////////////////	
 	enum ECollisionBitFlags
 	{
 		k_CollisionBitFlags_None			= 0,
 	};
 	//////////////////////////////////////////////////////////////////////////
-	class ContactListener : public b2ContactListener
+	class _PAKALExport ContactListener : public b2ContactListener
 	{
 	public:
 		ContactListener() : m_bDisabled(false) { }
@@ -19,7 +20,8 @@ namespace Pakal
 		// TODO: implement this contact Listener
 		virtual void BeginContact(b2Contact* contact) override	{};
 		virtual void EndContact(b2Contact* contact) override	{};
-		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override		{};
+
+		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;;
 		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override	{};
 
 		void Enable()
@@ -35,9 +37,10 @@ namespace Pakal
 	protected:
 		bool m_bDisabled;
 		std::vector<std::pair<b2Body*, b2MassData> > m_resetList;
-	};
+	};	
+
 	//////////////////////////////////////////////////////////////////////////
-	class ContactFilter : public b2ContactFilter
+	class _PAKALExport ContactFilter : public b2ContactFilter
 	{
 	public:
 		// TODO: implement this
@@ -45,7 +48,7 @@ namespace Pakal
 		{ return false; } 
 	};
 	//////////////////////////////////////////////////////////////////////////
-	class DestructionListener : public b2DestructionListener
+	class  _PAKALExport DestructionListener : public b2DestructionListener
 	{
 	public:
 

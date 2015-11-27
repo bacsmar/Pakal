@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent.h" />
     <ClInclude Include="..\source\components\SpritebodyComponent.h" />
     <ClInclude Include="..\source\components\SpritebodyComponent_Box2D.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent.cpp" />
     <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EngineComponents.cpp" />

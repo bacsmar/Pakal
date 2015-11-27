@@ -2,16 +2,16 @@
 #include "Config.h"
 #include "math/tm.h"
 #include "TaskFwd.h"
-#include "Component.h"
+#include "PhysicComponent.h"
 #include "Shapes.h"
 
 namespace Pakal
 {
 	struct SpritePhysicsLoader;
 
-	class _PAKALExport SpritebodyComponent : public Component
+	class _PAKALExport SpritebodyComponent : public PhysicComponent
 	{
-		DECLARE_RTTI_WITH_BASE(SpritebodyComponent,Component);
+		DECLARE_RTTI_WITH_BASE(SpritebodyComponent, PhysicComponent);
 	public:		
 		virtual BasicTaskPtr initialize(const SpritePhysicsLoader& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
