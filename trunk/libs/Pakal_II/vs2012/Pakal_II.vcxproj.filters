@@ -152,6 +152,9 @@
     <ClCompile Include="..\source\persist\XmlWriter.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -488,6 +491,9 @@
     </ClInclude>
     <ClInclude Include="..\source\persist\XmlWriter.h">
       <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\PhysicComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

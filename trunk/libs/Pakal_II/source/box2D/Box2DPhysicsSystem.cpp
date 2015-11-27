@@ -88,7 +88,8 @@ void Box2DPhysicsSystem::init_world()
 	m_world->SetContinuousPhysics(false);	
 	m_world->SetAllowSleeping(m_settings.allow_sleep);
 
-	//m_contact_listener = new ContactListener();
+	m_contact_listener = new ContactListener();
+	m_world->SetContactListener(m_contact_listener);
 	//m_contact_filter = new ContactFilter();
 	//m_destruction_listener = new DestructionListener();	
 

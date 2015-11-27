@@ -3,6 +3,9 @@
 #include "math/tmg.h"
 
 #include "Components/SpritePhysics.h"
+#include "IEntity.h"
+
+#include "logMgr.h"
 
 
 using namespace Pakal;
@@ -20,8 +23,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 		for(auto animation :loader.animations)
 		{
 			b2BodyDef bodydef;
-			bodydef.type = animation->dynamic ? b2_dynamicBody : b2_staticBody;			
-			bodydef.awake = false;
+			bodydef.type = animation->dynamic ? b2_dynamicBody : b2_staticBody;
+			bodydef.awake = true;
 			auto body = m_system->create_body(&bodydef);
 
 			m_bodies[animation->name] = body;
@@ -66,6 +69,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 		}
 		m_active_body = m_bodies.begin()->second;
 		m_active_body->SetFixedRotation(m_fixed_rotation);
+		m_active_body->SetUserData(this);		
 		auto mass = m_active_body->GetMass();
 	});
 }
@@ -138,4 +142,11 @@ tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
 void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velocity)
 {
 	m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
+}
+
+bool SpritebodyComponent_Box2D::on_collide(const PhysicComponent& other)
+{
+	auto otherEntity = other.get_parent_entity();
+	auto thisEntity = this->get_parent_entity();	
+	return true;
 }
