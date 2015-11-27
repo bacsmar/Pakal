@@ -34,5 +34,7 @@ namespace Pakal
 
 		inline void set_lineal_velocity(float x, float y) { set_lineal_velocity({x,y}); }
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) = 0;
+
+		virtual void set_fixed_rotation(bool val) = 0;
 	};	
 }

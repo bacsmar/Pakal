@@ -63,6 +63,7 @@ OOLUA_TAGS(OOLUA::No_public_constructors, OOLUA::Abstract)
 //OOLUA_MFUNC(set_lineal_velocity)
 OOLUA_MEM_FUNC(void, apply_impulse, float, float)
 OOLUA_MEM_FUNC(void, set_lineal_velocity, float, float)
+OOLUA_MEM_FUNC(void, apply_force, float, float)
 OOLUA_MFUNC_CONST(get_lineal_velocity)
 OOLUA_PROXY_END
 

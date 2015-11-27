@@ -65,6 +65,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 			}
 		}
 		m_active_body = m_bodies.begin()->second;
+		m_active_body->SetFixedRotation(m_fixed_rotation);
 		auto mass = m_active_body->GetMass();
 	});
 }

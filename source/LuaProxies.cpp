@@ -16,7 +16,7 @@ EXPORT_OOLUA_FUNCTIONS_0_CONST(GamepadComponent)
 OOLUA_EXPORT_FUNCTIONS(Pakal::tmath::vector2df)
 OOLUA_EXPORT_FUNCTIONS_CONST(Pakal::tmath::vector2df, get_x, get_y)
 
-OOLUA_EXPORT_FUNCTIONS(Pakal::SpritebodyComponent, apply_impulse, set_lineal_velocity)
+OOLUA_EXPORT_FUNCTIONS(Pakal::SpritebodyComponent, apply_impulse, set_lineal_velocity, apply_force)
 OOLUA_EXPORT_FUNCTIONS_CONST(Pakal::SpritebodyComponent, get_lineal_velocity)
 
 //	LUA, definicion
