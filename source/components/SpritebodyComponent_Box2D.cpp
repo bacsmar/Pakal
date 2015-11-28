@@ -143,15 +143,3 @@ void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velo
 {
 	m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
 }
-
-bool SpritebodyComponent_Box2D::on_collide(const PhysicComponent& other)
-{
-	auto otherEntity = other.get_parent_entity();
-	auto thisEntity = this->get_parent_entity();
-	if( otherEntity && thisEntity)
-	{
-		thisEntity->on_collide(*otherEntity);
-	}
-	LOG_INFO("Contact between %x and %x", otherEntity, thisEntity);
-	return true;
-}

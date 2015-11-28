@@ -9,16 +9,31 @@
 #pragma once
 #include "config.h"
 #include "Component.h"
+#include "Event.h"
+
 namespace Pakal
 {	
 	class IEntity;
 
 	class _PAKALExport PhysicComponent : public Component
 	{
-		DECLARE_RTTI_WITH_BASE(PhysicComponent, Component);
+		DECLARE_RTTI_WITH_BASE(PhysicComponent, Component);		
 	public:		
 		virtual ~PhysicComponent(){}
-		virtual bool on_collide(const PhysicComponent& other) { return true; }
+
+		Event<const IEntity*> event_collide;
+
+		// internal use only
+		bool on_collide(const PhysicComponent& other)
+		{
+			auto otherEntity = other.get_parent_entity();
+			auto thisEntity = this->get_parent_entity();
+			if (otherEntity && thisEntity)
+			{
+				event_collide.notify(otherEntity);
+			}
+			return true;
+		}
 	};
 }
 

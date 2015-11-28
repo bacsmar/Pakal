@@ -167,6 +167,7 @@ namespace Pakal
 		static Pakal::RTTI s_RTTI_Info(#x,base::getRTTI());\
 		return s_RTTI_Info;\
 	}\
+	public:\
 	virtual const Pakal::RTTI &get_type() override\
 	{\
 		return x::getRTTI();\
