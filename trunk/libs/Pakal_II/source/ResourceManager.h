@@ -43,11 +43,11 @@ namespace Pakal
 		{
 			static_assert(std::is_base_of<ISource, TSource>::value, "type parameter of this class must derive from ISource");
 
-			const char* name = TypeInfo::get<TSource>().getName();
+			auto name = TypeInfo::get<TSource>().get_name();
 
 			if (!m_factories.insert(std::make_pair(std::string(name), [factory]() { return static_cast<ISource*>(factory()); })).second)
 			{
-				LOG_ERROR("ResourceManager, %s source already registered", name);
+				LOG_ERROR("ResourceManager, %s source already registered", name.c_str());
 				ASSERT(false);
 			}
 		}
@@ -58,11 +58,11 @@ namespace Pakal
 			static_assert(std::is_base_of<ISource, TSource>::value, "type parameter of this class must derive from ISource");
 
 			std::function<ISource*()> sourceFactory;
-			const char* sourceName = TypeInfo::get<TSource>().getName();
+			auto sourceName = TypeInfo::get<TSource>().get_name();
 
 			if (!map_utils::try_get(m_factories, sourceName, sourceFactory))
 			{
-				LOG_ERROR("ResourceManager, %s source was not found, call register_source first", sourceName);
+				LOG_ERROR("ResourceManager, %s source was not found, call register_source first", sourceName.c_str());
 				ASSERT(false);
 			}
 
@@ -71,12 +71,12 @@ namespace Pakal
 			if (source->initialize(std::forward<arguments>(args)...))
 			{
 				
-				LOG_DEBUG("[ResourceManager] source %s created with arguments %s", sourceName, trait_utils::stringer(args...).c_str());
+				LOG_DEBUG("[ResourceManager] source %s created with arguments %s", sourceName.c_str(), trait_utils::stringer(args...).c_str());
 				return source;
 			}
 			else
 			{
-				LOG_WARNING("ResourceManager, could not add %s with arguments %s", sourceName, trait_utils::stringer(args...).c_str());
+				LOG_WARNING("ResourceManager, could not add %s with arguments %s", sourceName.c_str(), trait_utils::stringer(args...).c_str());
 				return nullptr;
 			}
 

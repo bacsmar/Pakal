@@ -37,12 +37,12 @@ namespace Pakal
 
 		void register_provider(IComponentProvider &provider);
 
-		Component* create_component(const char* componentName);
+		Component* create_component(const std::string& componentName);
 
 		template <class T>
 		T* create_component()
 		{
- 			Component* ic = create_component( TypeInfo::get<T>().getName());
+ 			Component* ic = create_component( TypeInfo::get<T>().get_name());
 			return static_cast<T*>(ic);
 		}
 

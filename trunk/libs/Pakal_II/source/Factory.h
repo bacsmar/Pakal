@@ -23,7 +23,7 @@ namespace Pakal
 	public:
 		std::function<T*()> create;
 
-		virtual const char* get_typename() = 0;
+		virtual const std::string& get_typename() = 0;
 		explicit IFactory(const std::function<T*()>& fn): create(fn){}
 		virtual ~IFactory() {}
 	};
@@ -34,7 +34,7 @@ namespace Pakal
 		static_assert(std::is_base_of < TRoot, TBase>::value, "Incompatible Types");
 		struct Factory : IFactory<TRoot>
 		{
-			virtual const char* get_typename() override { return TypeInfo::get<TBase>().getName(); };
+			virtual const std::string& get_typename() override { return TypeInfo::get<TBase>().get_name(); };
 			explicit Factory(const std::function<TRoot*()>& fn) : IFactory<TRoot>(fn){}
 		};
 		return new Factory(_fn);
