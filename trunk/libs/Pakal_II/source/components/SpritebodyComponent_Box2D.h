@@ -47,7 +47,6 @@ namespace Pakal
 
 	protected:
 		Box2DPhysicsSystem* m_system = nullptr;
-		virtual bool on_collide(const PhysicComponent& other) override;
 	private:
 		std::unordered_map<std::string,b2Body*> m_bodies;
 		b2Body*	m_active_body = nullptr;

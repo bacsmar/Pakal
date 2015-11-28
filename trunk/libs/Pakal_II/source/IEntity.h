@@ -21,7 +21,6 @@ namespace Pakal
 		virtual BasicTaskPtr initialize() = 0;
 		virtual BasicTaskPtr terminate() = 0;		
 	public:
-		virtual void on_collide(const IEntity& other) = 0;
 		virtual Component* get_component(const std::string& component_id_string) const = 0;
 
 		template <class T>
