@@ -10,6 +10,7 @@
 #pragma once
 #include "Config.h"
 #include <type_traits>
+#include <string>
 
 namespace Pakal
 {
@@ -75,7 +76,7 @@ namespace Pakal
 		explicit RTTI(const char* name) : m_name(name), m_parent(nullptr){}
 		explicit RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti){}
 
-		inline const char * getName() const { return m_name; }
+		inline const std::string& get_name() const { return m_name; }
 
 		inline bool is_type(const RTTI &rtti) const { return &rtti == this; }
 
@@ -119,7 +120,7 @@ namespace Pakal
 			return false;
 		}
 
-		const char *m_name;		
+		std::string m_name;		
 		const RTTI *m_parent;
 
 		void operator=(const RTTI &other) = delete;

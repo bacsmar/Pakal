@@ -22,12 +22,12 @@ namespace Pakal
 		virtual BasicTaskPtr terminate() = 0;		
 	public:
 		virtual void on_collide(const IEntity& other) = 0;
-		virtual Component* get_component(const char* component_typename) const = 0;
+		virtual Component* get_component(const std::string& component_id_string) const = 0;
 
 		template <class T>
 		T* get_component() const
 		{
-			Component* ic = get_component(TypeInfo::get<T>().getName());
+			Component* ic = get_component(TypeInfo::get<T>().get_name());
 			ASSERT( !ic || (ic && ic->get_type().is_derived_from<T>()) );
 			//ASSERT(ic->getType() == TypeInfo::get<T>());
 			return static_cast<T*>(ic);

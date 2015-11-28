@@ -63,7 +63,7 @@
 //	{
 //		for( auto & component: m_components)
 //		{
-//			if (component->getType().getName() == name)
+//			if (component->getType().get_name() == name)
 //				return component;
 //		}
 //		return nullptr;

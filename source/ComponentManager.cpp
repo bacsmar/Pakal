@@ -34,7 +34,7 @@ void ComponentManager::register_factory(IComponentFactory* factory, bool replace
 	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", componentTypename.c_str() );
 }
 
-Component* ComponentManager::create_component(const char* typeName )
+Component* ComponentManager::create_component(const std::string& typeName )
 {
 	const auto &it = m_factories.find(typeName);
 
