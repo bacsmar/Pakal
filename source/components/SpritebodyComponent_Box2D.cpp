@@ -24,10 +24,16 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 		{
 			b2BodyDef bodydef;
 			bodydef.type = animation->dynamic ? b2_dynamicBody : b2_staticBody;
-			bodydef.awake = true;
+			bodydef.awake = animation->awake;
+
 			auto body = m_system->create_body(&bodydef);
 
+			//body->SetTransform( b2Vec2(animation-> position.x, animation->position.y), body->GetAngle());
+			body->SetFixedRotation(animation->fixed_rotation);			
+			body->SetUserData(this);
+
 			m_bodies[animation->name] = body;
+
 			// fixtures
 			for(const auto& fixture : animation->m_fixtures)
 			{
@@ -67,15 +73,14 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 				body->CreateFixture(&fixtureDef);
 			}
 		}
-		m_active_body = m_bodies.begin()->second;
-		m_active_body->SetFixedRotation(m_fixed_rotation);
-		m_active_body->SetUserData(this);		
-		auto mass = m_active_body->GetMass();
+		m_active_body = m_bodies.begin()->second;		
 	});
 }
 
 BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 {
+	m_active_body = nullptr;
+
 	return m_system->execute_block([=]()
 	{
 		for( auto& body : m_bodies)
@@ -94,6 +99,7 @@ tmath::vector3df SpritebodyComponent_Box2D::get_position()
 
 BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & position)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]"); 
 	return m_system->execute_block([=]()
 	{
 		m_active_body->SetTransform(b2Vec2(position.x,position.y),m_active_body->GetAngle());
@@ -102,6 +108,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & po
 
 BasicTaskPtr SpritebodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return m_system->execute_block([=]()
 	{
 		m_active_body->SetTransform(m_active_body->GetPosition(),tmg::d2r(angle.x));
@@ -142,4 +149,14 @@ tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
 void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velocity)
 {
 	m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
+}
+
+bool SpritebodyComponent_Box2D::fixed_rotation() const
+{
+	return m_active_body->IsFixedRotation();
+}
+
+void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
+{
+	m_active_body->SetFixedRotation(val);
 }

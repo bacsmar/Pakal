@@ -19,6 +19,13 @@ StateMachine::~StateMachine(void)
 	m_states.clear();
 }
 
+State* StateMachine::get_state(const std::string& name) const
+{
+	auto found_state = std::find_if(m_states.begin(), m_states.end(), [=](State* state) { return name == state->get_name(); });	
+	ASSERT_MSG( *found_state != nullptr, "can't found state %s", name.c_str());
+	return *found_state;
+}
+
 void StateMachine::set_current_state(const std::string& name)
 {
 	auto new_state = std::find_if(m_states.begin(), m_states.end(), [=](State* state) { return name == state->get_name(); });

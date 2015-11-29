@@ -41,9 +41,9 @@ namespace Pakal
 		virtual tmath::vector2df get_lineal_velocity() const override;
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) override;
 
-		bool fixed_rotation() const { return m_fixed_rotation; }
-		void set_fixed_rotation(bool val) override
-		{ m_fixed_rotation = val; }
+		bool fixed_rotation() const;
+
+		void set_fixed_rotation(bool val) override;
 
 	protected:
 		Box2DPhysicsSystem* m_system = nullptr;
@@ -52,6 +52,5 @@ namespace Pakal
 		b2Body*	m_active_body = nullptr;
 		float m_normalization_factor = 1.f;
 		tmath::vector3df m_scale = {1.f,1.f,1.f};
-		bool m_fixed_rotation = false;			
 	};	
 }

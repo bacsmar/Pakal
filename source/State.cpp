@@ -40,10 +40,10 @@ void Pakal::State::set_script(ScriptComponent& script)
 {
 	if (on_enter_str.empty() == false)
 	{
-		event_enter =([&]()
+		event_enter =[&]()
 			{
 				script.call_function(on_enter_str);
-			});
+			};
 	}
 	if( on_exit_str.empty() == false)
 	{
