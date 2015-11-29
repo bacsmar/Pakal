@@ -19,7 +19,8 @@ namespace Pakal
 	public:
 		StateMachine();
 		virtual ~StateMachine(void);
-
+		
+		State*			get_state(const std::string& name) const;
 		void			set_current_state(const std::string& name);
 		inline void		set_current_state(State *s) { m_current_state = s; }
 		inline State*	get_current_state() const { return m_current_state; }

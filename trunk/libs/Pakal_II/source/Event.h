@@ -58,7 +58,14 @@ namespace Pakal
 				metaData->is_enabled = m_enabled;
 				metaData->is_subscribed = true;
 
-				metaData->delegate = [metaData, delegate](const TArgs& args) { if (metaData->is_subscribed && metaData->is_enabled)  delegate(args); };
+				WeakPtr<DelegateData<TArgs>> wMetaData = metaData;
+
+				metaData->delegate = [wMetaData, delegate](const TArgs& args)
+				{
+					auto metaDataS = wMetaData.lock();
+					if (metaDataS->is_subscribed && metaDataS->is_enabled)
+						delegate(args);
+				};
 
 				return key;
 			}
@@ -167,13 +174,18 @@ namespace Pakal
 
 				ulonglong key = EventSystemUtils::new_id();
 
-				SharedPtr<DelegateData<void>> metaData = 
-					m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;
-
+				auto metaData = m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;					
+				
 				metaData->tid = callBackThread;
 				metaData->is_enabled = m_enabled;
 				metaData->is_subscribed = true;
-				metaData->delegate = [metaData,delegate]() { if (metaData->is_subscribed && metaData->is_enabled)  delegate(); };
+				WeakPtr<DelegateData<void>> wMetaData = metaData;
+				metaData->delegate = [wMetaData,delegate]()
+				{
+					auto metaDataS = wMetaData.lock();
+					if (metaDataS->is_subscribed && metaDataS->is_enabled)
+						delegate();
+				};
 
 				return key;
 			}

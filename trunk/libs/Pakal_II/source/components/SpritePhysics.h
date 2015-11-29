@@ -93,6 +93,9 @@ namespace Pakal
 
 		std::string name;
 		bool		dynamic = false;
+		bool		fixed_rotation = false;
+		//vector2df	position;
+		bool		awake = true;
 
 		inline size_t get_size() const
 		{
@@ -103,6 +106,9 @@ namespace Pakal
 		{
 			archive->value("name", name);
 			archive->value("dynamic", dynamic);
+			archive->value("fixed_rotation", fixed_rotation);
+			//archive->value("position", position);
+			archive->value("awake", awake);
 			archive->value("fixtures","fixture",m_fixtures);
 		}
 		// get memory consumption

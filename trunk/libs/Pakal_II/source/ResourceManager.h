@@ -99,14 +99,14 @@ namespace Pakal
 		void remove_source(ISource* source);
 
 		template<class TStream>
-		SharedPtr<TStream> open_read_resource(const Path& resourcePath, bool inMemory)
+		SharedPtr<TStream> open_read_resource(const Path& resourcePath, bool inMemory = false)
 		{
 			SharedPtr<std::istream> stream = open_read_resource(resourcePath, inMemory);
 
 			return stream != nullptr ? std::make_shared<TStream>(stream) : nullptr;
 		}
 
-		SharedPtr<std::istream> open_read_resource(const Path& resourcePath, bool inMemory);
+		SharedPtr<std::istream> open_read_resource(const Path& resourcePath, bool inMemory = false);
 
 		SharedPtr<std::ostream> open_write_resource(const Path& resourcePath);	
 

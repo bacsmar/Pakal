@@ -28,7 +28,7 @@ namespace Pakal
 		{
 			auto otherEntity = other.get_parent_entity();
 			auto thisEntity = this->get_parent_entity();
-			if (otherEntity && thisEntity)
+			ASSERT(otherEntity && thisEntity);
 			{
 				event_collide.notify(otherEntity);
 			}
