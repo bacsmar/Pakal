@@ -12,6 +12,7 @@ namespace Pakal
 	class GraphicComponent;
 	class IUIManager;
 	class IInputManager;
+	class Archive;
 
 	class _PAKALExport GraphicsSystem : public System, public IComponentProvider
 	{
@@ -42,6 +43,9 @@ namespace Pakal
 			std::function<IUIManager*(GraphicsSystem* gs, IInputManager * im)>		ui_manager_allocator;
 
 			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}
+
+			void persist(Archive* archive);
+
 		};
 
 		// TODO: IUpdatable? this class needs a more convenient name

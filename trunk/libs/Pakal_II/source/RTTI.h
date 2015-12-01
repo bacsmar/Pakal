@@ -81,25 +81,25 @@ namespace Pakal
 		inline bool is_type(const RTTI &rtti) const { return &rtti == this; }
 
 		template <class T>
-		bool is_type() const
+		inline bool is_type() const
 		{
 			ASSERT((TypeInfo::is_RTTI_valid<T, typename T::__RootClass>()));
 			return is_type(T::getRTTI());
 		}
 		template <class T>
-		bool is_type(T*) const
+		inline bool is_type(T*) const
 		{			
 			return is_type<T>();
 		}		
 
 		template <class T>
-		bool is_derived_from() const
+		inline bool is_derived_from() const
 		{
 			ASSERT((TypeInfo::is_RTTI_valid<T, typename T::__RootClass>()));
 			return is_derived_from(T::getRTTI());
 		}
 		template <class T>
-		bool is_derived_from(T *) const
+		inline bool is_derived_from(T *) const
 		{			
 			return is_derived_from<T>();
 		}

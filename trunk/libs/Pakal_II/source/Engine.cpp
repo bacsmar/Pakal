@@ -11,6 +11,7 @@
 #include "OSManager.h"
 #include "Clock.h"
 #include <sstream>
+#include "persist/Archive.h"
 
 //#include <vld.h>
 
@@ -216,3 +217,10 @@ void Engine::on_resume()
 	TaskUtils::wait_all(resumeTasks);
 }
 //////////////////////////////////////////////////////////////////////////
+void Engine::Settings::persist(Archive* archive)
+{
+	archive->value("uses_thread", uses_thread);
+	archive->value("max_fps", max_fps);
+	archive->value("physic_system_settings", physic_system_settings);	
+	archive->value("graphic_system_settings", graphic_system_settings);
+}

@@ -1,4 +1,5 @@
 #include "PhysicsSystem.h"
+#include "persist/Archive.h"
 
 
 using namespace Pakal;
@@ -31,4 +32,17 @@ void PhysicsSystem::on_pause()
 void PhysicsSystem::on_resume()
 {
 	resume_world();
+}
+
+void PhysicsSystem::Settings::persist(Archive* archive)
+{
+	archive->value("uses_thread", uses_thread);
+	archive->value("allow_sleep", allow_sleep);
+	archive->value("velocity_iterations", velocity_iterations);
+	archive->value("position_iterations", position_iterations);
+	archive->value("debug_draw", debug_draw);
+	archive->value("max_fps", max_fps);
+	archive->value("gravity_x", gravity.x);
+	archive->value("gravity_y", gravity.y);
+	archive->value("gravity_z", gravity.z);
 }
