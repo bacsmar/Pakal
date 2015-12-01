@@ -10,6 +10,7 @@ namespace Pakal
 {
 	class Engine;
 	class IDebugDrawerClient;
+	class Archive;
 
 	class _PAKALExport PhysicsSystem :  public System, public IComponentProvider
 	{
@@ -38,6 +39,9 @@ namespace Pakal
 			unsigned max_fps = 1000;
 
 			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(false), velocity_iterations(8), position_iterations(3), uses_thread(true), debug_draw(false){}
+
+			void persist(Archive* archive);
+
 		};
 
 	protected:

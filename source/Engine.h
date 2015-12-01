@@ -20,6 +20,7 @@ namespace Pakal
 	class SoundManager;
 	class IInputManager;
 	class IUIManager;
+	class Archive;
 
 	class _PAKALExport Engine final : public System
 	{
@@ -37,8 +38,9 @@ namespace Pakal
 			std::function<GraphicsSystem*(Engine*,const GraphicsSystem::Settings& settings)> graphic_system_allocator;
 			std::function<PhysicsSystem*(Engine*,const PhysicsSystem::Settings& settings)>	physics_system_allocator;
 			std::function<SoundManager*(Engine*)>	sound_manager_allocator;
-			std::function<IInputManager*(Engine*)>	input_manager_allocator;			
+			std::function<IInputManager*(Engine*)>	input_manager_allocator;
 
+			void persist(Archive* archive);
 			Settings();
 		};		
 

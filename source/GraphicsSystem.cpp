@@ -1,6 +1,7 @@
 #include "GraphicsSystem.h"
 
 #include "IUIManager.h"
+#include "persist/Archive.h"
 
 using namespace Pakal;
 
@@ -73,4 +74,14 @@ GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager):
 void GraphicsSystem::draw_ui_interface()
 {
 	m_ui_manager->draw_ui();
+}
+
+void GraphicsSystem::Settings::persist(Archive* archive)
+{
+	archive->value("bpp", bits);
+	archive->value("full_screen", full_screen);
+	archive->value("vsync", vsync);
+	archive->value("max_fps", max_fps);
+	archive->value("resolution_x", resolution.x);
+	archive->value("resolution_y", resolution.y);	
 }
