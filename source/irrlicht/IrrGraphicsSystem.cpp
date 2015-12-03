@@ -77,7 +77,23 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 
 	LOG_INFO("[Graphic System] done");
 
-	auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0,0,-5), vector3df(0,0,0));
+	auto camera = smgr->addCameraSceneNode(nullptr, vector3df(3,10,-10), vector3df(0,0,0));
+	//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0, 30, -40), vector3df(0, 5, 0));
+
+	//auto sydneyMesh = smgr->getMesh("sydney.md2");
+	////auto node = smgr->addAnimatedMeshSceneNode(sydneyMesh);
+	//auto node = smgr->addMeshSceneNode(sydneyMesh);
+	//if (node)
+	//{
+	//	node->setMaterialFlag(EMF_LIGHTING, false);
+	//	//node->setMD2Animation(scene::EMAT_STAND);
+	//	node->setMaterialTexture(0, driver->getTexture("sydney.bmp"));
+	//	node->setVisible(true);
+	//	node->setScale({0.1f,0.1f,0.1f});
+	//	camera->setTarget(node->getPosition());
+	//}
+	//
+
 	//irr::core::matrix4 MyMatrix;
 	//MyMatrix.buildProjectionMatrixOrthoRH(16.0f, 12.0f, 15.5f, -32.5f);
 	//camera->setProjectionMatrix(MyMatrix);
@@ -122,7 +138,35 @@ void IrrGraphicsSystem::on_terminate_graphics()
 void IrrGraphicsSystem::begin_scene()
 {
 	ASSERT(driver != nullptr);
-	driver->beginScene(ECBF_COLOR|| ECBF_DEPTH, SColor(255,200,200,200));
+	driver->beginScene(ECBF_COLOR | ECBF_DEPTH, SColor(255,100,100,100));
+}
+
+void IrrGraphicsSystem::draw_axis()
+{
+	video::SMaterial m_material;
+	m_material.Thickness = 3;
+	m_material.Lighting = false;
+	m_material.FrontfaceCulling = false;		// enable both faces drawing
+	m_material.BackfaceCulling = false;
+	m_material.MaterialType = video::EMT_SOLID;
+	driver->setMaterial(m_material);
+	matrix4 tmat;
+	driver->setTransform(ETS_WORLD, tmat);
+
+	// x axis is red
+	driver->draw3DLine(core::vector3df(-1.0, 0.0, 0.0),
+		core::vector3df(1.0, 0.0, 0.0) ,
+		video::SColor(255, 255, 0, 0));
+
+	// y axis is green
+	driver->draw3DLine(core::vector3df(0.0, -1.0, 0.0) ,
+		core::vector3df(0.0, 1.0, 0.0) ,
+		video::SColor(255, 0, 255, 0));
+
+	// z axis is blue
+	driver->draw3DLine(core::vector3df(0.0, 0.0, -1.0) ,
+		core::vector3df(0.0, 0.0, 1.0) ,
+		video::SColor(255, 0, 0, 255));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::draw()
@@ -134,6 +178,11 @@ void IrrGraphicsSystem::draw()
 	for (auto &r : m_debug_renderers)
 	{
 		r->do_debug_draw();
+	}
+
+	if (m_draw_axis)
+	{
+		draw_axis();
 	}
 
 	draw_ui_interface();	

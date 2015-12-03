@@ -38,6 +38,7 @@ namespace Pakal
 		unsigned long long m_resized_callback_id;
 		unsigned long long m_destroyed_callback_id;
 		unsigned long long m_created_callback_id;
+		bool				m_draw_axis = false;
 
 		irr::IrrlichtDevice			* device = nullptr;
 		irr::video::IVideoDriver	* driver = nullptr;
@@ -55,6 +56,7 @@ namespace Pakal
 		void on_resume_graphics() override;
 
 		void begin_scene();
+		void draw_axis();
 		void draw();
 		void end_scene();
 
