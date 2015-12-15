@@ -11,14 +11,11 @@
 
 namespace Pakal
 {
-	using ulonglong = unsigned long long;
-
-	namespace priv
-	{
+	using ulonglong = unsigned long long;	
 		template <class TArgs>
 		struct DelegateData
 		{
-			std::function<void(TArgs)> delegate;
+			std::function<void(const TArgs&)> delegate;
 			std::thread::id tid;
 			bool is_subscribed;
 			bool is_enabled;
@@ -34,16 +31,16 @@ namespace Pakal
 
 
 		template <class TArgs>
-		class _PAKALExport Event_t
+		class _PAKALExport Event
 		{
 			std::unordered_map<unsigned long long, SharedPtr<DelegateData<TArgs>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
 
-			typedef std::function<void(TArgs)> MethodDelegate;
+			typedef std::function<void(const TArgs&)> MethodDelegate;
 		public:
 
-			explicit Event_t() : m_enabled(true) {}
+			explicit Event() : m_enabled(true) {}
 
 			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
@@ -88,8 +85,7 @@ namespace Pakal
 
 				return m_delegates.empty();
 			}
-
-		protected:
+		
 			inline void disable()
 			{
 				mutex_guard lock(m_mutex);
@@ -145,7 +141,7 @@ namespace Pakal
 		};
 
 		template<>
-		class _PAKALExport Event_t<void>
+		class _PAKALExport Event<void>
 		{
 		public:
 			typedef std::function<void(void)> MethodDelegate;
@@ -157,7 +153,7 @@ namespace Pakal
 
 		public:
 
-			explicit Event_t() : m_enabled(true)
+			explicit Event() : m_enabled(true)
 			{
 			}
 
@@ -200,7 +196,7 @@ namespace Pakal
 
 				m_delegates.erase(it);
 			}
-		protected:
+		
 			inline void disable()
 			{
 				mutex_guard lock(m_mutex);
@@ -254,15 +250,15 @@ namespace Pakal
 			}
 
 		};
-
-	}
 	
+	/*
 	template <class TArgs>
-	class Event : public priv::Event_t<TArgs>
+	class Event : public priv::Event<TArgs>
 	{
 	public:
-		using priv::Event_t<TArgs>::notify;
-		using priv::Event_t<TArgs>::enable;
-		using priv::Event_t<TArgs>::disable;
+		using priv::Event<TArgs>::notify;
+		using priv::Event<TArgs>::enable;
+		using priv::Event<TArgs>::disable;
 	};
+	*/
 }

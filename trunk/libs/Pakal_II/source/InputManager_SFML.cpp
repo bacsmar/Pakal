@@ -36,14 +36,21 @@ void InputManager_SFML::initialize()
 			m_axis_devices.emplace_back(gamepad);
 		}		
 	}
-
-	m_os_manager->event_mouse_moved.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_moved.notify(args); });
-	m_os_manager->event_mouse_click.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_pressed.notify(args); });
-	m_os_manager->event_mouse_released.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_released.notify(args); });
+	
+	// we're forwarding args with std::bind... don't use lambdas...
+	m_emouse_released_id = m_os_manager->event_mouse_released.add_listener(std::bind(&Event<Pakal::MouseArgs>::notify, &event_mouse_released, std::placeholders::_1));
+	m_emouse_moved_id = m_os_manager->event_mouse_moved.add_listener(std::bind(&Event<Pakal::MouseArgs>::notify, &event_mouse_moved, std::placeholders::_1));
+	m_emouse_pressed_id = m_os_manager->event_mouse_click.add_listener(std::bind(&Event<Pakal::MouseArgs>::notify, &event_mouse_pressed, std::placeholders::_1));
+	m_etext_id = m_os_manager->event_text_entered.add_listener(std::bind(&Event<Pakal::TextArgs>::notify, &event_text, std::placeholders::_1));
 }
 
 void InputManager_SFML::terminate()
 {	
+	m_os_manager->event_mouse_released.remove_listener(m_emouse_released_id);
+	m_os_manager->event_mouse_moved.remove_listener(m_emouse_moved_id);
+	m_os_manager->event_mouse_click.remove_listener(m_emouse_pressed_id);
+	m_os_manager->event_text_entered.remove_listener(m_etext_id);
+
 	for(auto device : m_devices)
 	{
 		delete device;

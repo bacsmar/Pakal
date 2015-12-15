@@ -22,5 +22,6 @@ namespace Pakal
 		Event<Pakal::MouseArgs> event_mouse_moved;
 		Event<Pakal::MouseArgs> event_mouse_pressed;
 		Event<Pakal::MouseArgs> event_mouse_released;
+		Event<Pakal::TextArgs>event_text;
 	};
 }

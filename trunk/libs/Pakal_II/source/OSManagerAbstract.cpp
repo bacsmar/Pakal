@@ -55,7 +55,12 @@ public:
 			break;
 			case sf::Event::LostFocus:	m_os_manager->on_window_focused(false);	break;
 			case sf::Event::GainedFocus: m_os_manager->on_window_focused(true); break;
-			case sf::Event::TextEntered: break;
+			case sf::Event::TextEntered: 
+			{
+				OSManagerAbstract::TextArgs args;
+				args.unicode = e.text.unicode;
+				m_os_manager->event_text_entered.notify(args);
+			}break;
 			case sf::Event::KeyPressed: break;
 			case sf::Event::KeyReleased: break;
 			case sf::Event::MouseWheelMoved: break;
