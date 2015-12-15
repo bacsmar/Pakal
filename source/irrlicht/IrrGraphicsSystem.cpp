@@ -26,8 +26,8 @@ using namespace Pakal;
 
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager)
-	: GraphicsSystem(settings, osManager),
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager, IInputManager* input_manager)
+	: GraphicsSystem(settings, osManager, input_manager),
 	device(nullptr),
 	driver(nullptr),	
 	smgr(nullptr),
@@ -77,22 +77,8 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 
 	LOG_INFO("[Graphic System] done");
 
-	auto camera = smgr->addCameraSceneNode(nullptr, vector3df(3,10,-10), vector3df(0,0,0));
-	//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0, 30, -40), vector3df(0, 5, 0));
-
-	//auto sydneyMesh = smgr->getMesh("sydney.md2");
-	////auto node = smgr->addAnimatedMeshSceneNode(sydneyMesh);
-	//auto node = smgr->addMeshSceneNode(sydneyMesh);
-	//if (node)
-	//{
-	//	node->setMaterialFlag(EMF_LIGHTING, false);
-	//	//node->setMD2Animation(scene::EMAT_STAND);
-	//	node->setMaterialTexture(0, driver->getTexture("sydney.bmp"));
-	//	node->setVisible(true);
-	//	node->setScale({0.1f,0.1f,0.1f});
-	//	camera->setTarget(node->getPosition());
-	//}
-	//
+	auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0,0,-10), vector3df(0,0,0));
+	//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(3,15,-10), vector3df(0,0,0));
 
 	//irr::core::matrix4 MyMatrix;
 	//MyMatrix.buildProjectionMatrixOrthoRH(16.0f, 12.0f, 15.5f, -32.5f);
@@ -153,19 +139,21 @@ void IrrGraphicsSystem::draw_axis()
 	matrix4 tmat;
 	driver->setTransform(ETS_WORLD, tmat);
 
+	float scale = 10.f;
+
 	// x axis is red
-	driver->draw3DLine(core::vector3df(-1.0, 0.0, 0.0),
-		core::vector3df(1.0, 0.0, 0.0) ,
+	driver->draw3DLine(core::vector3df(-0.0, 0.0, 0.0) * scale,
+		core::vector3df(1.0, 0.0, 0.0) *scale,
 		video::SColor(255, 255, 0, 0));
 
 	// y axis is green
-	driver->draw3DLine(core::vector3df(0.0, -1.0, 0.0) ,
-		core::vector3df(0.0, 1.0, 0.0) ,
+	driver->draw3DLine(core::vector3df(0.0, -0.0, 0.0) *scale,
+		core::vector3df(0.0, 1.0, 0.0) *scale,
 		video::SColor(255, 0, 255, 0));
 
 	// z axis is blue
-	driver->draw3DLine(core::vector3df(0.0, 0.0, -1.0) ,
-		core::vector3df(0.0, 0.0, 1.0) ,
+	driver->draw3DLine(core::vector3df(0.0, 0.0, -0.0) *scale,
+		core::vector3df(0.0, 0.0, 1.0) *scale,
 		video::SColor(255, 0, 0, 255));
 }
 //////////////////////////////////////////////////////////////////////////
@@ -180,7 +168,7 @@ void IrrGraphicsSystem::draw()
 		r->do_debug_draw();
 	}
 
-	if (m_draw_axis)
+	//if (m_draw_axis)
 	{
 		draw_axis();
 	}

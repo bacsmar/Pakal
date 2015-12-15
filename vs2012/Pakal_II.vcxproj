@@ -24,6 +24,7 @@
     <ClInclude Include="..\source\components\SpritebodyComponent.h" />
     <ClInclude Include="..\source\components\SpritebodyComponent_Box2D.h" />
     <ClInclude Include="..\source\components\SpritePhysics.h" />
+    <ClInclude Include="..\source\EventArgs.h" />
     <ClInclude Include="..\source\LuaProxies.h" />
     <ClInclude Include="..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\source\Factory.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h" />
     <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h" />
     <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h" />
+    <ClInclude Include="..\source\rocketgui\RocketInput.h" />
     <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
     <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
@@ -145,6 +147,7 @@
     <ClCompile Include="..\source\persist\TextWriter.cpp" />
     <ClCompile Include="..\source\persist\XmlReader.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
+    <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
     <ClCompile Include="..\source\State.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />

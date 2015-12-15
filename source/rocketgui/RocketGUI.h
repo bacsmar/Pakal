@@ -2,6 +2,7 @@
 #pragma once
 
 #include "IUIManager.h"
+#include <Pakal_II/source/Event.h>
 
 namespace Rocket
 {
@@ -52,5 +53,8 @@ namespace Pakal
 		RocketSystemInterface*			m_rocket_system_interface = nullptr;		
 		GraphicsSystem*					m_graphics_system = nullptr;
 		IInputManager*					m_input_manager = nullptr;
+		ulonglong m_mouse_move_e;
+		ulonglong m_mouse_released_e;
+		ulonglong m_mouse_pressed_e;
 	};
 }

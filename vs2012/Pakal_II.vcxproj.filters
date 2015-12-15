@@ -155,6 +155,9 @@
     <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp">
       <Filter>Systems\PhysicsSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketInput.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -494,6 +497,12 @@
     </ClInclude>
     <ClInclude Include="..\source\components\PhysicComponent.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventArgs.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketInput.h">
+      <Filter>Managers\UIManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

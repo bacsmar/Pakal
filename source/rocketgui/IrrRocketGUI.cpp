@@ -18,9 +18,11 @@ void IrrRocketUI::setup_render_interface()
 	//ctor
 	auto gs = static_cast<IrrGraphicsSystem*>(m_graphics_system);
 
-	irr::video::IVideoDriver* driver = gs->get_device()->getVideoDriver();
-	auto swidth = driver->getScreenSize().Width;
-	auto sheight = driver->getScreenSize().Height;
+	irr::video::IVideoDriver* driver = gs->get_device()->getVideoDriver();	
+	//auto swidth = driver->getScreenSize().Width;
+	auto swidth = driver->getViewPort().getWidth();
+	//auto sheight = driver->getScreenSize().Height;	
+	auto sheight = driver->getViewPort().getHeight();	
 	m_renderInterface = new IrrRocketRenderer(gs->get_device()->getVideoDriver());
 	
 	Rocket::Core::SetRenderInterface(m_renderInterface);

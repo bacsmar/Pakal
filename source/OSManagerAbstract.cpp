@@ -26,6 +26,7 @@ public:
 			auto videoMode = sf::VideoMode( dimensions.x, dimensions.y, bitsPerPixel);
 		
 			m_window.create( videoMode,"", windowScreenStyle , sf::ContextSettings(), true);
+			m_window.setSize({ (unsigned)dimensions.x, (unsigned)dimensions.y });
 		
 			m_window_created = true;
 			m_window_handle = m_window.getSystemHandle();
@@ -59,9 +60,32 @@ public:
 			case sf::Event::KeyReleased: break;
 			case sf::Event::MouseWheelMoved: break;
 			case sf::Event::MouseWheelScrolled: break;
-			case sf::Event::MouseButtonPressed: break;
-			case sf::Event::MouseButtonReleased: break;
-			case sf::Event::MouseMoved: break;
+			case sf::Event::MouseButtonPressed: 
+			{
+				OSManagerAbstract::MouseArgs args;
+				args.button_id = e.mouseButton.button;
+				args.x = e.mouseButton.x;
+				args.y = e.mouseButton.y;
+				m_os_manager->event_mouse_click.notify(args);
+			}				
+				break;
+			case sf::Event::MouseButtonReleased: 
+			{
+				OSManagerAbstract::MouseArgs args;
+				args.button_id = e.mouseButton.button;
+				args.x = e.mouseButton.x;
+				args.y = e.mouseButton.y;
+				m_os_manager->event_mouse_released.notify(args);
+			}break;
+			case sf::Event::MouseMoved: 
+			{
+				OSManagerAbstract::MouseArgs args;
+				args.button_id = 0;
+				args.x = e.mouseMove.x;
+				args.y = e.mouseMove.y;
+				m_os_manager->event_mouse_moved.notify(args);
+			}
+				break;
 			case sf::Event::MouseEntered: break;
 			case sf::Event::MouseLeft: break;
 			case sf::Event::JoystickButtonPressed: break;

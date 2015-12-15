@@ -30,9 +30,7 @@
 #endif
 
 namespace Pakal
-{
-
-	
+{	
 	class OSManager : public OsWrapperImpl
 	{
 		friend class OsWrapperImpl;
