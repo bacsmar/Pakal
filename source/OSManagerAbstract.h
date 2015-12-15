@@ -37,6 +37,7 @@ namespace Pakal
 
 		using WindowArgs = Pakal::WindowArgs;
 		using MouseArgs = Pakal::MouseArgs;
+		using TextArgs = Pakal::TextArgs;
 		
 		Event<WindowArgs>	event_window_created;
 		Event<WindowArgs>	event_window_destroyed;
@@ -52,6 +53,7 @@ namespace Pakal
 		Event<MouseArgs>event_mouse_click;
 		Event<MouseArgs>event_mouse_released;
 		Event<MouseArgs>event_mouse_moved;
+		Event<TextArgs> event_text_entered;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  process_window_events();

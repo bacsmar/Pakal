@@ -24,5 +24,11 @@ namespace Pakal
 		std::vector<ITouchDevice*>	m_touch_devices;
 		OSManager*					m_os_manager;
 		std::vector<InputDevice*>	m_devices;
+
+		// event handler id
+		ulonglong m_emouse_released_id;
+		ulonglong m_emouse_moved_id;
+		ulonglong m_emouse_pressed_id;
+		ulonglong m_etext_id;
 	};
 }

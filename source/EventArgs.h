@@ -27,5 +27,10 @@ namespace Pakal
 			unsigned size_x = 0;
 			unsigned size_y = 0;
 		};
+
+	struct TextArgs
+	{		
+		unsigned unicode; 
+	};
 		
 }
