@@ -13,6 +13,7 @@
 
 #include "TaskCompletionSource.h"
 #include "IManager.h"
+#include "EventArgs.h"
 
 namespace Pakal
 {
@@ -32,16 +33,10 @@ namespace Pakal
 			virtual void	process_os_events() = 0;
 			virtual void wait_for_os_events() = 0;
 			virtual ~WindowImpl(){}
-		};
+		};		
 
-		struct WindowArgs
-		{
-			WindowArgs() : windowId(0), size_x(0), size_y(0){}
-			unsigned windowId;
-			unsigned size_x;
-			unsigned size_y;
-		};
-
+		using WindowArgs = Pakal::WindowArgs;
+		using MouseArgs = Pakal::MouseArgs;
 		
 		Event<WindowArgs>	event_window_created;
 		Event<WindowArgs>	event_window_destroyed;
@@ -53,6 +48,10 @@ namespace Pakal
 		Event<void>		event_app_resumed;
 		Event<void>		event_app_started;
 		Event<void>		event_app_stoped;
+
+		Event<MouseArgs>event_mouse_click;
+		Event<MouseArgs>event_mouse_released;
+		Event<MouseArgs>event_mouse_moved;
 
 		virtual TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
 		virtual void  process_window_events();

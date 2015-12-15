@@ -31,7 +31,7 @@ namespace Pakal
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };	
 
-		explicit IrrGraphicsSystem(const Settings& settings, OSManager* windowManager);
+		explicit IrrGraphicsSystem(const Settings& settings, OSManager* windowManager, IInputManager* input_manager);
 
 	protected:	
 		

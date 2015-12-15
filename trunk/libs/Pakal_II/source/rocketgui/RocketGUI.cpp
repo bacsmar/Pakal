@@ -8,6 +8,8 @@
 #include "rocketgui/RocketSystemInterface.h"
 #include "rocketgui/PakalRocketFileInterface.h"
 #include "rocketgui/IrrRocketRenderer.h"
+#include "IInputManager.h"
+#include "RocketInput.h"
 #include "GraphicsSystem.h"
 
 using namespace Pakal;
@@ -149,16 +151,37 @@ void RocketUI::initialize()
 	ASSERT(m_renderInterface != nullptr);
 	Rocket::Core::SetRenderInterface(m_renderInterface);
 	Rocket::Core::SetFileInterface(m_rocket_FS);
-	Rocket::Core::SetSystemInterface(m_rocket_system_interface);
+	Rocket::Core::SetSystemInterface(m_rocket_system_interface);		
 
 	Rocket::Core::Initialise();
 	Rocket::Controls::Initialise();	
 
 	RocketContext = Rocket::Core::CreateContext("default", Rocket::Core::Vector2i(m_screen_width, m_screen_height));
+
+	RocketInput::set_context(RocketContext);
+
+	m_mouse_move_e = m_input_manager->event_mouse_moved.add_listener([=](Pakal::MouseArgs args)
+	{
+		RocketInput::process_mouse_move(args);
+	});
+	m_mouse_released_e = m_input_manager->event_mouse_released.add_listener([=](Pakal::MouseArgs args)
+	{
+		RocketInput::process_mouse_released(args);
+	});
+	m_mouse_pressed_e = m_input_manager->event_mouse_pressed.add_listener([=](Pakal::MouseArgs args)
+	{
+		RocketInput::process_mouse_pressed(args);
+	});
 }
 
 void RocketUI::terminate()
-{
+{	
+	m_input_manager->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
+	m_input_manager->event_mouse_released.remove_listener(m_mouse_released_e);
+	m_input_manager->event_mouse_moved.remove_listener(m_mouse_move_e);
+
+	RocketInput::set_context(nullptr);
+
 	if (RocketContext) 
 	{
 		RocketContext->RemoveReference();

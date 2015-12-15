@@ -37,7 +37,9 @@ void InputManager_SFML::initialize()
 		}		
 	}
 
-	//m_os_manager->
+	m_os_manager->event_mouse_moved.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_moved.notify(args); });
+	m_os_manager->event_mouse_click.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_pressed.notify(args); });
+	m_os_manager->event_mouse_released.add_listener([=](OSManagerAbstract::MouseArgs args) { event_mouse_released.notify(args); });
 }
 
 void InputManager_SFML::terminate()

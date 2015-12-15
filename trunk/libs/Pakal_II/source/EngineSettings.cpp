@@ -75,7 +75,7 @@ Engine::Settings::Settings()  : uses_thread(true)
 		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs, IInputManager * im) { return new IrrRocketUI(gs, im);  };
 	#endif
 	
-	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->os_manager()); };
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->os_manager(), engine->input_manager()); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1
