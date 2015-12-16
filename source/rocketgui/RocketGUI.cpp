@@ -75,8 +75,8 @@ bool RocketUI::load_font(const char* path)
 	return Rocket::Core::FontDatabase::LoadFontFace(path);
 }
 
-RocketUI::RocketUI(GraphicsSystem* renderInterface, IInputManager* input_manager) 
-	: m_graphics_system(renderInterface), m_input_manager(input_manager)
+RocketUI::RocketUI(GraphicsSystem* renderInterface) 
+	: m_graphics_system(renderInterface)
 {
 }
 
@@ -160,25 +160,17 @@ void RocketUI::initialize()
 
 	RocketInput::set_context(RocketContext);
 
-	m_mouse_move_e = m_input_manager->event_mouse_moved.add_listener([=](Pakal::MouseArgs args)
-	{
-		RocketInput::process_mouse_move(args);
-	});
-	m_mouse_released_e = m_input_manager->event_mouse_released.add_listener([=](Pakal::MouseArgs args)
-	{
-		RocketInput::process_mouse_released(args);
-	});
-	m_mouse_pressed_e = m_input_manager->event_mouse_pressed.add_listener([=](Pakal::MouseArgs args)
-	{
-		RocketInput::process_mouse_pressed(args);
-	});
+	m_mouse_move_e	   = OSManager::instance().get_input_manager()->event_mouse_moved.add_listener(std::bind(&RocketInput::process_mouse_move,std::placeholders::_1));
+	m_mouse_released_e = OSManager::instance().get_input_manager()->event_mouse_released.add_listener(std::bind(&RocketInput::process_mouse_released,std::placeholders::_1));
+	m_mouse_pressed_e  = OSManager::instance().get_input_manager()->event_mouse_pressed.add_listener(std::bind(&RocketInput::process_mouse_pressed,std::placeholders::_1));
+
 }
 
 void RocketUI::terminate()
 {	
-	m_input_manager->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
-	m_input_manager->event_mouse_released.remove_listener(m_mouse_released_e);
-	m_input_manager->event_mouse_moved.remove_listener(m_mouse_move_e);
+	OSManager::instance().get_input_manager()->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
+	OSManager::instance().get_input_manager()->event_mouse_released.remove_listener(m_mouse_released_e);
+	OSManager::instance().get_input_manager()->event_mouse_moved.remove_listener(m_mouse_move_e);
 
 	RocketInput::set_context(nullptr);
 

@@ -61,17 +61,14 @@ void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
 	mutex_guard lock(m_updatablesMutex);
 	const auto &it = std::find(m_updatables.begin(), m_updatables.end(), updatable);
 	
-
-
 	ASSERT(it != m_updatables.end());
 	
 	m_updatables.erase(it);
-	
 }
 
-GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager): System(false), m_settings(settings), m_os_manager(os_manager)
+GraphicsSystem::GraphicsSystem(const Settings& settings): System(false), m_settings(settings)
 {
-	m_ui_manager = settings.ui_manager_allocator(this, os_manager->get_input_manager());
+	m_ui_manager = settings.ui_manager_allocator(this);
 }
 
 GraphicsSystem::~GraphicsSystem()

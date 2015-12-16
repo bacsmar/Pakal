@@ -40,7 +40,7 @@ namespace Pakal
 			bool full_screen;
 			bool vsync;
 			unsigned max_fps;
-			std::function<IUIManager*(GraphicsSystem* gs, IInputManager * im)>		ui_manager_allocator;
+			std::function<IUIManager*(GraphicsSystem* gs)>	ui_manager_allocator;
 
 			Settings() : resolution(800,600), bits(32), full_screen(false), vsync(false), max_fps(1000) {}
 
@@ -59,13 +59,13 @@ namespace Pakal
 
 	protected:
 		Settings			m_settings;
-		OSManager*			m_os_manager = nullptr;
+		OSManager*			m_os_manager = &OSManager::instance();
 		IUIManager*			m_ui_manager = nullptr;
 
 		std::mutex					m_updatablesMutex;
 		std::vector<IUpdatable*>	m_updatables;
 
-		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager);
+		explicit GraphicsSystem(const Settings& settings);
 
 		virtual ~GraphicsSystem();
 

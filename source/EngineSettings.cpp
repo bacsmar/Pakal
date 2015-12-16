@@ -78,10 +78,10 @@ Engine::Settings::Settings()
 #if PAKAL_USE_IRRLICHT == 1
 
 	#if PAKAL_USE_ROCKET == 1
-		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs, IInputManager * im) { return new IrrRocketUI(gs, im);  };
+		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new IrrRocketUI(gs);  };
 	#endif
 	
-	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings, engine->os_manager()); };
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1

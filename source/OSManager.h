@@ -49,8 +49,6 @@ namespace Pakal
 	public:
 		static OSManager& instance();
 
-
-
 		Event<WindowArgs>	event_window_created;
 		Event<WindowArgs>	event_window_destroyed;
 		Event<WindowArgs>	event_window_redraw_needed;

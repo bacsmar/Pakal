@@ -22,10 +22,11 @@ namespace Pakal
 	class _PAKALExport IrrRocketUI : public RocketUI
 	{			
 	public:
-		IrrRocketUI(GraphicsSystem* renderInterface, IInputManager* input_manager)
-			: RocketUI(renderInterface, input_manager)
+		explicit IrrRocketUI(GraphicsSystem* renderInterface) : RocketUI(renderInterface)
 		{
+			
 		}	
+
 		void setup_render_interface() override;
 		void draw_ui() override;
 	protected:
