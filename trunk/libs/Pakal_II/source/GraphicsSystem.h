@@ -65,7 +65,7 @@ namespace Pakal
 		std::mutex					m_updatablesMutex;
 		std::vector<IUpdatable*>	m_updatables;
 
-		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager, IInputManager* input_manager);
+		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager);
 
 		virtual ~GraphicsSystem();
 

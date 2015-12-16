@@ -26,8 +26,8 @@ using namespace Pakal;
 
 
 //////////////////////////////////////////////////////////////////////////
-IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager, IInputManager* input_manager)
-	: GraphicsSystem(settings, osManager, input_manager),
+IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings,OSManager* osManager)
+	: GraphicsSystem(settings, osManager),
 	device(nullptr),
 	driver(nullptr),	
 	smgr(nullptr),
