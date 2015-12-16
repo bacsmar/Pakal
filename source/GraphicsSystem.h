@@ -39,16 +39,15 @@ namespace Pakal
 			int bits;
 			bool full_screen;
 			bool vsync;
-			unsigned max_fps = 1000;
+			unsigned max_fps;
 			std::function<IUIManager*(GraphicsSystem* gs, IInputManager * im)>		ui_manager_allocator;
 
-			Settings() : resolution(640,480), bits(32), full_screen(false), vsync(false) {}
+			Settings() : resolution(800,600), bits(32), full_screen(false), vsync(false), max_fps(1000) {}
 
 			void persist(Archive* archive);
 
 		};
 
-		// TODO: IUpdatable? this class needs a more convenient name
 		struct IUpdatable
 		{
 			virtual ~IUpdatable() {}
@@ -70,7 +69,7 @@ namespace Pakal
 
 		virtual ~GraphicsSystem();
 
-		virtual void on_init_graphics(const OSManager::WindowArgs& args) = 0;
+		virtual void on_init_graphics(const WindowArgs& args) = 0;
 		virtual void on_update_graphics(long long dt) = 0;
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;

@@ -12,13 +12,13 @@ namespace Pakal
 {
 	class _PAKALExport System : public ISystem
 	{
-		std::atomic<SystemState> m_state;
-		std::thread*			m_thread;
+		std::atomic<SystemState> m_state = SystemState::Created;
+		std::thread*			m_thread = nullptr;
+		unsigned				m_desired_frame_time_ms = 1;
+
 		bool					m_threaded;
 		AsyncTaskDispatcher		m_dispatcher;
 		FPSCounter				m_fps_counter;
-		unsigned				m_desired_frame_time_ms = 1;	// default to 60 fps
-
 		std::atomic_bool		m_dispatcher_ready;
 
 	protected:
@@ -43,7 +43,10 @@ namespace Pakal
 		inline bool is_threaded() override final { return m_threaded; };
 		inline SystemState get_state() override final { return m_state; };
 		inline unsigned get_fps() override final { return m_fps_counter.get_fps(); };
-		inline void set_target_fps(unsigned target_fps) { m_desired_frame_time_ms = static_cast<unsigned>((target_fps ? 1.0 / target_fps : 0) * 1000); };
+		inline void set_target_fps(unsigned target_fps) override final
+		{
+			m_desired_frame_time_ms = static_cast<unsigned>((target_fps ? 1.0 / target_fps : 0) * 1000); 
+		};
 
 		void update(long long dt) override final;
 

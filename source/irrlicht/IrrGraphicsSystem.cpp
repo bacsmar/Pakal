@@ -40,7 +40,7 @@ IrrGraphicsSystem::~IrrGraphicsSystem()
 	SAFE_DEL(m_render_info);
 }
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
+void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 {
 	LOG_DEBUG("[Graphic System] Starting irrlicht");
 
@@ -85,18 +85,18 @@ void IrrGraphicsSystem::on_init_graphics(const OSManager::WindowArgs& args)
 	//camera->setProjectionMatrix(MyMatrix);
 
 	// setting up events
-	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](OSManager::WindowArgs a)
+	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](WindowArgs a)
 	{
 		device->getVideoDriver()->OnResize(dimension2du(a.size_x,a.size_y));
 	},THIS_THREAD);
 	
-	m_destroyed_callback_id = m_os_manager->event_window_destroyed.add_listener([this](OSManager::WindowArgs a)
+	m_destroyed_callback_id = m_os_manager->event_window_destroyed.add_listener([this](WindowArgs a)
 	{
 		device->getContextManager()->destroySurface();
 	}, THIS_THREAD);
 
 	//// next time we only need to recreate the openGL context
-	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](OSManager::WindowArgs a)
+	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](WindowArgs a)
 	{
 		SEvent event;
 		event.EventType = irr::EET_USER_EVENT;

@@ -113,6 +113,8 @@ namespace Pakal
 				m_delegates.clear();
 			}
 
+			inline void operator()(const TArgs& arguments) { notify(arguments); }
+
 			void notify(const TArgs& arguments)
 			{
 				m_mutex.lock();
@@ -222,6 +224,8 @@ namespace Pakal
 
 				m_delegates.clear();
 			}
+
+			inline void operator()() { notify(); }
 
 			void notify()
 			{

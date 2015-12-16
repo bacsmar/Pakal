@@ -19,9 +19,9 @@ namespace Pakal
 		virtual IAxisDevice*	get_axis_device(unsigned id) = 0;
 		virtual ITouchDevice*	get_touch_device(unsigned id) = 0;
 
-		Event<Pakal::MouseArgs> event_mouse_moved;
-		Event<Pakal::MouseArgs> event_mouse_pressed;
-		Event<Pakal::MouseArgs> event_mouse_released;
-		Event<Pakal::TextArgs>event_text;
+		Event<MouseArgs> event_mouse_moved;
+		Event<MouseArgs> event_mouse_pressed;
+		Event<MouseArgs> event_mouse_released;
+		Event<TextArgs>  event_text;
 	};
 }

@@ -66,7 +66,7 @@
     <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h" />
     <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h" />
-    <ClInclude Include="..\source\OSManagerAbstract.h" />
+    <ClInclude Include="..\source\WindowCreatorSFML.h" />
     <ClInclude Include="..\source\ZipSource.h" />
     <ClInclude Include="..\source\DirectorySource.h" />
     <ClInclude Include="..\source\ISource.h" />
@@ -136,6 +136,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent.cpp" />
     <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp" />
@@ -169,7 +170,7 @@
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
-    <ClCompile Include="..\source\OSManagerAbstract.cpp" />
+    <ClCompile Include="..\source\WindowCreatorSFML.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\source\System.cpp" />

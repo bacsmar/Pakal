@@ -26,6 +26,7 @@ namespace Pakal
 		virtual BasicTaskPtr pause() = 0;
 		virtual void		 update(long long dt) = 0;
 		virtual unsigned     get_fps() = 0;
+		virtual void set_target_fps(unsigned target_fps) = 0;
 
 		virtual SystemState get_state() = 0;
 		virtual bool is_threaded() = 0;

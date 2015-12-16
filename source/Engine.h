@@ -30,15 +30,16 @@ namespace Pakal
 
 		struct _PAKALExport Settings
 		{
-			bool uses_thread;
+			bool uses_thread = true;
 			unsigned max_fps = 1000;
+
 			PhysicsSystem::Settings physic_system_settings;
 			GraphicsSystem::Settings graphic_system_settings;
+			OSManager::Settings os_manager_settings;
 
 			std::function<GraphicsSystem*(Engine*,const GraphicsSystem::Settings& settings)> graphic_system_allocator;
 			std::function<PhysicsSystem*(Engine*,const PhysicsSystem::Settings& settings)>	physics_system_allocator;
 			std::function<SoundManager*(Engine*)>	sound_manager_allocator;
-			std::function<IInputManager*(Engine*)>	input_manager_allocator;
 
 			void persist(Archive* archive);
 			Settings();
@@ -54,9 +55,9 @@ namespace Pakal
 		inline PhysicsSystem*		physics_system() const { return m_physics_system; }
 		inline IPakalApplication*	get_application() const { return m_application; }
 		inline SoundManager*		sound_manager() const { return m_sound_manager; }
-		inline IInputManager*		input_manager() const { return m_input_manager; }
+		inline IInputManager*		input_manager() const { return os_manager()->get_input_manager(); }
 		inline GameStateManager*	game_state_manager() const { return m_game_state_manager; }
-		inline OSManager*			os_manager()  { return &OSManager::instance(); } 
+		inline OSManager*			os_manager() const  { return &OSManager::instance(); } 
 		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); }
 		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }		
 
@@ -93,7 +94,6 @@ namespace Pakal
 		GameStateManager*	m_game_state_manager;
 		ComponentManager*	m_component_manager;
 		SoundManager*		m_sound_manager;
-		IInputManager*		m_input_manager;		
 
 		std::vector<ISystem*> m_systems;
 

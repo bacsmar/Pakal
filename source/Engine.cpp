@@ -20,9 +20,8 @@ using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
-		
+	os_manager()->terminate();
 	SAFE_DEL(m_graphics_system)
-	SAFE_DEL(m_input_manager)
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
@@ -35,22 +34,23 @@ Engine::Engine(const Settings& settings) :
 	m_graphics_system(nullptr),
 	m_physics_system(nullptr),
 	m_game_state_manager(nullptr),
-	m_component_manager(nullptr),
-	m_input_manager(nullptr)
+	m_component_manager(nullptr)
 {
 	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);	
+
+	//un tio diferente
+	os_manager()->initialize(settings.os_manager_settings);
 	
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();
 	m_sound_manager		 = settings.sound_manager_allocator(this);
-	m_input_manager		 = settings.input_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
 	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
 
+	this->set_target_fps(settings.max_fps);
 	m_physics_system->set_target_fps(settings.physic_system_settings.max_fps);
 	m_graphics_system->set_target_fps(settings.graphic_system_settings.max_fps);
-	this->set_target_fps(settings.max_fps);
 
 	if( settings.physic_system_settings.debug_draw)
 	{
@@ -60,7 +60,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
 	m_component_manager->register_provider(*m_sound_manager);
-	m_component_manager->register_provider(*m_input_manager);
+	m_component_manager->register_provider(*os_manager()->get_input_manager());
 
 	register_default_components();
 	
@@ -79,11 +79,10 @@ void Engine::run(IPakalApplication* application)
 	
 	//Initialize managers
 	resource_manager()->initialize();
-	os_manager()->initialize();
+	input_manager()->initialize();
 	m_component_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
-	m_input_manager->initialize();
 
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
@@ -137,7 +136,8 @@ void Engine::run(IPakalApplication* application)
 
 		if (get_state() == SystemState::Paused)
 		{
-			os_manager()->wait_for_os_events();
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			os_manager()->process_window_events();
 			clock.restart();
 		}
 		else
@@ -162,8 +162,7 @@ void Engine::run(IPakalApplication* application)
 	m_sound_manager->terminate();
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
-	m_input_manager->terminate();
-	os_manager()->terminate();
+	input_manager()->terminate();
 	resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +174,7 @@ void Engine::on_update(long long dt)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	m_listener_terminate = os_manager()->event_app_finished.add_listener([this]() { terminate(); });
+	m_listener_terminate = os_manager()->event_app_finished.add_listener(std::bind(&Engine::terminate,this));
 
 	m_application->start(this);	
 }
@@ -217,10 +216,3 @@ void Engine::on_resume()
 	TaskUtils::wait_all(resumeTasks);
 }
 //////////////////////////////////////////////////////////////////////////
-void Engine::Settings::persist(Archive* archive)
-{
-	archive->value("uses_thread", uses_thread);
-	archive->value("max_fps", max_fps);
-	archive->value("physic_system_settings", physic_system_settings);	
-	archive->value("graphic_system_settings", graphic_system_settings);
-}

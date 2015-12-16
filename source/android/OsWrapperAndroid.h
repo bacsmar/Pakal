@@ -13,11 +13,11 @@
 #include <android/native_activity.h>
 #include <android/configuration.h>
 
-#include "OSManagerAbstract.h"
+#include "OsManager.h"
 
 namespace Pakal
 {
-	class _PAKALExport OsWrapperAndroid  : public OSManagerAbstract
+	class _PAKALExport OsWrapperAndroid  : public OSManager
 	{
 		enum Orientation
 		{

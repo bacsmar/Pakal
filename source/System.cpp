@@ -52,10 +52,9 @@ namespace Pakal
 		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
 	}
 
-	System::System(bool usesThread) : m_state(SystemState::Created)
+	System::System(bool usesThread) : m_threaded(usesThread)
 	{
-		m_threaded = usesThread;
-		m_thread = nullptr;
+		
 	}
 
 	void System::update(long long dt)
