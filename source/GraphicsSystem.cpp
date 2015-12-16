@@ -69,9 +69,9 @@ void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
 	
 }
 
-GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager, IInputManager* input_manager): System(false), m_settings(settings), m_os_manager(os_manager)
+GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager): System(false), m_settings(settings), m_os_manager(os_manager)
 {
-	m_ui_manager = settings.ui_manager_allocator(this, input_manager);
+	m_ui_manager = settings.ui_manager_allocator(this, os_manager->get_input_manager());
 }
 
 GraphicsSystem::~GraphicsSystem()
