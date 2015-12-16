@@ -38,7 +38,7 @@
     <ClInclude Include="..\source\persist\Element.h" />
     <ClInclude Include="..\source\persist\TextReader.h" />
     <ClInclude Include="..\source\persist\TextWriter.h" />
-    <ClInclude Include="..\source\persist\Utils.h" />
+    <ClInclude Include="..\source\persist\PersistUtils.h" />
     <ClInclude Include="..\source\persist\XmlReader.h" />
     <ClInclude Include="..\source\persist\XmlWriter.h" />
     <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h" />
@@ -146,6 +146,7 @@
     <ClCompile Include="..\source\persist\TextReader.cpp" />
     <ClCompile Include="..\source\persist\TextWriter.cpp" />
     <ClCompile Include="..\source\persist\XmlReader.cpp" />
+    <ClCompile Include="..\source\persist\Archive.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
     <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
     <ClCompile Include="..\source\State.cpp" />

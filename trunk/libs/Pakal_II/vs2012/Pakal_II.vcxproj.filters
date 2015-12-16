@@ -149,6 +149,9 @@
     <ClCompile Include="..\source\persist\XmlReader.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\persist\Archive.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
     <ClCompile Include="..\source\persist\XmlWriter.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
@@ -486,7 +489,7 @@
     <ClInclude Include="..\source\persist\TextWriter.h">
       <Filter>Foundation\Persist</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\persist\Utils.h">
+    <ClInclude Include="..\source\persist\PersistUtils.h">
       <Filter>Foundation\Persist</Filter>
     </ClInclude>
     <ClInclude Include="..\source\persist\XmlReader.h">
