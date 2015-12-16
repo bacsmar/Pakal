@@ -91,9 +91,6 @@
     <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
       <Filter>Components\Sprite</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\OSManagerAbstract.cpp">
-      <Filter>Managers\OSManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\AutomataComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -160,6 +157,12 @@
     </ClCompile>
     <ClCompile Include="..\source\rocketgui\RocketInput.cpp">
       <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\OSManager.cpp">
+      <Filter>Managers\OSManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\WindowCreatorSFML.cpp">
+      <Filter>Managers\OSManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -405,9 +408,6 @@
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers\OSManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\OSManagerAbstract.h">
-      <Filter>Managers\OSManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\OSManager.h">
       <Filter>Managers\OSManager</Filter>
     </ClInclude>
@@ -506,6 +506,9 @@
     </ClInclude>
     <ClInclude Include="..\source\rocketgui\RocketInput.h">
       <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\WindowCreatorSFML.h">
+      <Filter>Managers\OSManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -82,24 +82,24 @@ void StateMachine::persist(Archive* archive)
 	archive->value("script_file", m_script_file);
 }
 
-State*	StateMachine::create_state(const std::string& name)
+State* StateMachine::create_state(const std::string& name)
 {
 	const auto& it = m_states.emplace( new State(name) );
 	return *it.first;	
 }
 
-void	StateMachine::remove_state(State *state)
+void StateMachine::remove_state(State *state)
 {
 	delete state;
 	m_states.erase(state);
 }
 
-size_t	StateMachine::size() const
+size_t StateMachine::size() const
 {
 	return m_states.size();
 }
 
-auto  StateMachine::begin() -> decltype(m_states)::iterator
+auto StateMachine::begin() -> decltype(m_states)::iterator
 {
 	return m_states.begin();
 }

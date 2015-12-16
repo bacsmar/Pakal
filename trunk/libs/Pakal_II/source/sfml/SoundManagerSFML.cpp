@@ -70,8 +70,8 @@ namespace Pakal
 
 		//if not found in cache then create it and load it.
 		SharedPtr<std::istream> stream = ResourceMgr.open_read_resource(resourcePath, false);
-
-		return load_sfx(stream, resourcePath);
+		
+		return stream ? load_sfx(stream, resourcePath): nullptr;
 	}
 
 	SharedPtr<sf::SoundBuffer> SoundManagerSFML::load_sfx(SharedPtr<std::istream> resourceStream,const Path& resourceName)

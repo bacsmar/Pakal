@@ -1,6 +1,10 @@
 #include "Engine.h"
 
-#include "SoundManager.h"
+#include "persist/Archive.h"
+
+#if PAKAL_USE_SFML_WINDOW == 1
+	#include "WindowCreatorSFML.h"
+#endif
 
 #if PAKAL_USE_BOX2D == 1
 	#include "box2D/Box2DPhysicsSystem.h"
@@ -12,6 +16,8 @@
 
 #if PAKAL_USE_SFML_AUDIO == 1
 	#include "sfml/SoundManagerSFML.h"
+#else
+	#include "SoundManager.h"
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
@@ -66,7 +72,7 @@
 using namespace Pakal;
 
 
-Engine::Settings::Settings()  : uses_thread(true)
+Engine::Settings::Settings()
 {
 
 #if PAKAL_USE_IRRLICHT == 1
@@ -89,6 +95,20 @@ Engine::Settings::Settings()  : uses_thread(true)
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
-	input_manager_allocator = [](Engine* engine){ return new InputManager_SFML(engine->os_manager()); };
+	os_manager_settings.input_manager_allocator = [](OSManager* manager){ return new InputManager_SFML(manager); };
 #endif
+
+#if PAKAL_USE_SFML_WINDOW == 1
+	os_manager_settings.window_manager_allocator = [](OSManager* manager) { return new WindowCreatorSFML(manager); };
+#endif
+
+}
+
+
+void Engine::Settings::persist(Archive* archive)
+{
+	archive->value("uses_thread", uses_thread);
+	archive->value("max_fps", max_fps);
+	archive->value("physic_system_settings", physic_system_settings);
+	archive->value("graphic_system_settings", graphic_system_settings);
 }

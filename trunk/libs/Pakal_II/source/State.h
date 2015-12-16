@@ -69,6 +69,7 @@ namespace Pakal {
 	{
 		friend StateMachine;
 		friend Archive;
+		friend std::is_constructible<State>;
 	protected:
 		std::string m_name;
 		std::string on_enter_str;
