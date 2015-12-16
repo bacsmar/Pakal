@@ -26,7 +26,7 @@ namespace Pakal
 	{
 	public:		
 		/** Default constructor */		
-		explicit RocketUI(GraphicsSystem *renderInterface, IInputManager* input_manager);
+		explicit RocketUI(GraphicsSystem *renderInterface);
 		/** Default destructor */
 		virtual ~RocketUI();		
 		
@@ -52,7 +52,6 @@ namespace Pakal
 		Rocket::Core::RenderInterface*	m_renderInterface = nullptr;
 		RocketSystemInterface*			m_rocket_system_interface = nullptr;		
 		GraphicsSystem*					m_graphics_system = nullptr;
-		IInputManager*					m_input_manager = nullptr;
 		ulonglong m_mouse_move_e;
 		ulonglong m_mouse_released_e;
 		ulonglong m_mouse_pressed_e;

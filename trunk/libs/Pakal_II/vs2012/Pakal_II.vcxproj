@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\persist\JsonReader.h" />
+    <ClInclude Include="..\source\persist\JsonWriter.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent.h" />
     <ClInclude Include="..\source\components\SpritebodyComponent.h" />
@@ -136,6 +138,8 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\persist\JsonReader.cpp" />
+    <ClCompile Include="..\source\persist\JsonWriter.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent.cpp" />
