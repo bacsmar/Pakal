@@ -56,7 +56,6 @@ namespace Pakal
 	{
 		m_threaded = usesThread;
 		m_thread = nullptr;
-		//m_state = SystemState::Created;
 	}
 
 	void System::update(long long dt)
