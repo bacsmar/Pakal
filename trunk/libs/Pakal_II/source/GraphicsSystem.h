@@ -68,7 +68,7 @@ namespace Pakal
 
 		explicit GraphicsSystem(const Settings& settings, OSManager* os_manager, IInputManager* input_manager);
 
-		virtual ~GraphicsSystem(){}
+		virtual ~GraphicsSystem();
 
 		virtual void on_init_graphics(const OSManager::WindowArgs& args) = 0;
 		virtual void on_update_graphics(long long dt) = 0;

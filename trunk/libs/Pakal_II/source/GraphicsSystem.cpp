@@ -71,6 +71,11 @@ GraphicsSystem::GraphicsSystem(const Settings& settings, OSManager* os_manager, 
 	m_ui_manager = settings.ui_manager_allocator(this, input_manager);
 }
 
+GraphicsSystem::~GraphicsSystem()
+{
+	SAFE_DEL(m_ui_manager);
+}
+
 void GraphicsSystem::draw_ui_interface()
 {
 	m_ui_manager->draw_ui();
