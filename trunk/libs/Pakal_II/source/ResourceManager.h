@@ -71,12 +71,12 @@ namespace Pakal
 			if (source->initialize(std::forward<arguments>(args)...))
 			{
 				
-				LOG_DEBUG("[ResourceManager] source %s created with arguments %s", sourceName.c_str(), trait_utils::stringer(args...).c_str());
+				LOG_DEBUG("[ResourceManager] source %s created with arguments %s", sourceName.c_str(), file_utils::stringer(args...).c_str());
 				return source;
 			}
 			else
 			{
-				LOG_WARNING("ResourceManager, could not add %s with arguments %s", sourceName.c_str(), trait_utils::stringer(args...).c_str());
+				LOG_WARNING("ResourceManager, could not add %s with arguments %s", sourceName.c_str(), file_utils::stringer(args...).c_str());
 				return nullptr;
 			}
 
