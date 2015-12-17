@@ -23,17 +23,20 @@ namespace Pakal
 	class ResourceManager;
 
 	class _PAKALExport RocketUI : public IUIManager
-	{
+	{			
 	public:		
 		/** Default constructor */		
 		explicit RocketUI(GraphicsSystem *renderInterface);
 		/** Default destructor */
 		virtual ~RocketUI();		
-		
-		bool load_document(const char* documentPath, bool show, bool autoresize) override;
-		bool close_document(const char* documentId) override;
-		bool set_document_visible(const char* documentId, const bool visible) override;
-		virtual bool load_font(const char* path) override;
+
+		bool load_document(unsigned id, const Path& resourcePath) override;
+		TaskPtr<bool> load_document_async(unsigned id, const Path& resourcePath) override;
+		bool unload_document(unsigned id) override;
+		void display_document(unsigned id, bool autoresize) override;
+		void conceal_document(unsigned id) override;
+		bool load_font(const Path& resourcePath) override;
+		//void draw_ui() override;		
 
 		bool set_element_inner_text(const char* documentId, const char* elementName, const char* value);
 		bool set_element_inner_text(const char* documentId, const char* elementName, const int value);
@@ -52,6 +55,9 @@ namespace Pakal
 		Rocket::Core::RenderInterface*	m_renderInterface = nullptr;
 		RocketSystemInterface*			m_rocket_system_interface = nullptr;		
 		GraphicsSystem*					m_graphics_system = nullptr;
+
+		std::unordered_map<unsigned, std::string> m_loaded_documents;
+
 		ulonglong m_mouse_move_e;
 		ulonglong m_mouse_released_e;
 		ulonglong m_mouse_pressed_e;

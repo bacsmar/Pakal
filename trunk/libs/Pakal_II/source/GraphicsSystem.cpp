@@ -27,7 +27,6 @@ void GraphicsSystem::on_terminate()
 //////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::on_update(long long dt)
 {
-	m_ui_manager->update_ui(dt);
 	{	// updatables lock
 		mutex_guard lock(m_updatablesMutex);
 		for (auto & updatable : m_updatables)
