@@ -61,7 +61,7 @@ namespace Pakal
 		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); }
 		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }		
 
-		const char* get_system_name() override { return "Engine"; };
+		const char* get_system_name() override { return nameof(Engine); };
 
 		inline void add_system(ISystem* system)
 		{
@@ -70,7 +70,6 @@ namespace Pakal
 
 			m_systems.push_back(system);
 		}
-
 		inline void remove_system(ISystem* system)
 		{
 			ASSERT(get_state() == SystemState::Created || get_state() == SystemState::Terminated);
@@ -85,6 +84,7 @@ namespace Pakal
 		void on_pause() override;
 		void on_resume() override;
 		void register_default_components();
+		std::wstring get_systems_fps();		
 
 		IPakalApplication*  m_application;
 

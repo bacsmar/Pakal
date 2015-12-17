@@ -10,8 +10,7 @@ using namespace Pakal;
 
 void GraphicsSystem::on_initialize()
 {
-	m_os_manager
-		->setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)
+	OSMgr.setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)
 		->continue_with(std::bind(&GraphicsSystem::on_init_graphics,this,std::placeholders::_1),THIS_THREAD)
 		->wait();	
 	m_ui_manager->initialize();
@@ -20,14 +19,15 @@ void GraphicsSystem::on_initialize()
 
 void GraphicsSystem::on_terminate()
 {
-	m_os_manager->close_window();
 	m_ui_manager->terminate();
 	on_terminate_graphics();
+	OSMgr.close_window();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void GraphicsSystem::on_update(long long dt)
 {
+	m_ui_manager->update_ui(dt);
 	{	// updatables lock
 		mutex_guard lock(m_updatablesMutex);
 		for (auto & updatable : m_updatables)
@@ -53,7 +53,6 @@ void GraphicsSystem::add_to_update_list(IUpdatable* updatable)
 {
 	mutex_guard lock(m_updatablesMutex);
 	m_updatables.emplace_back(updatable);
-	
 }
 
 void GraphicsSystem::remove_from_update_list(IUpdatable* updatable)
@@ -74,11 +73,6 @@ GraphicsSystem::GraphicsSystem(const Settings& settings): System(false), m_setti
 GraphicsSystem::~GraphicsSystem()
 {
 	SAFE_DEL(m_ui_manager);
-}
-
-void GraphicsSystem::draw_ui_interface()
-{
-	m_ui_manager->draw_ui();
 }
 
 void GraphicsSystem::Settings::persist(Archive* archive)

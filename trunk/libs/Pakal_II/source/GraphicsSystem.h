@@ -27,10 +27,9 @@ namespace Pakal
 		
 	public:
 
-		virtual void			set_window_caption(const wchar_t*) {};
-		virtual const char*		get_system_name() override = 0;
+		virtual void set_window_caption(const wchar_t*) {};
+		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
-		virtual void			add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 		inline IUIManager*		get_ui_interface() { return m_ui_manager; };
 
 		struct Settings
@@ -47,7 +46,6 @@ namespace Pakal
 			void persist(Archive* archive);
 
 		};
-
 		struct IUpdatable
 		{
 			virtual ~IUpdatable() {}
@@ -59,14 +57,9 @@ namespace Pakal
 
 	protected:
 		Settings			m_settings;
-		OSManager*			m_os_manager = &OSManager::instance();
-		IUIManager*			m_ui_manager = nullptr;
-
-		std::mutex					m_updatablesMutex;
-		std::vector<IUpdatable*>	m_updatables;
+		IUIManager*			m_ui_manager;
 
 		explicit GraphicsSystem(const Settings& settings);
-
 		virtual ~GraphicsSystem();
 
 		virtual void on_init_graphics(const WindowArgs& args) = 0;
@@ -74,6 +67,8 @@ namespace Pakal
 		virtual void on_terminate_graphics() = 0;
 		virtual void on_pause_graphics() = 0;
 		virtual void on_resume_graphics() = 0;
-		void draw_ui_interface();
+	private:
+		std::mutex					m_updatablesMutex;
+		std::vector<IUpdatable*>	m_updatables;
 	};
 }

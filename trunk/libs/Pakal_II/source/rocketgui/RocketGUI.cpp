@@ -160,17 +160,17 @@ void RocketUI::initialize()
 
 	RocketInput::set_context(RocketContext);
 
-	m_mouse_move_e	   = OSManager::instance().get_input_manager()->event_mouse_moved.add_listener(std::bind(&RocketInput::process_mouse_move,std::placeholders::_1));
-	m_mouse_released_e = OSManager::instance().get_input_manager()->event_mouse_released.add_listener(std::bind(&RocketInput::process_mouse_released,std::placeholders::_1));
-	m_mouse_pressed_e  = OSManager::instance().get_input_manager()->event_mouse_pressed.add_listener(std::bind(&RocketInput::process_mouse_pressed,std::placeholders::_1));
+	m_mouse_move_e	   = OSMgr.get_input_manager()->event_mouse_moved.add_listener(std::bind(&RocketInput::process_mouse_move,std::placeholders::_1));
+	m_mouse_released_e = OSMgr.get_input_manager()->event_mouse_released.add_listener(std::bind(&RocketInput::process_mouse_released,std::placeholders::_1));
+	m_mouse_pressed_e  = OSMgr.get_input_manager()->event_mouse_pressed.add_listener(std::bind(&RocketInput::process_mouse_pressed,std::placeholders::_1));
 
 }
 
 void RocketUI::terminate()
 {	
-	OSManager::instance().get_input_manager()->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
-	OSManager::instance().get_input_manager()->event_mouse_released.remove_listener(m_mouse_released_e);
-	OSManager::instance().get_input_manager()->event_mouse_moved.remove_listener(m_mouse_move_e);
+	OSMgr.get_input_manager()->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
+	OSMgr.get_input_manager()->event_mouse_released.remove_listener(m_mouse_released_e);
+	OSMgr.get_input_manager()->event_mouse_moved.remove_listener(m_mouse_move_e);
 
 	RocketInput::set_context(nullptr);
 

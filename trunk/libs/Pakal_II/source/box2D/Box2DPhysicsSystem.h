@@ -31,7 +31,7 @@ namespace Pakal
 
 		inline const char* get_system_name() override final
 		{
-			return "Box2DPhysicsSystem";
+			return nameof(Box2DPhysicsSystem);
 		}
 
 		b2Body	* create_body(const b2BodyDef* def);

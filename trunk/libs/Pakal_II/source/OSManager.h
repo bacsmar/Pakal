@@ -16,6 +16,7 @@
 
 #include <functional>
 
+
 namespace Pakal
 {	
 	class IInputManager;
@@ -77,3 +78,5 @@ namespace Pakal
 		
 	};
 }
+
+#define OSMgr OSManager::instance()
