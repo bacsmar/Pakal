@@ -28,8 +28,7 @@ namespace Pakal
 		}	
 
 		void setup_render_interface() override;
-		void draw_ui() override;
-		void update_ui(long long dt) override;
+		void draw_ui() override;		
 	protected:
 		irr::IrrlichtDevice*			m_irrlichtDevice = nullptr;		
 		irr::scene::ICameraSceneNode*	GUI_Camera = nullptr;			

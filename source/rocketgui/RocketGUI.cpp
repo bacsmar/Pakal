@@ -11,69 +11,52 @@
 #include "IInputManager.h"
 #include "RocketInput.h"
 #include "GraphicsSystem.h"
+#include <Pakal_II/source/EventScheduler.h>
 
 using namespace Pakal;
-
-bool RocketUI::load_document(const char* documentPath, bool show, bool autoresize)
-{
-	m_graphics_system->execute_block([=]()
-	{
-		std::string base;
-		base.append(documentPath);
-
-		Rocket::Core::ElementDocument* document = RocketContext->LoadDocument(base.c_str());
-
-		if (document)
-		{
-			if (show)
-			{
-				document->Focus();
-				document->Show();
-			}
-			document->RemoveReference();
-		}
-	});	
-
-	return false;
-}
-
-bool RocketUI::close_document(const char* documentId)
-{
-	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
-
-	if (document)
-	{
-		document->Close();
-
-		return true;
-	}
-
-	return false;
-}
-
-bool RocketUI::set_document_visible(const char* documentId, const bool visible)
-{
-	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
-
-	if (document)
-	{
-		if (visible)
-		{
-			document->Focus();
-			document->Show();
-		}
-		else
-			document->Hide();
-
-		return true;
-	}
-	return false;
-}
-
-bool RocketUI::load_font(const char* path)
-{
-	return Rocket::Core::FontDatabase::LoadFontFace(path);
-}
+//
+//bool RocketUI::load_document(const char* documentPath, bool show, bool autoresize)
+//{
+//	
+//}
+//
+//bool RocketUI::close_document(const char* documentId)
+//{
+//	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
+//
+//	if (document)
+//	{
+//		document->Close();
+//
+//		return true;
+//	}
+//
+//	return false;
+//}
+//
+//bool RocketUI::set_document_visible(const char* documentId, const bool visible)
+//{
+//	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
+//
+//	if (document)
+//	{
+//		if (visible)
+//		{
+//			document->Focus();
+//			document->Show();
+//		}
+//		else
+//			document->Hide();
+//
+//		return true;
+//	}
+//	return false;
+//}
+//
+//bool RocketUI::load_font(const char* path)
+//{
+//	return Rocket::Core::FontDatabase::LoadFontFace(path);
+//}
 
 RocketUI::RocketUI(GraphicsSystem* renderInterface) 
 	: m_graphics_system(renderInterface)
@@ -83,8 +66,76 @@ RocketUI::RocketUI(GraphicsSystem* renderInterface)
 RocketUI::~RocketUI()
 {
 	//dtor
-
 }
+
+bool RocketUI::load_document(unsigned id, const Path& resourcePath)
+{
+	return load_document_async(id, resourcePath)->result();
+}
+
+TaskPtr<bool> RocketUI::load_document_async(unsigned id, const Path& resourcePath)
+{
+	std::function<bool()> fn = [=]()
+	{
+		auto documentId = m_loaded_documents.find(id);
+
+		if (documentId != m_loaded_documents.end())	// document already loaded
+			return false;
+
+		Rocket::Core::ElementDocument* document = RocketContext->LoadDocument(resourcePath.c_str());
+
+		if (document)
+		{			
+			m_loaded_documents[id] = resourcePath.c_str();
+			document->RemoveReference();
+			return true;
+		}
+		return false;
+	};
+	return EventScheduler::instance().execute_in_thread(fn, m_graphics_system->thread_id() );
+}
+
+bool RocketUI::unload_document(unsigned id)
+{
+	return false;
+}
+
+void RocketUI::display_document(unsigned id, bool autoresize)
+{
+	auto documentId = m_loaded_documents.find(id);
+
+	if (documentId == m_loaded_documents.end())
+		return;
+
+	Rocket::Core::ElementDocument* document = RocketContext->GetDocument( documentId->second.c_str() );
+
+	if (document)
+	{
+
+		document->Focus();
+		document->Show();
+	}
+}
+
+void RocketUI::conceal_document(unsigned id)
+{
+	auto documentId = m_loaded_documents.find(id);
+	if (documentId == m_loaded_documents.end())
+		return;
+
+	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId->second.c_str());
+
+	if (document)
+	{
+		document->Hide();
+	}
+}
+
+bool RocketUI::load_font(const Path& resourcePath)
+{
+	return Rocket::Core::FontDatabase::LoadFontFace(resourcePath.c_str());
+}
+
 bool RocketUI::set_element_inner_text(const char* documentId, const char* elementName, const char* value)
 {
 	if (RocketContext->GetDocument(documentId))
