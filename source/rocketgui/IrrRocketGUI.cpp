@@ -39,7 +39,11 @@ void IrrRocketUI::setup_render_interface()
 
 void IrrRocketUI::draw_ui()
 {
-	RocketContext->Update();
 	GUI_Camera->render();
 	RocketContext->Render();
+}
+
+void IrrRocketUI::update_ui(long long dt)
+{
+	RocketContext->Update();
 }

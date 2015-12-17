@@ -96,19 +96,16 @@ void Engine::run(IPakalApplication* application)
 	initialize()->wait();
 
 	//get the systems we are gonna loop into
-	std::vector<ISystem*> nonThreadedSystems;
-	nonThreadedSystems.reserve(m_systems.size());
+	std::vector<ISystem*> threadlessSystems;
+	threadlessSystems.reserve(m_systems.size());
 
-	if (!is_threaded())
-	{
-		nonThreadedSystems.push_back(this);
-	}
+	if (!is_threaded()) threadlessSystems.push_back(this);
 
 	for (auto s : m_systems)
-	{
 		if (!s->is_threaded())
-			nonThreadedSystems.push_back(s);
-	}
+		{
+			threadlessSystems.push_back(s);
+		}
 
 	//do the loop
 	Clock clock;
@@ -117,16 +114,11 @@ void Engine::run(IPakalApplication* application)
 
 	while (get_state() != SystemState::Terminated)
 	{
-		std::wostringstream ss;
-		ss << get_system_name() << L"[" << get_fps() << L"] ";
-		for (auto s : m_systems)
-		{
-			ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";
-		}
-		m_graphics_system->set_window_caption(ss.str().c_str());
+		//Update the caption
+		m_graphics_system->set_window_caption(get_systems_fps().c_str());
 
-
-		for (auto s : nonThreadedSystems)
+		//update threadless systems
+		for (auto s : threadlessSystems)
 		{
 			if (s->get_state() != SystemState::Terminated)
 			{
@@ -134,17 +126,19 @@ void Engine::run(IPakalApplication* application)
 			}
 		}
 
-		if (get_state() == SystemState::Paused)
+		//process window events
+		if (get_state() != SystemState::Paused)
+		{
+			os_manager()->process_window_events();
+		}
+		else
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			os_manager()->process_window_events();
 			clock.restart();
-		}
-		else
-		{
-			os_manager()->process_window_events();
 		}			
 
+		//update the dt
 		dt = clock.restart().asMilliseconds();
 	}
 
@@ -216,3 +210,16 @@ void Engine::on_resume()
 	TaskUtils::wait_all(resumeTasks);
 }
 //////////////////////////////////////////////////////////////////////////
+
+std::wstring Engine::get_systems_fps()
+{
+	std::wostringstream ss;
+
+	ss << get_system_name() << L"[" << get_fps() << L"] ";
+	for (auto s : m_systems)
+	{
+		ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";
+	}
+
+	return ss.str();
+}

@@ -29,7 +29,7 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
-		inline const char* get_system_name() override { return "IrrGraphicsSystem";  };	
+		inline const char* get_system_name() override { return nameof(IrrGraphicsSystem);  };
 
 		explicit IrrGraphicsSystem(const Settings& settings);
 

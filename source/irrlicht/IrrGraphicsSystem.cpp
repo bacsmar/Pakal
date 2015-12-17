@@ -4,6 +4,7 @@
 #include "ComponentFactory.h"
 
 #include "IDebugDrawer.h"
+#include "IUIManager.h"
 
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
@@ -14,6 +15,7 @@
 
 #include "irrlicht/DirectorySourceIrrlitch.h"
 #include "irrlicht/ZipSourceIrrlitch.h"
+
 
 using namespace irr;
 using namespace irr::core;
@@ -85,18 +87,18 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	//camera->setProjectionMatrix(MyMatrix);
 
 	// setting up events
-	m_resized_callback_id = m_os_manager->event_window_resized.add_listener([this](WindowArgs a)
+	m_resized_callback_id = OSMgr.event_window_resized.add_listener([this](WindowArgs a)
 	{
 		device->getVideoDriver()->OnResize(dimension2du(a.size_x,a.size_y));
 	},THIS_THREAD);
 	
-	m_destroyed_callback_id = m_os_manager->event_window_destroyed.add_listener([this](WindowArgs a)
+	m_destroyed_callback_id = OSMgr.event_window_destroyed.add_listener([this](WindowArgs a)
 	{
 		device->getContextManager()->destroySurface();
 	}, THIS_THREAD);
 
 	//// next time we only need to recreate the openGL context
-	m_created_callback_id = m_os_manager->event_window_created.add_listener([this](WindowArgs a)
+	m_created_callback_id = OSMgr.event_window_created.add_listener([this](WindowArgs a)
 	{
 		SEvent event;
 		event.EventType = irr::EET_USER_EVENT;
@@ -112,9 +114,9 @@ void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 
-	m_os_manager->event_window_resized.remove_listener(m_resized_callback_id);	
-	m_os_manager->event_window_destroyed.remove_listener(m_destroyed_callback_id);
-	m_os_manager->event_window_created.remove_listener(m_created_callback_id);
+	OSMgr.event_window_resized.remove_listener(m_resized_callback_id);
+	OSMgr.event_window_destroyed.remove_listener(m_destroyed_callback_id);
+	OSMgr.event_window_created.remove_listener(m_created_callback_id);
 
 	device->closeDevice();
 	device->drop();
@@ -172,8 +174,6 @@ void IrrGraphicsSystem::draw()
 	{
 		draw_axis();
 	}
-
-	draw_ui_interface();	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
@@ -185,6 +185,7 @@ void IrrGraphicsSystem::on_update_graphics(long long dt)
 {
 	begin_scene();
 	draw();
+	m_ui_manager->draw_ui();
 	end_scene();
 }
 
