@@ -100,6 +100,11 @@ bool RocketUI::unload_document(unsigned id)
 	return false;
 }
 
+TaskPtr<bool> RocketUI::unload_document_async(unsigned id)
+{
+	return TaskUtils::from_result(false);
+}
+
 void RocketUI::display_document(unsigned id, bool autoresize)
 {
 	auto documentId = m_loaded_documents.find(id);

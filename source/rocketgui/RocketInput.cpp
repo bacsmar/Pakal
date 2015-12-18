@@ -17,11 +17,11 @@ Rocket::Core::word Pakal::RocketInput::GetCharacterCode(Rocket::Core::Input::Key
 
 void Pakal::RocketInput::process_mouse_pressed(Pakal::MouseArgs args)
 {
-	context->ProcessMouseButtonDown(args.button_id, 0);
+	context->ProcessMouseButtonDown(static_cast<int>(args.button_id), 0);
 }
 void Pakal::RocketInput::process_mouse_released(Pakal::MouseArgs args)
 {
-	context->ProcessMouseButtonUp(args.button_id, 0);
+	context->ProcessMouseButtonUp(static_cast<int>(args.button_id), 0);
 }
 
 void Pakal::RocketInput::process_mouse_move(Pakal::MouseArgs  args)

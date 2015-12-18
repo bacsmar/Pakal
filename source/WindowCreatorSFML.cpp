@@ -3,6 +3,21 @@
 
 using namespace Pakal;
 
+MouseButton map_sfml_to_pakal(sf::Mouse::Button btn)
+{
+	switch (btn)
+	{
+	case sf::Mouse::Left: return MouseButton::Left;
+	case sf::Mouse::Right: return MouseButton::Right;
+	case sf::Mouse::Middle: return MouseButton::Middle;
+	case sf::Mouse::XButton1: return MouseButton::XButton1;
+	case sf::Mouse::XButton2: return MouseButton::XButton2;
+	default: break;
+	}
+
+	return static_cast<MouseButton>(-1);
+}
+
 unsigned WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {
 	ASSERT(m_window_created == false);
@@ -55,14 +70,34 @@ void WindowCreatorSFML::process_window_events()
 				m_os_manager->get_input_manager()->event_text(args);
 			}
 				break;
-			case sf::Event::KeyPressed: break;
-			case sf::Event::KeyReleased: break;
+			case sf::Event::KeyPressed: 
+			{
+				KeyArgs args;
+				args.key = static_cast<Key>(e.key.code);
+				m_os_manager->get_input_manager()->event_key_down(args);
+			}
+				break;
+			case sf::Event::KeyReleased: 
+			{
+				KeyArgs args;
+				args.key = static_cast<Key>(e.key.code);
+				m_os_manager->get_input_manager()->event_key_up(args);
+			}
+				break;
 			case sf::Event::MouseWheelMoved: break;
-			case sf::Event::MouseWheelScrolled: break;
+			case sf::Event::MouseWheelScrolled: 
+			{
+				MouseArgs args;
+				args.delta = e.mouseWheelScroll.delta;
+				args.x = e.mouseWheelScroll.x;
+				args.y = e.mouseWheelScroll.y;
+				m_os_manager->get_input_manager()->event_mouse_wheel(args);
+			}
+				break;
 			case sf::Event::MouseButtonPressed: 
 			{
 				MouseArgs args;
-				args.button_id = e.mouseButton.button;
+				args.button_id = map_sfml_to_pakal(e.mouseButton.button);
 				args.x = e.mouseButton.x;
 				args.y = e.mouseButton.y;
 				m_os_manager->get_input_manager()->event_mouse_pressed(args);
@@ -71,7 +106,7 @@ void WindowCreatorSFML::process_window_events()
 			case sf::Event::MouseButtonReleased: 
 			{
 				MouseArgs args;
-				args.button_id = e.mouseButton.button;
+				args.button_id = map_sfml_to_pakal(e.mouseButton.button);
 				args.x = e.mouseButton.x;
 				args.y = e.mouseButton.y;
 				m_os_manager->get_input_manager()->event_mouse_released(args);
@@ -80,7 +115,7 @@ void WindowCreatorSFML::process_window_events()
 			case sf::Event::MouseMoved: 
 			{
 				MouseArgs args;
-				args.button_id = 0;
+				args.button_id = static_cast<MouseButton>(-1);
 				args.x = e.mouseMove.x;
 				args.y = e.mouseMove.y;
 				m_os_manager->get_input_manager()->event_mouse_moved(args);

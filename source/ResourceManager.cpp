@@ -72,30 +72,21 @@ namespace Pakal
 		{			
 			stream =  std::static_pointer_cast<std::istream>(localStream);
 		}
-
-		//look for it in sources
-		if (!stream)
+		else //try to open it from sources
 		{
-			mutex_guard guard(m_sources_mutex);
-			
+			m_sources_mutex.lock();
+				std::vector<SharedPtr<ISource>> tempSources = m_sources;
+			m_sources_mutex.unlock();
+
 			for (auto& source : m_sources)
-			{
 				if (stream = source->open_resource(resourcePath))
-				{
 					break;
-				}
-			}
 		}
 
-		//try to open it from sources
+
 		if (stream)
 		{
-			if (!inMemory)
-			{
-				LOG_INFO("[ResourceManager] %s loaded", resourcePath.c_str());
-				return stream;
-			}
-			else
+			if (inMemory)
 			{
 				SharedPtr<memory_istream> memoryStream = memory_istream::from_istream(stream.get());
 
@@ -105,12 +96,15 @@ namespace Pakal
 				LOG_INFO("[ResourceManager] %s loaded in memory", resourcePath.c_str());
 				return memoryStream;
 			}
+			else
+			{
+				LOG_INFO("[ResourceManager] %s loaded", resourcePath.c_str());
+				return stream;
+			}
 		}
-		else //fail to open it 
-		{
-			LOG_ERROR("[ResourceManager] %s could not be loaded", resourcePath.c_str());
-			return stream;
-		}
+
+		LOG_ERROR("[ResourceManager] %s could not be loaded", resourcePath.c_str());
+		return nullptr;
 	}
 
 	SharedPtr<std::ostream> ResourceManager::open_write_resource(const Path& resourcePath)

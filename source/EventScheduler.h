@@ -78,3 +78,5 @@ namespace Pakal
 		}
 	};
 }
+
+#define Scheduler EventScheduler::instance()
