@@ -88,7 +88,27 @@ Pakal::Selector::operator bool() const
 
 Pakal::Selector::operator int() const
 {
-	int value = false;
+	int value = 0;
 	m_script->pull(value);
 	return value;
+}
+
+
+Pakal::Selector::operator float() const
+{
+	float value = 0;
+	m_script->pull(value);
+	return value;
+}
+Pakal::Selector::operator char() const
+{
+	char value = 0;
+	m_script->pull(value);
+	return value;
+}
+Pakal::Selector::operator std::string() const
+{
+	std::string value;
+	m_script->pull(value);
+	return std::move( value);
 }
