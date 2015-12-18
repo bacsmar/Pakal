@@ -30,6 +30,8 @@ namespace Pakal
 		virtual void set_window_caption(const wchar_t*) {};
 		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
+		virtual tmath::vector2du get_screen_resolution() = 0;
+
 		inline IUIManager*		get_ui_interface() { return m_ui_manager; };
 
 		struct Settings

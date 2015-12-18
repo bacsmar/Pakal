@@ -11,52 +11,11 @@
 #include "IInputManager.h"
 #include "RocketInput.h"
 #include "GraphicsSystem.h"
-#include <Pakal_II/source/EventScheduler.h>
+#include "EventScheduler.h"
+#include "ResourceManager.h"
 
 using namespace Pakal;
-//
-//bool RocketUI::load_document(const char* documentPath, bool show, bool autoresize)
-//{
-//	
-//}
-//
-//bool RocketUI::close_document(const char* documentId)
-//{
-//	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
-//
-//	if (document)
-//	{
-//		document->Close();
-//
-//		return true;
-//	}
-//
-//	return false;
-//}
-//
-//bool RocketUI::set_document_visible(const char* documentId, const bool visible)
-//{
-//	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId);
-//
-//	if (document)
-//	{
-//		if (visible)
-//		{
-//			document->Focus();
-//			document->Show();
-//		}
-//		else
-//			document->Hide();
-//
-//		return true;
-//	}
-//	return false;
-//}
-//
-//bool RocketUI::load_font(const char* path)
-//{
-//	return Rocket::Core::FontDatabase::LoadFontFace(path);
-//}
+
 
 RocketUI::RocketUI(GraphicsSystem* renderInterface) 
 	: m_graphics_system(renderInterface)
@@ -82,11 +41,15 @@ TaskPtr<bool> RocketUI::load_document_async(unsigned id, const Path& resourcePat
 		if (documentId != m_loaded_documents.end())	// document already loaded
 			return false;
 
-		Rocket::Core::ElementDocument* document = RocketContext->LoadDocument(resourcePath.c_str());
+		auto stream = ResourceMgr.open_read_resource(resourcePath);
+		std::string documentStr;
+		file_utils::read_to_string(*stream, documentStr);
+
+		Rocket::Core::ElementDocument* document = RocketContext->LoadDocumentFromMemory(documentStr.c_str());
 
 		if (document)
 		{			
-			m_loaded_documents[id] = resourcePath.c_str();
+			m_loaded_documents[id] = document;
 			document->RemoveReference();
 			return true;
 		}
@@ -97,7 +60,23 @@ TaskPtr<bool> RocketUI::load_document_async(unsigned id, const Path& resourcePat
 
 bool RocketUI::unload_document(unsigned id)
 {
-	return false;
+	std::function<bool()> fn = [=]()
+	{
+		auto documentId = m_loaded_documents.find(id);
+
+		if (documentId == m_loaded_documents.end())	
+			return false;
+
+		auto document = documentId->second;
+		if (document)
+		{
+			RocketContext->UnloadDocument(document);
+			m_loaded_documents.erase(id);
+			return true;
+		}
+		return false;
+	};
+	return EventScheduler::instance().execute_in_thread(fn, m_graphics_system->thread_id())->result();
 }
 
 TaskPtr<bool> RocketUI::unload_document_async(unsigned id)
@@ -112,7 +91,7 @@ void RocketUI::display_document(unsigned id, bool autoresize)
 	if (documentId == m_loaded_documents.end())
 		return;
 
-	Rocket::Core::ElementDocument* document = RocketContext->GetDocument( documentId->second.c_str() );
+	auto document = documentId->second;
 
 	if (document)
 	{
@@ -127,8 +106,8 @@ void RocketUI::conceal_document(unsigned id)
 	auto documentId = m_loaded_documents.find(id);
 	if (documentId == m_loaded_documents.end())
 		return;
-
-	Rocket::Core::ElementDocument* document = RocketContext->GetDocument(documentId->second.c_str());
+	
+	auto document = documentId->second;
 
 	if (document)
 	{
