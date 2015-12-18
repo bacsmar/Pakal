@@ -26,7 +26,10 @@ namespace Pakal
 		Selector(Selector &&) = default; 
 		operator bool() const;
 		operator int() const;
-		bool is_ok() const { return m_is_ok; }		
+		operator float() const;
+		operator char() const;
+		operator std::string() const;
+		inline bool is_ok() const { return m_is_ok; }		
 	};
 	//helper function used to register components in script
 	//template <class T>

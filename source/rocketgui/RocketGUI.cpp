@@ -38,8 +38,11 @@ TaskPtr<bool> RocketUI::load_document_async(unsigned id, const Path& resourcePat
 	{
 		auto documentId = m_loaded_documents.find(id);
 
-		if (documentId != m_loaded_documents.end())	// document already loaded
+		if (documentId != m_loaded_documents.end())	
+		{
+			LOG_WARNING("{LibRocket UI} document already loaded id=%d path=%s", id, resourcePath.c_str());
 			return false;
+		}
 
 		auto stream = ResourceMgr.open_read_resource(resourcePath);
 		std::string documentStr;
