@@ -23,7 +23,7 @@ namespace Pakal
 	class ResourceManager;
 
 	class _PAKALExport RocketUI : public IUIManager
-	{			
+	{
 	public:		
 		/** Default constructor */		
 		explicit RocketUI(GraphicsSystem *renderInterface);
@@ -33,6 +33,7 @@ namespace Pakal
 		bool load_document(unsigned id, const Path& resourcePath) override;
 		TaskPtr<bool> load_document_async(unsigned id, const Path& resourcePath) override;
 		bool unload_document(unsigned id) override;
+		TaskPtr<bool> unload_document_async(unsigned id) override;
 		void display_document(unsigned id, bool autoresize) override;
 		void conceal_document(unsigned id) override;
 		bool load_font(const Path& resourcePath) override;
