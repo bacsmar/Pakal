@@ -11,9 +11,10 @@
 
 namespace Pakal
 {
-	using ulonglong = unsigned long long;	
+		using ulonglong = unsigned long long;
+
 		template <class TArgs>
-		struct DelegateData
+		struct _PAKALExport DelegateData
 		{
 			std::function<void(const TArgs&)> delegate;
 			std::thread::id tid;
@@ -29,6 +30,26 @@ namespace Pakal
 			bool is_enabled;
 		};
 
+		template <class TArgs>
+		struct _PAKALExport Delegate
+		{
+			std::function<void(const TArgs&)> callback;
+			ulonglong* id;
+			std::thread::id tid;
+
+			Delegate(ulonglong& id, const std::function<void(const TArgs&)>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			{}
+		};
+		template <>
+		struct _PAKALExport Delegate<void>
+		{
+			std::function<void()> callback;
+			ulonglong* id;
+			std::thread::id tid;
+
+			Delegate(ulonglong& id,const std::function<void()>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			{}
+		};
 
 		template <class TArgs>
 		class _PAKALExport Event
@@ -41,6 +62,17 @@ namespace Pakal
 		public:
 
 			explicit Event() : m_enabled(true) {}
+
+			inline void operator+=(Delegate<TArgs>&& d)
+			{
+				*d.id = add_listener(d.callback, d.tid);
+			}
+
+			inline void operator-=(ulonglong& id)
+			{
+				remove_listener(id);
+				id = 0;
+			}
 
 			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
@@ -166,6 +198,17 @@ namespace Pakal
 				return m_delegates.empty();
 			}
 
+			inline void operator+=(Delegate<void>&& d)
+			{
+				*d.id = add_listener(d.callback,d.tid);
+			}
+
+			inline void operator-=(ulonglong& id)
+			{
+				remove_listener(id);
+				id = 0;
+			}
+
 			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
 				mutex_guard lock(m_mutex);
@@ -254,15 +297,4 @@ namespace Pakal
 			}
 
 		};
-	
-	/*
-	template <class TArgs>
-	class Event : public priv::Event<TArgs>
-	{
-	public:
-		using priv::Event<TArgs>::notify;
-		using priv::Event<TArgs>::enable;
-		using priv::Event<TArgs>::disable;
-	};
-	*/
 }

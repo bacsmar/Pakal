@@ -85,7 +85,7 @@ TaskPtr<bool> RocketUI::unload_document_async(unsigned id)
 	return EventScheduler::instance().execute_in_thread(fn, m_graphics_system->thread_id());
 }
 
-void RocketUI::display_document(unsigned id, bool autoresize)
+void RocketUI::show_document(unsigned id, bool autoresize)
 {
 	auto documentId = m_loaded_documents.find(id);
 
@@ -102,7 +102,7 @@ void RocketUI::display_document(unsigned id, bool autoresize)
 
 }
 
-void RocketUI::conceal_document(unsigned id)
+void RocketUI::hide_document(unsigned id)
 {
 	auto documentId = m_loaded_documents.find(id);
 	if (documentId == m_loaded_documents.end())
@@ -215,17 +215,17 @@ void RocketUI::initialize()
 
 	RocketInput::set_context(RocketContext);
 
-	m_mouse_move_e	   = OSMgr.get_input_manager()->event_mouse_moved.add_listener(std::bind(&RocketInput::process_mouse_move,std::placeholders::_1));
-	m_mouse_released_e = OSMgr.get_input_manager()->event_mouse_released.add_listener(std::bind(&RocketInput::process_mouse_released,std::placeholders::_1));
-	m_mouse_pressed_e  = OSMgr.get_input_manager()->event_mouse_pressed.add_listener(std::bind(&RocketInput::process_mouse_pressed,std::placeholders::_1));
+	OSMgr.get_input_manager()->event_mouse_moved += {m_mouse_move_e, std::bind(&RocketInput::process_mouse_move, std::placeholders::_1)};
+	OSMgr.get_input_manager()->event_mouse_released += {m_mouse_released_e, std::bind(&RocketInput::process_mouse_released, std::placeholders::_1)};
+	OSMgr.get_input_manager()->event_mouse_pressed += {m_mouse_pressed_e, std::bind(&RocketInput::process_mouse_pressed, std::placeholders::_1)};
 
 }
 
 void RocketUI::terminate()
 {	
-	OSMgr.get_input_manager()->event_mouse_pressed.remove_listener(m_mouse_pressed_e);
-	OSMgr.get_input_manager()->event_mouse_released.remove_listener(m_mouse_released_e);
-	OSMgr.get_input_manager()->event_mouse_moved.remove_listener(m_mouse_move_e);
+	OSMgr.get_input_manager()->event_mouse_pressed -= m_mouse_pressed_e;
+	OSMgr.get_input_manager()->event_mouse_released -= m_mouse_released_e;
+	OSMgr.get_input_manager()->event_mouse_moved -= m_mouse_move_e;
 
 	m_loaded_documents.clear();
 
