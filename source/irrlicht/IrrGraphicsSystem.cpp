@@ -171,9 +171,9 @@ void IrrGraphicsSystem::draw()
 	}
 
 	//if (m_draw_axis)
-	{
-		draw_axis();
-	}
+	//{
+	//	draw_axis();
+	//}
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
@@ -206,8 +206,9 @@ void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 
 tmath::vector2du IrrGraphicsSystem::get_screen_resolution()
 {
-	auto driver = device->getVideoDriver();
-	return { driver->getScreenSize().Width , driver->getScreenSize().Height };
+	ASSERT(device != nullptr);
+	auto screenSize = device->getVideoDriver()->getScreenSize();
+	return { screenSize.Width , screenSize.Height };
 }
 
 //////////////////////////////////////////////////////////////////////////

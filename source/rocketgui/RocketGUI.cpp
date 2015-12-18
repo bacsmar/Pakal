@@ -60,11 +60,17 @@ TaskPtr<bool> RocketUI::load_document_async(unsigned id, const Path& resourcePat
 
 bool RocketUI::unload_document(unsigned id)
 {
+	return unload_document_async(id)->result();
+	
+}
+
+TaskPtr<bool> RocketUI::unload_document_async(unsigned id)
+{
 	std::function<bool()> fn = [=]()
 	{
 		auto documentId = m_loaded_documents.find(id);
 
-		if (documentId == m_loaded_documents.end())	
+		if (documentId == m_loaded_documents.end())
 			return false;
 
 		auto document = documentId->second;
@@ -76,12 +82,7 @@ bool RocketUI::unload_document(unsigned id)
 		}
 		return false;
 	};
-	return EventScheduler::instance().execute_in_thread(fn, m_graphics_system->thread_id())->result();
-}
-
-TaskPtr<bool> RocketUI::unload_document_async(unsigned id)
-{
-	return TaskUtils::from_result(false);
+	return EventScheduler::instance().execute_in_thread(fn, m_graphics_system->thread_id());
 }
 
 void RocketUI::display_document(unsigned id, bool autoresize)
@@ -95,10 +96,10 @@ void RocketUI::display_document(unsigned id, bool autoresize)
 
 	if (document)
 	{
-
-		document->Focus();
+		//document->Focus();
 		document->Show();
 	}
+
 }
 
 void RocketUI::conceal_document(unsigned id)
@@ -120,11 +121,12 @@ bool RocketUI::load_font(const Path& resourcePath)
 	return Rocket::Core::FontDatabase::LoadFontFace(resourcePath.c_str());
 }
 
-bool RocketUI::set_element_inner_text(const char* documentId, const char* elementName, const char* value)
+bool RocketUI::set_element_inner_text(unsigned documentId, const char* elementName, const char* value)
 {
-	if (RocketContext->GetDocument(documentId))
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
 	{
-		Rocket::Core::Element* element = RocketContext->GetDocument(documentId)->GetElementById(elementName);
+		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
 			element->SetInnerRML(Rocket::Core::String(256, "%s", value).CString());
@@ -133,11 +135,13 @@ bool RocketUI::set_element_inner_text(const char* documentId, const char* elemen
 	}
 	return false;
 }
-bool RocketUI::set_element_inner_text(const char* documentId, const char* elementName, const int value)
+
+bool RocketUI::set_element_inner_text(unsigned documentId, const char* elementName, const int value)
 {
-	if (RocketContext->GetDocument(documentId))
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
 	{
-		Rocket::Core::Element* element = RocketContext->GetDocument(documentId)->GetElementById(elementName);
+		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
 			element->SetInnerRML(Rocket::Core::String(256, "%d", value).CString());
@@ -146,29 +150,45 @@ bool RocketUI::set_element_inner_text(const char* documentId, const char* elemen
 	}
 	return false;
 }
-bool RocketUI::set_element_inner_text(const char* documentId, const char* elementName, const float value)
+
+bool RocketUI::set_element_inner_text(unsigned documentId, const char* elementName, const float value)
 {
-	if (RocketContext->GetDocument(documentId))
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
 	{
-		Rocket::Core::Element* element = RocketContext->GetDocument(documentId)->GetElementById(elementName);
+		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
-			element->SetInnerRML(Rocket::Core::String(256, "%.2f", value).CString());
+			element->SetInnerRML(Rocket::Core::String(256, "%f", value).CString());
 			return true;
 		}
 	}
 	return false;
 }
 
-
-void RocketUI::set_element_class(const char* documentId, const char* elementName, const char* value)
+bool RocketUI::set_element_visibility(unsigned documentId, const char* elementName, const bool visible)
 {
-	if (RocketContext->GetDocument(documentId))
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
 	{
-		Rocket::Core::Element* element = RocketContext->GetDocument(documentId)->GetElementById(elementName);
+		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
+			element->SetProperty("visibility", visible ? "visible" : "hidden" );
+			return true;
+		}
+	}
+	return false;
+}
 
+void RocketUI::set_element_class(unsigned documentId, const char* elementName, const char* value)
+{	
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
+	{
+		Rocket::Core::Element* element = document->GetElementById(elementName);
+		if (element != nullptr)
+		{
 			element->SetClassNames(Rocket::Core::String(256, "%s", value).CString());
 		}
 	}
@@ -207,6 +227,8 @@ void RocketUI::terminate()
 	OSMgr.get_input_manager()->event_mouse_released.remove_listener(m_mouse_released_e);
 	OSMgr.get_input_manager()->event_mouse_moved.remove_listener(m_mouse_move_e);
 
+	m_loaded_documents.clear();
+
 	RocketInput::set_context(nullptr);
 
 	if (RocketContext) 
@@ -218,22 +240,4 @@ void RocketUI::terminate()
 	SAFE_DEL( m_rocket_FS);
 	SAFE_DEL(m_rocket_system_interface);
 	SAFE_DEL(m_renderInterface);
-}
-
-bool RocketUI::set_element_visibility(const char* documentId, const char* elementName, bool visible)
-{
-	if (RocketContext->GetDocument(documentId))
-	{
-		Rocket::Core::Element* element = RocketContext->GetDocument(documentId)->GetElementById(elementName);
-		if (element != nullptr)
-		{
-			if (!visible)
-				element->SetProperty("visibility", "hidden");
-			else
-				element->SetProperty("visibility", "visible");
-
-			return true;
-		}
-	}
-	return false;
 }
