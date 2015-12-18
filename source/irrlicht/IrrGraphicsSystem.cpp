@@ -87,25 +87,25 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	//camera->setProjectionMatrix(MyMatrix);
 
 	// setting up events
-	m_resized_callback_id = OSMgr.event_window_resized.add_listener([this](WindowArgs a)
+	OSMgr.event_window_resized += {m_resized_callback_id, [this](const WindowArgs& a)
 	{
-		device->getVideoDriver()->OnResize(dimension2du(a.size_x,a.size_y));
-	},THIS_THREAD);
-	
-	m_destroyed_callback_id = OSMgr.event_window_destroyed.add_listener([this](WindowArgs a)
+		device->getVideoDriver()->OnResize({ a.size_x, a.size_y });
+	}, THIS_THREAD};
+
+	OSMgr.event_window_destroyed += {m_destroyed_callback_id, [this](const WindowArgs& a)
 	{
 		device->getContextManager()->destroySurface();
-	}, THIS_THREAD);
+	}, THIS_THREAD};
 
 	//// next time we only need to recreate the openGL context
-	m_created_callback_id = OSMgr.event_window_created.add_listener([this](WindowArgs a)
+	OSMgr.event_window_created += {m_created_callback_id, [this](const WindowArgs& a)
 	{
 		SEvent event;
 		event.EventType = irr::EET_USER_EVENT;
 		event.UserEvent.UserData1 = 0;	// for pakal IrrDevice 0 means... restar the context...
 		event.UserEvent.UserData2 = a.windowId;
 		device->postEventFromUser(event);
-	}, THIS_THREAD);
+	}, THIS_THREAD};
 
 }
 
@@ -114,9 +114,9 @@ void IrrGraphicsSystem::on_terminate_graphics()
 {
 	LOG_DEBUG("[Graphic System] Shutdown Irrlicht");
 
-	OSMgr.event_window_resized.remove_listener(m_resized_callback_id);
-	OSMgr.event_window_destroyed.remove_listener(m_destroyed_callback_id);
-	OSMgr.event_window_created.remove_listener(m_created_callback_id);
+	OSMgr.event_window_resized	 -= m_resized_callback_id;
+	OSMgr.event_window_created	 -= m_created_callback_id;
+	OSMgr.event_window_destroyed -= m_destroyed_callback_id;
 
 	device->closeDevice();
 	device->drop();

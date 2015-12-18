@@ -15,13 +15,13 @@ namespace Pakal
 		ASSERT(m_clean_players_id == 0);
 
 		m_timer.set_interval(500);
-		m_clean_players_id =  m_timer.event_elapsed.add_listener(std::bind(&SoundManagerSFML::clean_players,this));
+		m_timer.event_elapsed += {m_clean_players_id, std::bind(&SoundManagerSFML::clean_players, this)};
 	}
 
 	void SoundManagerSFML::terminate()
 	{
 		m_timer.stop();
-		m_timer.event_elapsed.remove_listener(m_clean_players_id);
+		m_timer.event_elapsed -= m_clean_players_id;
 
 		mutex_guard lock2(m_buffer_mutex);
 		mutex_guard lock(m_players_mutex);

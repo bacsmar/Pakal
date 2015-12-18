@@ -35,8 +35,8 @@ namespace Pakal
 		TaskPtr<bool> load_document_async(unsigned id, const Path& resourcePath) override;
 		bool unload_document(unsigned id) override;
 		TaskPtr<bool> unload_document_async(unsigned id) override;
-		void display_document(unsigned id, bool autoresize) override;
-		void conceal_document(unsigned id) override;
+		void show_document(unsigned id, bool autoresize) override;
+		void hide_document(unsigned id) override;
 		bool load_font(const Path& resourcePath) override;
 		//void draw_ui() override;
 
