@@ -11,6 +11,7 @@ namespace Rocket
         class Context;
 		class RenderInterface;
 		class FileInterface;
+		class ElementDocument;
     }
 }
 
@@ -57,7 +58,8 @@ namespace Pakal
 		RocketSystemInterface*			m_rocket_system_interface = nullptr;		
 		GraphicsSystem*					m_graphics_system = nullptr;
 
-		std::unordered_map<unsigned, std::string> m_loaded_documents;
+		//std::unordered_map<unsigned, std::string> m_loaded_documents;
+		std::unordered_map<unsigned, Rocket::Core::ElementDocument*> m_loaded_documents;
 
 		ulonglong m_mouse_move_e;
 		ulonglong m_mouse_released_e;

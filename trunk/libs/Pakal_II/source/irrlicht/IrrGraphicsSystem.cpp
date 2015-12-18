@@ -203,6 +203,13 @@ void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 	ASSERT(device!= nullptr);
 	device->setWindowCaption(caption);
 }
+
+tmath::vector2du IrrGraphicsSystem::get_screen_resolution()
+{
+	auto driver = device->getVideoDriver();
+	return { driver->getScreenSize().Width , driver->getScreenSize().Height };
+}
+
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFactory*>& factories)
 {
