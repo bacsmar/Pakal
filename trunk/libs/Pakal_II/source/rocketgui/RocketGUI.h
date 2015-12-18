@@ -38,13 +38,13 @@ namespace Pakal
 		void display_document(unsigned id, bool autoresize) override;
 		void conceal_document(unsigned id) override;
 		bool load_font(const Path& resourcePath) override;
-		//void draw_ui() override;		
+		//void draw_ui() override;
 
-		bool set_element_inner_text(const char* documentId, const char* elementName, const char* value);
-		bool set_element_inner_text(const char* documentId, const char* elementName, const int value);
-		bool set_element_inner_text(const char* documentId, const char* elementName, const float value);
-		bool set_element_visibility(const char* documentId, const char* elementName, const bool visible);		
-		void set_element_class(const char* documentId, const char* elementName, const char* value);			
+		bool set_element_inner_text(unsigned documentId, const char* elementName, const char* value);
+		bool set_element_inner_text(unsigned documentId, const char* elementName, const int value);
+		bool set_element_inner_text(unsigned documentId, const char* elementName, const float value);
+		bool set_element_visibility(unsigned documentId, const char* elementName, const bool visible);
+		void set_element_class(unsigned documentId, const char* elementName, const char* value);			
 		
 	protected:
 		virtual void setup_render_interface() = 0;
@@ -57,8 +57,7 @@ namespace Pakal
 		Rocket::Core::RenderInterface*	m_renderInterface = nullptr;
 		RocketSystemInterface*			m_rocket_system_interface = nullptr;		
 		GraphicsSystem*					m_graphics_system = nullptr;
-
-		//std::unordered_map<unsigned, std::string> m_loaded_documents;
+		
 		std::unordered_map<unsigned, Rocket::Core::ElementDocument*> m_loaded_documents;
 
 		ulonglong m_mouse_move_e;
