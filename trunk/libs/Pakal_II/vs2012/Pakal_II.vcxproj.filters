@@ -170,6 +170,9 @@
     <ClCompile Include="..\source\persist\JsonWriter.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\script\ScriptableGameState.cpp">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -521,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="..\source\persist\JsonWriter.h">
       <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\script\ScriptableGameState.h">
+      <Filter>Managers\GameStateManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

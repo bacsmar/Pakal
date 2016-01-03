@@ -112,5 +112,5 @@ namespace Pakal
 
 	};
 
-	#define ResourceMgr ResourceManager::instance()
+	#define ResourceMgr Pakal::ResourceManager::instance()
 }

@@ -1,5 +1,4 @@
 #include "OsWrapperAndroid.h"
-#include "OSManager.h"
 #include <android/configuration.h>
 #include "ResourceManager.h"
 
@@ -30,8 +29,8 @@ namespace sf {
 // PAKAL
 namespace Pakal 
 {
-	static OSManager *OSManagerInstance;
-	inline OSManager *get_osWrapper()
+	static OsWrapperAndroid *OSManagerInstance;
+	inline OsWrapperAndroid *get_osWrapper()
 	{		
 		ASSERT(OSManagerInstance);
 		return OSManagerInstance;

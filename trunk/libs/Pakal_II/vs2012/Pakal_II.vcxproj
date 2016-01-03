@@ -49,6 +49,7 @@
     <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h" />
     <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h" />
     <ClInclude Include="..\source\rocketgui\RocketInput.h" />
+    <ClInclude Include="..\source\script\ScriptableGameState.h" />
     <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
     <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="..\source\persist\Archive.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
     <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
+    <ClCompile Include="..\source\script\ScriptableGameState.cpp" />
     <ClCompile Include="..\source\State.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />

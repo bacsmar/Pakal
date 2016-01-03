@@ -25,6 +25,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 			b2BodyDef bodydef;
 			bodydef.type = animation->dynamic ? b2_dynamicBody : b2_staticBody;
 			bodydef.awake = animation->awake;
+			bodydef.gravityScale = animation->gravity_scale;
 
 			auto body = m_system->create_body(&bodydef);
 
