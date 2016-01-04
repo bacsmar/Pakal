@@ -47,6 +47,8 @@ namespace Pakal
 		std::string m_script_file;
 		std::mutex	m_register_mutex;
 
+		static const std::string default_name_space;
+
 		//sel::State* m_state;
 	public:
 		ScriptComponent();
@@ -62,10 +64,20 @@ namespace Pakal
 		void register_on_script(T* obj, const std::string& name)
 		{
 			mutex_guard lock(m_register_mutex);
-			//selene_script_interface_for(obj, *m_state);
 #if PAKAL_USE_SCRIPTS == 1
+			//selene_script_interface_for(obj, *m_state);
 			oolua_script_interface_for(obj, *m_script, name);
 #endif
+		}		
+
+		template <class T>
+		void push_value(T value, const std::string& name, const std::string& name_space = default_name_space)
+		{
+			if( std::is_integral<T>::value || std::is_enum<T>::value)
+			{
+				push_integer(static_cast<int>(value), name, name_space);
+			}
 		}
+		void push_integer(int value, const std::string& name, const std::string& name_space = default_name_space);
 	};	
 }

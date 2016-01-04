@@ -79,6 +79,30 @@ Pakal::Selector Pakal::ScriptComponent::call_script(const std::string& script_te
 	return std::move(Selector(m_script, result));
 }
 
+const std::string Pakal::ScriptComponent::default_name_space = "Var";
+
+void Pakal::ScriptComponent::push_integer(int value, const std::string& name, const std::string& name_space)
+{	
+	auto L = (m_script->state());
+
+	lua_getglobal(L, name_space.c_str() );
+	int luaNamespace = lua_gettop(L);
+
+	if (lua_isnil(L, luaNamespace))
+	{
+		std::string s = name_space + " = " + name_space + " or {}";
+		luaL_dostring(L, s.c_str() ); //register the "namespace" in fact is a lua table
+	}
+
+	lua_getglobal(L, name_space.c_str());
+	luaNamespace = lua_gettop(L);
+
+	ASSERT(lua_isnil(L, luaNamespace) == false);
+
+	lua_pushinteger(L, value);	
+	lua_setfield(L, luaNamespace, name.c_str());
+}
+
 Pakal::Selector::operator bool() const
 {
 	bool value = false;
