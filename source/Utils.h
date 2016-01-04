@@ -9,7 +9,7 @@
 
 namespace Pakal
 {
-	namespace crypt
+	namespace crypt_utils
 	{
 		// https://en.wikipedia.org/wiki/Jenkins_hash_function#one-at-a-time
 		inline uint32_t hash_joaat(const char *key, size_t len)

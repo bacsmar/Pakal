@@ -13,9 +13,10 @@ namespace Pakal
 
 	class _PAKALExport StateMachine
 	{
-		std::set<State*> m_states;
 		State *m_current_state = nullptr;
 		std::string m_script_file;
+		std::set<State*> m_states;
+		std::vector<std::string> m_available_commands;
 	public:
 		StateMachine();
 		virtual ~StateMachine(void);
@@ -34,7 +35,7 @@ namespace Pakal
 		decltype(m_states)::iterator	end();
 
 		void update();
-		void process_command(unsigned command);
+		void process_command(const std::string& command);
 		void set_script(ScriptComponent& script);
 		virtual void persist(Archive* archive);
 	};

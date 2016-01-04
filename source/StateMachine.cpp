@@ -51,7 +51,7 @@ void StateMachine::update()
 	}
 }
 
-void StateMachine::process_command(unsigned command)
+void StateMachine::process_command(const std::string& command)
 {
 	ASSERT(m_current_state);
 	State *newState = m_current_state->process_command(command);
@@ -76,9 +76,9 @@ void StateMachine::persist(Archive* archive)
 	auto count = m_states.size();
 	archive->value("count", count);
 
-	archive->value("","state", m_states);
+	archive->value("commands","command", m_available_commands);
+	archive->value("","state", m_states);	
 	archive->refer("current_state", m_current_state);
-	
 	archive->value("script_file", m_script_file);
 }
 
