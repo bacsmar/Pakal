@@ -9,6 +9,38 @@
 
 namespace Pakal
 {
+	namespace crypt
+	{
+		// https://en.wikipedia.org/wiki/Jenkins_hash_function#one-at-a-time
+		inline uint32_t hash_joaat(char *key, size_t len)
+		{
+			uint32_t hash, i;
+			for (hash = i = 0; i < len; ++i)
+			{
+				hash += key[i];
+				hash += (hash << 10);
+				hash ^= (hash >> 6);
+			}
+			hash += (hash << 3);
+			hash ^= (hash >> 11);
+			hash += (hash << 15);
+			return hash;
+		}
+		inline uint32_t hash_joaat(const std::string& key)
+		{
+			uint32_t hash, i, len = key.length();
+			for (hash = i = 0; i < len; ++i)
+			{
+				hash += key[i];
+				hash += (hash << 10);
+				hash ^= (hash >> 6);
+			}
+			hash += (hash << 3);
+			hash ^= (hash >> 11);
+			hash += (hash << 15);
+			return hash;
+		}
+	}
 	namespace file_utils
 	{
 		inline std::streamoff stream_size(std::istream& stream)
