@@ -11,7 +11,8 @@ Pakal::ScriptComponent::ScriptComponent()
 {
 	m_script = new OOLUA::Script();
 #if PAKAL_USE_SCRIPTS == 1
-	m_script->register_class<vector2df>();
+	m_script->register_class<OOLUA::vector2df>();
+	m_script->register_class<OOLUA::Path>();
 	m_script->register_class<Pakal::LogMgr>();
 
 	auto result = OOLUA::push(m_script->state(), &LogMgr::instance(), OOLUA::Cpp);

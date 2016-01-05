@@ -11,39 +11,49 @@
 #include "IEntity.h"
 #include "Component.h"
 #include <vector>
+#include "Event.h"
+#include "TaskCompletionSource.h"
+#include "ComponentManager.h"
 
 namespace Pakal
 {
-	class Component;
+	class Component;	
 
 	class _PAKALExport GenericEntity : public IEntity
 	{
 	public:	
 		virtual ~GenericEntity();
+		using IEntity::IEntity;
 
 		virtual BasicTaskPtr initialize() override;
 		virtual	BasicTaskPtr terminate() override;
 
 		void add_component(Component *c);
 		void remove_component(Component *c);
-		
-		Component* get_component_by_name(const std::string& name);		
+				
+		virtual Component* get_component(const std::string& component_id_string) const override;
 
-		template <class TComponent>
-		TComponent* get_component()
-		{ 
-			for( auto & component: m_components)
+		template <class T>
+		T* create_component()
+		{
+			T* ic = m_component_manager->create_component<T>();
+			if( ic != nullptr)
 			{
-				if( component->get_type() == TComponent::getRTTI() )
-				{
-					return static_cast<TComponent*>(component);
-				}
+				add_component(ic);
 			}
-			return nullptr;
+			return ic;
 		}
 
+		Event<void> evt_initialize;
+		Event<void> evt_terminate;
+		Event<void> evt_update;
+
+		virtual void update();
+
 	protected:
-		std::vector<Component*> m_components;
+			std::vector<Component*> m_components;
+			TaskCompletionSource<void> m_initialize_task;
+			TaskCompletionSource<void> m_terminate_task;
 	};
 
 

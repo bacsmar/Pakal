@@ -3,7 +3,6 @@
 #include "Config.h"
 
 #include "State.h"
-#include <unordered_set>
 #include <set>
 
 namespace Pakal
@@ -28,6 +27,7 @@ namespace Pakal
 
 		State*	create_state(const std::string& name);
 		void	remove_state(State *);
+		const decltype(m_available_commands)& get_available_commands() const { return m_available_commands; }
 
 		size_t	size() const;
 		// range-based for

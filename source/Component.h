@@ -23,7 +23,7 @@ namespace Pakal
 
 	public:		
 		virtual ~Component(){}	
-		
+		// TODO: necesita un mutex en el get y set
 		inline void set_parent_entity(IEntity* entity) { m_parent = entity; };
 		inline IEntity* get_parent_entity() const { return m_parent; };
 
