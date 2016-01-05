@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include <string>
+#include "StateMachine.h"
 
 namespace Pakal
 {	

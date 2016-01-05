@@ -79,4 +79,4 @@ namespace Pakal
 	};
 }
 
-#define OSMgr OSManager::instance()
+#define OSMgr Pakal::OSManager::instance()
