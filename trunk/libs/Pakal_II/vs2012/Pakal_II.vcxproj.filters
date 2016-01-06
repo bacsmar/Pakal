@@ -173,6 +173,9 @@
     <ClCompile Include="..\source\script\ScriptableGameState.cpp">
       <Filter>Managers\GameStateManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\SimpleTimer.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -527,6 +530,9 @@
     </ClInclude>
     <ClInclude Include="..\source\script\ScriptableGameState.h">
       <Filter>Managers\GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SimpleTimer.h">
+      <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

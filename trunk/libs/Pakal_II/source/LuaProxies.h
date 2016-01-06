@@ -9,6 +9,7 @@
 #include "components/SFXComponent.h"
 #include "components/ScriptComponent.h"
 #include "IUIManager.h"
+#include "SimpleTimer.h"
 
 namespace OOLUA
 {
@@ -20,6 +21,7 @@ namespace OOLUA
 	using SFXComponent			= Pakal::SFXComponent;
 	using UIManager				= Pakal::IUIManager;
 	using Path					= Pakal::Path;
+	using SimpleTimer = Pakal::SimpleTimer;
 } // namespace OOLUA
 
 #if PAKAL_USE_SCRIPTS == 1
@@ -58,6 +60,11 @@ OOLUA_PROXY_END
 OOLUA_PROXY(vector2df)
 OOLUA_MGET(x, get_x)
 OOLUA_MGET(y, get_y)
+OOLUA_PROXY_END
+/////////////////////////////////////////////////////////////
+OOLUA_PROXY(SimpleTimer)
+OOLUA_MFUNC(set_interval)
+OOLUA_MFUNC_CONST(expired)
 OOLUA_PROXY_END
 /////////////////////////////////////////////////////////////
 // SpriteBodyComponent
