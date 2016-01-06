@@ -18,6 +18,7 @@ namespace OOLUA
 	using GamepadComponent		= Pakal::GamepadComponent;
 	using SpritebodyComponent	= Pakal::SpritebodyComponent;
 	using vector2df				= Pakal::tmath::vector2df;
+	using vector3df = Pakal::tmath::vector3df;
 	using SFXComponent			= Pakal::SFXComponent;
 	using UIManager				= Pakal::IUIManager;
 	using Path					= Pakal::Path;
@@ -31,7 +32,9 @@ OOLUA_PROXY(SpriteComponent)//class has no bases
 OOLUA_TAGS(OOLUA::No_public_constructors, OOLUA::Abstract)
 OOLUA_MFUNC(set_animation)
 OOLUA_MFUNC(set_flipped)
+OOLUA_MFUNC_CONST(is_flipped)
 OOLUA_MFUNC_CONST(is_playing)
+OOLUA_MFUNC_CONST(get_position)
 OOLUA_PROXY_END
 /////////////////////////////////////////////////////////////
 OOLUA_PROXY(SFXComponent)//class has no bases
@@ -59,7 +62,18 @@ OOLUA_PROXY_END
 /////////////////////////////////////////////////////////////
 OOLUA_PROXY(vector2df)
 OOLUA_MGET(x, get_x)
+OOLUA_MSET(x, set_x)
 OOLUA_MGET(y, get_y)
+OOLUA_MSET(y, set_y)
+OOLUA_PROXY_END
+/////////////////////////////////////////////////////////////
+OOLUA_PROXY(vector3df)
+OOLUA_MGET(x, get_x)
+OOLUA_MSET(x, set_x)
+OOLUA_MGET(y, get_y)
+OOLUA_MSET(y, set_y)
+OOLUA_MGET(z, get_z)
+OOLUA_MSET(z, set_z)
 OOLUA_PROXY_END
 /////////////////////////////////////////////////////////////
 OOLUA_PROXY(SimpleTimer)

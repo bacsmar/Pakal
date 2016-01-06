@@ -4,22 +4,20 @@
 #include <string>
 #include "TaskFwd.h"
 
+#include "LuaState/include/LuaState.h"
+
 struct lua_State;
 namespace OOLUA
 {
 	class Script;	
 }
-//namespace sel
-//{
-//	class State;
-//}
 
 namespace Pakal 
 {
 	class Selector
 	{		
 		friend class ScriptComponent;
-		OOLUA::Script* m_script = nullptr;
+		OOLUA::Script* m_script = nullptr;		
 		bool m_is_ok;
 		explicit Selector(OOLUA::Script* script, bool ok) : m_script(script), m_is_ok(ok) {}
 	public:
@@ -33,7 +31,6 @@ namespace Pakal
 	};
 	//helper function used to register components in script
 	//template <class T>
-	//void selene_script_interface_for(T*, sel::State&, const std::string&);
 
 	template <class T>
 	void oolua_script_interface_for(T*, OOLUA::Script&, const std::string& );
@@ -44,12 +41,11 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(ScriptComponent, Component);
 
 		OOLUA::Script* m_script = nullptr;
+		lua::State* m_aux_script = nullptr;
 		std::string m_script_file;
 		std::mutex	m_register_mutex;
 
-		static const std::string default_name_space;
-
-		//sel::State* m_state;
+		static const std::string default_name_space;		
 	public:
 		ScriptComponent();
 		~ScriptComponent();
@@ -64,8 +60,7 @@ namespace Pakal
 		void register_on_script(T* obj, const std::string& name)
 		{
 			mutex_guard lock(m_register_mutex);
-#if PAKAL_USE_SCRIPTS == 1
-			//selene_script_interface_for(obj, *m_state);
+#if PAKAL_USE_SCRIPTS == 1			
 			oolua_script_interface_for(obj, *m_script, name);
 #endif
 		}		
@@ -79,5 +74,11 @@ namespace Pakal
 			}
 		}
 		void push_integer(int value, const std::string& name, const std::string& name_space = default_name_space);
+
+		template<typename T>
+		void set(const char* key, T value) const
+		{
+			m_aux_script->set(key, std::forward<T>(value));
+		}
 	};	
 }

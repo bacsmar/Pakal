@@ -534,6 +534,36 @@
     <ClInclude Include="..\source\SimpleTimer.h">
       <Filter>Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaException.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaFunctor.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaPrimitives.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaRef.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaReturn.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaStack.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaStackItem.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaState.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\LuaValue.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaState\include\Traits.h">
+      <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -619,6 +649,9 @@
     </Filter>
     <Filter Include="Components\Mesh">
       <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\LuaState">
+      <UniqueIdentifier>{169fbd61-ce1b-4e88-a9ec-ec06d3a266bd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
