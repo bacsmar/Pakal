@@ -14,6 +14,7 @@ Pakal::ScriptComponent::ScriptComponent()
 	m_script->register_class<OOLUA::vector2df>();
 	m_script->register_class<OOLUA::Path>();
 	m_script->register_class<Pakal::LogMgr>();
+	m_script->register_class<OOLUA::SimpleTimer>();
 
 	auto result = OOLUA::push(m_script->state(), &LogMgr::instance(), OOLUA::Cpp);
 

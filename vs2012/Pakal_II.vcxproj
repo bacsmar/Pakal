@@ -56,6 +56,7 @@
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
     <ClInclude Include="..\source\sfml\StreamSFML.h" />
     <ClInclude Include="..\source\SFXComponent.h" />
+    <ClInclude Include="..\source\SimpleTimer.h" />
     <ClInclude Include="..\source\State.h" />
     <ClInclude Include="..\source\StateMachine.h" />
     <ClInclude Include="..\source\ThreadPool.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
     <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
     <ClCompile Include="..\source\script\ScriptableGameState.cpp" />
+    <ClCompile Include="..\source\SimpleTimer.cpp" />
     <ClCompile Include="..\source\State.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />
