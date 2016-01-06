@@ -6,9 +6,27 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <random>
+#include <time.h>
 
 namespace Pakal
 {
+	namespace random_generator
+	{
+		inline int random_between(int a, int b)
+		{
+			static std::mt19937 mt_rand(static_cast<unsigned>(time(nullptr)));
+
+			return mt_rand() % b + a;
+		}
+
+		inline int random()
+		{
+			static std::mt19937 mt_rand(static_cast<unsigned>(time(nullptr)));
+
+			return mt_rand();
+		}
+	}
 	namespace crypt_utils
 	{
 		// https://en.wikipedia.org/wiki/Jenkins_hash_function#one-at-a-time

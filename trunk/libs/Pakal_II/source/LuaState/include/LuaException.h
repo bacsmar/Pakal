@@ -82,7 +82,11 @@ namespace lua {
         
         virtual ~TypeMismatchError() throw() { }
         virtual const char* what() const throw() {
-            sprintf((char *)_message, "Type mismatch error at index %d.", _stackIndex);
+#ifdef _MSC_VER 
+			sprintf_s((char *)_message, 255, "Type mismatch error at index %d.", _stackIndex);
+#else
+			sprintf((char *)_message, "Type mismatch error at index %d.", _stackIndex);
+#endif
             return _message;
         }
     };
