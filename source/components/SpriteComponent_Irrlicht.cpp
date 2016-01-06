@@ -66,6 +66,11 @@ tmath::vector3df SpriteComponent_Irrlicht::get_position() const
 	return tmath::vector3df(posVector.X,posVector.Y, posVector.Z);
 }
 
+unsigned SpriteComponent_Irrlicht::get_duration() const
+{
+	return m_current_animation->duration;
+}
+
 float SpriteComponent_Irrlicht::get_rotation() const
 {
 	return m_node->getRotation().Z;
@@ -180,10 +185,10 @@ void SpriteComponent_Irrlicht::update(unsigned deltaTime)
 		m_current_time += deltaTime;
 
 		// if current time is bigger then the frame time advance one frame		
-		if (m_current_time >= m_current_animation->duration)
+		if (m_current_time >= m_current_frame_time)
 		{
 			// reset time, but keep the remainder			
-			m_current_time = m_current_time % m_current_animation->duration;
+			m_current_time = m_current_time % m_current_frame_time;
 
 			// get next Frame index
 			if (m_current_frame + 1 < m_current_animation->get_size())
@@ -251,6 +256,8 @@ void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
 	m_current_animation = &animation;
 	m_current_frame = 0;
 	m_paused = false;
+	ASSERT(m_current_animation->get_size() > 0);	// the animation should have at least 1 frame
+	m_current_frame_time = static_cast<unsigned>(m_current_animation->duration / (m_current_animation->get_size() *1.f));
 	set_frame(m_current_frame);
 }
 

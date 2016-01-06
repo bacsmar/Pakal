@@ -62,7 +62,7 @@ namespace lua { namespace stack {
     template<>
     inline int push(lua_State* luaState, long long int value) {
         LUASTATE_DEBUG_LOG("  PUSH  %lld", value);
-        lua_pushnumber(luaState, value);
+        lua_pushnumber(luaState, (LUA_NUMBER)value);
         return 1;
     }
     
@@ -97,7 +97,7 @@ namespace lua { namespace stack {
     template<>
     inline int push(lua_State* luaState, unsigned long long int value) {
         LUASTATE_DEBUG_LOG("  PUSH  %llud", value);
-        lua_pushnumber(luaState, value);
+        lua_pushnumber(luaState, (LUA_NUMBER)value);
         return 1;
     }
 
@@ -216,7 +216,7 @@ namespace lua { namespace stack {
     template<>
     inline bool check<lua::Number>(lua_State* luaState, int index)
     {
-        return lua_isnumber(luaState, index);
+        return lua_isnumber(luaState, index) > 0;
     }
     
     template<>
@@ -232,7 +232,7 @@ namespace lua { namespace stack {
         if (lua_isnumber(luaState, index))
             return false;
         
-        return lua_isstring(luaState, index);
+        return lua_isstring(luaState, index) > 0;
     }
     
     template<>
@@ -256,13 +256,13 @@ namespace lua { namespace stack {
     template<>
     inline bool check<unsigned>(lua_State* luaState, int index)
     {
-        return lua_isnumber(luaState, index);
+        return lua_isnumber(luaState, index) > 0;
     }
     
     template<>
     inline bool check<float>(lua_State* luaState, int index)
     {
-        return lua_isnumber(luaState, index);
+        return lua_isnumber(luaState, index) > 0;
     }
 
     template<>
@@ -292,7 +292,7 @@ namespace lua { namespace stack {
 
     template<>
     inline int read(lua_State* luaState, int index) {
-        return lua_tointeger(luaState, index);
+        return static_cast<int>(lua_tointeger(luaState, index));
     }
     
     template<>
@@ -363,7 +363,7 @@ namespace lua { namespace stack {
 
     template<>
     inline bool read(lua_State* luaState, int index) {
-        return lua_toboolean(luaState, index);
+        return lua_toboolean(luaState, index) > 0;
     }
 
     template<>

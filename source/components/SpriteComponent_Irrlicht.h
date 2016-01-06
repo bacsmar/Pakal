@@ -37,6 +37,7 @@ namespace Pakal
 
 		SpriteNode_Irrlicht*	m_node;
 		std::unordered_map<std::string, SpriteAnimation*>	m_animations;
+		unsigned m_current_frame_time;
 		void load(std::istream& stream);
 
 		void set_animation(SpriteAnimation& animation);
@@ -67,6 +68,8 @@ namespace Pakal
 
 		void set_position(tmath::vector3df position) override;
 		tmath::vector3df get_position() const override;
+
+		virtual unsigned get_duration() const override;
 
 		float get_rotation() const override;
 		tmath::vector3df get_scale() const override;

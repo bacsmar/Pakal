@@ -36,6 +36,8 @@ namespace Pakal
 		virtual void set_rotation(float degrees) = 0;
 		virtual float get_rotation() const = 0;
 
+		virtual unsigned get_duration() const = 0;
+
 		virtual void set_size(float size) = 0;
 			
 		virtual tmath::vector3df get_scale() const = 0;

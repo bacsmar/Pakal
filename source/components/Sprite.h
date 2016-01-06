@@ -46,7 +46,7 @@ namespace Pakal
 	public:
 
 		std::string name;
-		unsigned	duration = 100;
+		unsigned	duration = 600;
 		bool		looped = false;
 		
 		inline void add_frame(tmath::recti rect, tmath::vector2df  offset = { 0,0 })
