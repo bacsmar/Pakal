@@ -19,6 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\LuaState\include\LuaException.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaFunctor.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaPrimitives.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaRef.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaReturn.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaStack.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaStackItem.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaState.h" />
+    <ClInclude Include="..\source\LuaState\include\LuaValue.h" />
+    <ClInclude Include="..\source\LuaState\include\Traits.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
     <ClInclude Include="..\source\persist\JsonWriter.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />

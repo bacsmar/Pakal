@@ -10,8 +10,10 @@ using namespace Pakal::tmath;
 Pakal::ScriptComponent::ScriptComponent()
 {
 	m_script = new OOLUA::Script();
+	m_aux_script = new lua::State(m_script->state());
 #if PAKAL_USE_SCRIPTS == 1
 	m_script->register_class<OOLUA::vector2df>();
+	m_script->register_class<OOLUA::vector3df>();
 	m_script->register_class<OOLUA::Path>();
 	m_script->register_class<Pakal::LogMgr>();
 	m_script->register_class<OOLUA::SimpleTimer>();
@@ -20,15 +22,13 @@ Pakal::ScriptComponent::ScriptComponent()
 
 	if (result)
 		lua_setglobal(m_script->state(), "Log");
-
-	//m_state = new sel::State();
 #endif
 }
 
 Pakal::ScriptComponent::~ScriptComponent()
 {
 	SAFE_DEL(m_script);
-	//SAFE_DEL(m_state);
+	SAFE_DEL(m_aux_script);	
 }
 
 void Pakal::ScriptComponent::set_script(const std::string& script_chunk)
