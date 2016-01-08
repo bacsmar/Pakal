@@ -399,9 +399,6 @@
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
       <Filter>Components\SFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\MusicComponent.h">
-      <Filter>Components\Music</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
       <Filter>Components\Music</Filter>
     </ClInclude>
@@ -563,6 +560,9 @@
     </ClInclude>
     <ClInclude Include="..\source\LuaState\include\Traits.h">
       <Filter>Foundation\LuaState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MusicComponent.h">
+      <Filter>Components\Music</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

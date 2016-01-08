@@ -150,7 +150,7 @@ namespace Pakal
 		return !(BaseClass::getRTTI() == getRTTI());\
 	}\
 	public:\
-	virtual const Pakal::RTTI &get_type()\
+	virtual const Pakal::RTTI &get_type() const\
 	{\
 		return x::getRTTI();\
 	}\
@@ -168,7 +168,7 @@ namespace Pakal
 		return s_RTTI_Info;\
 	}\
 	public:\
-	virtual const Pakal::RTTI &get_type() override\
+	virtual const Pakal::RTTI &get_type() const override\
 	{\
 		return x::getRTTI();\
 	}\
