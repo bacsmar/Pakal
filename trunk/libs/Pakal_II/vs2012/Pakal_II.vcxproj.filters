@@ -378,9 +378,6 @@
     <ClInclude Include="..\source\sfml\StreamSFML.h">
       <Filter>Managers\ResourceManager\Streams</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\path.h">
-      <Filter>Managers\ResourceManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\Utils.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -563,6 +560,9 @@
     </ClInclude>
     <ClInclude Include="..\source\components\MusicComponent.h">
       <Filter>Components\Music</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalPath.h">
+      <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

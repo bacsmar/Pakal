@@ -30,6 +30,7 @@
     <ClInclude Include="..\source\LuaState\include\LuaState.h" />
     <ClInclude Include="..\source\LuaState\include\LuaValue.h" />
     <ClInclude Include="..\source\LuaState\include\Traits.h" />
+    <ClInclude Include="..\source\PakalPath.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
     <ClInclude Include="..\source\persist\JsonWriter.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
@@ -44,7 +45,6 @@
     <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\InputDevice.h" />
     <ClInclude Include="..\source\IUIManager.h" />
-    <ClInclude Include="..\source\path.h" />
     <ClInclude Include="..\source\persist\Archive.h" />
     <ClInclude Include="..\source\persist\Attribute.h" />
     <ClInclude Include="..\source\persist\Element.h" />
