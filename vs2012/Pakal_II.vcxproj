@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\MusicComponent.h" />
     <ClInclude Include="..\source\LuaState\include\LuaException.h" />
     <ClInclude Include="..\source\LuaState\include\LuaFunctor.h" />
     <ClInclude Include="..\source\LuaState\include\LuaPrimitives.h" />
@@ -43,7 +44,6 @@
     <ClInclude Include="..\source\components\GamepadComponent.h" />
     <ClInclude Include="..\source\InputDevice.h" />
     <ClInclude Include="..\source\IUIManager.h" />
-    <ClInclude Include="..\source\MusicComponent.h" />
     <ClInclude Include="..\source\path.h" />
     <ClInclude Include="..\source\persist\Archive.h" />
     <ClInclude Include="..\source\persist\Attribute.h" />
