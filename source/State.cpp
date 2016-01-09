@@ -2,14 +2,14 @@
 #include "persist/Archive.h"
 #include "Components/ScriptComponent.h"
 
-void Pakal::Transition::persist(Archive* archive)
+void Pakal::TransitionCondition::persist(Archive* archive)
 {
 	archive->refer("target_state", m_target_state);
 	archive->value("enabled", m_enabled);
 	archive->value("fn_condition", fn_condition);
 }
 
-void Pakal::Transition::set_script(ScriptComponent& script)
+void Pakal::TransitionCondition::set_script(ScriptComponent& script)
 {
 	if (fn_condition.empty() == false)
 	{
@@ -27,15 +27,13 @@ void Pakal::Transition::set_script(ScriptComponent& script)
 }
 
 void Pakal::State::persist(Archive* archive)
-{
-	auto count = m_transitions.size();
+{	
 	archive->value("name", m_name);
-	archive->value("count", count);	
 	archive->value("on_enter", on_enter_str);
 	archive->value("on_exit", on_exit_str);	
 
-	archive->value("", "transition", m_transitions);
-	archive->value("", "command", m_commands);
+	archive->value("", "transition", m_transition_conditions);
+	archive->refer("", "command", m_transition_commands, "name", "target_state");
 }
 
 void Pakal::State::set_script(ScriptComponent& script)
@@ -54,15 +52,8 @@ void Pakal::State::set_script(ScriptComponent& script)
 				script.call_function(on_exit_str);
 			});
 	}
-	for( auto& transition : m_transitions)
+	for( auto& transition : m_transition_conditions)
 	{
 		transition.set_script(script);
 	}	
-}
-
-void Pakal::TransitionCommand::persist(Archive* archive)
-{
-	archive->refer("target_state", target_state);
-	archive->value("value", command_name);
-	command_hash = Pakal::crypt_utils::hash_joaat(command_name);
 }

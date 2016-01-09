@@ -55,6 +55,7 @@ void StateMachine::process_command(const std::string& command)
 {
 	ASSERT(m_current_state);
 	State *newState = m_current_state->process_command(command);
+	ASSERT(newState);
 	if (newState != m_current_state)
 	{
 		m_current_state->event_exit();
@@ -73,11 +74,8 @@ void StateMachine::set_script(ScriptComponent& script)
 
 void StateMachine::persist(Archive* archive)
 {
-	auto count = m_states.size();
-	archive->value("count", count);
-
 	archive->value("commands","command", m_available_commands);
-	archive->value("","state", m_states);	
+	archive->value("","state", m_states);
 	archive->refer("current_state", m_current_state);
 	archive->value("script_file", m_script_file);
 }

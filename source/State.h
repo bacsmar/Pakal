@@ -3,17 +3,16 @@
 #include "Config.h"
 #include <vector>
 #include <functional>
-#include <algorithm>
-#include "Utils.h"
+#include <unordered_map>
 
 namespace Pakal {
 	class State;
-	class Transition;
+	class TransitionCondition;
 	class StateMachine;
 	class ScriptComponent;
 	class Archive;
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
-	class  _PAKALExport  Transition
+	class  _PAKALExport  TransitionCondition
 	{
 		friend class State;
 		friend Archive;	
@@ -42,16 +41,16 @@ namespace Pakal {
 		void set_script(ScriptComponent& script);
 
 	protected:
-		Transition() : m_condition([]() { return false; })
+		TransitionCondition() : m_condition([]() { return false; })
 		{
 		}
 
-		Transition(const std::function<bool()>& condition, State *final_state)
+		TransitionCondition(const std::function<bool()>& condition, State *final_state)
 		{
 			m_target_state = final_state;
 			m_condition = condition;
 		}
-		Transition(const std::function<bool()>&& condition, State *final_state)
+		TransitionCondition(const std::function<bool()>&& condition, State *final_state)
 		{
 			m_target_state = final_state;
 			m_condition = condition;
@@ -64,15 +63,7 @@ namespace Pakal {
 		{
 			return is_enabled() && m_condition() ;
 		}
-	};
-
-	struct TransitionCommand
-	{
-		uint32_t command_hash;
-		State* target_state;
-		std::string command_name;		
-		void persist(Archive* archive);
-	};
+	};	
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class  _PAKALExport State
@@ -84,10 +75,9 @@ namespace Pakal {
 		std::string m_name;
 		std::string on_enter_str;
 		std::string on_exit_str;
-		std::vector<Transition>  m_transitions;
 
-		std::vector<TransitionCommand> m_commands;
-		//std::map<unsigned, State*> m_command_transitions;
+		std::vector<TransitionCondition>  m_transition_conditions;
+		std::unordered_map<std::string, State*> m_transition_commands;
 
 		explicit State(const std::string& name) : m_name(name){}
 		explicit State() : event_enter([]() {}), event_exit([](){}){}
@@ -96,7 +86,7 @@ namespace Pakal {
 
 		inline State* update()
 		{
-			for (auto & transition : m_transitions)
+			for (auto & transition : m_transition_conditions)
 			{
 				if (transition.execute())
 				{
@@ -104,23 +94,12 @@ namespace Pakal {
 				}
 			}
 			return this;
-		}
-		inline State* process_command(int command)
-		{
-			// TODO: LUISITO arregla los mapas! en el persist
-			//auto state = m_command_transitions.find(command);
-			//return state != m_command_transitions.end() ? state->second : this;
-
-			auto state = std::find_if(m_commands.begin(), m_commands.end(), [command](const TransitionCommand& c)
-			{
-				return c.command_hash == command;
-			} );
-			return state != m_commands.end() ? (*state).target_state : this;
-		}
+		}		
 
 		inline State* process_command(const std::string& command)
 		{
-			return process_command( crypt_utils::hash_joaat(command) );
+			auto transition = m_transition_commands.find(command);
+			return transition != m_transition_commands.end() ? transition->second: this;
 		}
 		
 	public:
@@ -128,27 +107,23 @@ namespace Pakal {
 		std::function<void()> event_exit;
 
 		inline void add_transition_cmd(const std::string& command, State*  target_state)
-		{
-			ASSERT(target_state);
-			//ASSERT(m_command_transitions.find(command) == m_command_transitions.end());
-			//m_command_transitions[command] = finalState;
-
-			//m_commands.push_back({command,finalState});
-			auto command_hash = Pakal::crypt_utils::hash_joaat(command);
-			m_commands.emplace_back(TransitionCommand{ command_hash, target_state, command });
+		{			
+			ASSERT(target_state != nullptr);			
+			ASSERT(m_transition_commands.find(command) == m_transition_commands.end());
+			m_transition_commands[command] = target_state;
 		}
 
-		inline const Transition& add_transition(const std::function<bool()>& conditions, State * finalState)
+		inline const TransitionCondition& add_transition(const std::function<bool()>& conditions, State * finalState)
 		{
 			ASSERT(finalState);
-			m_transitions.emplace_back(Transition{ std::move(conditions), finalState });
-			return m_transitions.back();
+			m_transition_conditions.emplace_back(TransitionCondition{ std::move(conditions), finalState });
+			return m_transition_conditions.back();
 		}
-		inline const Transition& add_transition(const std::function<bool()>&& conditions, State * finalState)
+		inline const TransitionCondition& add_transition(const std::function<bool()>&& conditions, State * finalState)
 		{
 			ASSERT(finalState);
-			m_transitions.emplace_back(	 Transition(std::move(conditions), finalState ));
-			return m_transitions.back();
+			m_transition_conditions.emplace_back(	 TransitionCondition(std::move(conditions), finalState ));
+			return m_transition_conditions.back();
 		}
 
 		inline const std::string& get_name() const { return m_name; }
