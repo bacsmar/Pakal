@@ -39,11 +39,12 @@ namespace irr
 // This class implements debug drawing callbacks that are invoked
 // inside b2World::Step.
 class B2DebugDrawIrr : public b2Draw 
-{
+{	
 public:
     B2DebugDrawIrr(irr::IrrlichtDevice *device, irr::video::IVideoDriver *driver);
     ~B2DebugDrawIrr();
 
+	void DrawParticles(const b2Vec2* centers, float32 radius, const b2ParticleColor* colors, int32 count) override;
     void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
 	void Calculate2dFrom3D(irr::core::vector3df& point, const irr::core::matrix4& viewProjectionMatrix, const irr::core::vector2df& screenCenter);
 	void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;

@@ -22,6 +22,7 @@ namespace Pakal
 		explicit Selector(OOLUA::Script* script, bool ok) : m_script(script), m_is_ok(ok) {}
 	public:
 		Selector(Selector &&) = default; 
+		Selector(Selector &) = delete;
 		operator bool() const;
 		operator int() const;
 		operator float() const;
