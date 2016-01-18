@@ -66,9 +66,12 @@ B2DebugDrawIrr::B2DebugDrawIrr(irr::IrrlichtDevice *device, irr::video::IVideoDr
 B2DebugDrawIrr::~B2DebugDrawIrr()
 {
     delete mImpl;
-    mImpl = 0;
+    mImpl = nullptr;
 }
 
+void B2DebugDrawIrr::DrawParticles(const b2Vec2* centers, float32 radius, const b2ParticleColor* colors, int32 count)
+{
+}
 
 void B2DebugDrawIrr::setTranslation(float x, float y)
 {
@@ -96,15 +99,7 @@ void B2DebugDrawIrr::update_camera()
 
 void B2DebugDrawIrr::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
 {
-    /*
-    glColor3f(color.r, color.g, color.b);
-    glBegin(GL_LINE_LOOP);
-    for (int32 i = 0; i < vertexCount; ++i)
-    {
-        glVertex2f(vertices[i].x, vertices[i].y);
-    }
-    glEnd();
-    */
+
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     core::array<video::S3DVertex> &vs = mImpl->initVertices();
@@ -180,20 +175,6 @@ void B2DebugDrawIrr::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount,
 
 void B2DebugDrawIrr::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
 {
-    /*
-    const float32 k_segments = 16.0f;
-    const float32 k_increment = 2.0f * b2_pi / k_segments;
-    float32 theta = 0.0f;
-    glColor3f(color.r, color.g, color.b);
-    glBegin(GL_LINE_LOOP);
-    for (int32 i = 0; i < k_segments; ++i)
-    {
-        b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-        glVertex2f(v.x, v.y);
-        theta += k_increment;
-    }
-    glEnd();
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale * 5;
     core::array<video::S3DVertex> &vs = mImpl->initVertices();
@@ -255,13 +236,6 @@ void B2DebugDrawIrr::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 
 void B2DebugDrawIrr::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 {
-    /*
-    glColor3f(color.r, color.g, color.b);
-    glBegin(GL_LINES);
-    glVertex2f(p1.x, p1.y);
-    glVertex2f(p2.x, p2.y);
-    glEnd();
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     const video::SColor c((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
@@ -276,23 +250,6 @@ void B2DebugDrawIrr::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Col
 
 void B2DebugDrawIrr::DrawTransform(const b2Transform& xf)
 {
-    /*
-    b2Vec2 p1 = xf.position, p2;
-    const float32 k_axisScale = 0.4f;
-    glBegin(GL_LINES);
-    
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex2f(p1.x, p1.y);
-    p2 = p1 + k_axisScale * xf.R.col1;
-    glVertex2f(p2.x, p2.y);
-
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex2f(p1.x, p1.y);
-    p2 = p1 + k_axisScale * xf.R.col2;
-    glVertex2f(p2.x, p2.y);
-
-    glEnd();
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     b2Vec2 p1 = xf.p, p2;
@@ -318,14 +275,6 @@ void B2DebugDrawIrr::DrawTransform(const b2Transform& xf)
 
 void B2DebugDrawIrr::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
 {
-    /*
-    glPointSize(size);
-    glBegin(GL_POINTS);
-    glColor3f(color.r, color.g, color.b);
-    glVertex2f(p.x, p.y);
-    glEnd();
-    glPointSize(1.0f);
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     const video::SColor c((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
@@ -335,37 +284,6 @@ void B2DebugDrawIrr::DrawPoint(const b2Vec2& p, float32 size, const b2Color& col
 
 void B2DebugDrawIrr::DrawString(int x, int y, const char *string, ...)
 {
-    /*
-    char buffer[128];
-
-    va_list arg;
-    va_start(arg, string);
-    vsprintf(buffer, string, arg);
-    va_end(arg);
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    int w = glutGet(GLUT_WINDOW_WIDTH);
-    int h = glutGet(GLUT_WINDOW_HEIGHT);
-    gluOrtho2D(0, w, h, 0);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glColor3f(0.9f, 0.6f, 0.6f);
-    glRasterPos2i(x, y);
-    int32 length = (int32)strlen(buffer);
-    for (int32 i = 0; i < length; ++i)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, buffer[i]);
-    }
-
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     gui::IGUIEnvironment *guiEnv = mDevice->getGUIEnvironment();
@@ -389,15 +307,6 @@ void B2DebugDrawIrr::DrawString(int x, int y, const char *string, ...)
 
 void B2DebugDrawIrr::DrawAABB(b2AABB* aabb, const b2Color& color)
 {
-    /*
-    glColor3f(c.r, c.g, c.b);
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(aabb->lowerBound.x, aabb->lowerBound.y);
-    glVertex2f(aabb->upperBound.x, aabb->lowerBound.y);
-    glVertex2f(aabb->upperBound.x, aabb->upperBound.y);
-    glVertex2f(aabb->lowerBound.x, aabb->upperBound.y);
-    glEnd();
-    */
     const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
     const float scale = mImpl->scale;
     const video::SColor c((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
