@@ -6,6 +6,7 @@
 #include "components/BodyComponent.h"
 #include "Components/BodyComponent_Box2D.h"
 #include "Components/SpritebodyComponent_Box2D.h"
+#include "LogMgr.h"
 
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
@@ -28,6 +29,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
+	LOG_INFO("[PhysicsSystem] Registering Box2D components");
 	factories.emplace_back(CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
 	factories.emplace_back(CreateComponentFactory<SpritebodyComponent, SpritebodyComponent_Box2D>(this) );
 }
@@ -81,7 +83,7 @@ void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 
 void Box2DPhysicsSystem::init_world()
 {
-	
+	LOG_INFO("[PhysicsSystem] Starting Box2D %d.%d.%d", b2_version.major, b2_version.minor, b2_version.revision);
 	b2Vec2 gravity(m_settings.gravity.x, m_settings.gravity.y);
 	m_world = new b2World(gravity);
 	m_world->SetWarmStarting(false);
