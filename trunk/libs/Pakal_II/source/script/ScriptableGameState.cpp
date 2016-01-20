@@ -4,6 +4,7 @@
 #include "Components/ScriptComponent.h"
 #include "ResourceManager.h"
 #include "Engine.h"
+#include "ComponentManager.h"
 
 Pakal::ScriptableGameState::ScriptableGameState(const std::string& name, const std::string& script_file): BaseGameState(name), m_script_file(script_file)
 {	
@@ -22,10 +23,10 @@ void Pakal::ScriptableGameState::on_initialize(Engine* engine)
 	std::string script;
 	file_utils::read_to_string(*resource, script);
 
-	m_script = new ScriptComponent();
+	m_script = engine->component_manager()->create_component<ScriptComponent>();
 
 	m_script->load_script(script);
-	m_script->register_on_script(engine->get_ui_manager(), "UI");
+	//m_script->register_in_script(engine->get_ui_manager(), "UI");
 
 	m_script->call_function("on_initialize");
 }

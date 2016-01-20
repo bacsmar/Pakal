@@ -17,9 +17,9 @@ void Pakal::TransitionCondition::set_script(ScriptComponent& script)
 		{
 			bool retValue = false;
 			const auto& result = script.call_script(fn_condition);
-			if (result.is_ok())
+			if (result->is_ok())
 			{
-				retValue = result;
+				retValue = *result;
 			}
 			return retValue;
 		});

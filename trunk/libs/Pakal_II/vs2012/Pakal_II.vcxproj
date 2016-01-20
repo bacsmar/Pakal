@@ -19,17 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\CppBindClass_lua.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaException.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaFunctor.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaPrimitives.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaRef.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaReturn.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaStack.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaStackItem.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaState.h" />
-    <ClInclude Include="..\source\LuaState\include\LuaValue.h" />
-    <ClInclude Include="..\source\LuaState\include\Traits.h" />
+    <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
     <ClInclude Include="..\source\PakalPath.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
     <ClInclude Include="..\source\persist\JsonWriter.h" />
@@ -150,11 +142,18 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
+    <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
+    <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />
+    <ClCompile Include="..\source\luaintf\src\CppFunction.cpp" />
+    <ClCompile Include="..\source\luaintf\src\CppObject.cpp" />
+    <ClCompile Include="..\source\luaintf\src\LuaCompat.cpp" />
+    <ClCompile Include="..\source\luaintf\src\LuaRef.cpp" />
+    <ClCompile Include="..\source\luaintf\src\LuaState.cpp" />
     <ClCompile Include="..\source\persist\JsonReader.cpp" />
     <ClCompile Include="..\source\persist\JsonWriter.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
-    <ClCompile Include="..\source\components\ScriptComponent.cpp" />
     <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EngineComponents.cpp" />
     <ClCompile Include="..\source\LuaProxies.cpp" />

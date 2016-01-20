@@ -112,13 +112,7 @@ namespace Pakal {
 			ASSERT(m_transition_commands.find(command) == m_transition_commands.end());
 			m_transition_commands[command] = target_state;
 		}
-
-		inline const TransitionCondition& add_transition(const std::function<bool()>& conditions, State * finalState)
-		{
-			ASSERT(finalState);
-			m_transition_conditions.emplace_back(TransitionCondition{ std::move(conditions), finalState });
-			return m_transition_conditions.back();
-		}
+		
 		inline const TransitionCondition& add_transition(const std::function<bool()>&& conditions, State * finalState)
 		{
 			ASSERT(finalState);
