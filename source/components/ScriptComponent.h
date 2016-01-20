@@ -4,8 +4,6 @@
 #include <string>
 #include "TaskFwd.h"
 
-#include "LuaState/include/LuaState.h"
-
 struct lua_State;
 namespace OOLUA
 {
@@ -14,72 +12,91 @@ namespace OOLUA
 
 namespace Pakal 
 {
-	class Selector
+	class Script;
+
+	class ScriptResult
 	{		
-		friend class ScriptComponent;
-		OOLUA::Script* m_script = nullptr;		
-		bool m_is_ok;
-		explicit Selector(OOLUA::Script* script, bool ok) : m_script(script), m_is_ok(ok) {}
-	public:
-		Selector(Selector &&) = default; 
-		Selector(Selector &) = delete;
-		operator bool() const;
-		operator int() const;
-		operator float() const;
-		operator char() const;
-		operator std::string() const;
-		inline bool is_ok() const { return m_is_ok; }		
-	};
-	//helper function used to register components in script
-	//template <class T>
+	public:							
+		virtual ~ScriptResult(){}
+		ScriptResult(ScriptResult &&) = default;
+		ScriptResult() = default;
+		ScriptResult(ScriptResult &) = delete;
+
+		virtual operator bool() const = 0;
+		virtual operator int() const = 0;
+		virtual operator float() const = 0;
+		virtual operator char() const = 0;
+		virtual operator std::string() const = 0;
+
+		virtual bool is_ok() const = 0;
+	};	
+
+	using ScriptResultPtr = std::unique_ptr<ScriptResult>;
 
 	template <class T>
-	void oolua_script_interface_for(T*, OOLUA::Script&, const std::string& );
+	void register_script_interface_for(T*, Script&, const std::string&);
 	
 	// Scriptable
 	class ScriptComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(ScriptComponent, Component);
-
-		OOLUA::Script* m_script = nullptr;
-		lua::State* m_aux_script = nullptr;
-		std::string m_script_file;
 		std::mutex	m_register_mutex;
+	public:		
 
-		static const std::string default_name_space;		
-	public:
-		ScriptComponent();
-		~ScriptComponent();
-
-		void set_script(const std::string& script_chunk);
-		void load_script(const std::string& script_file);
+		virtual void set_script(const std::string& script_chunk) = 0;
+		virtual void load_script(const std::string& script_file) = 0;
 		
-		Selector call_function(const std::string& function);		
-		Selector call_script(const std::string& script_text);
+		virtual ScriptResultPtr call_function(const std::string& function) = 0;
+		virtual ScriptResultPtr call_script(const std::string& script_text) = 0;
 
 		template <class T>
-		void register_on_script(T* obj, const std::string& name)
+		void register_in_script(T* obj, const std::string& name)
 		{
 			mutex_guard lock(m_register_mutex);
-#if PAKAL_USE_SCRIPTS == 1			
-			oolua_script_interface_for(obj, *m_script, name);
-#endif
-		}		
-
-		template <class T>
-		void push_value(T value, const std::string& name, const std::string& name_space = default_name_space)
-		{
-			if( std::is_integral<T>::value || std::is_enum<T>::value)
-			{
-				push_integer(static_cast<int>(value), name, name_space);
-			}
+			register_script_interface_for(obj, *m_script_component_imp, name);
 		}
-		void push_integer(int value, const std::string& name, const std::string& name_space = default_name_space);
 
-		template<typename T>
-		void set(const char* key, T value) const
-		{
-			m_aux_script->set(key, std::forward<T>(value));
-		}
+		inline Script* get_script() const { return m_script_component_imp; }
+
+	protected:		
+		Script* m_script_component_imp;
+		explicit ScriptComponent(Script* script) : m_script_component_imp(script){}
 	};	
+
+#if PAKAL_USE_SCRIPTS == 0	
+	class DummyScriptComponent : public ScriptComponent
+	{
+		DECLARE_RTTI_WITH_BASE(DummyScriptComponent, ScriptComponent);
+	public:
+
+		class DummyResult : public ScriptResult{
+		public:
+			operator bool() const override { return false; };
+			operator int() const override { return 0; };
+			operator float() const override { return 0.f; };
+			operator char() const override { return 0; };
+			operator std::basic_string<char>() const override { return ""; };
+			bool is_ok() const override { return false; };
+		};
+
+		void set_script(const std::string& script_chunk) override {} ;
+
+		void load_script(const std::string& script_file) override{};
+
+		ScriptResultPtr call_function(const std::string& function) override { return ScriptResultPtr(new DummyResult()); };
+
+		ScriptResultPtr call_script(const std::string& script_text) override{ return ScriptResultPtr(new DummyResult()); };
+		template<typename T>
+		inline void register_lambda(const std::string& name, T&& fn){		}
+
+		explicit DummyScriptComponent();
+	};	
+
+	class Script : public DummyScriptComponent {};
+
+	inline DummyScriptComponent::DummyScriptComponent() : ScriptComponent(static_cast<Script*>(this))
+	{}
+	template <class T>
+	void register_script_interface_for(T*, Script&, const std::string&){}
+#endif
 }
