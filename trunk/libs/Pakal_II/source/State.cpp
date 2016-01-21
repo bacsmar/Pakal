@@ -1,6 +1,7 @@
 #include "state.h"
 #include "persist/Archive.h"
 #include "Components/ScriptComponent.h"
+#include "LogMgr.h"
 
 void Pakal::TransitionCondition::persist(Archive* archive)
 {
@@ -34,6 +35,14 @@ void Pakal::State::persist(Archive* archive)
 
 	archive->value("", "transition", m_transition_conditions);
 	archive->refer("", "command", m_transition_commands, "name", "target_state");
+
+	for( auto & s : m_transition_commands)
+	{
+		if (s.first.length() == 0)
+		{
+			LOG_ERROR("[state machine] undefined command name in transition %s", m_name.c_str());
+		}		
+	}
 }
 
 void Pakal::State::set_script(ScriptComponent& script)
