@@ -93,10 +93,21 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 		.addFunction("expired", &SimpleTimer::expired)
 		.endClass();
 
-	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("log", [](const char* s)
+	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("disable_log", [this]()
 	{
-		LOG_INFO("[script] %s", s);
+		LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("log", [](const char* s) {});
 	});
+	
+	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("enable_log", [this]()
+	{
+		LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("log", [](const char* s)
+		{
+			LOG_INFO("[script] %s", s);
+		});
+	});
+
+	m_script->doString("system.enable_log();");
+
 }
 
 Pakal::ScriptComponentLua::~ScriptComponentLua()

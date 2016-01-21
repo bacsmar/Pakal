@@ -59,7 +59,7 @@ namespace Pakal {
 		{
 			return m_target_state;
 		}
-		inline bool execute()
+		inline bool execute() const
 		{
 			return is_enabled() && m_condition() ;
 		}
