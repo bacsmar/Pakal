@@ -27,8 +27,8 @@
     <ClInclude Include="..\source\persist\JsonWriter.h" />
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent.h" />
-    <ClInclude Include="..\source\components\SpritebodyComponent.h" />
-    <ClInclude Include="..\source\components\SpritebodyComponent_Box2D.h" />
+    <ClInclude Include="..\source\components\SpritePhysicsComponent.h" />
+    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h" />
     <ClInclude Include="..\source\components\SpritePhysics.h" />
     <ClInclude Include="..\source\EventArgs.h" />
     <ClInclude Include="..\source\LuaProxies.h" />
@@ -154,7 +154,7 @@
     <ClCompile Include="..\source\persist\JsonWriter.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
     <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
-    <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp" />
+    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EngineComponents.cpp" />
     <ClCompile Include="..\source\LuaProxies.cpp" />
     <ClCompile Include="..\source\persist\Attribute.cpp" />

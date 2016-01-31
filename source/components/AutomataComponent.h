@@ -14,14 +14,14 @@ namespace Pakal
 		~AutomataComponent() override;
 		AutomataComponent();
 
-		void update();
+		void update() const;
 
 		inline StateMachine* get_state_machine() const
 		{
 			return m_stateMachine;
 		}
 
-		bool load_from_file(const std::string& file);
+		bool load_from_file(const std::string& file) const;
 
 	private:
 		StateMachine *m_stateMachine;

@@ -14,12 +14,12 @@ Pakal::AutomataComponent::AutomataComponent()
 	m_stateMachine = new StateMachine();
 }
 
-void Pakal::AutomataComponent::update()
+void Pakal::AutomataComponent::update() const
 {
 	m_stateMachine->update();
 }
 
-bool Pakal::AutomataComponent::load_from_file(const std::string& file)
+bool Pakal::AutomataComponent::load_from_file(const std::string& file) const
 {
 	XmlReader automata_reader;
 	auto stream = ResourceManager::instance().open_read_resource(file, false);	

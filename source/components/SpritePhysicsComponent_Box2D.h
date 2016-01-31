@@ -1,6 +1,6 @@
 #pragma once
 #include "Config.h"
-#include "SpritebodyComponent.h"
+#include "SpritePhysicsComponent.h"
 #include <unordered_map>
 
 
@@ -16,15 +16,15 @@ namespace Pakal
 {	
 	class Box2DPhysicsSystem;
 
-	class _PAKALExport SpritebodyComponent_Box2D final : public SpritebodyComponent
+	class _PAKALExport SpritebodyComponent_Box2D final : public SpritePhysicsComponent
 	{
-		DECLARE_RTTI_WITH_BASE(SpritebodyComponent_Box2D,SpritebodyComponent);
+		DECLARE_RTTI_WITH_BASE(SpritebodyComponent_Box2D,SpritePhysicsComponent);
 	public:
 
 		explicit SpritebodyComponent_Box2D(Box2DPhysicsSystem* sys): m_system(sys){}
 		~SpritebodyComponent_Box2D();
 
-		BasicTaskPtr initialize(const SpritePhysicsLoader& loader) override;
+		BasicTaskPtr initialize(const SpritePhysics& loader) override;
 		BasicTaskPtr terminate() override;		
 
 		tmath::vector3df get_position() override;

@@ -1,7 +1,7 @@
 #include "LuaProxies.h"
 #include "components/ScriptComponent_Lua.h"
 #include "components/SpriteComponent.h"
-#include "components/SpritebodyComponent.h"
+#include "components/SpritePhysicsComponent.h"
 #include "components/SFXComponent.h"
 #include "components/GamepadComponent.h"
 #include "IUIManager.h"
@@ -36,18 +36,18 @@ namespace Pakal
 		script.register_obj(name, obj);
 	}
 	template <>
-	void register_script_interface_for<SpritebodyComponent>(SpritebodyComponent* obj, Script& script, const std::string& name)
+	void register_script_interface_for<SpritePhysicsComponent>(SpritePhysicsComponent* obj, Script& script, const std::string& name)
 	{
 		//script.register_class(name, obj,			
 		//script.register_obj(name, obj,
-		script.register_class<SpritebodyComponent>(name)
-			.add_function("apply_force", fn_type_cast<SpritebodyComponent, void, float, float>(&SpritebodyComponent::apply_force))
-			.add_function("apply_impulse", fn_type_cast<SpritebodyComponent, void, float, float>(&SpritebodyComponent::apply_impulse))
-			.add_function("set_lineal_velocity", fn_type_cast<SpritebodyComponent, void, float, float>(&SpritebodyComponent::set_lineal_velocity))
-			.add_function("get_angle", &SpritebodyComponent::get_angle)
-			.add_function("get_lineal_velocity", &SpritebodyComponent::get_lineal_velocity)
-			.add_function("get_scale", &SpritebodyComponent::get_scale)
-			.add_function("get_position", &SpritebodyComponent::get_position);
+		script.register_class<SpritePhysicsComponent>(name)
+			.add_function("apply_force", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::apply_force))
+			.add_function("apply_impulse", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::apply_impulse))
+			.add_function("set_lineal_velocity", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::set_lineal_velocity))
+			.add_function("get_angle", &SpritePhysicsComponent::get_angle)
+			.add_function("get_lineal_velocity", &SpritePhysicsComponent::get_lineal_velocity)
+			.add_function("get_scale", &SpritePhysicsComponent::get_scale)
+			.add_function("get_position", &SpritePhysicsComponent::get_position);
 
 		script.register_obj(name, obj);
 	}

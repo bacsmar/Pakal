@@ -122,9 +122,6 @@
     <ClCompile Include="..\source\LuaProxies.cpp">
       <Filter>Foundation\LuaProxies</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\SpritebodyComponent_Box2D.cpp">
-      <Filter>Components\Sprite</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\GamepadComponent.cpp">
       <Filter>Components\Input</Filter>
     </ClCompile>
@@ -196,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="..\source\luaintf\src\LuaState.cpp">
       <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
+      <Filter>Components\Sprite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -489,12 +489,6 @@
     <ClInclude Include="..\source\components\ScriptComponent.h">
       <Filter>Components\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritebodyComponent.h">
-      <Filter>Components\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\SpritebodyComponent_Box2D.h">
-      <Filter>Components\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\SpritePhysics.h">
       <Filter>Components\Sprite</Filter>
     </ClInclude>
@@ -560,6 +554,12 @@
     </ClInclude>
     <ClInclude Include="..\source\components\CppBindClass_lua.h">
       <Filter>Components\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
+      <Filter>Components\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
+      <Filter>Components\Sprite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
