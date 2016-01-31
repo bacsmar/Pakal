@@ -1,4 +1,4 @@
-#include "SpritebodyComponent_Box2D.h"
+#include "SpritePhysicsComponent_Box2D.h"
 #include "box2D/Box2DPhysicsSystem.h"
 #include "math/tmg.h"
 
@@ -15,28 +15,28 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 	m_system = nullptr;
 }
 
-BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& loader)
+BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysics& loader)
 {
 	return m_system->execute_block([=]()
 	{
 		// bodies
-		for(auto animation :loader.animations)
+		for(auto spriteBody :loader.bodies)
 		{
 			b2BodyDef bodydef;
-			bodydef.type = animation->dynamic ? b2_dynamicBody : b2_staticBody;
-			bodydef.awake = animation->awake;
-			bodydef.gravityScale = animation->gravity_scale;
+			bodydef.type = spriteBody->dynamic ? b2_dynamicBody : b2_staticBody;
+			bodydef.awake = spriteBody->awake;
+			bodydef.gravityScale = spriteBody->gravity_scale;
 
 			auto body = m_system->create_body(&bodydef);
 
 			//body->SetTransform( b2Vec2(animation-> position.x, animation->position.y), body->GetAngle());
-			body->SetFixedRotation(animation->fixed_rotation);			
+			body->SetFixedRotation(spriteBody->fixed_rotation);			
 			body->SetUserData(this);
 
-			m_bodies[animation->name] = body;
+			m_bodies[spriteBody->name] = body;
 
 			// fixtures
-			for(const auto& fixture : animation->m_fixtures)
+			for(const auto& fixture : spriteBody->m_fixtures)
 			{
 				b2FixtureDef fixtureDef;
 				std::unique_ptr<b2Shape> pshape;
@@ -52,13 +52,12 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysicsLoader& lo
 				{
 					auto shape = new b2PolygonShape;
 					pshape.reset(shape);
-					//polygn
+					//polygon
 					for(const auto& polygon : fixture.m_polygons)
 					{
 						std::vector<b2Vec2> vertices;
 						for( const auto& vertex : polygon.m_vertices)
 						{
-							//vertices.emplace_back( b2Vec2(vertex.x, vertex.y) );
 							vertices.emplace_back( b2Vec2(vertex.x * m_scale.x, vertex.y * m_scale.y) );
 						}
 						shape->Set(&vertices[0], vertices.size());

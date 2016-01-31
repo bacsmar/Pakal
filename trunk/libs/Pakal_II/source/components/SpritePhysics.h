@@ -10,8 +10,9 @@
 
 namespace Pakal
 {
+	class TextReader;
 
-	struct SpritePhysics
+	struct SpriteBodyPhysics
 	{
 		class vector2df : public tmath::vector2df
 		{
@@ -126,24 +127,24 @@ namespace Pakal
 
 	};
 
-	struct SpritePhysicsLoader
+	struct SpritePhysics
 	{
-		std::vector<SpritePhysics*> animations;
+		std::vector<SpriteBodyPhysics*> bodies;
 
 		void persist(Archive* archive)
 		{
-			archive->value("bodies","body",animations);
+			archive->value("bodies","body", bodies);
 		}
-		// get memory consumption
+		
 		inline size_t get_memory_consumption() const
 		{
 			size_t childMemory = 0;
-			for(auto& child : animations)
+			for(auto& child : bodies)
 			{
 				childMemory += child->get_memory_consumption();
 			}
-			return sizeof(SpritePhysics)* animations.size() + sizeof(animations) + childMemory;
-		}
+			return sizeof(SpriteBodyPhysics)* bodies.size() + sizeof(bodies) + childMemory;
+		}		
 	};
 
 }

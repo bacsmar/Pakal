@@ -9,7 +9,7 @@
 
 //#include "components/ScriptComponent_Lua.h"
 //#include "components/SpriteComponent.h"
-//#include "components/SpritebodyComponent.h"
+//#include "components/SpritePhysicsComponent.h"
 //#include "components/SFXComponent.h"
 //#include "components/GamepadComponent.h"
 //#include "IUIManager.h"
@@ -92,12 +92,12 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 		.addFunction("set_interval", &SimpleTimer::set_interval)
 		.addFunction("expired", &SimpleTimer::expired)
 		.endClass();
-
+	// system.disable_log()
 	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("disable_log", [this]()
 	{
 		LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("log", [](const char* s) {});
 	});
-	
+	// system.enable_log()
 	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("enable_log", [this]()
 	{
 		LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("log", [](const char* s)

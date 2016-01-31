@@ -5,7 +5,7 @@
 #include "ComponentFactory.h"
 #include "components/BodyComponent.h"
 #include "Components/BodyComponent_Box2D.h"
-#include "Components/SpritebodyComponent_Box2D.h"
+#include "Components/SpritePhysicsComponent_Box2D.h"
 #include "LogMgr.h"
 
 #if PAKAL_USE_IRRLICHT
@@ -31,7 +31,7 @@ void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFac
 {	
 	LOG_INFO("[PhysicsSystem] Registering Box2D components");
 	factories.emplace_back(CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
-	factories.emplace_back(CreateComponentFactory<SpritebodyComponent, SpritebodyComponent_Box2D>(this) );
+	factories.emplace_back(CreateComponentFactory<SpritePhysicsComponent, SpritebodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////
 b2Body* Box2DPhysicsSystem::create_body(const b2BodyDef* def)
