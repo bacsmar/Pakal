@@ -50,17 +50,17 @@ void InputManager_SFML::terminate()
 	m_touch_devices.clear();
 }
 
-IButtonDevice* InputManager_SFML::get_button_device(unsigned id)
+IButtonDevice* InputManager_SFML::get_button_device(unsigned id) const
 {	
 	return id < m_button_devices.size() ? m_button_devices[id] : nullptr;
 }
 
-IAxisDevice* InputManager_SFML::get_axis_device(unsigned id)
+IAxisDevice* InputManager_SFML::get_axis_device(unsigned id) const
 {	
 	return id < m_axis_devices.size() ? m_axis_devices[id] : nullptr;
 }
 
-ITouchDevice* InputManager_SFML::get_touch_device(unsigned id)
+ITouchDevice* InputManager_SFML::get_touch_device(unsigned id) const
 {	
 	return id < m_touch_devices.size() ? m_touch_devices[id] : nullptr;
 }

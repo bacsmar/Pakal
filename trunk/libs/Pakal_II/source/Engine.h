@@ -58,8 +58,8 @@ namespace Pakal
 		inline IInputManager*		input_manager() const { return os_manager()->get_input_manager(); }
 		inline GameStateManager*	game_state_manager() const { return m_game_state_manager; }
 		inline OSManager*			os_manager() const  { return &OSManager::instance(); } 
-		inline ResourceManager*		resource_manager()  { return &ResourceManager::instance(); }
-		inline IUIManager*			get_ui_manager() { return m_graphics_system->get_ui_interface(); }		
+		inline ResourceManager*		resource_manager() const { return &ResourceManager::instance(); }
+		inline IUIManager*			get_ui_manager() const { return m_graphics_system->get_ui_interface(); }		
 
 		const char* get_system_name() override { return nameof(Engine); };
 

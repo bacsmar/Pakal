@@ -61,8 +61,8 @@ namespace Pakal
 		Event<void>		event_app_started;
 		Event<void>		event_app_stoped;
 
-		inline IInputManager* get_input_manager() { return m_input_manager; };
-		inline IWindowManager* get_window_manager() { return m_window_impl;  };
+		inline IInputManager* get_input_manager() const { return m_input_manager; };
+		inline IWindowManager* get_window_manager() const { return m_window_impl;  };
 		inline virtual std::string get_app_path() { return "./";  };
 		
 		void initialize(const Settings& settings);

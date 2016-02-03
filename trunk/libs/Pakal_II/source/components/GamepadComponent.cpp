@@ -15,24 +15,41 @@ bool Pakal::GamepadComponent::is_button_pressed(Buttons button)
 
 float Pakal::GamepadComponent::get_axis_state(Axis axis)
 {
-	return 0.f;
+	ASSERT(false);
+	return 0.f;	// not implemented
 }
 
-void Pakal::GamepadComponent::connect()
+//void Pakal::GamepadComponent::connect()
+//{
+//	m_buttonDevices.clear();
+//	m_axisDevices.clear();
+//
+//	m_buttonDevices.emplace_back( m_input_manager->get_button_device(0) );	// keyboard
+//
+//	if( auto buttonDev = m_input_manager->get_button_device(1))
+//	{
+//		m_buttonDevices.emplace_back(buttonDev);
+//	}
+//
+//	if( auto axisDev = m_input_manager->get_axis_device(1))
+//	{
+//		m_axisDevices.emplace_back(axisDev);
+//	}
+//}
+
+void Pakal::GamepadComponent::connectButtonDevice(unsigned deviceId)
 {
-	m_buttonDevices.clear();
-	m_axisDevices.clear();
-
-	m_buttonDevices.emplace_back( m_input_manager->get_button_device(0) );	// keyboard
-
-	if( auto buttonDev = m_input_manager->get_button_device(1))
+	if (auto buttonDev = m_input_manager->get_button_device(deviceId))
 	{
+		buttonDev->button_pressed_event.add_listener([](unsigned )
+		{
+
+		});
+		buttonDev->button_released_event.add_listener([](unsigned )
+		{
+
+		});
 		m_buttonDevices.emplace_back(buttonDev);
-	}
-
-	if( auto axisDev = m_input_manager->get_axis_device(1))
-	{
-		m_axisDevices.emplace_back(axisDev);
 	}
 }
 

@@ -38,8 +38,6 @@ namespace Pakal
 	template <>
 	void register_script_interface_for<SpritePhysicsComponent>(SpritePhysicsComponent* obj, Script& script, const std::string& name)
 	{
-		//script.register_class(name, obj,			
-		//script.register_obj(name, obj,
 		script.register_class<SpritePhysicsComponent>(name)
 			.add_function("apply_force", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::apply_force))
 			.add_function("apply_impulse", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::apply_impulse))

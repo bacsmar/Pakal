@@ -15,9 +15,9 @@ namespace Pakal
 	public:
 		virtual ~IInputManager(){}
 
-		virtual IButtonDevice*	get_button_device(unsigned id) = 0;
-		virtual IAxisDevice*	get_axis_device(unsigned id) = 0;
-		virtual ITouchDevice*	get_touch_device(unsigned id) = 0;
+		virtual IButtonDevice*	get_button_device(unsigned id) const = 0;
+		virtual IAxisDevice*	get_axis_device(unsigned id) const = 0;
+		virtual ITouchDevice*	get_touch_device(unsigned id) const = 0;
 
 		Event<MouseArgs> event_mouse_moved;
 		Event<MouseArgs> event_mouse_pressed;

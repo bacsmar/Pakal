@@ -1,10 +1,18 @@
 #pragma once
+#include <Event.h>
 
 namespace Pakal
 {
 	class InputDevice
-	{
+	{		
 	public:
+		enum class Type
+		{
+			Keyboard,
+			Gamepad,
+			Mouse,
+		};
+
 		virtual ~InputDevice() {}
 		virtual void		set_device_id(unsigned deviceId) = 0;
 		virtual unsigned	get_device_id() const = 0;
@@ -13,8 +21,12 @@ namespace Pakal
 	struct IButtonDevice : public virtual InputDevice
 	{
 		virtual ~IButtonDevice() {}
+
 		virtual bool get_button_state(unsigned v_button) = 0;
 		virtual void map_button(unsigned v_button, unsigned real_button) = 0;
+
+		Event<unsigned> button_pressed_event;
+		Event<unsigned> button_released_event;
 	};
 
 	struct IAxisDevice : public virtual InputDevice
