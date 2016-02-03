@@ -35,8 +35,8 @@ Pakal::Gamepad_SFML::Gamepad_SFML()
 	m_buttons[GamepadComponent::Buttons::Button_X] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 2); };
 	m_buttons[GamepadComponent::Buttons::Button_Y] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 3); };
 
-	//auto ypos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::PovX);
-	//auto zpos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::PovY);
+	//auto ypos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Pov_X);
+	//auto zpos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Pov_Y);
 
 	m_buttons[GamepadComponent::Buttons::Button_LEFT] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) < -2; };
 	m_buttons[GamepadComponent::Buttons::Button_RIGHT] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) > 2; };

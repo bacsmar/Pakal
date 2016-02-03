@@ -12,6 +12,9 @@
 
 #if PAKAL_USE_IRRLICHT == 1
 	#include "irrlicht/IrrGraphicsSystem.h"
+	#ifndef PAKAL_STATIC_LIB
+		#pragma comment(lib, "Irrlicht.lib")
+	#endif
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1

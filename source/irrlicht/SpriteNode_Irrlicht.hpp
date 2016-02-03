@@ -12,7 +12,7 @@
 namespace Pakal
 {
 	
-	class _PAKALExport SpriteNode_Irrlicht :  public irr::scene::ISceneNode	
+	class SpriteNode_Irrlicht :  public irr::scene::ISceneNode	
 	{
 	public:    
 		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);

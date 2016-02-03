@@ -19,9 +19,9 @@ namespace Pakal
 		void initialize() override;
 		void terminate() override;
 
-		virtual IButtonDevice*	get_button_device(unsigned id) override;
-		virtual IAxisDevice*	get_axis_device(unsigned id) override;
-		virtual ITouchDevice*	get_touch_device(unsigned id) override;
+		virtual IButtonDevice*	get_button_device(unsigned id) const override;
+		virtual IAxisDevice*	get_axis_device(unsigned id) const override;
+		virtual ITouchDevice*	get_touch_device(unsigned id) const override;
 
 		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
 	};

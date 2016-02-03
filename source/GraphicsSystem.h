@@ -48,7 +48,7 @@ namespace Pakal
 			void persist(Archive* archive);
 
 		};
-		struct IUpdatable
+		struct _PAKALExport IUpdatable
 		{
 			virtual ~IUpdatable() {}
 			virtual void update(unsigned dt) = 0;

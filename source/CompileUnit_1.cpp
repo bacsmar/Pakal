@@ -15,8 +15,10 @@
 		#pragma comment(lib, "oolua.lib")		
 		//#pragma comment(lib, "PocoFoundationmdd.lib")
 		//#pragma comment(lib, "tinythread.lib")
+#if ROCKET_STATIC_LIB
 		//#pragma comment(lib, "RocketCore.lib")
 		//#pragma comment(lib, "RocketControls.lib")
+#endif		
 	#else
 		//#pragma comment(lib, "Pakal_II.lib")
 		//#pragma comment(lib, "tinythread.lib")

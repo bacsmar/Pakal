@@ -27,8 +27,8 @@ namespace Pakal
 			Axis_R,
 			Axis_U,
 			Axis_V,
-			PovX, 
-			PovY,  
+			Pov_X, 
+			Pov_Y,  
 			Axis_count,
 		};
 		enum Touches{};
@@ -49,26 +49,21 @@ namespace Pakal
 			unsigned x, y;
 		};
 
-		Event<ButtonArgs> event_button_pressed;
-		Event<ButtonArgs> event_button_released;
-		Event<AxisArgs>	event_axis_moved;
+		Event<ButtonArgs>	event_button_pressed;
+		Event<ButtonArgs>	event_button_released;
+		Event<AxisArgs>		event_axis_moved;
 		Event<TouchArgs>	event_touch;
 
-		virtual bool is_button_pressed(Buttons button);
-		virtual float get_axis_state(Axis axis);
+		virtual bool	is_button_pressed(Buttons button);
+		virtual float	get_axis_state(Axis axis);
 
-		virtual void connect();
+		//virtual void connect();
+		virtual void connectButtonDevice(unsigned deviceId);
 
 		explicit GamepadComponent(IInputManager *input_manager) : m_input_manager(input_manager){}
 		~GamepadComponent();
 
 	protected:
-		// methods to be fired by derived classes
-		inline void fire_event_button_pressed(ButtonArgs &args)		{ event_button_pressed.notify(args); }
-		inline void fire_event_button_released(ButtonArgs &args)	{ event_button_released.notify(args); }
-		inline void fire_event_axis_moved(AxisArgs &args)			{ event_axis_moved.notify(args); }
-		inline void fire_event_touch(TouchArgs &args)				{ event_touch.notify(args); }
-				
 		std::vector<IButtonDevice*>	m_buttonDevices;
 		std::vector<IAxisDevice*>	m_axisDevices;
 		IInputManager*				m_input_manager;

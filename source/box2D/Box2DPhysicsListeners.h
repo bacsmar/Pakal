@@ -12,7 +12,7 @@ namespace Pakal
 		k_CollisionBitFlags_None			= 0,
 	};
 	//////////////////////////////////////////////////////////////////////////
-	class _PAKALExport ContactListener : public b2ContactListener
+	class  ContactListener : public b2ContactListener
 	{
 	public:
 		ContactListener() : m_bDisabled(false) { }
@@ -40,7 +40,7 @@ namespace Pakal
 	};	
 
 	//////////////////////////////////////////////////////////////////////////
-	class _PAKALExport ContactFilter : public b2ContactFilter
+	class  ContactFilter : public b2ContactFilter
 	{
 	public:
 		// TODO: implement this
@@ -48,7 +48,7 @@ namespace Pakal
 		{ return false; } 
 	};
 	//////////////////////////////////////////////////////////////////////////
-	class  _PAKALExport DestructionListener : public b2DestructionListener
+	class   DestructionListener : public b2DestructionListener
 	{
 	public:
 

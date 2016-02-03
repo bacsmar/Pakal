@@ -33,16 +33,16 @@ namespace Pakal
 				
 		virtual Component* get_component(const std::string& component_id_string) const override;
 
-		template <class T>
-		T* create_component()
-		{
-			T* ic = m_component_manager->create_component<T>();
-			if( ic != nullptr)
-			{
-				add_component(ic);
-			}
-			return ic;
-		}
+		//template <class T>
+		//T* create_component()
+		//{
+		//	T* ic = m_component_manager->create_component<T>();
+		//	if( ic != nullptr)
+		//	{
+		//		add_component(ic);
+		//	}
+		//	return ic;
+		//}
 
 		Event<void> evt_initialize;
 		Event<void> evt_terminate;

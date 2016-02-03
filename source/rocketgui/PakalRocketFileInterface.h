@@ -8,7 +8,7 @@
 
 namespace Pakal
 {
-	class _PAKALExport PakalRocketFileInterface : public Rocket::Core::FileInterface
+	class  PakalRocketFileInterface : public Rocket::Core::FileInterface
 	{
 	public:
 		/** Default constructor */
