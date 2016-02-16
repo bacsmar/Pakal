@@ -244,3 +244,7 @@ void RocketUI::terminate()
 	SAFE_DEL(m_rocket_system_interface);
 	SAFE_DEL(m_renderInterface);
 }
+
+void RocketUI::set_theme(const Path& themePath)
+{
+}

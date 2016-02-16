@@ -43,7 +43,7 @@ Engine::Engine(const Settings& settings) :
 	//un tio diferente
 	os_manager()->initialize(settings.os_manager_settings);
 
-	srand(static_cast<unsigned>(time(NULL)));
+	srand(static_cast<unsigned>(time(nullptr)));
 	
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();

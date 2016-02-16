@@ -21,6 +21,7 @@ namespace Pakal
 		virtual void hide_document(unsigned id) = 0;
 
 		virtual bool load_font(const Path& resourcePath) = 0;
+		virtual void set_theme(const Path& themePath) = 0;
 
 		virtual void draw_ui() = 0;
 		virtual void initialize() = 0;

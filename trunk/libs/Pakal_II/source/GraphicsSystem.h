@@ -32,7 +32,7 @@ namespace Pakal
 
 		virtual tmath::vector2du get_screen_resolution() = 0;
 
-		inline IUIManager*		get_ui_interface() { return m_ui_manager; };
+		IUIManager*		get_ui_interface() const { return m_ui_manager; };
 
 		struct Settings
 		{

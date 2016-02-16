@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef PAKAL_UTILS_H_
-#	define PAKAL_UTILS_H_
+
 
 #include <iostream>
 #include <string>
@@ -141,7 +140,6 @@ namespace Pakal
 		}
 
 	}
-
 	namespace map_utils
 	{
 		template< typename ContainerT, typename PredicateT >
@@ -175,6 +173,9 @@ namespace Pakal
 			return false;
 		}
 	}
+	namespace enum_utils
+	{
+		
 
 #define  BIT_ENUM(x) \
 	inline x operator~(const x& lhs) { return (x)~(int)lhs; } \
@@ -184,9 +185,7 @@ namespace Pakal
 	inline x& operator|= (x& lhs, x rhs) { return (x&)((int&)lhs |= (int)rhs); }  \
 	inline x& operator&= (x& lhs, x rhs) { return (x&)((int&)lhs &= (int)rhs); } \
 	inline x& operator^= (x& lhs, x rhs) { return (x&)((int&)lhs ^= (int)rhs); } 
-
-	namespace enum_utils
-	{
+		
 
 		template<typename TEnum>
 		inline bool has_flag(TEnum& value,TEnum flags)
@@ -210,8 +209,4 @@ namespace Pakal
 
 	}
 
-
-
 }
-
-#endif

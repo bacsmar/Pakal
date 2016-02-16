@@ -38,8 +38,10 @@ namespace Pakal
 		void show_document(unsigned id, bool autoresize) override;
 		void hide_document(unsigned id) override;
 		bool load_font(const Path& resourcePath) override;
+
 		//void draw_ui() override;
 
+		void set_theme(const Path& themePath) override;
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const char* value);
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const int value);
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const float value);
