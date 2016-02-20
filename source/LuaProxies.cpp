@@ -1,12 +1,13 @@
 #include "LuaProxies.h"
+#include "IUIManager.h"
+//#include "SimpleTimer.h"
+//#include "LogMgr.h"
 #include "components/ScriptComponent_Lua.h"
 #include "components/SpriteComponent.h"
 #include "components/SpritePhysicsComponent.h"
 #include "components/SFXComponent.h"
 #include "components/GamepadComponent.h"
-#include "IUIManager.h"
-#include "SimpleTimer.h"
-#include "LogMgr.h"
+#include "components/CameraComponent.h"
 
 #if PAKAL_USE_SCRIPTS == 1
 
@@ -15,7 +16,7 @@
 
 namespace Pakal 
 {
-
+	// this function is used as template for parameter type deduction from overloaded member functions
 	template <class T, class TReturn, class ...Args>
 	auto fn_type_cast(TReturn(T::* c)(Args...args)) -> decltype (c)
 	{
@@ -80,6 +81,18 @@ namespace Pakal
 		script.register_class<SFXComponent>(name)
 			.add_function("add", fn_type_cast<SFXComponent, bool, unsigned, const std::string&>(&SFXComponent::add))
 			.add_function("play", fn_type_cast<SFXComponent, void, unsigned>(&SFXComponent::play));
+		script.register_obj(name, obj);
+	}
+
+	template <>
+	void register_script_interface_for<CameraComponent>(CameraComponent* obj, Script& script, const std::string& name)
+	{
+		script.register_class<CameraComponent>(name)
+			.add_function("set_position", &CameraComponent::set_position)
+			.add_function("set_rotation", &CameraComponent::set_rotation)
+			.add_function("get_position", &CameraComponent::get_position)
+			.add_function("get_rotation", &CameraComponent::get_rotation)
+			.add_function("set_target", &CameraComponent::set_target);
 		script.register_obj(name, obj);
 	}
 }
