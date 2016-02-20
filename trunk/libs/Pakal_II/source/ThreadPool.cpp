@@ -70,7 +70,9 @@ namespace Pakal
 			std::function<void()> job = try_get_job();
 			if (job != nullptr)
 			{
-				std::ostringstream ss; ss << THIS_THREAD; LOG_INFO("worker thread with id %s processing job", ss.str().c_str());
+				std::ostringstream ss;
+				ss << THIS_THREAD; 
+				LOG_INFO("worker thread with id %s processing job", ss.str().c_str());
 				job();
 
 				++m_available_workers;

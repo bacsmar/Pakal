@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\CameraComponent.h" />
+    <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\CppBindClass_lua.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
@@ -143,6 +145,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />

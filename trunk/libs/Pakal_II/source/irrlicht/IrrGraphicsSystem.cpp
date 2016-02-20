@@ -9,6 +9,7 @@
 #include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
 #include "Components/SpriteComponent_Irrlicht.h"
+#include "Components/CameraComponent_Irrlicht.h"
 #include "ResourceManager.h"
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
@@ -77,14 +78,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 		r->set_drawer(m_render_info);
 	}
 
-	LOG_INFO("[Graphic System] done");
-
-	auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0,0,-10), vector3df(0,0,0));
-	//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(3,15,-10), vector3df(0,0,0));
-
-	//irr::core::matrix4 MyMatrix;
-	//MyMatrix.buildProjectionMatrixOrthoRH(16.0f, 12.0f, 15.5f, -32.5f);
-	//camera->setProjectionMatrix(MyMatrix);
+	LOG_INFO("[Graphic System] done");	
 
 	// setting up events
 	OSMgr.event_window_resized += {m_resized_callback_id, [this](const WindowArgs& a)
@@ -218,6 +212,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 
 	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
+	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

@@ -73,6 +73,10 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 
 	m_script = new LuaIntf::LuaState(m_state);
 
+	// Note: these are the default components available to every script
+	// maybe you're asking yourself where are being registered the other basic pakal::Components? 
+	// if so: take a look at LuaProxies.cpp
+
 	LuaIntf::LuaBinding( m_state ).beginClass<Pakal::tmath::vector2df>("Vector2df")
 		.addVariable("x", &Pakal::tmath::vector2df::x)
 		.addVariable("y", &Pakal::tmath::vector2df::y)
