@@ -22,6 +22,7 @@
     <ClInclude Include="..\source\components\CppBindClass_lua.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
+    <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
     <ClInclude Include="..\source\persist\JsonWriter.h" />

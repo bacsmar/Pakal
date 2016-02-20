@@ -1,7 +1,7 @@
 #pragma once
 #include "IManager.h"
 #include "IComponentProvider.h"
-#include "math/tm.h"
+#include "PakalMath.h"
 
 namespace Pakal
 {
