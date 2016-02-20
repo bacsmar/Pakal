@@ -561,6 +561,9 @@
     <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
       <Filter>Components\Sprite</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\PakalMath.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">

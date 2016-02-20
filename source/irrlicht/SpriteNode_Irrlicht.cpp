@@ -22,8 +22,8 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_material.FrontfaceCulling = false;		// enable both faces drawing
 	m_material.BackfaceCulling = false;
 
-	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
+	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
 	//m_material.MaterialType = video::EMT_SOLID;	
 
 	m_box.reset(-1.0f,-1.0f,0.0f);

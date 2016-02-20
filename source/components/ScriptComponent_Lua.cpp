@@ -1,7 +1,7 @@
 #include "ScriptComponent_Lua.h"
 #include "ResourceManager.h"
 #include "LuaProxies.h"
-#include "math/tm.h"
+#include "PakalMath.h"
 
 #include "luaintf/LuaIntf.h"
 #include "lua.h"
