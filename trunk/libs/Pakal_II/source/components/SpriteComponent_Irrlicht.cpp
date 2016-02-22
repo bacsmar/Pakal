@@ -89,12 +89,13 @@ float SpriteComponent_Irrlicht::get_normalization_factor() const
 
 void SpriteComponent_Irrlicht::set_height(tmath::vector2du ref_size, float height, bool keep_relation)
 {
-	f64 length = ref_size.x*ref_size.x + ref_size.y*ref_size.y;
-	auto normalization_factor = (f32)core::reciprocal_squareroot(length);
+	// TODO
+	//f64 length = ref_size.x*ref_size.x + ref_size.y*ref_size.y;
+	//auto normalization_factor = (f32)core::reciprocal_squareroot(length);
 
-	auto sen = std::sin(ref_size.y * normalization_factor);
+	//auto sen = std::sin(ref_size.y * normalization_factor);
 
-	// height / sen
+	//// height / sen
 }
 
 BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)

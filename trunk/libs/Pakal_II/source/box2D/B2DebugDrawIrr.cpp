@@ -201,8 +201,7 @@ void B2DebugDrawIrr::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 	auto camera = mDevice->getSceneManager()->getActiveCamera();
 	auto viewProjectionMatrix = camera->getProjectionMatrix() * camera->getViewMatrix();
 
-    const core::vector2df &translation = mImpl->translation, &screenCenter = mImpl->screenCenter;
-    const float scale = mImpl->scale * 5;
+    const core::vector2df &translation = mImpl->translation;
     const video::SColor c1((u32)128, (u32)(color.r * 0.5f * 255), (u32)(color.g * 0.5f * 255), (u32)(color.b * 0.5f * 255));
     const video::SColor c2((u32)255, (u32)(color.r * 255), (u32)(color.g * 255), (u32)(color.b * 255));
     core::array<video::S3DVertex> &vs = mImpl->initVertices();

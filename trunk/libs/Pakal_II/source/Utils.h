@@ -128,11 +128,11 @@ namespace Pakal
 		}
 
 
-		template<class T, class FN>
-		inline void unroll_stringer(FN &f, T t) { f << t << " "; }
+		template<class FN>
+		inline void unroll_stringer(FN &f) { }		
 
 		template<class T, class FN, typename ... Args>
-		inline void unroll_stringer(FN &f, T t, Args const& ... args)
+		inline void unroll_stringer(FN &f, const T& t, Args const& ... args)
 		{
 			f << t << " ";
 			unroll_stringer(f, args...);
@@ -141,8 +141,7 @@ namespace Pakal
 		template< typename ... Args >
 		std::string stringer(Args const& ... args)
 		{
-			std::ostringstream stream;			
-			//unroll([&]() { stream << " "; }, args...);
+			std::ostringstream stream;
 			unroll_stringer(stream, args...);
 
 			return stream.str();
