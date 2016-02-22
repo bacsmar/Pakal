@@ -27,8 +27,8 @@ namespace Pakal
 		bool on_collide(const PhysicComponent& other)
 		{
 			auto otherEntity = other.get_parent_entity();
-			auto thisEntity = this->get_parent_entity();
-			ASSERT(otherEntity && thisEntity);
+			//auto thisEntity = this->get_parent_entity();
+			ASSERT(otherEntity && this->get_parent_entity());
 			{
 				event_collide.notify(otherEntity);
 			}

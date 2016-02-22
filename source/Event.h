@@ -65,7 +65,7 @@ namespace Pakal
 
 			inline void operator+=(Delegate<TArgs>&& d)
 			{
-				*d.id = add_listener(d.callback, d.tid);
+				*d.id = add_listener( std::move(d.callback), d.tid);
 			}
 
 			inline void operator-=(ulonglong& id)
@@ -74,7 +74,7 @@ namespace Pakal
 				id = 0;
 			}
 
-			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callbackThread = NULL_THREAD)
+			inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
 				mutex_guard lock(m_mutex);
 				
@@ -200,7 +200,7 @@ namespace Pakal
 
 			inline void operator+=(Delegate<void>&& d)
 			{
-				*d.id = add_listener(d.callback,d.tid);
+				*d.id = add_listener(std::move(d.callback),d.tid);
 			}
 
 			inline void operator-=(ulonglong& id)
@@ -209,7 +209,12 @@ namespace Pakal
 				id = 0;
 			}
 
-			inline ulonglong add_listener(const MethodDelegate& delegate, std::thread::id callBackThread = NULL_THREAD)
+			/*inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callBackThread = NULL_THREAD)
+			{
+				return add_listener(delegate, callBackThread);
+			}*/
+
+			inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
 				mutex_guard lock(m_mutex);
 

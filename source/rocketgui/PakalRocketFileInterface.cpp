@@ -1,6 +1,7 @@
 #include "rocketgui/PakalRocketFileInterface.h"
 
 #include "ResourceManager.h"
+#include <ios>
 
 using namespace Pakal;
 
@@ -50,9 +51,18 @@ bool PakalRocketFileInterface::Seek(Rocket::Core::FileHandle file, long offset, 
 {
 	ASSERT(file != 0);
 
-	std::istream * rfile = reinterpret_cast<std::istream*>(file);
+	std::istream* rfile = reinterpret_cast<std::istream*>(file);	
+	//enum seekdir {beg, cur, end};
+	std::ios::seekdir dir = std::ios::beg;
 
-	rfile->seekg(offset, origin);
+	switch (origin)
+	{
+	case SEEK_SET: dir = std::ios::beg; break;	
+	case SEEK_CUR: dir = std::ios::cur; break;
+	case SEEK_END: dir = std::ios::end; break;
+	}
+
+	rfile->seekg(offset, dir);
 
 	return rfile->good();
 }

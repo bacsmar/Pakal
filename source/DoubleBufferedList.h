@@ -7,6 +7,7 @@
 #include <queue>
 #include <thread>
 #include <mutex>
+#include "TaskFwd.h"
 
 namespace Pakal
 {

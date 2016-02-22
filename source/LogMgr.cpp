@@ -4,11 +4,11 @@
 #include <cstdio>
 
 #ifdef ANDROID
-#include <jni.h>
-#include <android/log.h>
+	#include <jni.h>
+	#include <android/log.h>
 #endif
-#include "SingletonHolder.h"
 #include "TaskFwd.h"
+#include "SingletonHolder.h"
 
 using namespace Pakal;
 

@@ -40,7 +40,7 @@ Component* ComponentManager::create_component(const std::string& typeName )
 
 	if(it == m_factories.end())
 	{
-		LOG_WARNING("[ComponentManager] error: '%s' unknown component type.", typeName );
+		LOG_WARNING("[ComponentManager] error: '%s' unknown component type.", typeName.c_str() );
 		return nullptr;
 	}	
 

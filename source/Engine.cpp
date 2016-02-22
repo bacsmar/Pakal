@@ -16,8 +16,6 @@
 
 
 //#include <vld.h>
-
-using namespace std::literals::chrono_literals;
 using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
@@ -137,7 +135,7 @@ void Engine::run(IPakalApplication* application)
 		}
 		else
 		{
-			std::this_thread::sleep_for(100ms);
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			os_manager()->process_window_events();
 			clock.restart();
 		}			
@@ -172,7 +170,8 @@ void Engine::on_update(long long dt)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	m_listener_terminate = os_manager()->event_app_finished.add_listener(std::bind(&Engine::terminate,this));
+	//m_listener_terminate = os_manager()->event_app_finished.add_listener(std::bind(&Engine::terminate,this));
+	m_listener_terminate = os_manager()->event_app_finished.add_listener([=]() {this->terminate(); });
 
 	m_application->start(this);	
 }

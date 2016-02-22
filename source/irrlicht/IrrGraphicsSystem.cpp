@@ -58,7 +58,8 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 
 #ifdef PAKAL_ANDROID_PLATFORM
 	parameters.DriverType = EDT_OGLES2;	
-	parameters.PrivateData = m_os_manager->activity;
+	// TODO
+	//parameters.PrivateData = m_os_manager->activity;
 	parameters.OGLES2ShaderPath = "";
 #endif		
 	device = createDeviceEx(parameters);

@@ -12,7 +12,7 @@ namespace Pakal
 {
 	class _PAKALExport System : public ISystem
 	{
-		std::atomic<SystemState> m_state = SystemState::Created;
+		std::atomic<SystemState> m_state;// (SystemState::Created);
 		std::thread*			m_thread = nullptr;
 		unsigned				m_desired_frame_time_ms = 1;
 
