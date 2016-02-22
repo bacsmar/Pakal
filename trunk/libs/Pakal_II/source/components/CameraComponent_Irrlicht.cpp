@@ -1,4 +1,3 @@
-#pragma once
 #include "CameraComponent_Irrlicht.h"
 #include "Task.h"
 #include "irrlicht/IrrGraphicsSystem.h"

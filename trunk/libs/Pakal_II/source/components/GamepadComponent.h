@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "InputDevice.h"
 #include <set>
+#include <vector>
 
 namespace Pakal
 {	

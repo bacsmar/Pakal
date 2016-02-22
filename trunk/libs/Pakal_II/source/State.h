@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include <vector>
+#include <string>
 #include <functional>
 #include <unordered_map>
 

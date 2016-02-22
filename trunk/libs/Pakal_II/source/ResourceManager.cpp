@@ -79,7 +79,7 @@ namespace Pakal
 			m_sources_mutex.unlock();
 
 			for (auto& source : m_sources)
-				if (stream = source->open_resource(resourcePath))
+				if ( (stream = source->open_resource(resourcePath)) )
 					break;
 		}
 

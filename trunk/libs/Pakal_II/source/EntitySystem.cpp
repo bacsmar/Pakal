@@ -1,4 +1,5 @@
 #include "EntitySystem.h"
+#include "RTTI.h"
 #include "IEntity.h"
 
 #include "Task.h"

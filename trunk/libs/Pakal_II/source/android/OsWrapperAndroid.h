@@ -19,6 +19,7 @@ namespace Pakal
 {
 	class _PAKALExport OsWrapperAndroid  : public OSManager
 	{
+		template <class OSManager> friend class SingletonHolder;
 		enum Orientation
 		{
 			Portrait,
@@ -30,7 +31,7 @@ namespace Pakal
 		OsWrapperAndroid();		
 	public:
 		static void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize);
-		std::string get_system_sources() override;
+		std::string get_app_path() override;
 		ANativeActivity*	activity;
 		AConfiguration*		configuration;
 		unsigned			orientation;

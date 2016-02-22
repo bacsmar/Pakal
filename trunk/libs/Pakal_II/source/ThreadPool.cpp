@@ -3,7 +3,8 @@
 
 #include <functional>
 #include <sstream>
-using namespace std::literals::chrono_literals;
+
+#include <chrono>
 
 
 namespace Pakal
@@ -48,7 +49,7 @@ namespace Pakal
 
 		while (m_running)
 		{
-			bool waitExpired = !m_job_available_condition.wait_for(lk, 60s, [this]() { return !m_jobs.empty() || !m_running; });
+			bool waitExpired = !m_job_available_condition.wait_for(lk, std::chrono::seconds(60), [this]() { return !m_jobs.empty() || !m_running; });
 
 			if (waitExpired)
 			{

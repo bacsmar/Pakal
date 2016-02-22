@@ -230,7 +230,7 @@ void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void*
 	activity->callbacks->onLowMemory = Pakal::onLowMemory;
 }
 
-std::string OsWrapperAndroid::get_system_sources()
+std::string OsWrapperAndroid::get_app_path()
 {
 	return std::string(activity->obbPath) + "/";
 }

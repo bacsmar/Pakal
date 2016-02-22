@@ -1,0 +1,670 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\source\CompileUnit_1.cpp" />
+    <ClCompile Include="..\source\Engine.cpp" />
+    <ClCompile Include="..\source\GraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LogMgr.cpp">
+      <Filter>Managers\LogManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PhysicsSystem.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\AsyncTaskDispatcher.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EventScheduler.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\InboxQueue.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\BasicTask.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EventSystemUtils.cpp">
+      <Filter>Managers\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntitySystem.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GenericEntity.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GameStateManager.cpp">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ComponentManager.cpp">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\System.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EngineSettings.cpp" />
+    <ClCompile Include="..\source\ResourceManager.cpp">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
+      <Filter>Components\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\InputManager_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Clock.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PakalTime.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ThreadPool.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Timer.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp">
+      <Filter>Managers\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp">
+      <Filter>Components\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp">
+      <Filter>Components\Music</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\AutomataComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StateMachine.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp">
+      <Filter>Managers\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\IrrRocketRenderer.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\PakalRocketFileInterface.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketGUI.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EngineComponents.cpp" />
+    <ClCompile Include="..\source\State.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LuaProxies.cpp">
+      <Filter>Foundation\LuaProxies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\GamepadComponent.cpp">
+      <Filter>Components\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\Attribute.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\Element.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\TextReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\TextWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\XmlReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\Archive.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\XmlWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketInput.cpp">
+      <Filter>Managers\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\OSManager.cpp">
+      <Filter>Managers\OSManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\WindowCreatorSFML.cpp">
+      <Filter>Managers\OSManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\JsonReader.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\persist\JsonWriter.cpp">
+      <Filter>Foundation\Persist</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\script\ScriptableGameState.cpp">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\SimpleTimer.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp">
+      <Filter>Components\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\CppFunction.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\CppObject.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\LuaCompat.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\LuaRef.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\luaintf\src\LuaState.cpp">
+      <Filter>Foundation\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
+      <Filter>Components\GFX</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\Engine.h" />
+    <ClInclude Include="..\source\BaseGameState.h">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LogMgr.h">
+      <Filter>Managers\LogManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PhysicsSystem.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\RTTI.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Platform.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IPakalApplication.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Config.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\AsyncTaskDispatcher.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventScheduler.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\InboxQueue.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Event.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Task.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h">
+      <Filter>Systems\PhysicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IDebugDrawer.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\TaskFwd.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DoubleBufferedList.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\BasicTask.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventSystemUtils.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IComponentProvider.h">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntitySystem.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IEntity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GenericEntity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\System.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\GameStateManager.h">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ComponentManager.h">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SingletonHolder.h" />
+    <ClInclude Include="..\source\GraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\TaskCompletionSource.h">
+      <Filter>Managers\EventManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\matrix2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\matrix3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\matrix4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\quaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tm.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tmconfig.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\tmg.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\vectorn.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\matrix.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SoundManager.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ResourceManager.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Component.h">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ComponentFactory.h">
+      <Filter>Managers\ComponentManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\BodyComponent.h">
+      <Filter>Components\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
+      <Filter>Components\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\Shapes.h">
+      <Filter>Components\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IInputManager.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\InputManager_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Clock.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\win32\ClockImpl.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalTime.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MeshComponent.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\MemoryStream.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ISource.h">
+      <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DirectorySource.h">
+      <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ZipSource.h">
+      <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrlitchStream.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h">
+      <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h">
+      <Filter>Managers\ResourceManager\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\StreamSFML.h">
+      <Filter>Managers\ResourceManager\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Utils.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ThreadPool.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Timer.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\SoundManagerSFML.h">
+      <Filter>Managers\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SFXComponent.h">
+      <Filter>Components\SFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
+      <Filter>Components\SFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
+      <Filter>Components\Music</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpriteComponent.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\Sprite.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\OSManager.h">
+      <Filter>Managers\OSManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\OSManager.h">
+      <Filter>Managers\OSManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\AutomataComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\State.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\StateMachine.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\InputDevice.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\Keyboard_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\sfml\Gamepad_SFML.h">
+      <Filter>Managers\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ISystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Factory.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IUIManager.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketGUI.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\LuaProxies.h">
+      <Filter>Foundation\LuaProxies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\ScriptComponent.h">
+      <Filter>Components\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysics.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GamepadComponent.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Archive.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Attribute.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\Element.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\TextReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\TextWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\PersistUtils.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\XmlReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\XmlWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\PhysicComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EventArgs.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketInput.h">
+      <Filter>Managers\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\WindowCreatorSFML.h">
+      <Filter>Managers\OSManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\JsonReader.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\persist\JsonWriter.h">
+      <Filter>Foundation\Persist</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\script\ScriptableGameState.h">
+      <Filter>Managers\GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\SimpleTimer.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\MusicComponent.h">
+      <Filter>Components\Music</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalPath.h">
+      <Filter>Managers\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\ScriptComponent_Lua.h">
+      <Filter>Components\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\CppBindClass_lua.h">
+      <Filter>Components\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\PakalMath.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\CameraComponent.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{419fd1b0-3d43-44dd-ba4e-60d13d870417}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\GraphicsSystem">
+      <UniqueIdentifier>{e84a9c28-03ec-4bc5-9cc2-3310f8f9b6c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\PhysicsSystem">
+      <UniqueIdentifier>{d4b08ee1-65c9-4335-ab85-c8dbcff602ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{3d9176a9-4c65-46ce-b0c5-98cfe337a95c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{90d31d91-eae7-4171-880a-b865ec374056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{82a3627d-01c5-4390-a9ce-6b06e7742a00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\GameStateManager">
+      <UniqueIdentifier>{a51f6029-8d1d-4e6f-9541-382654dee482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\LogManager">
+      <UniqueIdentifier>{1e5c0fce-70c0-4021-804e-7881f3ad741b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\EventManager">
+      <UniqueIdentifier>{c8ecabd8-79e1-4f04-8a81-f385f1a316ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\EntityManager">
+      <UniqueIdentifier>{9c757118-43e4-4239-9093-fed26c6c5505}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ComponentManager">
+      <UniqueIdentifier>{89ad1491-0c07-4861-8801-631c814f94c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\SoundManager">
+      <UniqueIdentifier>{c891e1b4-8bdd-4f5d-9454-f503e911923b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ResourceManager">
+      <UniqueIdentifier>{980dfa46-65f4-4fce-bc12-8d0a607a8209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{f3dd4bea-3b11-465d-82c8-6cd420ca7b1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\InputManager">
+      <UniqueIdentifier>{19be2d61-1406-4c38-ae86-0a78d8f41800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ResourceManager\Streams">
+      <UniqueIdentifier>{37a880bd-3fcc-4055-880b-9a7d212733ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\ResourceManager\Sources">
+      <UniqueIdentifier>{575441c4-0da8-4220-861f-5cc8db12b3c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\OSManager">
+      <UniqueIdentifier>{f43854b0-f0ee-45be-966d-0c40c87ec9c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Persist">
+      <UniqueIdentifier>{8e749bfe-8737-4c31-bcc4-3975c92ed943}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers\UIManager">
+      <UniqueIdentifier>{ae1b0036-dfc5-4971-b7ab-7b3ff3eba818}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\LuaProxies">
+      <UniqueIdentifier>{6bff8fc3-bb4a-4767-be96-1ec75b788833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Music">
+      <UniqueIdentifier>{90b50d09-2bb5-4fa1-a1e1-0d73c5b7eff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\SFX">
+      <UniqueIdentifier>{45a61c37-d4c8-4650-9d45-0016a75a7fd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Script">
+      <UniqueIdentifier>{0aedea03-ba10-428c-94c5-8c0448e612bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Input">
+      <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Body">
+      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Lua">
+      <UniqueIdentifier>{ee993985-72fd-4ec3-a022-f45f81614f43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX">
+      <UniqueIdentifier>{4f391ff0-4709-489b-9d14-d7e6cfe1a9e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\Sprite">
+      <UniqueIdentifier>{01500137-8e47-4064-ab89-e0c6ae7021a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\Mesh">
+      <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
