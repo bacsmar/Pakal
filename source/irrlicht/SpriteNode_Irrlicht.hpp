@@ -34,8 +34,7 @@ namespace Pakal
 		void set_texture(irr::video::ITexture *texture);
 		void set_frame(std::size_t frameIndex, const Pakal::SpriteAnimation& sprite);
 
-	private:	
-		char m_flip_factor = 1;
+	private:
 		irr::core::aabbox3d<irr::f32>	m_box;
 		irr::video::ITexture*			m_texture;
 		irr::video::S3DVertex			m_vertices[4];
