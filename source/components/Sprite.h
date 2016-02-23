@@ -11,7 +11,7 @@
 namespace Pakal
 {
 
-	class SpriteAnimation
+	class Sprite
 	{
 		struct Frame
 		{
@@ -82,7 +82,7 @@ namespace Pakal
 		unsigned ref_height = 0;
 		float size_factor = 1;
 
-		std::vector<SpriteAnimation*> animations;
+		std::vector<Sprite*> animations;
 
 		void persist(Archive* archive)
 		{

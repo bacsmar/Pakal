@@ -22,7 +22,7 @@
 namespace Pakal
 {
 	class IrrGraphicsSystem;
-	class SpriteAnimation;
+	class Sprite;
 	class SpriteNode_Irrlicht;
 
 	class _PAKALExport SpriteComponent_Irrlicht : public SpriteComponent, public GraphicsSystem::IUpdatable
@@ -33,14 +33,14 @@ namespace Pakal
 		std::size_t			m_current_frame;
 		bool				m_paused;
 		IrrGraphicsSystem*	m_system;
-		SpriteAnimation*	m_current_animation;
+		Sprite*	m_current_animation;
 
 		SpriteNode_Irrlicht*	m_node;
-		std::unordered_map<std::string, SpriteAnimation*>	m_animations;
+		std::unordered_map<std::string, Sprite*>	m_animations;
 		unsigned m_current_frame_time;
 		void load(std::istream& stream);
 
-		void set_animation(SpriteAnimation& animation);
+		void set_animation(Sprite& animation);
 		void set_frame(size_t index, bool resetTime = true);		
 
 		float m_size_factor;

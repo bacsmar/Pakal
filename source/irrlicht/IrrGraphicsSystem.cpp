@@ -6,10 +6,10 @@
 #include "IDebugDrawer.h"
 #include "IUIManager.h"
 
-#include "Components/MeshComponent.h"
 #include "Components/MeshComponent_Irrlitch.h"
 #include "Components/SpriteComponent_Irrlicht.h"
 #include "Components/CameraComponent_Irrlicht.h"
+#include "components/TileMapComponent_Irrlicht.h"
 #include "ResourceManager.h"
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
@@ -30,7 +30,7 @@ using namespace Pakal;
 
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
-	: GraphicsSystem(settings),
+	: GraphicsSystem(settings), m_resized_callback_id(0), m_destroyed_callback_id(0), m_created_callback_id(0),
 	device(nullptr),
 	driver(nullptr),	
 	smgr(nullptr),
@@ -214,6 +214,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
+	factories.emplace_back(CreateComponentFactory<TileMapComponent, TileMapComponent_Irrlicht>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

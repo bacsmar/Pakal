@@ -124,7 +124,7 @@ float GetScreenScaleFactor(const core::vector3df& worldpnt, scene::ICameraSceneN
 	return  2.0f * viewpnt.Z / camera->getProjectionMatrix()[0];
 }
 
-void B2DebugDrawIrr::Calculate2dFrom3D(core::vector3df& point, const core::matrix4& viewProjectionMatrix, const core::vector2df& screenCenter)
+void B2DebugDrawIrr::Calculate2dFrom3D(core::vector3df& point, const core::matrix4& viewProjectionMatrix, const core::vector2df& screenCenter) const
 {
 	f32 transformedPos[4] = { point.X, point.Y, point.Z, 1.0f };
 	viewProjectionMatrix.multiplyWith1x4Matrix(transformedPos);

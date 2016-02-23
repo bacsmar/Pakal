@@ -12,12 +12,12 @@
 namespace Pakal
 {
 	
-	class SpriteNode_Irrlicht :  public irr::scene::ISceneNode	
+	class TiledNode_Irrlicht :  public irr::scene::ISceneNode	
 	{
 	public:    
-		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);
+		explicit TiledNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);
 
-		virtual ~SpriteNode_Irrlicht();
+		virtual ~TiledNode_Irrlicht();
 
 		irr::core::rectf getLocalBounds() const;
 		irr::core::rectf getGlobalBounds() const;
@@ -32,13 +32,17 @@ namespace Pakal
 
 		void detach();
 		void set_texture(irr::video::ITexture *texture);
-		void set_frame(std::size_t frameIndex, const Pakal::Sprite& sprite);
+
+		void set_tile(std::size_t frameIndex, const Pakal::Sprite& sprite, const tmath::vector2df& offset);
+		void clear_draw_surface();
 
 	private:
+
 		irr::core::aabbox3d<irr::f32>	m_box;
 		irr::video::ITexture*			m_texture;
-		irr::video::S3DVertex			m_vertices[4];
-		irr::u16						m_indices[6];
+		std::vector<irr::video::S3DVertex> m_vertices;
+		std::vector<irr::u16>			m_indices;
+		//irr::u16						m_indices[6];
 		irr::video::SMaterial			m_material;
 		irr::core::recti				m_frame_rect;	
 	};
