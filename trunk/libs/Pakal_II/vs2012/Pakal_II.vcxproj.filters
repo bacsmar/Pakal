@@ -200,6 +200,12 @@
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
       <Filter>Components\GFX</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp">
+      <Filter>Components\GFX\Tiles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp">
+      <Filter>Components\GFX\Tiles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -573,6 +579,15 @@
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp">
+      <Filter>Components\GFX\Tiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TileMapComponent.h">
+      <Filter>Components\GFX\Tiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h">
+      <Filter>Components\GFX\Tiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -664,6 +679,9 @@
     </Filter>
     <Filter Include="Components\GFX\Mesh">
       <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\Tiles">
+      <UniqueIdentifier>{d26a743c-dfc6-4ace-a35e-8bb9f499c94a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

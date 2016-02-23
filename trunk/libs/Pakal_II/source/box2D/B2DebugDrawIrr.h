@@ -46,7 +46,7 @@ public:
 
 	void DrawParticles(const b2Vec2* centers, float32 radius, const b2ParticleColor* colors, int32 count) override;
     void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
-	void Calculate2dFrom3D(irr::core::vector3df& point, const irr::core::matrix4& viewProjectionMatrix, const irr::core::vector2df& screenCenter);
+	void Calculate2dFrom3D(irr::core::vector3df& point, const irr::core::matrix4& viewProjectionMatrix, const irr::core::vector2df& screenCenter) const;
 	void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override;
     void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) override;
     void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) override;

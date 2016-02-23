@@ -14,7 +14,7 @@ using namespace irr;
 using namespace core;
 
 SpriteComponent_Irrlicht::SpriteComponent_Irrlicht(IrrGraphicsSystem* system)
-	: m_current_time(0), m_current_frame(0), m_paused(true), m_system(system), m_node(nullptr), m_size_factor(1.f), m_normalization_factor(1.f)
+	: m_current_time(0), m_current_frame(0), m_paused(true), m_system(system), m_current_animation(nullptr), m_node(nullptr), m_current_frame_time(0), m_size_factor(1.f), m_normalization_factor(1.f)
 { }
 
 SpriteComponent_Irrlicht::~SpriteComponent_Irrlicht() 
@@ -252,7 +252,7 @@ void SpriteComponent_Irrlicht::normalize_size(tmath::vector2du size)
 	m_normalization_factor = (f32)core::reciprocal_squareroot(length);
 }
 
-void SpriteComponent_Irrlicht::set_animation(SpriteAnimation& animation)
+void SpriteComponent_Irrlicht::set_animation(Sprite& animation)
 {
 	m_current_animation = &animation;
 	m_current_frame = 0;
