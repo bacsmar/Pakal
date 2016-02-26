@@ -93,7 +93,10 @@ void B2DebugDrawIrr::update_camera()
 	if( mDevice)
 	{
 		auto camera = mDevice->getSceneManager()->getActiveCamera();
-		camera->render();
+		if( camera != nullptr)
+		{
+			camera->render();
+		}		
 	}	
 }
 

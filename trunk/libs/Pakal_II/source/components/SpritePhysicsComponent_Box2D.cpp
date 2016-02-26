@@ -19,6 +19,11 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysics& loader)
 {
 	return m_system->execute_block([=]()
 	{
+		if (m_bodies.size() < 1)
+		{
+			LOG_ERROR("[SpritebodyComponent] there are no bodies in the loader");
+			return;
+		}
 		// bodies
 		for(auto spriteBody :loader.bodies)
 		{
