@@ -111,14 +111,7 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		m_size_factor = settings.size;
 		m_node->setPosition(vector3df(settings.position.x, settings.position.y, settings.position.z));
 
-		if (auto resource = ResourceMgr.open_read_resource(settings.resource_file, false))
-		{
-			load(*resource);
-		}
-		else
-		{
-			LOG_ERROR("[SpriteComponent]  invalid resource %s", settings.resource_file.c_str());
-		}
+		load(settings.sprite_sheet);		
 		m_system->add_to_update_list(this);
 
 	});
@@ -142,30 +135,25 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 	});
 }
 
-void SpriteComponent_Irrlicht::load(std::istream& stream)
-{
-	SpriteLoader loader;
-
-	XmlReader reader;
-	reader.read(stream, "SpriteSheetAnimation", loader);
-
-	auto texture = m_system->get_driver()->getTexture(loader.texture_name.c_str());
+void SpriteComponent_Irrlicht::load(const SpriteSheet& spriteSheet)
+{	
+	auto texture = m_system->get_driver()->getTexture(spriteSheet.texture_name.c_str());
 	if (texture == nullptr)
 	{
-		LOG_ERROR("[SpriteComponent] texture: %s not found!", loader.texture_name.c_str());
+		LOG_ERROR("[SpriteComponent] texture: %s not found!", spriteSheet.texture_name.c_str());
 		return;
 	}
 	m_node->set_texture(texture);
 
-	for(auto animation : loader.animations)
+	for(auto animation : spriteSheet.animations)
 	{
 		m_animations[animation->name] = animation;
 	}
 
-	normalize_size({ loader.ref_width, loader.ref_height});
-	set_size(loader.size_factor);
+	normalize_size({ spriteSheet.m_ref_size.x, spriteSheet.m_ref_size.y});
+	set_size(spriteSheet.size_factor);
 
-	const auto& defaultAnimation = m_animations.find(loader.default_animation);
+	const auto& defaultAnimation = m_animations.find(spriteSheet.default_animation);
 	if (defaultAnimation != m_animations.end())
 	{
 		set_animation(*defaultAnimation->second);

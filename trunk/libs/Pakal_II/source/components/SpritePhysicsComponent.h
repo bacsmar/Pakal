@@ -7,13 +7,13 @@
 
 namespace Pakal
 {
-	struct SpritePhysics;
+	struct SpriteSheetPhysics;
 
 	class _PAKALExport SpritePhysicsComponent : public PhysicComponent
 	{
 		DECLARE_RTTI_WITH_BASE(SpritePhysicsComponent, PhysicComponent);
 	public:		
-		virtual BasicTaskPtr initialize(const SpritePhysics& loader) = 0;
+		virtual BasicTaskPtr initialize(const SpriteSheetPhysics& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;

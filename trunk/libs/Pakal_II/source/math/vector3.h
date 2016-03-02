@@ -139,6 +139,22 @@ namespace Pakal
 				return vectorn<T,3>(x * r,y * r,z * r);
 			}
 
+			inline T get_lenght() const { return sqrt(x*x + y*y + z*z); }
+
+			inline T get_length_sq() const { return x*x + y*y + z*z; }
+
+			vectorn<T, 3>& normalize()
+			{
+				auto length = get_length_sq();
+				if (length == 0)
+					return *this;
+				length = ((T)1) / sqrt(length);
+				x = (T)(x * length);
+				y = (T)(y * length);
+				z = (T)(z * length);
+				return *this;
+			}
+
 			size_t size() const
 			{
 				return 3;

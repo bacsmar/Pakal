@@ -20,12 +20,20 @@ namespace Pakal
 		using vector2du = vectorn<unsigned, 2>;
 		using vector3df = vectorn<float, 3>;
 
-		struct recti
+		template<typename T>
+		struct rect
 		{
-			recti() {}
-			recti(int x, int y, int width, int height) : left_corner(x, y), size(width, height) {}
-			vector2di left_corner;
-			vector2di size;
+			rect() {}
+			rect(T x, T y, T width, T height) : left_corner(x, y), size(width, height) {}
+			vectorn<T,2> left_corner;
+			vectorn<T,2> size;
+			inline vectorn<T,2> get_length() const
+			{
+				return{ abs(size.x) + abs(left_corner.x), abs(size.y) + abs(left_corner.y) };
+			}
 		};
+		using recti = rect<int>;
+		using rectu = rect<unsigned>;
+		using rectf = rect<float>;
 	}
 }

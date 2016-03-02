@@ -13,8 +13,12 @@ using namespace Pakal;
 using namespace irr;
 using namespace core;
 
+// NOTE: THIS COMPONENT IS NOT READY YET
+
 TileMapComponent_Irrlicht::TileMapComponent_Irrlicht(IrrGraphicsSystem* system) : m_system(system), m_node(nullptr)
-{ }
+{
+	LOG_WARNING("TileMapComponent_Irrlicht THIS COMPONENT IS NOT READY YET");
+}
 
 TileMapComponent_Irrlicht::~TileMapComponent_Irrlicht()
 { }
@@ -109,7 +113,7 @@ void TileMapComponent_Irrlicht::load_tilemap(std::istream& stream)
 
 void TileMapComponent_Irrlicht::load_sprite_sheet(std::istream& stream, std::string& outTextureName)
 {
-	SpriteLoader loader;
+	SpriteSheet loader;
 
 	XmlReader reader;
 	reader.read(stream, "SpriteSheetAnimation", loader);	
@@ -123,7 +127,7 @@ void TileMapComponent_Irrlicht::load_sprite_sheet(std::istream& stream, std::str
 		index++;
 	}
 
-	normalize_size({ loader.ref_width, loader.ref_height });	
+	normalize_size({ loader.m_ref_size.x, loader.m_ref_size.y });	
 
 	/*
 	const auto& defaultAnimation = m_animations.find(0);

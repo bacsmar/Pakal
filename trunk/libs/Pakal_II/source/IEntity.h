@@ -29,7 +29,7 @@ namespace Pakal
 		// ctor
 		explicit IEntity(ComponentManager* c) :m_component_manager(c) {}
 
-		virtual Component* get_component(const std::string& component_id_string) const = 0;
+		virtual Component* get_component(const std::string& component_id_string) const { return nullptr; };
 
 		template <class T>
 		T* get_component() const

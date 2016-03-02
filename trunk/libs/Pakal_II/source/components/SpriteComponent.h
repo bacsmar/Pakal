@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "BasicTask.h"
 #include "PakalMath.h"
+#include "Sprite.h"
 
 #include "Event.h"
 
@@ -13,7 +14,8 @@ namespace Pakal
 	public:
 		struct Settings
 		{
-			std::string resource_file;
+			//std::string resource_file;
+			SpriteSheet sprite_sheet;
 			tmath::vector3df position;
 			bool init_paused = false;			
 			float speed = 1;

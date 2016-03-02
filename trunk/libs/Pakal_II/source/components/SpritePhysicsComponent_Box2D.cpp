@@ -15,7 +15,7 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 	m_system = nullptr;
 }
 
-BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpritePhysics& loader)
+BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loader)
 {
 	return m_system->execute_block([=]()
 	{
