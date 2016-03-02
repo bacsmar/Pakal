@@ -38,7 +38,7 @@ namespace Pakal
 		SpriteNode_Irrlicht*	m_node;
 		std::unordered_map<std::string, Sprite*>	m_animations;
 		unsigned m_current_frame_time;
-		void load(std::istream& stream);
+		void load(const SpriteSheet& spriteSheet);
 
 		void set_animation(Sprite& animation);
 		void set_frame(size_t index, bool resetTime = true);		

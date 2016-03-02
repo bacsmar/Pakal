@@ -23,6 +23,8 @@ namespace Pakal
 	class Sprite;
 	class SpriteNode_Irrlicht;
 
+	// NOTE: THIS COMPONENT IS NOT READY YET
+
 	class _PAKALExport TileMapComponent_Irrlicht : public TileMapComponent, public GraphicsSystem::IUpdatable
 	{		
 	private:

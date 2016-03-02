@@ -24,7 +24,7 @@ namespace Pakal
 		explicit SpritebodyComponent_Box2D(Box2DPhysicsSystem* sys): m_system(sys){}
 		~SpritebodyComponent_Box2D();
 
-		BasicTaskPtr initialize(const SpritePhysics& loader) override;
+		BasicTaskPtr initialize(const SpriteSheetPhysics& loader) override;
 		BasicTaskPtr terminate() override;		
 
 		tmath::vector3df get_position() override;

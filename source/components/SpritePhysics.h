@@ -7,12 +7,13 @@
 #include <vector>
 #include "PakalMath.h"
 #include "persist/Archive.h"
+#include "persist/TextReader.h"
 
 namespace Pakal
 {
 	class TextReader;
 
-	struct SpriteBodyPhysics
+	struct SpritePhysics
 	{
 		class vector2df : public tmath::vector2df
 		{
@@ -125,11 +126,41 @@ namespace Pakal
 			return m_fixtures.size() * sizeof(Fixture) + childMemory;
 		}
 
+		tmath::rectf get_bounding_box()
+		{
+			tmath::rectf bounding_box;
+			for (auto& fixture : m_fixtures) 
+			{
+				for (auto& polygon : fixture.m_polygons)
+				{
+					for (auto& vertex : polygon.m_vertices)
+					{
+						if (vertex.x > bounding_box.size.x) bounding_box.size.x = vertex.x;
+						if (vertex.y > bounding_box.size.y) bounding_box.size.y = vertex.y;
+
+						if (vertex.x < bounding_box.left_corner.x) bounding_box.left_corner.x = vertex.x;
+						if (vertex.y < bounding_box.left_corner.y) bounding_box.left_corner.y = vertex.y;
+					}
+				}
+								
+				auto& circle = fixture.m_circle;
+					{
+						if (circle.x + circle.r > bounding_box.size.x) bounding_box.size.x = circle.x + circle.r;
+						if (circle.y + circle.r > bounding_box.size.y) bounding_box.size.y = circle.y + circle.r;
+
+						if (circle.x - circle.r < bounding_box.left_corner.x) bounding_box.left_corner.x = circle.x - circle.r;
+						if (circle.y - circle.r < bounding_box.left_corner.y) bounding_box.left_corner.y = circle.y - circle.r;
+					}
+				
+			}
+			return bounding_box;
+		}
+
 	};
 
-	struct SpritePhysics
+	struct SpriteSheetPhysics
 	{
-		std::vector<SpriteBodyPhysics*> bodies;
+		std::vector<SpritePhysics*> bodies;
 
 		void persist(Archive* archive)
 		{
@@ -143,8 +174,13 @@ namespace Pakal
 			{
 				childMemory += child->get_memory_consumption();
 			}
-			return sizeof(SpriteBodyPhysics)* bodies.size() + sizeof(bodies) + childMemory;
-		}		
+			return sizeof(SpritePhysics)* bodies.size() + sizeof(bodies) + childMemory;
+		}
+
+		bool load(TextReader& reader, std::istream& stream)
+		{
+			return reader.read(stream, "bodydef", *this);			
+		}
 	};
 
 }
