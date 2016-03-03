@@ -139,7 +139,13 @@ namespace Pakal
 				return vectorn<T,3>(x * r,y * r,z * r);
 			}
 
-			inline T get_lenght() const { return sqrt(x*x + y*y + z*z); }
+			template<class D = T>
+			typename std::enable_if<!std::is_floating_point<D>::value, double >::type
+				get_lenght() const { return sqrt(x*x + y*y + z*z); }
+
+			template<class D = T>
+			typename std::enable_if<std::is_floating_point<D>::value, D >::type
+				get_lenght() const { return sqrt(x*x + y*y + z*z); }
 
 			inline T get_length_sq() const { return x*x + y*y + z*z; }
 
@@ -148,10 +154,10 @@ namespace Pakal
 				auto length = get_length_sq();
 				if (length == 0)
 					return *this;
-				length = ((T)1) / sqrt(length);
-				x = (T)(x * length);
-				y = (T)(y * length);
-				z = (T)(z * length);
+				auto flength = ((T)1) / sqrt(length);
+				x = (T)(x * flength);
+				y = (T)(y * flength);
+				z = (T)(z * flength);
 				return *this;
 			}
 

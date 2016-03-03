@@ -135,18 +135,13 @@ namespace Pakal
 				return vectorn<T, 2>(x * r, y * r);
 			}
 
-			//template<bool _Test,
-			//class _Ty = void>
-			//	using Rtype = typename std::enable_if<_Test, _Ty>::type;
+			template<class D = T>
+			typename std::enable_if<!std::is_floating_point<D>::value, double >::type
+				get_length() const { return sqrt(x*x + y*y); }
 
-			/*template<typename std::enable_if<!std::is_floating_point<T>::value >::type >
-				using Rtype = double;
-			template<typename std::enable_if<std::is_floating_point<T>::value >::type>
-				using Rtype = T;*/
-			
-			// TODO, return double only when T is integer, otherwise return T
-			//inline T get_length() const { return sqrt(x*x + y*y); }
-			inline double get_length() const { return sqrt(x*x + y*y); }
+			template<class D = T>
+			typename std::enable_if<std::is_floating_point<D>::value, D >::type
+				get_length() const { return sqrt(x*x + y*y); }
 
 			inline T get_reciprocal_length() const { return 1 / sqrt(x*x + y*y); }
 
@@ -157,9 +152,9 @@ namespace Pakal
 				auto length = get_length_sq();
 				if (length == 0)
 					return *this;
-				length = ((T)1) / sqrt(length);
-				x = (T)(x * length);
-				y = (T)(y * length);
+				auto flength = ((T)1) / sqrt(length);
+				x = (T)(x * flength);
+				y = (T)(y * flength);
 				return *this;
 			}
 

@@ -86,8 +86,8 @@ void TileMapComponent_Irrlicht::draw_area(const tmath::recti& m_tile_map_area)
 
 	m_system->execute_block([=]()
 	{
-		float offset_x = draw_area_size.x/m_tile_map_area.size.x;
-		float offset_y = draw_area_size.y/m_tile_map_area.size.y;
+		float offset_x = (float)draw_area_size.x/m_tile_map_area.size.x;
+		float offset_y = (float)draw_area_size.y/m_tile_map_area.size.y;
 
 		for (int row = 0; row < m_tile_map_area.size.x; ++row)
 		{

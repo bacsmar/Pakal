@@ -100,7 +100,7 @@ namespace Pakal
 		{
 			auto vlength = m_ref_size.get_length();
 			ASSERT(vlength != 0);
-			return 1.f / vlength;
+			return float(1.0 / vlength);
 		}
 
 		bool load(TextReader& reader, std::istream& stream)
