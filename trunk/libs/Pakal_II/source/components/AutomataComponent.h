@@ -29,10 +29,10 @@ namespace Pakal
 		}
 
 
-		/*inline StateMachine* get_state_machine() const
+		inline StateMachine* get_state_machine() const
 		{
 			return m_stateMachine;
-		}*/
+		}
 
 		inline const std::vector<std::string>& get_available_commands() const
 		{

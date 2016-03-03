@@ -29,8 +29,7 @@ Pakal::BasicTaskPtr Pakal::CameraComponent_Irrlicht::terminate()
 		{
 			m_system->get_smgr()->setActiveCamera(nullptr);
 		}
-		m_camera->remove();
-		//m_camera->drop();
+		m_camera->remove();		
 		m_camera = nullptr;
 	});
 }
