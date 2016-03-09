@@ -41,7 +41,7 @@ void StateMachine::set_current_state(const std::string& name)
 void StateMachine::update()
 {	
 	ASSERT(m_current_state);	// did you forget to set set_current_state(initialState)?
-	State *newState = m_current_state->update();
+	State *newState = m_current_state->exec_conditions();
 	ASSERT(newState);
 
 	if (nullptr == newState)
@@ -61,7 +61,7 @@ void StateMachine::update()
 
 void StateMachine::process_command(const std::string& command)
 {
-	ASSERT(m_current_state);
+	ASSERT(m_current_state);	// did you forget to set set_current_state(initialState)?
 	State *newState = m_current_state->process_command(command);
 	ASSERT(newState);
 	if (newState != m_current_state)
