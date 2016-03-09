@@ -86,7 +86,7 @@ namespace Pakal {
 
 		~State(void) {}
 
-		inline State* update()
+		inline State* exec_conditions()
 		{
 			for (auto & transition : m_transition_conditions)
 			{
