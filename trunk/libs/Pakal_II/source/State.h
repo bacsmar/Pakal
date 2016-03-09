@@ -76,12 +76,13 @@ namespace Pakal {
 		std::string m_name;
 		std::string on_enter_str;
 		std::string on_exit_str;
+		std::string on_update_str;
 
 		std::vector<TransitionCondition>  m_transition_conditions;
 		std::unordered_map<std::string, State*> m_transition_commands;
 
 		explicit State(const std::string& name) : m_name(name){}
-		explicit State() : event_enter([]() {}), event_exit([](){}){}
+		explicit State() : event_enter([]() {}), event_exit([](){}), event_update([]() {}) {}
 
 		~State(void) {}
 
@@ -106,6 +107,7 @@ namespace Pakal {
 	public:
 		std::function<void()> event_enter;
 		std::function<void()> event_exit;
+		std::function<void()> event_update;
 
 		inline void add_transition_cmd(const std::string& command, State*  target_state)
 		{			

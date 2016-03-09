@@ -43,12 +43,20 @@ void StateMachine::update()
 	ASSERT(m_current_state);	// did you forget to set set_current_state(initialState)?
 	State *newState = m_current_state->update();
 	ASSERT(newState);
-	if( newState != m_current_state && newState)
+
+	if (nullptr == newState)
+		return;
+
+	if( newState != m_current_state)
 	{
 		m_current_state->event_exit();
 		m_current_state = newState;
 		m_current_state->event_enter();
 	}
+	else
+	{
+		m_current_state->event_update();
+	}		
 }
 
 void StateMachine::process_command(const std::string& command)

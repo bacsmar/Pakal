@@ -28,20 +28,21 @@ void Pakal::TransitionCondition::set_script(ScriptComponent& script)
 }
 
 void Pakal::State::persist(Archive* archive)
-{	
+{
 	archive->value("name", m_name);
 	archive->value("on_enter", on_enter_str);
-	archive->value("on_exit", on_exit_str);	
+	archive->value("on_exit", on_exit_str);
+	archive->value("on_update", on_update_str);
 
 	archive->value("", "transition", m_transition_conditions);
 	archive->refer("", "command", m_transition_commands, "name", "target_state");
 
-	for( auto & s : m_transition_commands)
+	for (auto & s : m_transition_commands)
 	{
 		if (s.first.length() == 0)
 		{
 			LOG_ERROR("[state machine] undefined command name in transition %s", m_name.c_str());
-		}		
+		}
 	}
 }
 
@@ -49,20 +50,27 @@ void Pakal::State::set_script(ScriptComponent& script)
 {
 	if (on_enter_str.empty() == false)
 	{
-		event_enter =[&]()
-			{
-				script.call_function(on_enter_str);
-			};
+		event_enter = [&]()
+		{
+			script.call_function(on_enter_str);
+		};
 	}
-	if( on_exit_str.empty() == false)
+	if (on_exit_str.empty() == false)
 	{
-		event_exit =([&]()
-			{
-				script.call_function(on_exit_str);
-			});
+		event_exit = ([&]()
+		{
+			script.call_function(on_exit_str);
+		});
 	}
-	for( auto& transition : m_transition_conditions)
+	if (on_update_str.empty() == false)
+	{
+		event_update = ([&]()
+		{
+			script.call_function(on_update_str);
+		});
+	}
+	for (auto& transition : m_transition_conditions)
 	{
 		transition.set_script(script);
-	}	
+	}
 }
