@@ -28,15 +28,15 @@ namespace Pakal
 
 		struct Settings
 		{
-			tmath::vector3df gravity;
-			bool allow_sleep;
-			int velocity_iterations;
-			int position_iterations;
-			bool uses_thread;
-			bool debug_draw;
-			unsigned max_fps;
-
-			Settings() : gravity(0.f,-9.82f,0.f), allow_sleep(false), velocity_iterations(8), position_iterations(3), uses_thread(true), debug_draw(false), max_fps(1000) {}
+			tmath::vector3df gravity = {0.f, -9.82f,0.f};
+			bool allow_sleep = false;
+			int velocity_iterations = 8;
+			int position_iterations = 3;
+			bool uses_thread = true;
+			bool debug_draw = false;
+			bool warm_starting = true;
+			bool continuous_physics = true;
+			unsigned max_fps = 1000;			
 
 			void persist(Archive* archive);
 
