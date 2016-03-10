@@ -83,7 +83,7 @@ namespace Pakal
 		void on_terminate() override;
 		void on_pause() override;
 		void on_resume() override;
-		void register_default_components();
+		void register_default_components() const;
 		std::wstring get_systems_fps();		
 
 		IPakalApplication*  m_application;

@@ -9,7 +9,7 @@
 
 using namespace Pakal;
 
-void Engine::register_default_components()
+void Engine::register_default_components() const
 {
 	LOG_INFO("[Engine] Registering Basic components");
 	m_component_manager->register_factory<AutomataComponent>([]()

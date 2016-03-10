@@ -86,8 +86,8 @@ void Box2DPhysicsSystem::init_world()
 	LOG_INFO("[PhysicsSystem] Starting Box2D %d.%d.%d", b2_version.major, b2_version.minor, b2_version.revision);
 	b2Vec2 gravity(m_settings.gravity.x, m_settings.gravity.y);
 	m_world = new b2World(gravity);
-	m_world->SetWarmStarting(false);
-	m_world->SetContinuousPhysics(false);	
+	m_world->SetWarmStarting(m_settings.warm_starting);
+	m_world->SetContinuousPhysics(m_settings.continuous_physics);
 	m_world->SetAllowSleeping(m_settings.allow_sleep);
 
 	m_contact_listener = new ContactListener();
