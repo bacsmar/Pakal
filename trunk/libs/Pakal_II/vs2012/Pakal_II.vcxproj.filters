@@ -56,7 +56,7 @@
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
-      <Filter>Components\Body</Filter>
+      <Filter>Components\Physics</Filter>
     </ClCompile>
     <ClCompile Include="..\source\InputManager_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
@@ -194,9 +194,6 @@
     <ClCompile Include="..\source\luaintf\src\LuaState.cpp">
       <Filter>Foundation\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
       <Filter>Components\GFX</Filter>
     </ClCompile>
@@ -205,6 +202,12 @@
     </ClCompile>
     <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp">
       <Filter>Components\GFX\Tiles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\InputHandlerComponent.cpp">
+      <Filter>Components\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
+      <Filter>Components\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -352,13 +355,13 @@
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components\Body</Filter>
+      <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
-      <Filter>Components\Body</Filter>
+      <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\Shapes.h">
-      <Filter>Components\Body</Filter>
+      <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IInputManager.h">
       <Filter>Managers\InputManager</Filter>
@@ -498,9 +501,6 @@
     <ClInclude Include="..\source\components\ScriptComponent.h">
       <Filter>Components\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysics.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\GamepadComponent.h">
       <Filter>Components\Input</Filter>
     </ClInclude>
@@ -564,12 +564,6 @@
     <ClInclude Include="..\source\components\CppBindClass_lua.h">
       <Filter>Components\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\PakalMath.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -587,6 +581,21 @@
     </ClInclude>
     <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h">
       <Filter>Components\GFX\Tiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\ICharacterHandler.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\InputHandlerComponent.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysics.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
+      <Filter>Components\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -665,9 +674,6 @@
     <Filter Include="Components\Input">
       <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Components\Body">
-      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Foundation\Lua">
       <UniqueIdentifier>{ee993985-72fd-4ec3-a022-f45f81614f43}</UniqueIdentifier>
     </Filter>
@@ -682,6 +688,9 @@
     </Filter>
     <Filter Include="Components\GFX\Tiles">
       <UniqueIdentifier>{d26a743c-dfc6-4ace-a35e-8bb9f499c94a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Physics">
+      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
