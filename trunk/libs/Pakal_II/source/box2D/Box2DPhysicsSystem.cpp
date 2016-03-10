@@ -124,8 +124,7 @@ void Box2DPhysicsSystem::update_world(long long dt)
 	if (m_time_elapsed > targetTime)
 	{
 		mutex_guard lock(m_debug_draw_mutex);
-		//m_world->Step(targetTimeInSeconds, m_settings.velocity_iterations, m_settings.position_iterations);
-		m_world->Step(m_time_elapsed/1000.f, m_settings.velocity_iterations, m_settings.position_iterations);
+		m_world->Step(m_time_elapsed*0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
 		m_time_elapsed = 0; 
 	}
 
