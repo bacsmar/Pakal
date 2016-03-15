@@ -12,7 +12,15 @@ namespace Pakal
 	class _PAKALExport SpritePhysicsComponent : public PhysicComponent
 	{
 		DECLARE_RTTI_WITH_BASE(SpritePhysicsComponent, PhysicComponent);
-	public:		
+	public:	
+
+		enum BodyType
+		{
+			StaticBody = 0,
+			//KinematicBody,
+			DynamicBody,
+		};
+
 		virtual BasicTaskPtr initialize(const SpriteSheetPhysics& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
@@ -36,5 +44,8 @@ namespace Pakal
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) = 0;
 
 		virtual void set_fixed_rotation(bool val) = 0;
+
+		virtual void set_type(BodyType type) = 0;
+		virtual void set_gravity_scale(float gravityScale) = 0;
 	};	
 }

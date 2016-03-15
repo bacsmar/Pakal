@@ -45,6 +45,9 @@ namespace Pakal
 
 		void set_fixed_rotation(bool val) override;
 
+		void set_type(BodyType type) override;
+		void set_gravity_scale(float gravityScale) override;
+
 	protected:
 		Box2DPhysicsSystem* m_system = nullptr;
 	private:
