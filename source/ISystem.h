@@ -24,7 +24,7 @@ namespace Pakal
 		virtual BasicTaskPtr terminate() = 0;
 		virtual BasicTaskPtr resume() = 0;
 		virtual BasicTaskPtr pause() = 0;
-		virtual void		 update(long long dt) = 0;
+		virtual void		 update(unsigned long dtMilliSeconds) = 0;
 		virtual unsigned     get_fps() = 0;
 		virtual void set_target_fps(unsigned target_fps) = 0;
 

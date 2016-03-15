@@ -25,16 +25,16 @@ void GraphicsSystem::on_terminate()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void GraphicsSystem::on_update(long long dt)
+void GraphicsSystem::on_update(unsigned long dtMilliSeconds)
 {
 	{	// updatables lock
 		mutex_guard lock(m_updatablesMutex);
 		for (auto & updatable : m_updatables)
 		{
-			updatable->update(static_cast<unsigned>(dt));
+			updatable->update(static_cast<unsigned>(dtMilliSeconds));
 		}
 	}
-	on_update_graphics(dt);	
+	on_update_graphics(dtMilliSeconds);	
 }
 //////////////////////////////////////////////////////////////////////////
 

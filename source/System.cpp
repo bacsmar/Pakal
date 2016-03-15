@@ -57,16 +57,16 @@ namespace Pakal
 		
 	}
 
-	void System::update(long long dt)
+	void System::update(unsigned long dtMilliSeconds)
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
 		m_dispatcher.dispatch_all_tasks();
 		if (m_state == SystemState::Running)
 		{
-			on_update(dt);
-			m_fps_counter.register_frame(dt);
-			limit_fps(dt);
+			on_update(dtMilliSeconds);
+			m_fps_counter.register_frame(dtMilliSeconds);
+			limit_fps(dtMilliSeconds);
 		}
 	}
 

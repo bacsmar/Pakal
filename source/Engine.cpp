@@ -111,7 +111,7 @@ void Engine::run(IPakalApplication* application)
 
 	//do the loop
 	Clock clock;
-	long long dt = 0;
+	unsigned long dt = 0;
 
 
 	while (get_state() != SystemState::Terminated)
@@ -162,9 +162,9 @@ void Engine::run(IPakalApplication* application)
 	resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
-void Engine::on_update(long long dt)
+void Engine::on_update(unsigned long dtMilliSeconds)
 {
-	m_game_state_manager->update();
+	m_game_state_manager->update(dtMilliSeconds);
 }
 
 //////////////////////////////////////////////////////////////////////////

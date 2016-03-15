@@ -114,7 +114,7 @@ void Box2DPhysicsSystem::clear_world()
 }
 
 
-void Box2DPhysicsSystem::update_world(long long dt)
+void Box2DPhysicsSystem::update_world(unsigned long dt)
 {
 	static float targetTimeInSeconds = (1.f / 60); 
 	static float targetTime = targetTimeInSeconds * 1000.f; // in milliseconds

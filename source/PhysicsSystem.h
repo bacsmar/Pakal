@@ -18,7 +18,7 @@ namespace Pakal
 
 		void on_initialize() override final;
 		void on_terminate() override final;
-		void on_update(long long dt) override final; 
+		void on_update(unsigned long dt) override final; 
 		void on_pause() override final;
 		void on_resume() override final;
 
@@ -49,7 +49,7 @@ namespace Pakal
 		virtual ~PhysicsSystem() {};
 
 		virtual void init_world()  {};
-		virtual void update_world(long long dt) {};
+		virtual void update_world(unsigned long dt) {};
 		virtual void clear_world() {};
 		virtual void pause_world() {};
 		virtual void resume_world() {};
