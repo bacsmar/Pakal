@@ -96,6 +96,17 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 		.addFunction("set_interval", &SimpleTimer::set_interval)
 		.addFunction("expired", &SimpleTimer::expired)
 		.endClass();
+
+	LuaIntf::LuaBinding(m_state).beginClass<Pakal::Clock>("Clock")
+		.addFunction("get_elapsed_time", &Pakal::Clock::getElapsedTime)
+		.addFunction("restart", &Pakal::Clock::restart)
+		.endClass();
+
+	LuaIntf::LuaBinding(m_state).beginClass<Pakal::Time>("Time")
+		.addFunction("as_milliseconds", &Pakal::Time::asMilliseconds)
+		.addFunction("as_seconds", &Pakal::Time::asSeconds)
+		.endClass();
+
 	// system.disable_log()
 	LuaIntf::LuaBinding(m_state).beginModule("system").addFunction("disable_log", [this]()
 	{
