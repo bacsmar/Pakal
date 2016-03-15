@@ -82,7 +82,10 @@ namespace Pakal {
 		std::unordered_map<std::string, State*> m_transition_commands;
 
 		explicit State(const std::string& name) : m_name(name){}
-		explicit State() : event_enter([]() {}), event_exit([](){}), event_update([]() {}) {}
+		explicit State() : event_enter([]() {}), event_exit([](){}), event_update([]()
+		{
+			
+		}) {}
 
 		~State(void) {}
 
