@@ -98,6 +98,7 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 		.endClass();
 
 	LuaIntf::LuaBinding(m_state).beginClass<Pakal::Clock>("Clock")
+		.addConstructor(LUA_ARGS(LuaIntf::_opt<Clock> ))
 		.addFunction("get_elapsed_time", &Pakal::Clock::getElapsedTime)
 		.addFunction("restart", &Pakal::Clock::restart)
 		.endClass();
