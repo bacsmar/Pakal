@@ -25,7 +25,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 			return;
 		}
 		// bodies
-		for(auto spriteBody :loader.bodies)
+		for(auto spriteBody : loader.bodies)
 		{
 			b2BodyDef bodydef;
 			bodydef.type = spriteBody->dynamic ? b2_dynamicBody : b2_staticBody;
@@ -164,4 +164,24 @@ bool SpritebodyComponent_Box2D::fixed_rotation() const
 void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
 {
 	m_active_body->SetFixedRotation(val);
+}
+
+void SpritebodyComponent_Box2D::set_type(BodyType type)
+{
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
+
+	//auto b2Type = type == DynamicBody ? b2_dynamicBody : (type == KinematicBody ? b2_kinematicBody : b2_staticBody);
+	auto b2Type = type == DynamicBody ? b2_dynamicBody : b2_staticBody;
+
+	m_system->execute_block([=]()
+	{
+		m_active_body->SetType(b2Type);
+	});	
+}
+
+void SpritebodyComponent_Box2D::set_gravity_scale(float gravityScale)
+{
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
+	
+	m_active_body->SetGravityScale(gravityScale);
 }
