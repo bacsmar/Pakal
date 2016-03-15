@@ -20,7 +20,7 @@ namespace Pakal
 
 		void on_initialize() override final;
 		void on_terminate() override final;
-		void on_update(long long dt) override final;
+		void on_update(unsigned long dtMilliSeconds) override final;
 		void on_pause() override final;
 		void on_resume() override final;		
 		

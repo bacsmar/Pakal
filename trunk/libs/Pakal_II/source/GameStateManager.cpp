@@ -22,9 +22,9 @@ void GameStateManager::terminate()
 	}
 }
 
-void GameStateManager::update()
+void GameStateManager::update(unsigned long dtMilliseconds)
 {
-	peek_state()->on_update();
+	peek_state()->on_update(dtMilliseconds);
 }
 
 void GameStateManager::transition_to_state(BaseGameState* new_state, bool deallocate_on_pop)

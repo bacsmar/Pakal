@@ -37,7 +37,7 @@ void Pakal::ScriptableGameState::on_terminate(Engine* engine)
 	SAFE_DEL(m_script);
 }
 
-void Pakal::ScriptableGameState::on_update()
+void Pakal::ScriptableGameState::on_update(unsigned long dtMilliseconds)
 {
 	m_script->call_function("on_update");
 }

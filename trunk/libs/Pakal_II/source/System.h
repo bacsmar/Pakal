@@ -25,7 +25,7 @@ namespace Pakal
 
 		virtual void on_initialize() = 0;
 		virtual void on_terminate() = 0;
-		virtual void on_update(long long dt) = 0;
+		virtual void on_update(unsigned long dtMilliSeconds) = 0;
 		virtual void on_pause() = 0;
 		virtual void on_resume() = 0;
 
@@ -48,7 +48,7 @@ namespace Pakal
 			m_desired_frame_time_ms = static_cast<unsigned>((target_fps ? 1.0 / target_fps : 0) * 1000); 
 		};
 
-		void update(long long dt) override final;
+		void update(unsigned long dtMilliSeconds) override final;
 
 		BasicTaskPtr initialize() override final;
 		BasicTaskPtr terminate() override final;

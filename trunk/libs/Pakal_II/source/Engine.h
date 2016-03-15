@@ -78,7 +78,7 @@ namespace Pakal
 
 	private:
 
-		void on_update(long long dt) override;
+		void on_update(unsigned long dtMilliSeconds) override;
 		void on_initialize() override;
 		void on_terminate() override;
 		void on_pause() override;

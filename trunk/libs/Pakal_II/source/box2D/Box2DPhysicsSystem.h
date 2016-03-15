@@ -51,7 +51,7 @@ namespace Pakal
 		virtual void set_drawer(const RendererInfo *renderInfo) override;
 
 		// from PhysicsSystem
-		virtual void update_world(long long dt) override;
+		virtual void update_world(unsigned long dt) override;
 		virtual void init_world() override;
 		virtual void clear_world() override;
 		

@@ -20,7 +20,7 @@ namespace Pakal
 
 		virtual void on_initialize(Engine* engine) override;
 		virtual void on_terminate(Engine* engine) override;
-		virtual void on_update() override;
+		virtual void on_update(unsigned long dtMilliseconds) override;
 		virtual void on_activate(Engine* engine) override;
 		virtual void on_deactivate(Engine* engine) override;;
 	};

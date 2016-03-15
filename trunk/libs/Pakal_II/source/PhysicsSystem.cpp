@@ -19,7 +19,7 @@ void PhysicsSystem::on_terminate()
 	clear_world();
 }
 
-void PhysicsSystem::on_update(long long dt)
+void PhysicsSystem::on_update(unsigned long dt)
 {
 	update_world(dt);
 }

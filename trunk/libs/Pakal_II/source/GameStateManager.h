@@ -20,7 +20,7 @@ namespace Pakal
 
 		void initialize() override {};
 		void terminate() override;
-		void update();
+		void update(unsigned long dtMilliseconds);
 	
 		void transition_to_state(BaseGameState* newState, bool deallocateOnPop = true);
 		void push_state(BaseGameState* newState, bool deallocateOnPop = true);
