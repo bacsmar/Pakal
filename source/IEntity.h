@@ -18,6 +18,7 @@ namespace Pakal
 
 	class _PAKALExport IEntity
 	{
+		friend class EntityManager;
 	protected:
 		virtual ~IEntity() {}
 		virtual BasicTaskPtr initialize() = 0;
