@@ -6,34 +6,17 @@
 #include <thread>
 #include <atomic>
 
-
-/*
-Author: Luis Gudiño Salinas
-Behaviour:
-	default is 100 ms although you can set a different interval using the method set_interval
-
-	then you call start and the event_elapsed is going to be notified every (N ms + the time the event takes to notify the listeners)
-	all methods are thread safe
-
-	it uses a std::thread all the time the object is alive and does not recreate a new thread every time you call start
-
-*/
 namespace Pakal
 {
 	
 	class _PAKALExport Timer
 	{
-		UniquePtr<std::thread> m_thread;
-
-		std::condition_variable m_condition;
-
-		std::atomic_bool m_running, m_active;
-		std::atomic_uint m_interval;
-
-		void thread_loop();
-
+		friend class TimerManager;	// in timer.cpp
+		uint32_t	m_interval;
+		uint32_t	m_scheduled;
+		bool		running;
 	public:
-		Event<void> event_elapsed;
+		Event<void>	event_elapsed;
 
 		Timer();
 		explicit Timer(unsigned ms);
@@ -46,6 +29,5 @@ namespace Pakal
 
 		void start();
 		void stop();
-	};
-
+	};	
 }
