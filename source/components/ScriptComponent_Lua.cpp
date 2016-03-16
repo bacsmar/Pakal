@@ -7,12 +7,6 @@
 #include "lua.h"
 #include "oolua.h"
 
-//#include "components/ScriptComponent_Lua.h"
-//#include "components/SpriteComponent.h"
-//#include "components/SpritePhysicsComponent.h"
-//#include "components/SFXComponent.h"
-//#include "components/GamepadComponent.h"
-//#include "IUIManager.h"
 #include "SimpleTimer.h"
 
 using namespace Pakal::tmath;

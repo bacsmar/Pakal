@@ -273,9 +273,10 @@ namespace Pakal
 				m_delegates.clear();
 			}
 
-			inline void operator()() { notify(); }
+			inline void operator()() const
+			{ notify(); }
 
-			void notify()
+			void notify() const
 			{
 				m_mutex.lock();
 
