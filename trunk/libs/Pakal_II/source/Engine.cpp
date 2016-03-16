@@ -57,7 +57,9 @@ Engine::Engine(const Settings& settings) :
 	if( settings.physic_system_settings.debug_draw)
 	{
 		m_graphics_system->add_debug_drawer(m_physics_system->get_debug_drawer());
-	}		
+	}
+
+	init_timer_system();
 
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);

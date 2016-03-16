@@ -229,6 +229,7 @@ namespace Pakal
 				metaData->delegate = [wMetaData,delegate]()
 				{
 					auto metaDataS = wMetaData.lock();
+					// if (metaDataS) // if it crashes here, it means that you are still suscribed to the event.
 					if (metaDataS->is_subscribed && metaDataS->is_enabled)
 						delegate();
 				};
