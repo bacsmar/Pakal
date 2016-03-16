@@ -3,6 +3,7 @@
 #include <set>
 #include "SingletonHolder.h"
 #include "Clock.h"
+#include "Engine.h"
 
 namespace Pakal
 {
@@ -11,6 +12,7 @@ namespace Pakal
 		UniquePtr<std::thread> m_thread;
 		std::recursive_mutex m_timermap_mutex;
 		std::set<Timer*> m_timers;
+		std::set<Timer*> m_timers_to_delete;
 		Pakal::Clock m_clock;
 
 		std::atomic_bool m_active;
@@ -37,13 +39,18 @@ namespace Pakal
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);
 			m_wake_condition.notify_one();
-			return m_timers.erase(&t) > 0;
+			return m_timers_to_delete.insert(&t).second;
 		}
 		
 		static TimerManager& instance()
 		{
 			static SingletonHolder<TimerManager> sh;
 			return *sh.get();
+		}
+
+		void init()
+		{
+			m_thread = UniquePtr<std::thread>(new std::thread(&TimerManager::timer_thread, this));
 		}
 	protected:
 		void timer_thread()
@@ -66,22 +73,19 @@ namespace Pakal
 				{
 					std::lock_guard<std::recursive_mutex> m(m_timermap_mutex);
 
-					for (auto it = m_timers.begin(); it != m_timers.end(); )
+					for (auto timer : m_timers )
 					{
-						auto timer = *it;
 						min_schedule = timer->m_scheduled < min_schedule ? timer->m_scheduled : min_schedule;
 
-						if (timer->m_scheduled <= currentTime)
+						if (timer->m_scheduled <= currentTime && timer->running)
 						{
-							it = m_timers.erase(it);
+							timer->m_scheduled = currentTime + timer->m_interval;
 							timer->event_elapsed.notify();
 						}
-						else
-						{
-							//TODO: double queued list... what happens if you add a new timer when the timeElapsed event is fired?
-							++it;
-						}
 					}
+					for (auto timer_to_delete: m_timers_to_delete)
+						m_timers.erase(timer_to_delete);
+					m_timers_to_delete.clear();
 				}
 
 				//std::this_thread::sleep_for(std::chrono::milliseconds(1));				
@@ -93,10 +97,10 @@ namespace Pakal
 				LOG_WARNING("[Timer Manager] there are %d timers remaining active", m_timers.size());
 			}
 		}
+
 		TimerManager()
 		{
-			m_active = true;
-			m_thread = UniquePtr<std::thread>(new std::thread(&TimerManager::timer_thread, this));
+			m_active = true;			
 		}
 		~TimerManager()
 		{
@@ -107,18 +111,26 @@ namespace Pakal
 		}
 	};
 
-	Timer::Timer() : m_interval(100), m_scheduled(0), running(false)
+	void Engine::init_timer_system()
+	{
+		TimerManager::instance().init();
+	}
+
+	Timer::Timer() : Timer(100) 
 	{
 	}
 
 	Timer::Timer(unsigned ms) : m_interval(ms), m_scheduled(0), running(false)
 	{
+		ASSERT(ms > 0);
+		TimerManager::instance().add_timer(*this);
 	}
 
 	Timer::~Timer()
 	{
 		if (running)
 			stop();
+		TimerManager::instance().remove_timer(*this);
 	}
 
 	void Timer::set_interval(unsigned ms)
@@ -131,14 +143,13 @@ namespace Pakal
 	{
 		m_scheduled = TimerManager::instance().get_milliseconds() + m_interval;
 		event_elapsed.enable();
-		running = TimerManager::instance().add_timer(*this);
+		running = true;
 	}
 
 	void Timer::stop()
 	{
-		event_elapsed.disable();
-		TimerManager::instance().remove_timer(*this);
 		running = false;
+		event_elapsed.disable();
 	}
 }
 
