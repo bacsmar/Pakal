@@ -116,10 +116,6 @@ namespace Pakal
 		TimerManager::instance().init();
 	}
 
-	Timer::Timer() : Timer(100) 
-	{
-	}
-
 	Timer::Timer(unsigned ms) : m_interval(ms), m_scheduled(0), running(false)
 	{
 		ASSERT(ms > 0);
