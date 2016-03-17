@@ -17,9 +17,8 @@ namespace Pakal
 		bool		running;
 	public:
 		Event<void>	event_elapsed;
-
-		Timer();
-		explicit Timer(unsigned ms);
+		
+		explicit Timer(unsigned ms = 100);
 		~Timer();
 
 		Timer(const Timer& other) = delete;
