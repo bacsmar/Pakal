@@ -22,6 +22,8 @@
     <ClInclude Include="..\source\components\CameraComponent.h" />
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\CppBindClass_lua.h" />
+    <ClInclude Include="..\source\components\ICharacterHandler.h" />
+    <ClInclude Include="..\source\components\InputHandlerComponent.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
     <ClInclude Include="..\source\components\TileMapComponent.h" />
@@ -149,7 +151,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
+    <ClCompile Include="..\source\components\Sprite.cpp" />
     <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />

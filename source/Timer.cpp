@@ -88,8 +88,8 @@ namespace Pakal
 					m_timers_to_delete.clear();
 				}
 
-				//std::this_thread::sleep_for(std::chrono::milliseconds(1));				
-				m_wake_condition.wait_for(lk, std::chrono::milliseconds(min_schedule - currentTime), [this]() { return m_timers.size() > 0 || m_active == false; });
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));				
+				//m_wake_condition.wait_for(lk, std::chrono::milliseconds(min_schedule - currentTime), [this]() { return m_timers.size() > 0 || m_active == false; });
 			}
 
 			if(m_timers.size() > 0)

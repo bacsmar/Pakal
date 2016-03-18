@@ -209,6 +209,9 @@
     <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
       <Filter>Components\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\Sprite.cpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />

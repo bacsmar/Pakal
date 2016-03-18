@@ -127,23 +127,12 @@ void TileMapComponent_Irrlicht::load_sprite_sheet(std::istream& stream, std::str
 		index++;
 	}
 
-	normalize_size({ loader.m_ref_size.x, loader.m_ref_size.y });	
-
-	/*
-	const auto& defaultAnimation = m_animations.find(0);
-	if (defaultAnimation != m_animations.end())
-	{
-		set_animation(*defaultAnimation->second);
-	}
-	else
-	{
-		set_animation(*m_animations.begin()->second);
-	}
-	*/
+	normalize_size({ loader.pixels_scale, loader.pixels_scale });
 }
 
 void TileMapComponent_Irrlicht::normalize_size(tmath::vector2du size)
 {
+	//TODO
 	f64 length = size.x*size.x + size.y*size.y;
 	if (length == 0)
 	{
