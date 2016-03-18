@@ -7,6 +7,7 @@
 #include <sstream>
 #include <random>
 #include <time.h>
+#include <regex>
 
 namespace Pakal
 {
@@ -224,5 +225,16 @@ namespace Pakal
 		
 
 	}
-
+	namespace string_utils
+	{
+		inline std::vector<std::string> split(const std::string& input, const std::string& regex, bool ignoreCase = true) 
+		{
+			// passing -1 as the submatch index parameter performs splitting
+			std::regex re(regex, ignoreCase ? std::regex::icase :  std::regex::basic);
+			std::sregex_token_iterator
+				first{ input.begin(), input.end(), re, -1 },
+				last;
+			return{ first, last };
+		}
+	}
 }

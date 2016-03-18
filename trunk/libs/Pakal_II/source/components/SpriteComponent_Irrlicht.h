@@ -73,10 +73,9 @@ namespace Pakal
 
 		float get_rotation() const override;
 		tmath::vector3df get_scale() const override;
-
 		float get_normalization_factor() const override;
 
-		void set_height(tmath::vector2du ref_size, float height, bool keep_relation);
+		void set_height(float height, bool keep_relation);
 
 		void play() override;
 		void pause() override;

@@ -6,11 +6,12 @@
 #pragma once
 #include <vector>
 #include "PakalMath.h"
-#include "persist/Archive.h"
-#include "persist/TextReader.h"
 
 namespace Pakal
 {
+	class TextReader;
+	class Archive;
+
 	class Sprite
 	{
 		struct Frame
@@ -24,21 +25,7 @@ namespace Pakal
 				return offset - pivot;
 			}
 
-			void persist(Archive* archive)
-			{
-
-				archive->value("x", texture_rect.left_corner.x);
-				archive->value("y", texture_rect.left_corner.y);
-
-				archive->value("w", texture_rect.size.x);
-				archive->value("h", texture_rect.size.y);
-
-				archive->value("oX", offset.x);
-				archive->value("oY", offset.y);
-
-				archive->value("pX", pivot.x);
-				archive->value("pY", pivot.y);
-			}
+			void persist(Archive* archive);
 		};
 
 		std::vector<Frame> m_frames;
@@ -64,51 +51,34 @@ namespace Pakal
 			return m_frames[index];
 		}
 
-		void persist(Archive* archive)
-		{
-			archive->value("name", name);
-			archive->value("looped", looped);
-			archive->value("duration", duration);
-			archive->value("", "frame", m_frames);
-		}
-
+		void persist(Archive* archive);
 	};
 
 	struct SpriteSheet
 	{
 		std::string texture_name;
 		std::string default_animation;
-		float size_factor = 1;
 
-		tmath::vector2du m_ref_size;
-		// why is not a good idea to put a ref_animation?. instead of ref_size...
-		// because the sprite sheet resizes every sprite on it
+		float	 meters_scale = 1;
+		unsigned pixels_scale = 100;	// by default 100:1 (pixels:meters)		
 
 		std::vector<Sprite*> animations;
 
-		void persist(Archive* archive)
+		void persist(Archive* archive);
+
+		inline float get_length() const
 		{
-			archive->value("refHeight", m_ref_size.x);
-			archive->value("refWidth", m_ref_size.y);
-			archive->value("size_factor", size_factor);
-			archive->value("texture", texture_name);
-			archive->value("default", default_animation);
-			archive->value("", "animation", animations);
+			return float(sqrt((pixels_scale * pixels_scale) << 1));
 		}
 
-		inline tmath::vector2df get_scale() const
+		inline float get_scale() const
 		{
-			auto vlength = m_ref_size.get_length();
+			auto vlength = get_length();
 			ASSERT(vlength != 0);
-			return float(1.0 / vlength);
+			return float((1.0 / vlength)*meters_scale);
 		}
 
-		bool load(TextReader& reader, std::istream& stream)
-		{
-			auto result = reader.read(stream, "SpriteSheetAnimation", *this);
-			ASSERT(m_ref_size.get_length() > 0);
-			return result;
-		}
+		bool load(TextReader& reader, std::istream& stream);
 	};
 
 }

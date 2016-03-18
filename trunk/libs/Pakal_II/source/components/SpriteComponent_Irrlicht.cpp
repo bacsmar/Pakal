@@ -87,7 +87,7 @@ float SpriteComponent_Irrlicht::get_normalization_factor() const
 	return m_normalization_factor;
 }
 
-void SpriteComponent_Irrlicht::set_height(tmath::vector2du ref_size, float height, bool keep_relation)
+void SpriteComponent_Irrlicht::set_height(float height, bool keep_relation)
 {
 	// TODO
 	//f64 length = ref_size.x*ref_size.x + ref_size.y*ref_size.y;
@@ -150,8 +150,8 @@ void SpriteComponent_Irrlicht::load(const SpriteSheet& spriteSheet)
 		m_animations[animation->name] = animation;
 	}
 
-	normalize_size({ spriteSheet.m_ref_size.x, spriteSheet.m_ref_size.y});
-	set_size(spriteSheet.size_factor);
+	normalize_size({ spriteSheet.pixels_scale, spriteSheet.pixels_scale});
+	set_size(spriteSheet.meters_scale);
 
 	const auto& defaultAnimation = m_animations.find(spriteSheet.default_animation);
 	if (defaultAnimation != m_animations.end())
