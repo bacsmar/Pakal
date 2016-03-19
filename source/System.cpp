@@ -4,9 +4,9 @@
 #include "EventScheduler.h"
 #include "LogMgr.h"
 
-
 namespace Pakal
 {
+	// for threaded systems... executed in their own thread
 	void System::update_loop()
 	{
 		ASSERT(m_threaded);
@@ -14,7 +14,7 @@ namespace Pakal
 		while (m_dispatcher_ready == false) {}
 				
 		Clock clock;
-		long long dt = 0;
+		unsigned dt = 0;
 
 		while(m_state != SystemState::Terminated)
 		{
@@ -34,29 +34,14 @@ namespace Pakal
 			{
 				on_update(dt);
 				m_fps_counter.register_frame(dt);
-				limit_fps(dt);
+				limit_fps();
 			}
-
+			
 			dt = clock.restart().asMilliseconds();
 		} 
 	}
 
-	void System::limit_fps(const long long& frame_time_ms)
-	{
-		if (frame_time_ms < m_desired_frame_time_ms)
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_desired_frame_time_ms - frame_time_ms));
-	}	
-
-	System::~System()
-	{
-		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
-	}
-
-	System::System(bool usesThread) : m_state(SystemState::Created), m_threaded(usesThread)
-	{
-		
-	}
-
+	// for thread less systems... (executed in main thread)
 	void System::update(unsigned long dtMilliSeconds)
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
@@ -66,8 +51,26 @@ namespace Pakal
 		{
 			on_update(dtMilliSeconds);
 			m_fps_counter.register_frame(dtMilliSeconds);
-			limit_fps(dtMilliSeconds);
+			limit_fps();
 		}
+	}
+
+	void System::limit_fps()
+	{
+		auto frame_time_ms = m_fps_limiter_clock.restart().asMilliseconds();
+		long sleepTime = m_desired_frame_time_ms - frame_time_ms;
+		if( sleepTime > 0)
+			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+		m_fps_limiter_clock.restart();
+	}	
+
+	System::~System()
+	{
+		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
+	}
+
+	System::System(bool usesThread) : m_state(SystemState::Created), m_threaded(usesThread)
+	{		
 	}
 
 	BasicTaskPtr System::initialize()

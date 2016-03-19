@@ -17,8 +17,7 @@ public:
 		return m_fps;
 	}
 
-
-	void register_frame(long long dt)
+	void register_frame(unsigned long dt)
 	{
 		++m_frames_counted;
 		m_elapsed_milliseconds += dt;		
@@ -35,7 +34,7 @@ public:
 private:
 
 	unsigned m_fps;	
-	long long m_elapsed_milliseconds;
+	unsigned long m_elapsed_milliseconds;
 	unsigned m_frames_counted;
 };
 
