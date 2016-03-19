@@ -12,7 +12,7 @@ namespace Pakal
 	public:
 		virtual ~ICharacterHandler() {}
 
-		virtual const std::string get_character_handler_typename() const = 0;
+		virtual std::string get_character_handler_typename() const = 0;
 		virtual bool suscribe_to_input_handler(KeyboardHandlerComponent* inputHandler) = 0;
 		virtual void unsuscribe(KeyboardHandlerComponent* inputHandler) = 0;
 	};

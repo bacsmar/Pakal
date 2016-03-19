@@ -3,6 +3,7 @@
 
 #include "Components/AutomataComponent.h"
 #include "Components/ScriptComponent.h"
+#include "components/CharacterComponent.h"
 #if PAKAL_USE_SCRIPTS == 1
 	#include "components/ScriptComponent_Lua.h"
 #endif
@@ -15,6 +16,10 @@ void Engine::register_default_components() const
 	m_component_manager->register_factory<AutomataComponent>([]()
 	{
 		return new AutomataComponent();
+	});
+	m_component_manager->register_factory<CharacterComponent>([]()
+	{
+		return new CharacterComponent();
 	});
 #if PAKAL_USE_SCRIPTS == 1
 	m_component_manager->register_factory<ScriptComponent>([]()
