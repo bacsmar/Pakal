@@ -45,7 +45,10 @@ void StateMachine::update()
 	ASSERT(newState);
 
 	if (nullptr == newState)
+	{
+		LOG_ERROR("[StateMachine] undefined state!");
 		return;
+	}		
 
 	if( newState != m_current_state)
 	{

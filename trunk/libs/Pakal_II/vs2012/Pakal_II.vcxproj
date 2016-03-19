@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\source\components\CameraComponent.h" />
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\CharacterComponent.h" />
     <ClInclude Include="..\source\components\CppBindClass_lua.h" />
     <ClInclude Include="..\source\components\ICharacterHandler.h" />
     <ClInclude Include="..\source\components\InputHandlerComponent.h" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\CharacterComponent.cpp" />
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
     <ClCompile Include="..\source\components\Sprite.cpp" />

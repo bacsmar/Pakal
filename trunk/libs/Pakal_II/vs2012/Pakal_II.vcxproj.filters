@@ -212,6 +212,9 @@
     <ClCompile Include="..\source\components\Sprite.cpp">
       <Filter>Components\GFX\Sprite</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\CharacterComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -599,6 +602,9 @@
     </ClInclude>
     <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
       <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\CharacterComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
