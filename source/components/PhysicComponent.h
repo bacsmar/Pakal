@@ -22,6 +22,7 @@ namespace Pakal
 		virtual ~PhysicComponent(){}
 
 		Event<const IEntity*> event_collide;
+		Event<const IEntity*> event_end_collide;
 
 		// internal use only
 		bool on_collide(const PhysicComponent& other)
@@ -31,6 +32,16 @@ namespace Pakal
 			ASSERT(otherEntity && this->get_parent_entity());
 			{
 				event_collide.notify(otherEntity);
+			}
+			return true;
+		}
+
+		bool on_end_collide(const PhysicComponent& other)
+		{
+			auto otherEntity = other.get_parent_entity();			
+			ASSERT(otherEntity && this->get_parent_entity());
+			{
+				event_end_collide.notify(otherEntity);
 			}
 			return true;
 		}
