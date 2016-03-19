@@ -6,6 +6,7 @@
 #include "ISystem.h"
 #include "AsyncTaskDispatcher.h"
 #include "FPSCounter.h"
+#include "Clock.h"
 
 
 namespace Pakal
@@ -20,6 +21,7 @@ namespace Pakal
 		AsyncTaskDispatcher		m_dispatcher;
 		FPSCounter				m_fps_counter;
 		std::atomic_bool		m_dispatcher_ready;
+		Pakal::Clock			m_fps_limiter_clock;
 
 	protected:
 
@@ -32,7 +34,7 @@ namespace Pakal
 	private:
 
 		void update_loop();
-		void limit_fps(const long long& frame_time_ms);
+		void limit_fps();
 
 	public:
 
