@@ -22,7 +22,7 @@ std::string Pakal::CharacterComponent::get_character_handler_typename() const
 	return m_character_handler_typename;
 }
 
-bool Pakal::CharacterComponent::suscribe_to_input_handler(KeyboardHandlerComponent* inputHandler)
+bool Pakal::CharacterComponent::suscribe_to_input_handler(InputHandler* inputHandler)
 {
 	const auto& handler = m_listened_inputsComponents.find({ inputHandler,0 });
 
@@ -45,7 +45,7 @@ bool Pakal::CharacterComponent::suscribe_to_input_handler(KeyboardHandlerCompone
 	return result;
 }
 
-void Pakal::CharacterComponent::unsuscribe(KeyboardHandlerComponent* inputHandler)
+void Pakal::CharacterComponent::unsuscribe(InputHandler* inputHandler)
 {
 	const auto& handler =  m_listened_inputsComponents.find({ inputHandler,0 });
 	if( handler != m_listened_inputsComponents.end() )

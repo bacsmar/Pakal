@@ -5,7 +5,8 @@
 #include "ICharacterHandler.h"
 
 namespace Pakal
-{	
+{
+	class InputHandler;
 	class StateMachine;	
 	class ScriptComponent;
 	class CharacterComponent : public AutomataComponent, public ICharacterHandler
@@ -17,8 +18,8 @@ namespace Pakal
 	protected:
 		// Character handler stuff, access from InputComponent only
 		std::string get_character_handler_typename() const override;
-		bool suscribe_to_input_handler(KeyboardHandlerComponent* inputHandler) override;
-		void unsuscribe(KeyboardHandlerComponent* inputHandler) override;
+		bool suscribe_to_input_handler(InputHandler* inputHandler) override;
+		void unsuscribe(InputHandler* inputHandler) override;
 
 		std::string m_character_handler_typename;
 
@@ -31,7 +32,7 @@ namespace Pakal
 
 		struct ListenedInput
 		{
-			KeyboardHandlerComponent* handler;
+			InputHandler* handler;
 			unsigned long long event_id; 
 			friend bool operator <(const ListenedInput& lhs, const ListenedInput& rhs)
 			{

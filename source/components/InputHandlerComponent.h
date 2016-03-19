@@ -6,8 +6,6 @@
 
 namespace Pakal
 {
-	class AutomataComponent;
-	enum class Key;
 	class IEntity;
 	class ICharacterHandler;
 
@@ -45,27 +43,25 @@ namespace Pakal
 				DOWN, UP,
 			};
 			KeyEvent event;
-		};
+		};		
 
+		explicit KeyboardHandlerComponent(IInputManager* inputManager);
+		~KeyboardHandlerComponent();		
+	protected:
 		bool has_linked_components() const override;	// override
-
-		explicit KeyboardHandlerComponent(IInputManager* inputManager); // override
-		~KeyboardHandlerComponent();
-
 		void set_and_load_character_handler(ICharacterHandler* characterHandler) override;
-		void remove_subscriptions() override;		
-
+		void remove_subscriptions() override;
+		bool load_mapping(TextReader& reader, std::istream& stream) override;
 	private:
 		void traslate_command_kdown(Pakal::KeyArgs args);
-		void traslate_command_kUp(Pakal::KeyArgs args);
-		bool load_mapping(TextReader& reader, std::istream& stream) override;
+		void traslate_command_kUp(Pakal::KeyArgs args);		
 
-		IInputManager*	m_input_manager_ref;
-		Pakal::ulonglong		m_id_event_key_down;
-		Pakal::ulonglong		m_id_event_key_up;
-		bool					m_has_linked_components = false;
-		ICharacterHandler*		m_handled_component;
-		Component*		m_automata_Component;
+		IInputManager*		m_input_manager_ref;
+		Pakal::ulonglong	m_id_event_key_down;
+		Pakal::ulonglong	m_id_event_key_up;
+		bool				m_has_linked_components = false;
+		ICharacterHandler*	m_handled_component;
+		Component*			m_automata_Component;
 		std::list<KeyMapping>	m_key_map;
 	};
 
