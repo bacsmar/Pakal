@@ -142,7 +142,16 @@ void Pakal::ScriptComponentLua::load_script(const std::string& script_file)
 
 	std::string str;
 	file_utils::read_to_string(*resource, str);		
-	oolua->run_chunk(str);
+	auto result = oolua->run_chunk(str);
+	if (result == true)
+	{
+		m_script->gc();
+	}
+	else
+	{
+		auto error = OOLUA::get_last_error(*m_script);
+		LOG_ERROR("[ScriptComponent] lua_error: %s in %s", error.c_str(), m_script_file.c_str());
+	}
 }
 
 Pakal::ScriptResultPtr Pakal::ScriptComponentLua::call_function(const std::string& function)

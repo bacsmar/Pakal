@@ -43,11 +43,17 @@ void Pakal::KeyboardHandlerComponent::set_and_load_character_handler(ICharacterH
 
 	this->m_key_map.push_front({ Pakal::Key::Left,"WALK_LEFT" , KeyMapping::Type::DOWN });
 	this->m_key_map.push_front({ Pakal::Key::Right,"WALK_RIGHT", KeyMapping::Type::DOWN });
-	this->m_key_map.push_front({ Pakal::Key::Down,"STAND_BY", KeyMapping::Type::DOWN });
-	this->m_key_map.push_front({ Pakal::Key::Up,"JUMP", KeyMapping::Type::DOWN });
+	this->m_key_map.push_front({ Pakal::Key::Down,"CROUCH", KeyMapping::Type::DOWN });
+	this->m_key_map.push_front({ Pakal::Key::Up,"JUMP", KeyMapping::Type::DOWN });	
+
+	this->m_key_map.push_front({ Pakal::Key::A,"FIERCE_PUNCH", KeyMapping::Type::DOWN });	
+	this->m_key_map.push_front({ Pakal::Key::S,"FIERCE_KICK", KeyMapping::Type::DOWN });	
+	this->m_key_map.push_front({ Pakal::Key::Z,"BLOCK", KeyMapping::Type::DOWN });	
 
 	this->m_key_map.push_front({ Pakal::Key::Left,"STOP_WL" , KeyMapping::Type::UP });
 	this->m_key_map.push_front({ Pakal::Key::Right,"STOP_WR", KeyMapping::Type::UP });
+	this->m_key_map.push_front({ Pakal::Key::Down,"STOP_CROUCH", KeyMapping::Type::UP });
+	this->m_key_map.push_front({ Pakal::Key::Z,"STOP_BLOCK", KeyMapping::Type::UP });
 
 	m_has_linked_components = m_handled_component->suscribe_to_input_handler(this);
 }
