@@ -12,13 +12,8 @@ namespace Pakal
 	{
 		UniquePtr<std::thread> m_thread;
 		std::recursive_mutex m_timermap_mutex;
-		struct TimerData
-		{			
-			bool is_active;
-			Timer* timer;
-		};
 
-		std::vector<TimerData> m_timers;
+		std::vector<Timer*> m_timers;
 		Pakal::Clock m_clock;
 
 		std::atomic_bool m_active;
@@ -38,20 +33,19 @@ namespace Pakal
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);
 			// 1. find an empty slot
-			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [](const TimerData& timerData)
+			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [](const Timer* timerData)
 			{
-				return timerData.is_active == false;				
+				return timerData == nullptr;
 			});
 			// 2. if found. use that empty slot
 			if(timerIt != m_timers.end() )
 			{
-				timerIt->timer = &t;
-				timerIt->is_active = true;
+				*timerIt = &t;
 			}
-			// 3 . if not found, then create a new one
+			// 3 . if not empty slot found, then create a new one
 			else
 			{				
-				m_timers.emplace_back(TimerData{ m_active = true, &t });
+				m_timers.emplace_back(&t);
 			}
 			m_wake_condition.notify_one();
 			return true;
@@ -61,15 +55,15 @@ namespace Pakal
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);			
 
-			// 1. find an empty slot
-			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [&](const TimerData& timerData)
+			// 1. find the timer
+			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [&](const Timer* timerData)
 			{
-				return (timerData.timer) == &t;
+				return (timerData) == &t;
 			});
+			// mark it as unused
 			if (timerIt != m_timers.end())
 			{
-				timerIt->timer = nullptr;
-				timerIt->is_active = false;
+				*timerIt = nullptr;
 			}
 			m_wake_condition.notify_one();
 			return true;
@@ -106,16 +100,16 @@ namespace Pakal
 				{
 					std::lock_guard<std::recursive_mutex> m(m_timermap_mutex);
 
-					for (auto timerData : m_timers )
+					for (auto timer : m_timers )
 					{
-						if (timerData.timer)
+						if (timer)
 						{
-							min_schedule = timerData.timer->m_scheduled < min_schedule ? timerData.timer->m_scheduled : min_schedule;
+							min_schedule = timer->m_scheduled < min_schedule ? timer->m_scheduled : min_schedule;
 
-							if (timerData.timer->m_scheduled <= currentTime && timerData.timer->running)
+							if (timer->m_scheduled <= currentTime && timer->running)
 							{
-								timerData.timer->m_scheduled = currentTime + timerData.timer->m_interval;
-								timerData.timer->event_elapsed.notify();
+								timer->m_scheduled = currentTime + timer->m_interval;
+								timer->event_elapsed.notify();
 							}
 						}
 					}
