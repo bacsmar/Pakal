@@ -2,6 +2,7 @@
 #include <IInputManager.h>
 #include <persist/TextReader.h>
 #include "ICharacterHandler.h"
+#include "LogMgr.h"
 
 
 Pakal::KeyboardHandlerComponent::KeyboardHandlerComponent(Pakal::IInputManager* inputManager) : m_input_manager_ref(inputManager), m_has_linked_components(false)
@@ -32,6 +33,8 @@ Pakal::KeyboardHandlerComponent::~KeyboardHandlerComponent()
 void Pakal::KeyboardHandlerComponent::set_and_load_character_handler(ICharacterHandler* handledcomponent)
 {
 	ASSERT_MSG(m_has_linked_components == false, "input handler already links a CharacterDriver, to make a link again please use remove_subscriptions() ");	
+
+	LOG_INFO("[input handler] loading mapping for: %s", handledcomponent->get_character_handler_typename().c_str());
 
 	this->m_handled_component = handledcomponent;	
 

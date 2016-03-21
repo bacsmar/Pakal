@@ -19,9 +19,7 @@ namespace Pakal
 		// Character handler stuff, access from InputComponent only
 		std::string get_character_handler_typename() const override;
 		bool suscribe_to_input_handler(InputHandler* inputHandler) override;
-		void unsuscribe(InputHandler* inputHandler) override;
-
-		std::string m_character_handler_typename;
+		void unsuscribe(InputHandler* inputHandler) override;		
 
 		inline void set_character_handler_typename(const std::string& type)
 		{
@@ -40,5 +38,6 @@ namespace Pakal
 			}
 		};
 		std::set<ListenedInput> m_listened_inputsComponents;
+		std::string m_character_handler_typename = "Biped";
 	};
 }
