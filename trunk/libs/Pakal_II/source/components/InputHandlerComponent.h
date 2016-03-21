@@ -28,21 +28,21 @@ namespace Pakal
 
 	public:
 
-		struct Settings
+		/*struct Settings
 		{
 			bool use_key_up = true;
 			bool use_key_down = true;
 		}settings;
-
+*/
 		struct KeyMapping
 		{
 			Pakal::Key key;
 			std::string command;
-			enum class KeyEvent
+			enum class Type
 			{
 				DOWN, UP,
 			};
-			KeyEvent event;
+			Type event_type;
 		};		
 
 		explicit KeyboardHandlerComponent(IInputManager* inputManager);
