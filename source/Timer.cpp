@@ -4,6 +4,7 @@
 #include "SingletonHolder.h"
 #include "Clock.h"
 #include "Engine.h"
+#include <algorithm>
 
 namespace Pakal
 {
@@ -11,15 +12,21 @@ namespace Pakal
 	{
 		UniquePtr<std::thread> m_thread;
 		std::recursive_mutex m_timermap_mutex;
-		std::set<Timer*> m_timers;
-		std::set<Timer*> m_timers_to_delete;
+		struct TimerData
+		{			
+			bool is_active;
+			Timer* timer;
+		};
+
+		std::vector<TimerData> m_timers;
 		Pakal::Clock m_clock;
 
 		std::atomic_bool m_active;
 
 		std::condition_variable m_wake_condition;
 
-	public:
+	public:		
+
 		template <class TimerManager> friend class SingletonHolder;
 
 		inline uint32_t get_milliseconds() const
@@ -29,17 +36,43 @@ namespace Pakal
 		
 		bool add_timer(Timer& t)
 		{
-			//TODO: double queued list... what happens if you add a new timer when the timeElapsed event is fired?
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);
+			// 1. find an empty slot
+			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [](const TimerData& timerData)
+			{
+				return timerData.is_active == false;				
+			});
+			// 2. if found. use that empty slot
+			if(timerIt != m_timers.end() )
+			{
+				timerIt->timer = &t;
+				timerIt->is_active = true;
+			}
+			// 3 . if not found, then create a new one
+			else
+			{				
+				m_timers.emplace_back(TimerData{ m_active = true, &t });
+			}
 			m_wake_condition.notify_one();
-			return m_timers.insert(&t).second;
+			return true;
 		}
 
 		bool remove_timer(Timer& t)
 		{
-			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);
+			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);			
+
+			// 1. find an empty slot
+			auto timerIt = std::find_if(m_timers.begin(), m_timers.end(), [&](const TimerData& timerData)
+			{
+				return (timerData.timer) == &t;
+			});
+			if (timerIt != m_timers.end())
+			{
+				timerIt->timer = nullptr;
+				timerIt->is_active = false;
+			}
 			m_wake_condition.notify_one();
-			return m_timers_to_delete.insert(&t).second;
+			return true;
 		}
 		
 		static TimerManager& instance()
@@ -73,19 +106,19 @@ namespace Pakal
 				{
 					std::lock_guard<std::recursive_mutex> m(m_timermap_mutex);
 
-					for (auto timer : m_timers )
+					for (auto timerData : m_timers )
 					{
-						min_schedule = timer->m_scheduled < min_schedule ? timer->m_scheduled : min_schedule;
-
-						if (timer->m_scheduled <= currentTime && timer->running)
+						if (timerData.timer)
 						{
-							timer->m_scheduled = currentTime + timer->m_interval;
-							timer->event_elapsed.notify();
+							min_schedule = timerData.timer->m_scheduled < min_schedule ? timerData.timer->m_scheduled : min_schedule;
+
+							if (timerData.timer->m_scheduled <= currentTime && timerData.timer->running)
+							{
+								timerData.timer->m_scheduled = currentTime + timerData.timer->m_interval;
+								timerData.timer->event_elapsed.notify();
+							}
 						}
 					}
-					for (auto timer_to_delete: m_timers_to_delete)
-						m_timers.erase(timer_to_delete);
-					m_timers_to_delete.clear();
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));				
@@ -100,6 +133,7 @@ namespace Pakal
 
 		TimerManager()
 		{
+			m_timers.reserve(128);
 			m_active = true;			
 		}
 		~TimerManager()
