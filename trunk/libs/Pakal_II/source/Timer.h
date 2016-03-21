@@ -24,11 +24,6 @@ namespace Pakal
 		Timer(const Timer& other) = delete;
 		Timer& operator=(const Timer& other) = delete;
 
-		friend bool operator==(const Timer &left, const Timer &right)
-		{
-			return &left == &right;
-		}
-
 		void set_interval(unsigned ms);
 
 		void start();
