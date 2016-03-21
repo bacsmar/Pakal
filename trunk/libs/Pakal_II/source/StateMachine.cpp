@@ -87,7 +87,7 @@ void StateMachine::persist(Archive* archive)
 {
 	archive->value("commands","command", m_available_commands);
 	archive->value("","state", m_states);
-	archive->refer("current_state", m_current_state);
+	archive->refer("initial_state", m_current_state);
 	archive->value("script_file", m_script_file);
 }
 
