@@ -29,7 +29,7 @@ namespace Pakal
 			return m_clock.getElapsedTime().asMilliseconds();
 		}
 		
-		bool add_timer(Timer& t)
+		void add_timer(Timer& t)
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);
 			// 1. find an empty slot
@@ -48,10 +48,9 @@ namespace Pakal
 				m_timers.emplace_back(&t);
 			}
 			m_wake_condition.notify_one();
-			return true;
 		}
 
-		bool remove_timer(Timer& t)
+		void remove_timer(Timer& t)
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_timermap_mutex);			
 
@@ -66,7 +65,11 @@ namespace Pakal
 				*timerIt = nullptr;
 			}
 			m_wake_condition.notify_one();
-			return true;
+		}
+
+		void restart_timer()
+		{
+			m_wake_condition.notify_one();
 		}
 		
 		static TimerManager& instance()
@@ -169,6 +172,7 @@ namespace Pakal
 	{
 		m_scheduled = TimerManager::instance().get_milliseconds() + m_interval;
 		event_elapsed.enable();
+		TimerManager::instance().restart_timer();
 		running = true;
 	}
 
