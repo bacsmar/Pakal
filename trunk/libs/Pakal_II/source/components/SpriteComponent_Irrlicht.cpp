@@ -160,6 +160,8 @@ void SpriteComponent_Irrlicht::load(const SpriteSheet& spriteSheet)
 	}
 	else
 	{
+		auto animation = *m_animations.begin()->second;		
+		LOG_WARNING("[SpriteComponent] no default animation set, using first animation found %s", animation.name.c_str() );
 		set_animation(*m_animations.begin()->second);
 	}
 }
