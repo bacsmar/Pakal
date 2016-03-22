@@ -95,7 +95,7 @@ namespace Pakal
 			while ( m_active == true )
 			{
 				auto currentTime = m_clock.getElapsedTime().asMilliseconds();
-				uint32_t min_schedule = -1;	// its unsigned so.. choose the biggest value possible
+				uint32_t min_schedule = currentTime + 5000;	// sleep time, 5 seconds... if no other schedule is before
 				// mutex scope
 				{
 					std::lock_guard<std::recursive_mutex> m(m_timermap_mutex);
@@ -104,19 +104,21 @@ namespace Pakal
 					{
 						if (timer)
 						{
-							min_schedule = timer->m_scheduled < min_schedule ? timer->m_scheduled : min_schedule;
-
 							if (timer->m_scheduled <= currentTime && timer->running)
 							{
-								timer->m_scheduled = currentTime + timer->m_interval;
+								timer->m_scheduled = currentTime + timer->m_interval;	// update the timer
 								timer->event_elapsed.notify();
 							}
+							// calculate max sleep time.. based in the next timer to be triggered
+							if (timer->running)
+								min_schedule = timer->m_scheduled < min_schedule ? timer->m_scheduled : min_schedule;
 						}
 					}
 				}
-
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));				
-				//m_wake_condition.wait_for(lk, std::chrono::milliseconds(min_schedule - currentTime), [this]() { return m_timers.size() > 0 || m_active == false; });
+								
+				int sleepTime = min_schedule - currentTime;
+				sleepTime = sleepTime > 0 ? sleepTime : 1;
+				m_wake_condition.wait_for(lk, std::chrono::milliseconds(sleepTime));
 			}
 
 			if(m_timers.size() > 0)
