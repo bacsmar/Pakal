@@ -8,7 +8,7 @@ namespace Pakal
 {	
 	class StateMachine;	
 	class ScriptComponent;
-	class AutomataComponent : public Component
+	class _PAKALExport AutomataComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(AutomataComponent, Component);
 	public:

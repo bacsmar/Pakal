@@ -11,8 +11,6 @@
 
 namespace Pakal
 {
-	class TextReader;
-
 	struct SpritePhysics
 	{
 		class vector2df : public tmath::vector2df

@@ -14,7 +14,7 @@ namespace Pakal
 		using ulonglong = unsigned long long;
 
 		template <class TArgs>
-		struct _PAKALExport DelegateData
+		struct  DelegateData
 		{
 			std::function<void(const TArgs&)> delegate;
 			std::thread::id tid;
@@ -22,7 +22,7 @@ namespace Pakal
 			bool is_enabled;
 		};
 		template<>
-		struct _PAKALExport DelegateData<void>
+		struct  DelegateData<void>
 		{
 			std::function<void()> delegate;
 			std::thread::id tid;
@@ -31,7 +31,7 @@ namespace Pakal
 		};
 
 		template <class TArgs>
-		struct _PAKALExport Delegate
+		struct  Delegate
 		{
 			std::function<void(const TArgs&)> callback;
 			ulonglong* id;
@@ -41,7 +41,7 @@ namespace Pakal
 			{}
 		};
 		template <>
-		struct _PAKALExport Delegate<void>
+		struct  Delegate<void>
 		{
 			std::function<void()> callback;
 			ulonglong* id;
@@ -52,7 +52,7 @@ namespace Pakal
 		};
 
 		template <class TArgs>
-		class _PAKALExport Event
+		class  Event
 		{
 			std::unordered_map<unsigned long long, SharedPtr<DelegateData<TArgs>>> m_delegates;
 			bool m_enabled;
@@ -175,7 +175,7 @@ namespace Pakal
 		};
 
 		template<>
-		class _PAKALExport Event<void>
+		class  Event<void>
 		{
 		public:
 			typedef std::function<void(void)> MethodDelegate;

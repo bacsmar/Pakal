@@ -12,7 +12,7 @@ namespace Pakal
 	class TextReader;
 	class Archive;
 
-	class Sprite
+	class _PAKALExport Sprite
 	{
 		struct Frame
 		{
@@ -54,7 +54,7 @@ namespace Pakal
 		void persist(Archive* archive);
 	};
 
-	struct SpriteSheet
+	struct _PAKALExport SpriteSheet
 	{
 		std::string texture_name;
 		std::string default_animation;
