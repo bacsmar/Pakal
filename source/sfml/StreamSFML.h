@@ -7,7 +7,7 @@
 
 namespace Pakal
 {
-	class _PAKALExport StreamSFML : public sf::InputStream
+	class StreamSFML : public sf::InputStream
 	{
 		SharedPtr<std::istream> m_source;
 

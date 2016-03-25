@@ -296,7 +296,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/libs/irrlicht/include;$(SolutionDir)/libs/Pakal_II/source;$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/sfml/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/pugixml/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SFML_WINDOW_EXPORT;SFML_SYSTEM_EXPORTS;SFML_AUDIO_EXPORTS;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PAKAL_NONCLIENT_BUILD;PERSIST_NONCLIENT_BUILD;SFML_STATIC;_IRR_STATIC_LIB_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -308,7 +308,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\build\$(Configuration);$(SolutionDir)\libs\_bin\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(Configuration);$(SolutionDir)/libs/SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\build\$(Configuration);$(SolutionDir)\build\debug_static;C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(Configuration);$(SolutionDir)/libs/SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <Version>0.1</Version>
     </Link>

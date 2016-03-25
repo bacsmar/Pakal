@@ -9,7 +9,7 @@ namespace Pakal
 	class IEntity;
 	class ICharacterHandler;
 
-	class InputHandler
+	class _PAKALExport InputHandler
 	{
 	public:
 		virtual ~InputHandler(){}	
@@ -22,7 +22,7 @@ namespace Pakal
 	};
 
 
-	class KeyboardHandlerComponent : public Component, public InputHandler
+	class _PAKALExport KeyboardHandlerComponent : public Component, public InputHandler
 	{
 		DECLARE_RTTI_WITH_BASE(KeyboardHandlerComponent, Component);
 

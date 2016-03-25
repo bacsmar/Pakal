@@ -54,9 +54,12 @@
 		#pragma comment(lib, "sfml-system-s-d.lib")
 		#pragma comment(lib, "sfml-window-s-d.lib")
 	#else
-		#pragma comment(lib, "sfml-audio-d.lib")
+		#pragma comment(lib, "sfml-audio-s-d.lib")
+		#pragma comment(lib, "sfml-system-s-d.lib")
+		#pragma comment(lib, "sfml-window-s-d.lib")
+		/*#pragma comment(lib, "sfml-audio-d.lib")
 		#pragma comment(lib, "sfml-system-d.lib")
-		#pragma comment(lib, "sfml-window-d.lib")
+		#pragma comment(lib, "sfml-window-d.lib")*/
 	#endif
 #else
 	#ifdef PAKAL_STATIC_LIB	//release & static lib

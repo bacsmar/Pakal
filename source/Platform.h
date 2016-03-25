@@ -23,7 +23,7 @@
 
 //------------------------------------------------------------------//
 //#define PAKAL_STATIC_LIB	//
-#define PAKAL_NONCLIENT_BUILD
+//#define PAKAL_NONCLIENT_BUILD
 
 //-------------- Determine Compiler ---------------------------------
 #if defined( _MSC_VER )
@@ -118,8 +118,8 @@
 #define SAFE_DEL(x) {delete (x);x=nullptr;}
 
 #ifdef _DEBUG
-	void assert_with_message(void* condition, const char *format, ...);
-	void assert_with_message(bool condition, const char *format, ...);
+	void _PAKALExport assert_with_message(void* condition, const char *format, ...);
+	void _PAKALExport assert_with_message(bool condition, const char *format, ...);
 	/*template <class T>
 	inline void assert_with_message(T condition, const char *format, ...){ assert(condition); }*/
 
