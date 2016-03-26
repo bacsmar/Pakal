@@ -26,6 +26,7 @@ Engine::~Engine()
 	SAFE_DEL(m_component_manager)
 	SAFE_DEL(m_game_state_manager)
 	SAFE_DEL(m_sound_manager)	
+	LOG_INFO("Closing enigne...");
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :

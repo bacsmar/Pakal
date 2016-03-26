@@ -296,7 +296,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/libs/irrlicht/include;$(SolutionDir)/libs/Pakal_II/source;$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/sfml/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/pugixml/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PAKAL_NONCLIENT_BUILD;PERSIST_NONCLIENT_BUILD;SFML_STATIC;_IRR_STATIC_LIB_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PAKAL_NONCLIENT_BUILD;PERSIST_NONCLIENT_BUILD;SFML_STATIC;_IRR_STATIC_LIB_;LUA_LIB;LUA_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -344,7 +344,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/Pakal_II/Source;$(SolutionDir)/libs/lua/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;_PAKAL_LIB_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;_PAKAL_LIB_;PERSIST_STATIC_LIB;PAKAL_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -364,10 +364,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/poco-1.6.0\Foundation\include;$(SolutionDir)/libs/Pakal_II/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_IRR_STATIC_LIB_;POCO_STATIC;PAKAL_STATIC_LIB;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_IRR_STATIC_LIB_;POCO_STATIC;PAKAL_STATIC_LIB;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -384,8 +383,7 @@
       <StringPooling>true</StringPooling>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <MultiProcessorCompilation>
-      </MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
