@@ -24,7 +24,7 @@ namespace Pakal
 	}
 
 	template <>
-	void register_script_interface_for<SpriteComponent>(SpriteComponent* obj, Script& script, const std::string& name)
+	void _PAKALExport register_script_interface_for<SpriteComponent>(SpriteComponent* obj, Script& script, const std::string& name)
 	{				
 		script.register_class<SpriteComponent>(name)
 			.add_function("set_animation", &SpriteComponent::set_animation)
@@ -37,7 +37,7 @@ namespace Pakal
 		script.register_obj(name, obj);
 	}
 	template <>
-	void register_script_interface_for<SpritePhysicsComponent>(SpritePhysicsComponent* obj, Script& script, const std::string& name)
+	void _PAKALExport register_script_interface_for<SpritePhysicsComponent>(SpritePhysicsComponent* obj, Script& script, const std::string& name)
 	{
 		script.register_class<SpritePhysicsComponent>(name)
 			.add_function("apply_force", fn_type_cast<SpritePhysicsComponent, void, float, float>(&SpritePhysicsComponent::apply_force))
@@ -51,7 +51,7 @@ namespace Pakal
 		script.register_obj(name, obj);
 	}
 	template <>
-	void register_script_interface_for<GamepadComponent>(GamepadComponent* obj, Script& script, const std::string& name)
+	void _PAKALExport register_script_interface_for<GamepadComponent>(GamepadComponent* obj, Script& script, const std::string& name)
 	{
 		script.register_class<GamepadComponent>(name)
 			.add_function("is_button_pressed", &GamepadComponent::is_button_pressed)
@@ -69,7 +69,7 @@ namespace Pakal
 	}	
 
 	template <>
-	void register_script_interface_for<SFXComponent>(SFXComponent* obj, Script& script, const std::string& name)
+	void _PAKALExport register_script_interface_for<SFXComponent>(SFXComponent* obj, Script& script, const std::string& name)
 	{
 		//using addType = bool (SFXComponent::* )(unsigned, const std::string&);		
 		//bool (SFXComponent::* d)(unsigned, const std::string&) = &SFXComponent::add;
@@ -85,7 +85,7 @@ namespace Pakal
 	}
 
 	template <>
-	void register_script_interface_for<CameraComponent>(CameraComponent* obj, Script& script, const std::string& name)
+	void _PAKALExport register_script_interface_for<CameraComponent>(CameraComponent* obj, Script& script, const std::string& name)
 	{
 		script.register_class<CameraComponent>(name)
 			.add_function("set_position", &CameraComponent::set_position)
