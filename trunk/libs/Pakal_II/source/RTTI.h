@@ -70,11 +70,15 @@ namespace Pakal
 		}
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	namespace crypt_utils
+	{
+		extern uint32_t hash_joaat(const std::string& key);
+	}
 	class _PAKALExport RTTI
 	{
 	public:
-		explicit RTTI(const char* name) : m_name(name), m_parent(nullptr){}
-		explicit RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti){}
+		explicit RTTI(const char* name) : m_name(name), m_parent(nullptr), m_hash(crypt_utils::hash_joaat(m_name)) {}
+		explicit RTTI(const char* name, const RTTI& rtti) : m_name(name), m_parent(&rtti), m_hash(crypt_utils::hash_joaat(m_name)) {}
 
 		inline const std::string& get_name() const { return m_name; }
 
@@ -113,7 +117,7 @@ namespace Pakal
 			const RTTI *base = this;
 			while (base != nullptr)
 			{
-				if (base == &from)
+				if (base->m_hash == from.m_hash)
 					return true;
 				base = base->m_parent;
 			}
@@ -122,6 +126,7 @@ namespace Pakal
 
 		std::string m_name;		
 		const RTTI *m_parent;
+		uint32_t m_hash;
 
 		void operator=(const RTTI &other) = delete;
 		RTTI(const RTTI &other) = delete;
