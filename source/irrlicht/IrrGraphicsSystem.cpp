@@ -79,7 +79,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 		r->set_drawer(m_render_info);
 	}
 
-	LOG_INFO("[Graphic System] done");	
+	LOG_INFO("[Graphic System] Starting irrlicht...done");	
 
 	// setting up events
 	OSMgr.event_window_resized += {m_resized_callback_id, [this](const WindowArgs& a)
