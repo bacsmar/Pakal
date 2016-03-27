@@ -10,7 +10,7 @@ namespace Pakal
 {
 	class TimerManager
 	{
-		UniquePtr<std::thread> m_thread;
+		std::thread m_thread;
 		std::recursive_mutex m_timermap_mutex;
 
 		std::vector<Timer*> m_timers;
@@ -81,15 +81,15 @@ namespace Pakal
 		void init()
 		{
 			m_active = true;
-			m_thread = UniquePtr<std::thread>(new std::thread(&TimerManager::timer_thread, this));
+			m_thread = std::thread(&TimerManager::timer_thread, this);
 		}
 		void stop()
 		{
 			m_active = false;
 			m_wake_condition.notify_one();
 			LOG_INFO("[Timer Manager] waiting event_elapsed to finalize...");
-			m_thread->join();
-			m_thread = nullptr;
+			m_thread.join();
+			LOG_INFO("[Timer Manager] waiting event_elapsed to finalize... done");			
 		}
 	protected:
 		void timer_thread()
@@ -131,11 +131,6 @@ namespace Pakal
 				int sleepTime = min_schedule - currentTime;
 				sleepTime = sleepTime > 0 ? sleepTime : 1;
 				m_wake_condition.wait_for(lk, std::chrono::milliseconds(sleepTime));
-			}
-
-			if(m_timers.size() > 0)
-			{
-				LOG_WARNING("[Timer Manager] there are %d timers remaining active", m_timers.size());
 			}
 		}
 

@@ -12,7 +12,7 @@ namespace Pakal
 
 	ThreadPool::ThreadPool() : m_running(true), m_available_workers(0)
 	{
-		add_worker();
+		//add_worker();
 	}
 
 	ThreadPool::~ThreadPool()

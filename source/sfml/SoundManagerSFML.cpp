@@ -134,6 +134,7 @@ namespace Pakal
 
 		LOG_INFO("Cleaning expired buffers...");
 		map_utils::erase_if(m_buffers, [](const std::pair<Path, WeakPtr<sf::SoundBuffer>>& buffer) { return buffer.second.expired();  });
+		LOG_INFO("Cleaning expired buffers...done");
 	}
 
 	void SoundManagerSFML::clean_players() 

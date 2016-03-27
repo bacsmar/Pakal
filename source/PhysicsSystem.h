@@ -46,7 +46,7 @@ namespace Pakal
 		Settings m_settings;
 
 		explicit PhysicsSystem(const Settings& settings);
-		virtual ~PhysicsSystem() {};
+		virtual ~PhysicsSystem();;
 
 		virtual void init_world()  {};
 		virtual void update_world(unsigned long dt) {};

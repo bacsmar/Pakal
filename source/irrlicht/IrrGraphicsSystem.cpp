@@ -157,6 +157,8 @@ void IrrGraphicsSystem::draw_axis()
 void IrrGraphicsSystem::draw()
 {
 	os::Timer::tick(); // do not remove
+	if (smgr->getActiveCamera() == nullptr)
+		return;
 	smgr->drawAll();
 	guienv->drawAll();
 
@@ -196,7 +198,8 @@ void IrrGraphicsSystem::on_resume_graphics()
 void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
 {
 	ASSERT(device!= nullptr);
-	device->setWindowCaption(caption);
+	//if(m_has_external_window == false)
+	//	device->setWindowCaption(caption);
 }
 
 tmath::vector2du IrrGraphicsSystem::get_screen_resolution()

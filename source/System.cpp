@@ -108,7 +108,9 @@ namespace Pakal
 			m_dispatcher.dispatch_all_tasks();
 			m_dispatcher.dispatch_all_tasks(); //for both lists
 
+			LOG_INFO("stopping %s", this->get_system_name());
 			on_terminate();
+			LOG_INFO("stopping %s... done", this->get_system_name());
 
 			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 

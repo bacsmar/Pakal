@@ -11,10 +11,7 @@ Pakal::BasicTaskPtr Pakal::CameraComponent_Irrlicht::initialize(const Settings& 
 		auto look_at = irr::core::vector3df(settings.look_at.x, settings.look_at.y, settings.look_at.z);
 
 		m_camera = m_system->get_smgr()->addCameraSceneNode(nullptr, position, look_at);
-
-		//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(0,0,-10), vector3df(0,0,0));
-		//auto camera = smgr->addCameraSceneNode(nullptr, vector3df(3,15,-10), vector3df(0,0,0));
-
+		
 		//irr::core::matrix4 MyMatrix;
 		//MyMatrix.buildProjectionMatrixOrthoRH(16.0f, 12.0f, 15.5f, -32.5f);
 		//camera->setProjectionMatrix(MyMatrix);
