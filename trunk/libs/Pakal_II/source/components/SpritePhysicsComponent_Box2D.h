@@ -33,8 +33,8 @@ namespace Pakal
 		BasicTaskPtr set_angle(const tmath::vector3df& angle) override;
 		tmath::vector3df get_angle() override;
 
-		void set_scale(const tmath::vector3df& scale) override;
-		tmath::vector3df get_scale() override;
+		void set_scale(float scale) override;
+		float get_scale() override;
 
 		virtual void apply_impulse(const tmath::vector2df& force) override;
 		virtual void apply_force(const tmath::vector2df& force) override;
@@ -54,6 +54,6 @@ namespace Pakal
 		std::unordered_map<std::string,b2Body*> m_bodies;
 		b2Body*	m_active_body = nullptr;
 		float m_normalization_factor = 1.f;
-		tmath::vector3df m_scale = {1.f,1.f,1.f};
+		float m_scale = 1.f;
 	};	
 }

@@ -40,9 +40,6 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 
 			m_bodies[spriteBody->name] = body;
 
-			//auto scale = sqrt(m_scale.x*m_scale.x + m_scale.y*m_scale.y);
-			auto scale = m_scale.x;
-
 			// fixtures
 			for(const auto& fixture : spriteBody->m_fixtures)
 			{
@@ -58,8 +55,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 				if (fixture.type == "CIRCLE")
 				{
 					b2CircleShape shape;
-					shape.m_radius = fixture.m_circle.r * scale;
-					shape.m_p = { fixture.m_circle.x *scale, fixture.m_circle.y * scale};
+					shape.m_radius = fixture.m_circle.r * m_scale;
+					shape.m_p = { fixture.m_circle.x *m_scale, fixture.m_circle.y * m_scale };
 
 					fixtureDef.shape = &shape;
 					body->CreateFixture(&fixtureDef);
@@ -72,7 +69,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 						std::vector<b2Vec2> vertices;
 						for( const auto& vertex : polygon.m_vertices)
 						{
-							vertices.emplace_back( b2Vec2(vertex.x *scale, vertex.y * scale) );
+							vertices.emplace_back( b2Vec2(vertex.x *m_scale, vertex.y * m_scale) );
 						}
 						b2PolygonShape shape;
 						shape.Set(&vertices[0], vertices.size());
@@ -129,12 +126,12 @@ tmath::vector3df SpritebodyComponent_Box2D::get_angle()
 	return tmath::vector3df(0,0,tmg::r2d(m_active_body->GetAngle()));	
 }
 
-void SpritebodyComponent_Box2D::set_scale(const tmath::vector3df& scale)
+void SpritebodyComponent_Box2D::set_scale(float scale)
 {
 	m_scale = scale;
 }
 
-tmath::vector3df SpritebodyComponent_Box2D::get_scale()
+float SpritebodyComponent_Box2D::get_scale()
 {
 	return m_scale;
 }
