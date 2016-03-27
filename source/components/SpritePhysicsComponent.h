@@ -28,9 +28,8 @@ namespace Pakal
 		virtual BasicTaskPtr  set_angle(const tmath::vector3df& position) = 0;
 		virtual tmath::vector3df get_angle() = 0;
 
-		virtual tmath::vector3df get_scale() = 0;
-		virtual void set_scale(const tmath::vector3df& scale) = 0;		
-		inline void set_scale(float scale) { set_scale(tmath::vector3df{ 1.f ,1.f ,1.f } *scale); };
+		virtual float get_scale() = 0;
+		virtual void set_scale(float scale) = 0;
 
 		inline void apply_impulse(float x, float y) { apply_impulse({x,y}); }
 		virtual void apply_impulse(const tmath::vector2df& force) = 0;
