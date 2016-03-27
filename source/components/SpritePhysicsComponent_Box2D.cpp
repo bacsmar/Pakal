@@ -40,42 +40,46 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 
 			m_bodies[spriteBody->name] = body;
 
+			//auto scale = sqrt(m_scale.x*m_scale.x + m_scale.y*m_scale.y);
+			auto scale = m_scale.x;
+
 			// fixtures
 			for(const auto& fixture : spriteBody->m_fixtures)
 			{
-				b2FixtureDef fixtureDef;
-				std::unique_ptr<b2Shape> pshape;
+				b2FixtureDef fixtureDef;				
+
+				fixtureDef.density = fixture.density;
+				fixtureDef.friction = fixture.friction;
+				fixtureDef.restitution = fixture.restitution;
+				fixtureDef.isSensor = fixture.is_sensor;
+				//fixtureDef.filter 
+				//fixtureDef.userData
 
 				if (fixture.type == "CIRCLE")
 				{
-					auto shape = new b2CircleShape;
-					pshape.reset(shape);
-					shape->m_radius = fixture.m_circle.r *sqrt(m_scale.x*m_scale.x+ m_scale.y*m_scale.y);
-					shape->m_p = { fixture.m_circle.x * m_scale.x, fixture.m_circle.y * m_scale.y};
+					b2CircleShape shape;
+					shape.m_radius = fixture.m_circle.r * scale;
+					shape.m_p = { fixture.m_circle.x *scale, fixture.m_circle.y * scale};
+
+					fixtureDef.shape = &shape;
+					body->CreateFixture(&fixtureDef);
 				}
 				else // "POLYGON"
-				{
-					auto shape = new b2PolygonShape;
-					pshape.reset(shape);
+				{					
 					//polygon
 					for(const auto& polygon : fixture.m_polygons)
 					{
 						std::vector<b2Vec2> vertices;
 						for( const auto& vertex : polygon.m_vertices)
 						{
-							vertices.emplace_back( b2Vec2(vertex.x * m_scale.x, vertex.y * m_scale.y) );
+							vertices.emplace_back( b2Vec2(vertex.x *scale, vertex.y * scale) );
 						}
-						shape->Set(&vertices[0], vertices.size());
+						b2PolygonShape shape;
+						shape.Set(&vertices[0], vertices.size());
+						fixtureDef.shape = &shape;
+						body->CreateFixture(&fixtureDef);
 					}
-				}
-				fixtureDef.density = fixture.density;
-				fixtureDef.friction = fixture.friction;
-				fixtureDef.restitution = fixture.restitution;
-				fixtureDef.isSensor = fixture.is_sensor;
-				fixtureDef.shape = pshape.get();
-				//fixtureDef.filter 
-				//fixtureDef.userData
-				body->CreateFixture(&fixtureDef);
+				}								
 			}
 		}
 		m_active_body = m_bodies.begin()->second;		

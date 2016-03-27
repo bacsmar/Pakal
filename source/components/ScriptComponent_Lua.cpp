@@ -129,20 +129,7 @@ Pakal::ScriptComponentLua::~ScriptComponentLua()
 void Pakal::ScriptComponentLua::set_script(const std::string& script_chunk)
 {
 	mutex_guard lock(m_register_mutex);	
-	oolua->run_chunk(script_chunk);
-}
-
-void Pakal::ScriptComponentLua::load_script(const std::string& script_file)
-{
-	mutex_guard lock(m_register_mutex);
-	m_script_file = script_file;
-	auto resource = ResourceMgr.open_read_resource(m_script_file, false);
-	if (!resource.get())
-		return;
-
-	std::string str;
-	file_utils::read_to_string(*resource, str);		
-	auto result = oolua->run_chunk(str);
+	auto result = oolua->run_chunk(script_chunk);
 	if (result == true)
 	{
 		m_script->gc();
@@ -152,6 +139,18 @@ void Pakal::ScriptComponentLua::load_script(const std::string& script_file)
 		auto error = OOLUA::get_last_error(*m_script);
 		LOG_ERROR("[ScriptComponent] lua_error: %s in %s", error.c_str(), m_script_file.c_str());
 	}
+}
+
+void Pakal::ScriptComponentLua::load_script(const std::string& script_file)
+{
+	m_script_file = script_file;
+	auto resource = ResourceMgr.open_read_resource(m_script_file, false);
+	if (!resource.get())
+		return;
+
+	std::string str;
+	file_utils::read_to_string(*resource, str);		
+	set_script(str);
 }
 
 Pakal::ScriptResultPtr Pakal::ScriptComponentLua::call_function(const std::string& function)

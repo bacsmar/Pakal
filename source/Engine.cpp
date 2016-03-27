@@ -20,6 +20,7 @@ using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
+	stop_timer_system();
 	os_manager()->terminate();
 	SAFE_DEL(m_graphics_system)
 	SAFE_DEL(m_physics_system)

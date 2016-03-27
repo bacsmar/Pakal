@@ -10,7 +10,7 @@ using namespace Pakal;
 
 void GraphicsSystem::on_initialize()
 {
-	OSMgr.setup_window(0, m_settings.resolution, m_settings.full_screen, m_settings.bits)
+	OSMgr.setup_window(m_settings.window_id, m_settings.resolution, m_settings.full_screen, m_settings.bits)
 		->continue_with(std::bind(&GraphicsSystem::on_init_graphics,this,std::placeholders::_1),THIS_THREAD)
 		->wait();	
 	m_ui_manager->initialize();

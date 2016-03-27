@@ -21,6 +21,7 @@ void OSManager::initialize(const Settings& settings)
 {
 	m_input_manager = settings.input_manager_allocator(this);
 	m_window_impl = settings.window_manager_allocator(this);
+	m_windows_setup_task = TaskCompletionSource<WindowArgs>();
 }
 
 void OSManager::terminate()
@@ -32,8 +33,8 @@ void OSManager::terminate()
 
 TaskPtr<WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {
-	WindowArgs args;
-	args.windowId = m_window_impl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);
+	WindowArgs args;	
+	args.windowId = m_window_impl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel) ;
 	if (args.windowId)
 	{
 		args.size_x = dimensions.x;
