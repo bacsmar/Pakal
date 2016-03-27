@@ -40,9 +40,11 @@ namespace Pakal
 			bool full_screen;
 			bool vsync;
 			unsigned max_fps;
+			unsigned window_id;
 			std::function<IUIManager*(GraphicsSystem* gs)>	ui_manager_allocator;
 
-			Settings() : resolution(800,600), bits(32), full_screen(false), vsync(false), max_fps(1000) {}
+			Settings() : resolution(800,600), bits(32), full_screen(false), vsync(false), max_fps(1000), window_id(0)
+			{}
 
 			void persist(Archive* archive);
 

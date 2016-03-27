@@ -3,12 +3,10 @@
 #include "PakalMath.h"
 #include "TaskFwd.h"
 #include "PhysicComponent.h"
-#include "Shapes.h"
+#include "SpritePhysics.h"
 
 namespace Pakal
 {
-	struct SpriteSheetPhysics;
-
 	class _PAKALExport SpritePhysicsComponent : public PhysicComponent
 	{
 		DECLARE_RTTI_WITH_BASE(SpritePhysicsComponent, PhysicComponent);

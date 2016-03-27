@@ -12,13 +12,17 @@ namespace Pakal
 	class _PAKALExport InputHandler
 	{
 	public:
-		virtual ~InputHandler(){}	
-		virtual bool has_linked_components() const = 0;		
-		virtual void set_and_load_character_handler(ICharacterHandler* characterHandler) = 0;
-		virtual void remove_subscriptions() = 0;
-		virtual bool load_mapping(TextReader& reader, std::istream& stream) = 0;
+		virtual ~InputHandler();
+
+		bool has_linked_components() const;;
+		void set_handled_character(ICharacterHandler* characterHandler);;
+		void remove_subscriptions();
+		virtual bool load_mapping(const std::string& mappingName) = 0;
 
 		Event<std::string> evt_translated_command;
+	private:
+		ICharacterHandler*	m_handled_component = nullptr;
+		bool				m_has_linked_components = false;
 	};
 
 
@@ -27,13 +31,6 @@ namespace Pakal
 		DECLARE_RTTI_WITH_BASE(KeyboardHandlerComponent, Component);
 
 	public:
-
-		/*struct Settings
-		{
-			bool use_key_up = true;
-			bool use_key_down = true;
-		}settings;
-*/
 		struct KeyMapping
 		{
 			Pakal::Key key;
@@ -47,21 +44,15 @@ namespace Pakal
 
 		explicit KeyboardHandlerComponent(IInputManager* inputManager);
 		~KeyboardHandlerComponent();		
-	protected:
-		bool has_linked_components() const override;	// override
-		void set_and_load_character_handler(ICharacterHandler* characterHandler) override;
-		void remove_subscriptions() override;
-		bool load_mapping(TextReader& reader, std::istream& stream) override;
+	protected:		
+		bool load_mapping(const std::string& mappingName) override;
 	private:
 		void traslate_command_kdown(Pakal::KeyArgs args);
 		void traslate_command_kUp(Pakal::KeyArgs args);		
 
 		IInputManager*		m_input_manager_ref;
 		Pakal::ulonglong	m_id_event_key_down;
-		Pakal::ulonglong	m_id_event_key_up;
-		bool				m_has_linked_components = false;
-		ICharacterHandler*	m_handled_component;
-		Component*			m_automata_Component;
+		Pakal::ulonglong	m_id_event_key_up;		
 		std::list<KeyMapping>	m_key_map;
 	};
 
