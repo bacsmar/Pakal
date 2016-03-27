@@ -1,5 +1,6 @@
 #include "PhysicsSystem.h"
 #include "persist/Archive.h"
+#include "LogMgr.h"
 
 
 using namespace Pakal;
@@ -7,6 +8,11 @@ using namespace Pakal;
 
 PhysicsSystem::PhysicsSystem(const Settings& settings):  System(settings.uses_thread), m_settings(settings)
 {
+}
+
+PhysicsSystem::~PhysicsSystem()
+{
+	LOG_INFO("deleting PhysicsSystem...");
 }
 
 void PhysicsSystem::on_initialize()

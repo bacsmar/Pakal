@@ -38,7 +38,8 @@ namespace Pakal
 		ulonglong m_resized_callback_id;
 		ulonglong m_destroyed_callback_id;
 		ulonglong m_created_callback_id;
-		bool				m_draw_axis = false;
+		bool		m_draw_axis = false;
+		//bool		m_has_external_window = false;
 
 		irr::IrrlichtDevice			* device = nullptr;
 		irr::video::IVideoDriver	* driver = nullptr;

@@ -79,7 +79,7 @@ void Engine::run(IPakalApplication* application)
 	ASSERT(get_state() == SystemState::Created ||  get_state() == SystemState::Terminated);
 	ASSERT(application);
 
-	LOG_WARNING("Running %s", application->get_name());
+	LOG_INFO("Running %s", application->get_name());
 
 	m_application = application;
 	
