@@ -163,7 +163,7 @@ Pakal::ScriptResultPtr Pakal::ScriptComponentLua::call_function(const std::strin
 	else
 	{
 		auto error = OOLUA::get_last_error(*m_script);
-		LOG_ERROR("[ScriptComponent] lua_error: %s in %s", error.c_str(), m_script_file.c_str());
+		LOG_ERROR("[ScriptComponent] lua_error - function:%s: %s in %s", function.c_str(), error.c_str(), m_script_file.c_str());
 	}		
 	
 	return ScriptResultPtr( new ScriptResultLua(m_script, result));
@@ -179,7 +179,7 @@ Pakal::ScriptResultPtr Pakal::ScriptComponentLua::call_script(const std::string&
 	else
 	{
 		auto error = OOLUA::get_last_error(*m_script);
-		LOG_ERROR("[ScriptComponent] lua_error: %s in %s", error.c_str(), m_script_file.c_str() );
+		LOG_ERROR("[ScriptComponent] lua_error -%s: %s in %s", script_text.c_str(), error.c_str(), m_script_file.c_str() );
 	}	
 	return ScriptResultPtr(new ScriptResultLua(m_script, result));
 }
