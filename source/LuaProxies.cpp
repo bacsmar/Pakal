@@ -31,7 +31,6 @@ namespace Pakal
 			.add_function("set_flipped", &SpriteComponent::set_flipped)
 			.add_function("is_playing", &SpriteComponent::is_playing)
 			.add_function("is_flipped", &SpriteComponent::is_flipped)
-			.add_function("is_flipped", &SpriteComponent::is_flipped)
 			.add_function("get_position", &SpriteComponent::get_position);
 
 		script.register_obj(name, obj);
