@@ -19,9 +19,11 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_material.EmissiveColor = m_material.AmbientColor;
 	m_material.GouraudShading = false;
 	m_material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...	
+	//m_material.ZBuffer = video::ECFN_LESSEQUAL;	// 
 	m_material.FrontfaceCulling = false;		// enable both faces drawing
 	m_material.BackfaceCulling = false;
 
+	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
 	//m_material.MaterialType = video::EMT_SOLID;	
@@ -141,8 +143,8 @@ void SpriteNode_Irrlicht::render()
 void SpriteNode_Irrlicht::OnRegisterSceneNode()
 {
 	if (IsVisible)
-	{		
-		SceneManager->registerNodeForRendering(this, ESNRP_SOLID);
+	{
+		SceneManager->registerNodeForRendering(this);
 	}
 
 	ISceneNode::OnRegisterSceneNode();
