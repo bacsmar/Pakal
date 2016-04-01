@@ -18,15 +18,15 @@ namespace Pakal
 
 	class _PAKALExport IEntity
 	{
-		friend class EntityManager;
-	protected:
-		virtual ~IEntity() {}
+		//friend class EntityManager;
+	protected:		
 		virtual BasicTaskPtr initialize() = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
 		Pakal::ComponentManager*	m_component_manager;
 
 	public:
+		virtual ~IEntity() {}
 		// ctor
 		explicit IEntity(ComponentManager* c) :m_component_manager(c) {}
 
