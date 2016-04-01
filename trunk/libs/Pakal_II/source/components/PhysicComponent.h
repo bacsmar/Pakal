@@ -24,18 +24,32 @@ namespace Pakal
 		Event<const IEntity*> event_collide;
 		Event<const IEntity*> event_end_collide;
 
+		struct BodyPart
+		{
+			float density = 1.0;
+			float friction = 0.0;;
+			float restitution = 0.5;
+			bool is_sensor = false;
+			unsigned id = -1;
+
+			BodyPart(float _density, float _friction, float _restitution, bool isSensor, unsigned _id) :
+				density(_density), friction(_friction),
+				restitution(_restitution), is_sensor(isSensor), id(_id)
+			{}
+			std::string type;
+		};
+
 		// internal use only
 		bool on_collide(const PhysicComponent& other)
 		{
 			auto otherEntity = other.get_parent_entity();
-			//auto thisEntity = this->get_parent_entity();
 			ASSERT(otherEntity && this->get_parent_entity());
 			{
 				event_collide.notify(otherEntity);
 			}
 			return true;
 		}
-
+		// internal use only
 		bool on_end_collide(const PhysicComponent& other)
 		{
 			auto otherEntity = other.get_parent_entity();			

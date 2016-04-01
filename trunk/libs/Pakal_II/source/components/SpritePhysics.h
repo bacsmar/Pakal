@@ -59,6 +59,12 @@ namespace Pakal
 			float restitution = 0.5;
 			bool is_sensor = false;
 
+			/// The collision category bits. Normally you would just set one bit.
+			std::uint16_t  category_bits = 1;
+			/// The collision mask bits. This states the categories that this
+			/// shape would accept for collision.
+			std::uint16_t mask_bits = 0xFFFF;
+
 			std::string type;
 			std::vector<Polygon> m_polygons;
 			Circle m_circle;
@@ -77,6 +83,8 @@ namespace Pakal
 				archive->value("polygons","polygon", m_polygons);
 				archive->value("circle", m_circle);
 				archive->value("is_sensor", is_sensor);
+				archive->value("categoryBits", category_bits);
+				archive->value("maskBits", mask_bits);
 			}
 			// get memory consumption
 			inline size_t get_memory_consumption() const
