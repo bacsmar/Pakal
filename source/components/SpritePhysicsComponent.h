@@ -17,6 +17,21 @@ namespace Pakal
 			StaticBody = 0,
 			//KinematicBody,
 			DynamicBody,
+		};		
+
+		struct BodyPart
+		{
+			float density = 1.0;
+			float friction = 0.0;;
+			float restitution = 0.5;
+			bool is_sensor = false;
+			unsigned id = -1;
+
+			BodyPart(float _density, float _friction, float _restitution, bool isSensor, unsigned _id) :
+				density(_density), friction(_friction),
+				restitution(_restitution), is_sensor(isSensor), id(_id)
+			{}
+			std::string type;		
 		};
 
 		virtual BasicTaskPtr initialize(const SpriteSheetPhysics& loader) = 0;
@@ -30,6 +45,9 @@ namespace Pakal
 
 		virtual float get_scale() = 0;
 		virtual void set_scale(float scale) = 0;
+
+		virtual BodyPart get_bodyPart(unsigned index) = 0;
+		virtual void update_bodyPart(const BodyPart& part) = 0;
 
 		inline void apply_impulse(float x, float y) { apply_impulse({x,y}); }
 		virtual void apply_impulse(const tmath::vector2df& force) = 0;

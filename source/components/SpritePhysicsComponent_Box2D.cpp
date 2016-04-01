@@ -41,6 +41,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 			m_bodies[spriteBody->name] = body;
 
 			// fixtures
+			unsigned fixtureIndex = 0;
 			for(const auto& fixture : spriteBody->m_fixtures)
 			{
 				b2FixtureDef fixtureDef;				
@@ -50,7 +51,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 				fixtureDef.restitution = fixture.restitution;
 				fixtureDef.isSensor = fixture.is_sensor;
 				//fixtureDef.filter 
-				//fixtureDef.userData
+				//fixtureDef.userData				
+
 
 				if (fixture.type == "CIRCLE")
 				{
@@ -59,7 +61,9 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 					shape.m_p = { fixture.m_circle.x *m_scale, fixture.m_circle.y * m_scale };
 
 					fixtureDef.shape = &shape;
-					body->CreateFixture(&fixtureDef);
+					auto fixturePtr = body->CreateFixture(&fixtureDef);
+					fixturePtr->SetUserData((void*)fixtureIndex++);
+					m_fixtures.emplace_back(fixturePtr);
 				}
 				else // "POLYGON"
 				{					
@@ -75,6 +79,9 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 						shape.Set(&vertices[0], vertices.size());
 						fixtureDef.shape = &shape;
 						body->CreateFixture(&fixtureDef);
+						auto fixturePtr = body->CreateFixture(&fixtureDef);
+						fixturePtr->SetUserData((void*)fixtureIndex++);
+						m_fixtures.emplace_back(fixturePtr);
 					}
 				}								
 			}
@@ -86,6 +93,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 {
 	m_active_body = nullptr;
+	m_fixtures.clear();
 
 	return m_system->execute_block([=]()
 	{
@@ -185,4 +193,22 @@ void SpritebodyComponent_Box2D::set_gravity_scale(float gravityScale)
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	
 	m_active_body->SetGravityScale(gravityScale);
+}
+
+SpritePhysicsComponent::BodyPart SpritebodyComponent_Box2D::get_bodyPart(unsigned index)
+{
+	ASSERT(m_fixtures.size() > index);
+	auto fixture = m_fixtures[index];
+	return { fixture->GetDensity(), fixture->GetFriction(), fixture->GetRestitution(), fixture->IsSensor(), (unsigned)fixture->GetUserData() };
+}
+
+void SpritebodyComponent_Box2D::update_bodyPart(const BodyPart& part)
+{
+	ASSERT(part.id < m_fixtures.size());
+
+	auto fixture = m_fixtures[part.id];
+	fixture->SetDensity(part.density);
+	fixture->SetFriction(part.friction);
+	fixture->SetRestitution(part.restitution);
+	fixture->SetSensor(part.is_sensor);
 }

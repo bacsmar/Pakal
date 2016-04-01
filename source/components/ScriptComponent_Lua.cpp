@@ -8,6 +8,7 @@
 #include "oolua.h"
 
 #include "SimpleTimer.h"
+#include "SpritePhysicsComponent.h"
 
 using namespace Pakal::tmath;
 
@@ -100,6 +101,14 @@ Pakal::ScriptComponentLua::ScriptComponentLua() : ScriptComponent(static_cast<Sc
 	LuaIntf::LuaBinding(m_state).beginClass<Pakal::Time>("Time")
 		.addFunction("as_milliseconds", &Pakal::Time::asMilliseconds)
 		.addFunction("as_seconds", &Pakal::Time::asSeconds)
+		.endClass();
+
+	LuaIntf::LuaBinding(m_state).beginClass<SpritePhysicsComponent::BodyPart>("BodyPart")
+		.addVariable("is_sensor",&SpritePhysicsComponent::BodyPart::is_sensor)
+		.addVariable("density", &SpritePhysicsComponent::BodyPart::density)
+		.addVariable("friction", &SpritePhysicsComponent::BodyPart::friction)
+		.addVariable("restitution", &SpritePhysicsComponent::BodyPart::restitution)
+		.addVariable("type", &SpritePhysicsComponent::BodyPart::type)
 		.endClass();
 
 	// system.disable_log()
