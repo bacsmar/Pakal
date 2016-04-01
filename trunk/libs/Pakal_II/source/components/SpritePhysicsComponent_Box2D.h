@@ -48,6 +48,9 @@ namespace Pakal
 		void set_type(BodyType type) override;
 		void set_gravity_scale(float gravityScale) override;
 
+		BodyPart get_bodyPart(unsigned index) override;
+		void update_bodyPart(const BodyPart& part) override;
+
 	protected:
 		Box2DPhysicsSystem* m_system = nullptr;
 	private:
@@ -55,5 +58,6 @@ namespace Pakal
 		b2Body*	m_active_body = nullptr;
 		float m_normalization_factor = 1.f;
 		float m_scale = 1.f;
+		std::vector<b2Fixture*> m_fixtures;
 	};	
 }

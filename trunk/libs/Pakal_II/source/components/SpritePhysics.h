@@ -54,10 +54,11 @@ namespace Pakal
 
 		struct Fixture
 		{
-			float density;
-			float friction;
-			float restitution;
+			float density = 1.0;
+			float friction = 0.0;;
+			float restitution = 0.5;
 			bool is_sensor = false;
+
 			std::string type;
 			std::vector<Polygon> m_polygons;
 			Circle m_circle;

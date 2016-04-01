@@ -45,7 +45,9 @@ namespace Pakal
 			.add_function("get_angle", &SpritePhysicsComponent::get_angle)
 			.add_function("get_lineal_velocity", &SpritePhysicsComponent::get_lineal_velocity)
 			.add_function("get_scale", &SpritePhysicsComponent::get_scale)
-			.add_function("get_position", &SpritePhysicsComponent::get_position);
+			.add_function("get_position", &SpritePhysicsComponent::get_position)
+			.add_function("get_body_part", &SpritePhysicsComponent::get_bodyPart)
+			.add_function("update_body_part", &SpritePhysicsComponent::update_bodyPart);
 
 		script.register_obj(name, obj);
 	}

@@ -170,7 +170,7 @@ void TiledNode_Irrlicht::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{		
-		SceneManager->registerNodeForRendering(this, ESNRP_SOLID);
+		SceneManager->registerNodeForRendering(this);
 	}
 
 	ISceneNode::OnRegisterSceneNode();
