@@ -50,6 +50,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loa
 				fixtureDef.friction = fixture.friction;
 				fixtureDef.restitution = fixture.restitution;
 				fixtureDef.isSensor = fixture.is_sensor;
+				fixtureDef.filter.maskBits = fixture.mask_bits;
+				fixtureDef.filter.categoryBits = fixture.category_bits;
 				//fixtureDef.filter 
 				//fixtureDef.userData				
 

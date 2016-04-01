@@ -19,21 +19,6 @@ namespace Pakal
 			DynamicBody,
 		};		
 
-		struct BodyPart
-		{
-			float density = 1.0;
-			float friction = 0.0;;
-			float restitution = 0.5;
-			bool is_sensor = false;
-			unsigned id = -1;
-
-			BodyPart(float _density, float _friction, float _restitution, bool isSensor, unsigned _id) :
-				density(_density), friction(_friction),
-				restitution(_restitution), is_sensor(isSensor), id(_id)
-			{}
-			std::string type;		
-		};
-
 		virtual BasicTaskPtr initialize(const SpriteSheetPhysics& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
