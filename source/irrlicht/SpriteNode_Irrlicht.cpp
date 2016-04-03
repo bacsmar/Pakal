@@ -4,6 +4,7 @@
 
 #include "SpriteNode_Irrlicht.hpp"
 #include "Components/Sprite.h"
+#include "MaterialManager.h"
 
 using namespace irr;
 using namespace scene;
@@ -13,20 +14,21 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	: ISceneNode(parent,mgr),
     m_texture(nullptr)
 {
-	m_material.Lighting = true;	
-	//m_material.AmbientColor = scolor;
-	//m_material.DiffuseColor = scolor;	
+	m_material.Lighting = true;		
 	m_material.EmissiveColor = m_material.AmbientColor;
 	m_material.GouraudShading = false;
-	m_material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...	
-	//m_material.ZBuffer = video::ECFN_LESSEQUAL;	// 
+	//m_material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
 	m_material.FrontfaceCulling = false;		// enable both faces drawing
 	m_material.BackfaceCulling = false;
 
 	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
-	//m_material.MaterialType = video::EMT_SOLID;	
+	m_material.MaterialTypeParam = 0.5f;
+	//m_material.BlendOperation = video::EBO_NONE;
+	//m_material.ZWriteEnable = false;
+	//m_material.MaterialType = video::EMT_SOLID;
+	//m_material.MaterialType = video::EMT_TRANSPARENT_ADD_COLOR;
+	
 
 	m_box.reset(-1.0f,-1.0f,0.0f);
 	m_box.addInternalPoint(1.0f,1.0f,0.0f);
@@ -37,6 +39,11 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_indices[3] = 0;
 	m_indices[4] = 3;
 	m_indices[5] = 2;		
+}
+
+SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
+{
+	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_SPRITE));;
 }
 
 void SpriteNode_Irrlicht::setColor(const video::SColor& color)

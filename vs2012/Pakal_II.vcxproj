@@ -29,6 +29,8 @@
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
     <ClInclude Include="..\source\components\TileMapComponent.h" />
     <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h" />
+    <ClInclude Include="..\source\irrlicht\MaterialManager.h" />
     <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
@@ -157,6 +159,7 @@
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
     <ClCompile Include="..\source\components\Sprite.cpp" />
     <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp" />
     <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />
