@@ -11,11 +11,13 @@
 
 namespace Pakal
 {
-	
+	class MaterialManager;
+
 	class SpriteNode_Irrlicht :  public irr::scene::ISceneNode	
 	{
 	public:    
 		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);
+		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager);
 
 		virtual ~SpriteNode_Irrlicht();
 

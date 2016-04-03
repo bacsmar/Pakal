@@ -22,9 +22,11 @@ namespace Pakal
 
 		virtual const char* get_name() = 0;
 
-		virtual void start(Engine*) = 0;
+		virtual void start(Engine&) = 0;
 
-		virtual void end(Engine*) = 0;
+		virtual void end(Engine&) = 0;
+
+		//virtual void setup_resources(Engine& engine) = 0;
 
 		virtual ~IPakalApplication() {}
 	};

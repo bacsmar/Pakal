@@ -89,6 +89,8 @@ void Engine::run(IPakalApplication* application)
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
 
+	//m_application->setup_resources(*this);
+
 	//initialize systems
 	std::vector<BasicTaskPtr> initializationTasks;
 	for(auto s : m_systems)
@@ -174,17 +176,16 @@ void Engine::on_update(unsigned long dtMilliSeconds)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	//m_listener_terminate = os_manager()->event_app_finished.add_listener(std::bind(&Engine::terminate,this));
 	m_listener_terminate = os_manager()->event_app_finished.add_listener([=]() {this->terminate(); });
 
-	m_application->start(this);	
+	m_application->start(*this);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
 	os_manager()->event_app_finished.remove_listener(m_listener_terminate);
 
-	m_application->end(this);
+	m_application->end(*this);
 }
 //////////////////////////////////////////////////////////////////////////
 

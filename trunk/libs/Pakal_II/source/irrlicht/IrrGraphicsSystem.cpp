@@ -17,6 +17,8 @@
 #include "irrlicht/DirectorySourceIrrlitch.h"
 #include "irrlicht/ZipSourceIrrlitch.h"
 
+#include "MaterialManager.h"
+
 
 using namespace irr;
 using namespace irr::core;
@@ -73,6 +75,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	
 	m_render_info->m_Device = device;
 	m_render_info->m_Driver = driver;
+	m_material_manager = new MaterialManager(this);
 
 	for (auto &r : m_debug_renderers)
 	{
@@ -116,6 +119,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	device->closeDevice();
 	device->drop();
 	device = nullptr;
+	SAFE_DEL(m_material_manager);
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::begin_scene()
@@ -185,11 +189,11 @@ void IrrGraphicsSystem::on_update_graphics(long long dt)
 	m_ui_manager->draw_ui();
 	end_scene();
 }
-
+//////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_pause_graphics()
 {
 }
-
+//////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_resume_graphics()
 {
 }

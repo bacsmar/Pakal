@@ -16,6 +16,7 @@
 
 namespace Pakal
 {
+	class MaterialManager;
 	class BasicTask;
 	class Component;
 	class IDebugDrawerClient;
@@ -29,6 +30,7 @@ namespace Pakal
 		inline irr::video::IVideoDriver	* get_driver() const { return driver;	}
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
+		inline MaterialManager*				get_material_manager() const { return m_material_manager; }
 		inline const char* get_system_name() override { return nameof(IrrGraphicsSystem);  };
 
 		explicit IrrGraphicsSystem(const Settings& settings);
@@ -38,15 +40,15 @@ namespace Pakal
 		ulonglong m_resized_callback_id;
 		ulonglong m_destroyed_callback_id;
 		ulonglong m_created_callback_id;
-		bool		m_draw_axis = false;
-		//bool		m_has_external_window = false;
+		bool		m_draw_axis = false;		
 
 		irr::IrrlichtDevice			* device = nullptr;
 		irr::video::IVideoDriver	* driver = nullptr;
 		irr::scene::ISceneManager	* smgr = nullptr;
 		irr::gui::IGUIEnvironment	* guienv = nullptr;
+		MaterialManager*			m_material_manager = nullptr;
 
-		RendererInfo				*m_render_info;
+		RendererInfo				*m_render_info = nullptr;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
 		virtual ~IrrGraphicsSystem();
 
