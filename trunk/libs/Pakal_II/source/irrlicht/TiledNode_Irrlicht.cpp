@@ -4,6 +4,7 @@
 
 #include "TiledNode_Irrlicht.hpp"
 #include "Components/Sprite.h"
+#include "MaterialManager.h"
 
 using namespace irr;
 using namespace scene;
@@ -25,10 +26,16 @@ TiledNode_Irrlicht::TiledNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 
 	//m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
+	m_material.MaterialTypeParam = 0.5f;
 	//m_material.MaterialType = video::EMT_SOLID;	
 
 	m_box.reset(-1.0f,-1.0f,0.0f);
 	m_box.addInternalPoint(1.0f,1.0f,0.0f);
+}
+
+TiledNode_Irrlicht::TiledNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : TiledNode_Irrlicht(parent, mgr)
+{
+	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_SPRITE));;
 }
 
 void TiledNode_Irrlicht::setColor(const video::SColor& color)

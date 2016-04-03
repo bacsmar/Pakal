@@ -8,15 +8,16 @@
 #include "irrlicht.h"
 #include "ISceneNode.h"
 #include "Components/Sprite.h"
+#include "IrrGraphicsSystem.h"
 
 namespace Pakal
 {
 	
 	class TiledNode_Irrlicht :  public irr::scene::ISceneNode	
-	{
-	public:    
+	{	
 		explicit TiledNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);
-
+	public:
+		TiledNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager);
 		virtual ~TiledNode_Irrlicht();
 
 		irr::core::rectf getLocalBounds() const;
