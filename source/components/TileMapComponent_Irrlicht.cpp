@@ -45,7 +45,7 @@ BasicTaskPtr TileMapComponent_Irrlicht::initialize(const Settings& settings)
 				return;
 			}
 
-			m_node = new TiledNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager());
+			m_node = new TiledNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager(), m_system->get_material_manager());
 			m_node->set_texture(texture);
 
 			set_size(3.0);
