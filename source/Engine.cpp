@@ -219,14 +219,14 @@ void Engine::on_resume()
 }
 //////////////////////////////////////////////////////////////////////////
 
-std::wstring Engine::get_systems_fps()
+std::string Engine::get_systems_fps()
 {
-	std::wostringstream ss;
+	std::ostringstream ss;
 
-	ss << get_system_name() << L"[" << get_fps() << L"] ";
+	ss << get_system_name() << "[" << get_fps() << "] ";
 	for (auto s : m_systems)
 	{
-		ss << s->get_system_name() << L"[" << s->get_fps() << L"] ";
+		ss << s->get_system_name() << "[" << s->get_fps() << "] ";
 	}
 
 	return ss.str();

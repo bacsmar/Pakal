@@ -84,7 +84,7 @@ namespace Pakal
 		void on_pause() override;
 		void on_resume() override;
 		void register_default_components() const;
-		std::wstring get_systems_fps();
+		std::string get_systems_fps();
 		static void init_timer_system();	// timer.cpp
 		static void stop_timer_system();	// timer.cpp
 

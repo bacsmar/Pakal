@@ -83,3 +83,8 @@ void GraphicsSystem::Settings::persist(Archive* archive)
 	archive->value("resolution_x", resolution.x);
 	archive->value("resolution_y", resolution.y);	
 }
+
+void GraphicsSystem::set_window_caption(const char* title)
+{
+	OSMgr.get_window_manager()->set_title(title);
+}

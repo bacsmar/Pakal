@@ -62,8 +62,7 @@ namespace Pakal
 		void draw_axis();
 		void draw();
 		void end_scene();
-
-		virtual void set_window_caption(const wchar_t* caption) override;
+		
 		virtual tmath::vector2du get_screen_resolution() override;
 
 		virtual void register_component_factories( std::vector<IComponentFactory*> &factories ) override;
