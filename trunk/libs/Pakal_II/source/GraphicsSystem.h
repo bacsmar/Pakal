@@ -26,7 +26,7 @@ namespace Pakal
 		
 	public:
 
-		virtual void set_window_caption(const wchar_t*) {};
+		virtual void set_window_caption(const char*);
 		virtual void add_debug_drawer(IDebugDrawerClient * debugDrawer) = 0;
 
 		virtual tmath::vector2du get_screen_resolution() = 0;

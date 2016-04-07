@@ -17,5 +17,6 @@ namespace Pakal
 		unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel) override final;
 		void close_window() override final;
 		void process_window_events() override final;
+		void set_title(const std::string& title) override;
 	};
 }

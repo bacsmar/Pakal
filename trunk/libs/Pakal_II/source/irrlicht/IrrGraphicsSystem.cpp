@@ -197,15 +197,7 @@ void IrrGraphicsSystem::on_pause_graphics()
 void IrrGraphicsSystem::on_resume_graphics()
 {
 }
-
 //////////////////////////////////////////////////////////////////////////
-void IrrGraphicsSystem::set_window_caption(const wchar_t* caption)
-{
-	ASSERT(device!= nullptr);
-	//if(m_has_external_window == false)
-	//	device->setWindowCaption(caption);
-}
-
 tmath::vector2du IrrGraphicsSystem::get_screen_resolution()
 {
 	ASSERT(device != nullptr);

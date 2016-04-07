@@ -137,3 +137,7 @@ void WindowCreatorSFML::process_window_events()
 	}
 }
 
+void WindowCreatorSFML::set_title(const std::string& title)
+{	
+	m_window.setTitle(title);
+}
