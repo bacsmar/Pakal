@@ -12,6 +12,8 @@ void Pakal::RocketLabel::set_ui_control(unsigned int documentId, const std::stri
 	m_control_name = controlName;
 	m_element = m_rocket_ui->get_element(m_document_id, m_control_name.c_str());
 	ASSERT(m_element);
+	if(m_element == nullptr)
+		LOG_ERROR("the control %s doesn't exists in %d", controlName.c_str(), documentId);
 }
 
 void Pakal::RocketLabel::set_text(const std::string& text)
