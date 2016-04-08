@@ -218,6 +218,9 @@
     <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
+      <Filter>Components\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -615,6 +618,12 @@
     <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\UIComponent.h">
+      <Filter>Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketUIComponents.h">
+      <Filter>Components\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -709,6 +718,9 @@
     </Filter>
     <Filter Include="Components\Physics">
       <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\UI">
+      <UniqueIdentifier>{3e1e6e8b-03c2-45bf-9792-a8bfacdf0de3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

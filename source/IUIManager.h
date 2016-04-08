@@ -3,10 +3,11 @@
 #include "Config.h"
 #include "TaskFwd.h"
 #include "PakalPath.h"
+#include "IComponentProvider.h"
 
 namespace Pakal
 {
-	class _PAKALExport IUIManager
+	class _PAKALExport IUIManager: public IComponentProvider
 	{
 	public:
 		virtual ~IUIManager() {};
@@ -26,11 +27,5 @@ namespace Pakal
 		virtual void draw_ui() = 0;
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;
-
-		// temporal functions, they need proper naming
-		virtual bool set_element_inner_text(unsigned documentId, const char* elementName, const char* value) = 0;
-		virtual bool set_element_inner_text(unsigned documentId, const char* elementName, const int value) = 0;
-		virtual bool set_element_inner_text(unsigned documentId, const char* elementName, const float value) = 0;
-		virtual bool set_element_visibility(unsigned documentId, const char* elementName, const bool visible) = 0;
 	};
 }
