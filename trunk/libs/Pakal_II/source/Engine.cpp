@@ -11,8 +11,8 @@
 #include "OSManager.h"
 #include "Clock.h"
 #include <sstream>
-#include "persist/Archive.h"
 #include <chrono>
+#include "IUIManager.h"
 
 
 //#include <vld.h>
@@ -65,6 +65,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*m_graphics_system);
 	m_component_manager->register_provider(*m_physics_system);
 	m_component_manager->register_provider(*m_sound_manager);
+	m_component_manager->register_provider(*m_graphics_system->get_ui_interface());
 	m_component_manager->register_provider(*os_manager()->get_input_manager());
 
 	register_default_components();

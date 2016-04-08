@@ -13,6 +13,7 @@
 #include "GraphicsSystem.h"
 #include "EventScheduler.h"
 #include "ResourceManager.h"
+#include "RocketUIComponents.h"
 
 using namespace Pakal;
 
@@ -195,6 +196,13 @@ void RocketUI::set_element_class(unsigned documentId, const char* elementName, c
 			element->SetClassNames(Rocket::Core::String(256, "%s", value).CString());
 		}
 	}
+}
+
+void RocketUI::register_component_factories(std::vector<IComponentFactory*>& factories)
+{
+	LOG_INFO("[RocketUI] Registering Components");
+
+	factories.emplace_back(CreateComponentFactory<UILabel, RocketLabel>(this));
 }
 
 void RocketUI::initialize()

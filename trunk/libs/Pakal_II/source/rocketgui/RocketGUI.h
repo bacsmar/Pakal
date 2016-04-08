@@ -2,7 +2,7 @@
 #pragma once
 
 #include "IUIManager.h"
-#include <Pakal_II/source/Event.h>
+#include "Event.h"
 
 namespace Rocket
 {
@@ -46,9 +46,10 @@ namespace Pakal
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const int value);
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const float value);
 		bool set_element_visibility(unsigned documentId, const char* elementName, const bool visible);
-		void set_element_class(unsigned documentId, const char* elementName, const char* value);			
+		void set_element_class(unsigned documentId, const char* elementName, const char* value);
 		
 	protected:
+		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
 		virtual void setup_render_interface() = 0;
 		void initialize() override final;
 		void terminate() override final;
