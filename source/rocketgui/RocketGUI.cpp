@@ -19,7 +19,7 @@ using namespace Pakal;
 
 
 RocketUI::RocketUI(GraphicsSystem* renderInterface) 
-	: m_graphics_system(renderInterface)
+	: m_graphics_system(renderInterface), m_mouse_move_e(0), m_mouse_released_e(0), m_mouse_pressed_e(0)
 {
 }
 
@@ -133,7 +133,7 @@ bool RocketUI::set_element_inner_text(unsigned documentId, const char* elementNa
 		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
-			element->SetInnerRML(Rocket::Core::String(256, "%s", value).CString());
+			element->SetInnerRML(value);
 			return true;
 		}
 	}
@@ -148,7 +148,7 @@ bool RocketUI::set_element_inner_text(unsigned documentId, const char* elementNa
 		Rocket::Core::Element* element = document->GetElementById(elementName);
 		if (element != nullptr)
 		{
-			element->SetInnerRML(Rocket::Core::String(256, "%d", value).CString());
+			element->SetInnerRML(std::to_string(value).c_str());
 			return true;
 		}
 	}
@@ -196,6 +196,16 @@ void RocketUI::set_element_class(unsigned documentId, const char* elementName, c
 			element->SetClassNames(Rocket::Core::String(256, "%s", value).CString());
 		}
 	}
+}
+
+Rocket::Core::Element* RocketUI::get_element(unsigned documentId, const char* elementName)
+{
+	Rocket::Core::Element* document;
+	if (map_utils::try_get(m_loaded_documents, documentId, document))
+	{
+		return document->GetElementById(elementName);
+	}
+	return nullptr;
 }
 
 void RocketUI::register_component_factories(std::vector<IComponentFactory*>& factories)

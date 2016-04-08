@@ -8,7 +8,8 @@ namespace Rocket
 {
     namespace Core
     {
-        class Context;
+	    class Element;
+	    class Context;
 		class RenderInterface;
 		class FileInterface;
 		class ElementDocument;
@@ -47,6 +48,8 @@ namespace Pakal
 		bool set_element_inner_text(unsigned documentId, const char* elementName, const float value);
 		bool set_element_visibility(unsigned documentId, const char* elementName, const bool visible);
 		void set_element_class(unsigned documentId, const char* elementName, const char* value);
+
+		Rocket::Core::Element* get_element(unsigned documentId, const char* elementName);
 		
 	protected:
 		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
