@@ -20,7 +20,7 @@ namespace Pakal
 		std::list<UniquePtr<sf::Sound>> m_active_players;
 
 		Timer m_timer;
-		ulonglong m_clean_players_id = 0;
+		EventId m_clean_players_id = 0;
 		
 		void clean_players();
 		void clean_expired_buffers();

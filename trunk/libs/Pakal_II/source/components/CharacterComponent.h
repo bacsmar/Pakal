@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AutomataComponent.h"
 #include <string>
+#include "AutomataComponent.h"
 #include "ICharacterHandler.h"
 
 namespace Pakal
@@ -31,7 +31,7 @@ namespace Pakal
 		struct ListenedInput
 		{
 			InputHandler* handler;
-			unsigned long long event_id; 
+			unsigned event_id; 
 			friend bool operator <(const ListenedInput& lhs, const ListenedInput& rhs)
 			{
 				return lhs.handler < rhs.handler;
