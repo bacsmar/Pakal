@@ -51,8 +51,8 @@ namespace Pakal
 		void traslate_command_kUp(Pakal::KeyArgs args);		
 
 		IInputManager*		m_input_manager_ref;
-		Pakal::ulonglong	m_id_event_key_down;
-		Pakal::ulonglong	m_id_event_key_up;		
+		Pakal::EventId	m_id_event_key_down;
+		Pakal::EventId	m_id_event_key_up;		
 		std::list<KeyMapping>	m_key_map;
 	};
 

@@ -99,6 +99,6 @@ namespace Pakal
 
 		std::vector<ISystem*> m_systems;
 
-		unsigned long long m_listener_terminate;
+		EventId m_listener_terminate;
 	};
 }

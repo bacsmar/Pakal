@@ -37,9 +37,9 @@ namespace Pakal
 
 	protected:	
 		
-		ulonglong m_resized_callback_id;
-		ulonglong m_destroyed_callback_id;
-		ulonglong m_created_callback_id;
+		EventId m_resized_callback_id;
+		EventId m_destroyed_callback_id;
+		EventId m_created_callback_id;
 		bool		m_draw_axis = false;		
 
 		irr::IrrlichtDevice			* device = nullptr;

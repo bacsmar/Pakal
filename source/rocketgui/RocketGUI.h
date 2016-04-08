@@ -66,8 +66,8 @@ namespace Pakal
 		
 		std::unordered_map<unsigned, Rocket::Core::ElementDocument*> m_loaded_documents;
 
-		ulonglong m_mouse_move_e;
-		ulonglong m_mouse_released_e;
-		ulonglong m_mouse_pressed_e;
+		EventId m_mouse_move_e;
+		EventId m_mouse_released_e;
+		EventId m_mouse_pressed_e;
 	};
 }

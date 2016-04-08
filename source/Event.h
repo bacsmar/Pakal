@@ -11,7 +11,7 @@
 
 namespace Pakal
 {
-		using ulonglong = unsigned long long;
+		using EventId = unsigned;
 
 		template <class TArgs>
 		struct  DelegateData
@@ -34,29 +34,34 @@ namespace Pakal
 		struct  Delegate
 		{
 			std::function<void(const TArgs&)> callback;
-			ulonglong* id;
+			EventId* id;
 			std::thread::id tid;
 
-			Delegate(ulonglong& id, const std::function<void(const TArgs&)>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			Delegate(EventId& id, const std::function<void(const TArgs&)>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
 			{}
 		};
 		template <>
 		struct  Delegate<void>
 		{
 			std::function<void()> callback;
-			ulonglong* id;
+			EventId* id;
 			std::thread::id tid;
 
-			Delegate(ulonglong& id,const std::function<void()>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			Delegate(EventId& id,const std::function<void()>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
 			{}
 		};
 
 		template <class TArgs>
 		class  Event
 		{
-			std::unordered_map<unsigned long long, SharedPtr<DelegateData<TArgs>>> m_delegates;
+			std::unordered_map<EventId, SharedPtr<DelegateData<TArgs>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
+			EventId m_delegate_index = 0;
+			inline EventId new_id()
+			{
+				return ++m_delegate_index;
+			}
 
 			typedef std::function<void(const TArgs&)> MethodDelegate;
 		public:
@@ -68,17 +73,17 @@ namespace Pakal
 				*d.id = add_listener( std::move(d.callback), d.tid);
 			}
 
-			inline void operator-=(ulonglong& id)
+			inline void operator-=(EventId& id)
 			{
 				remove_listener(id);
 				id = 0;
 			}
 
-			inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callbackThread = NULL_THREAD)
+			inline EventId add_listener(const MethodDelegate&& delegate, std::thread::id callbackThread = NULL_THREAD)
 			{
 				mutex_guard lock(m_mutex);
 				
-				unsigned long long key = EventSystemUtils::new_id();
+				auto key = new_id();
 
 				SharedPtr<DelegateData<TArgs>> metaData =
 					m_delegates.emplace(key, std::make_shared<DelegateData<TArgs>>()).first->second;
@@ -99,7 +104,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(ulonglong key)
+			inline void remove_listener(EventId key)
 			{
 				mutex_guard lock(m_mutex);
 
@@ -181,9 +186,14 @@ namespace Pakal
 			typedef std::function<void(void)> MethodDelegate;
 		private:
 
-			std::unordered_map<unsigned long long,SharedPtr<DelegateData<void>>> m_delegates;
+			std::unordered_map<EventId,SharedPtr<DelegateData<void>>> m_delegates;
 			bool m_enabled;
 			mutable std::mutex m_mutex;
+			EventId m_delegate_index = 0;
+			inline EventId new_id()
+			{
+				return ++m_delegate_index;
+			}
 
 		public:
 
@@ -203,22 +213,17 @@ namespace Pakal
 				*d.id = add_listener(std::move(d.callback),d.tid);
 			}
 
-			inline void operator-=(ulonglong& id)
+			inline void operator-=(EventId& id)
 			{
 				remove_listener(id);
 				id = 0;
 			}
 
-			/*inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callBackThread = NULL_THREAD)
-			{
-				return add_listener(delegate, callBackThread);
-			}*/
-
-			inline ulonglong add_listener(const MethodDelegate&& delegate, std::thread::id callBackThread = NULL_THREAD)
+			inline EventId add_listener(const MethodDelegate&& delegate, std::thread::id callBackThread = NULL_THREAD)
 			{
 				mutex_guard lock(m_mutex);
 
-				ulonglong key = EventSystemUtils::new_id();
+				auto key = new_id();
 
 				auto metaData = m_delegates.emplace(key, std::make_shared<DelegateData<void>>()).first->second;					
 				
@@ -237,7 +242,7 @@ namespace Pakal
 				return key;
 			}
 
-			inline void remove_listener(ulonglong key)
+			inline void remove_listener(EventId key)
 			{
 				mutex_guard lock(m_mutex);
 
