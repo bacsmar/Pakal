@@ -13,6 +13,9 @@ namespace Pakal
 		void set_ui_control(unsigned int documentId, const std::string& controlName) override;
 		void set_text(const std::string& text) override;
 		void set_visible(bool visible) override;
+		void set_color(unsigned color) const override;
+		void set_font_color(unsigned color) const override;
+		void set_width(unsigned width) const override;
 	private:
 		RocketUI* m_rocket_ui = nullptr;
 		Rocket::Core::Element* m_element = nullptr;
