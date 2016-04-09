@@ -21,11 +21,34 @@ void Pakal::RocketLabel::set_text(const std::string& text)
 	if (m_element)
 		m_element->SetInnerRML(text.c_str());
 	else
-		LOG_ERROR("the control doesn't exists");
+		LOG_ERROR("the control doesn't exists");	
 }
 
 void Pakal::RocketLabel::set_visible(bool visible)
 {
 	if (m_element)
 		m_element->SetProperty("visibility", visible ? "visible" : "hidden");
+}
+
+void Pakal::RocketLabel::set_color(unsigned color) const
+{
+	char buffer[24];
+	sprintf(buffer, "#%06X", color);
+	if (m_element)
+		m_element->SetProperty("background-color", buffer);
+}
+
+void Pakal::RocketLabel::set_font_color(unsigned color) const
+{
+	char buffer[24];
+	sprintf(buffer, "#%06X", color);
+	if (m_element)
+		m_element->SetProperty("color", buffer);
+}
+
+void Pakal::RocketLabel::set_width(unsigned width) const
+{	
+	char buffer[24];
+	if (m_element)
+		m_element->SetProperty("width", itoa(width,buffer, 10));
 }
