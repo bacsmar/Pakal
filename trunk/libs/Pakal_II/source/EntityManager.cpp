@@ -49,9 +49,12 @@ void EntityManager::load_descriptors(const std::string& source)
 	auto stream = ResourceMgr.open_read_resource(source);
 
 	XmlReader reader(this);
+	std::vector<EntityDescriptor*> descriptors;
+	reader.read(*stream, "Descriptors", descriptors);
 
 	clear_descriptors();
-	reader.read(*stream, "Descriptors", m_descriptors);
+	for(auto desc : descriptors)
+		m_descriptors.insert(std::make_pair(desc->get_name(), desc));
 }
 
 void EntityManager::clear_descriptors()

@@ -12,7 +12,6 @@ namespace Pakal
 	class Entity;
 	class IEntityProvider;
 	class EntityDescriptor;
-	template<class T> class IFactory;
 
 	class _PAKALExport EntityManager : public IManager, public IFactoryManager
 	{
@@ -28,7 +27,10 @@ namespace Pakal
 		virtual ~EntityManager();
 
 		ComponentManager* get_component_manager() { return m_componentManager; };
+
 		const EntityDescriptor* get_descriptor(const std::string& name);
+		template<class TDescriptor>
+		const TDescriptor* get_descriptor(const std::string& name);
 
 		void initialize() override;
 		void terminate() override;
@@ -49,6 +51,12 @@ namespace Pakal
 		TEntity* create_entity(const std::string& descriptor = "");
 
 	};
+
+	template <class TDescriptor>
+	const TDescriptor* EntityManager::get_descriptor(const std::string& name)
+	{
+		return static_cast<const TDescriptor*>(get_descriptor(name));
+	}
 
 	template <class TEntity>
 	TEntity* EntityManager::create_entity(const std::string& descriptor)

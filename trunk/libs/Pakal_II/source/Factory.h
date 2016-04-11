@@ -38,6 +38,19 @@ namespace Pakal
 			explicit Factory(const std::function<TRoot*()>& fn) : IFactory<TRoot>(fn){}
 		};
 		return new Factory(_fn);
-	}	
+	}
+	template <class T>
+	inline IFactory<T>* CreateFactory(const std::string& name,const std::function<T*()>& fn)
+	{
+		struct Factory : IFactory<T>
+		{
+			const std::string& get_typename() override { return m_name; };
+			explicit Factory(const std::string& n,const std::function<T*()>& fn) : IFactory<T>(fn), m_name(n) {}
+		private:
+			std::string m_name;
+		};
+		return new Factory(fn);
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 }
