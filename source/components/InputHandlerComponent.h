@@ -6,7 +6,7 @@
 
 namespace Pakal
 {
-	class IEntity;
+	class Entity;
 	class ICharacterHandler;
 
 	class _PAKALExport InputHandler

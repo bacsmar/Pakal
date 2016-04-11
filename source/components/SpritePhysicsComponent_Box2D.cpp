@@ -3,7 +3,6 @@
 #include "math/tmg.h"
 
 #include "Components/SpritePhysics.h"
-#include "IEntity.h"
 
 #include "logMgr.h"
 

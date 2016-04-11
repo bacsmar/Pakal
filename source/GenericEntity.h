@@ -1,14 +1,8 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2011 The PakalEngine Open Source Project
-// File: IEntity.h
-// Original Author: Salvador Noel Romo Garcia.
-// last modification: 13 jun 2015
-// Purpose: Interface for Entities.
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #pragma once
 
-#include "IEntity.h"
+#include "Entity.h"
 #include "Component.h"
 #include <vector>
 #include "Event.h"
@@ -19,14 +13,14 @@ namespace Pakal
 {
 	class Component;	
 
-	class _PAKALExport GenericEntity : public IEntity
+	class _PAKALExport GenericEntity : public Entity
 	{
 	public:	
 		virtual ~GenericEntity();
-		using IEntity::IEntity;
+		using Entity::Entity;
 
-		virtual BasicTaskPtr initialize() override;
-		virtual	BasicTaskPtr terminate() override;
+		BasicTaskPtr initialize() override;
+		BasicTaskPtr terminate() override;
 
 		void add_component(Component *c);
 		void remove_component(Component *c);

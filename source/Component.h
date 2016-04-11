@@ -14,18 +14,18 @@
 
 namespace Pakal
 {	
-	class IEntity;
+	class Entity;
 
 	class _PAKALExport Component
 	{
 		DECLARE_RTTI(Component)
-		IEntity* m_parent = nullptr;
+		Entity* m_parent = nullptr;
 
 	public:		
 		virtual ~Component(){}	
 		// TODO: necesita un mutex en el get y set
-		inline void set_parent_entity(IEntity* entity) { m_parent = entity; };
-		inline IEntity* get_parent_entity() const { return m_parent; };
+		inline void set_parent_entity(Entity* entity) { m_parent = entity; };
+		inline Entity* get_parent_entity() const { return m_parent; };
 
 	};
 }

@@ -6,6 +6,7 @@
 #include "IPakalApplication.h"
 
 #include "ComponentManager.h"
+#include "EntityManager.h"
 #include "SoundManager.h"
 #include "IInputManager.h"
 #include "OSManager.h"
@@ -24,6 +25,7 @@ Engine::~Engine()
 	SAFE_DEL(m_graphics_system)
 	SAFE_DEL(m_physics_system)
 	SAFE_DEL(m_component_manager)
+	SAFE_DEL(m_entity_manager)
 	SAFE_DEL(m_game_state_manager)
 	SAFE_DEL(m_sound_manager)	
 	LOG_INFO("Closing enigne...");
@@ -46,6 +48,7 @@ Engine::Engine(const Settings& settings) :
 	
 	m_game_state_manager = new GameStateManager(this);
 	m_component_manager	 = new ComponentManager();
+	m_entity_manager	 = new EntityManager(m_component_manager);
 	m_sound_manager		 = settings.sound_manager_allocator(this);
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
@@ -87,6 +90,7 @@ void Engine::run(IPakalApplication* application)
 	resource_manager()->initialize();
 	input_manager()->initialize();
 	m_component_manager->initialize();
+	m_entity_manager->initialize();
 	m_game_state_manager->initialize();
 	m_sound_manager->initialize();
 
@@ -163,6 +167,7 @@ void Engine::run(IPakalApplication* application)
 	//terminate managers
 	stop_timer_system();
 	m_sound_manager->terminate();
+	m_entity_manager->terminate();
 	m_component_manager->terminate();
 	m_game_state_manager->terminate();
 	input_manager()->terminate();

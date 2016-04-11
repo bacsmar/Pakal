@@ -279,8 +279,7 @@ namespace Pakal
 				m_delegates.clear();
 			}
 
-			inline void operator()() const
-			{ notify(); }
+			inline void operator()() const {  notify(); }
 
 			void notify() const
 			{
