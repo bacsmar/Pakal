@@ -36,9 +36,6 @@
     <ClCompile Include="..\source\EventSystemUtils.cpp">
       <Filter>Managers\EventManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\EntitySystem.cpp">
-      <Filter>Managers\EntityManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\GenericEntity.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
@@ -218,8 +215,16 @@
     <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
+ <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
       <Filter>Components\UI</Filter>
+    </ClCompile>    <ClCompile Include="..\source\EntityManager.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Entity.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntityDescriptor.cpp">
+      <Filter>Managers\EntityManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -292,12 +297,6 @@
     </ClInclude>
     <ClInclude Include="..\source\IComponentProvider.h">
       <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\EntitySystem.h">
-      <Filter>Managers\EntityManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IEntity.h">
-      <Filter>Managers\EntityManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\GenericEntity.h">
       <Filter>Managers\EntityManager</Filter>
@@ -623,6 +622,18 @@
     </ClInclude>
     <ClInclude Include="..\source\rocketgui\RocketUIComponents.h">
       <Filter>Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntityManager.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntityDescriptor.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Entity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IEntityProvider.h">
+      <Filter>Managers\EntityManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

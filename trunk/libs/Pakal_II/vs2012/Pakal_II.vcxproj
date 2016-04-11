@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\IEntityProvider.h" />
+    <ClInclude Include="..\source\EntityDescriptor.h" />
     <ClInclude Include="..\source\components\CameraComponent.h" />
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\CharacterComponent.h" />
@@ -131,7 +133,7 @@
     <ClInclude Include="..\source\Config.h" />
     <ClInclude Include="..\source\DoubleBufferedList.h" />
     <ClInclude Include="..\source\Engine.h" />
-    <ClInclude Include="..\source\EntitySystem.h" />
+    <ClInclude Include="..\source\EntityManager.h" />
     <ClInclude Include="..\source\Event.h" />
     <ClInclude Include="..\source\EventScheduler.h" />
     <ClInclude Include="..\source\GameStateManager.h" />
@@ -140,7 +142,7 @@
     <ClInclude Include="..\source\ComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
     <ClInclude Include="..\source\IDebugDrawer.h" />
-    <ClInclude Include="..\source\IEntity.h" />
+    <ClInclude Include="..\source\Entity.h" />
     <ClInclude Include="..\source\InboxQueue.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
@@ -155,6 +157,8 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\Entity.cpp" />
+    <ClCompile Include="..\source\EntityDescriptor.cpp" />
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\CharacterComponent.cpp" />
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
@@ -221,7 +225,7 @@
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentManager.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
-    <ClCompile Include="..\source\EntitySystem.cpp" />
+    <ClCompile Include="..\source\EntityManager.cpp" />
     <ClCompile Include="..\source\EventScheduler.cpp" />
     <ClCompile Include="..\source\GameStateManager.cpp" />
     <ClCompile Include="..\source\GenericEntity.cpp" />

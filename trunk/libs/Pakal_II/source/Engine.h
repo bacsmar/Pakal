@@ -15,6 +15,7 @@ namespace Pakal
 	class IPakalApplication;
 	class EventScheduler;
 	class GameStateManager;
+	class EntityManager;
 	class ComponentManager;
 	class IManager;
 	class SoundManager;
@@ -51,6 +52,7 @@ namespace Pakal
 		void run(IPakalApplication* application);
 
 		inline ComponentManager*	component_manager() const { return m_component_manager; }
+		inline EntityManager*		entity_manager() const { return m_entity_manager; }
 		inline GraphicsSystem*		graphics_system() const { return m_graphics_system; }
 		inline PhysicsSystem*		physics_system() const { return m_physics_system; }
 		inline IPakalApplication*	get_application() const { return m_application; }
@@ -95,6 +97,7 @@ namespace Pakal
 
 		GameStateManager*	m_game_state_manager;
 		ComponentManager*	m_component_manager;
+		EntityManager*		m_entity_manager;
 		SoundManager*		m_sound_manager;
 
 		std::vector<ISystem*> m_systems;

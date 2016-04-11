@@ -13,7 +13,7 @@
 
 namespace Pakal
 {	
-	class IEntity;
+	class Entity;
 
 	class _PAKALExport PhysicComponent : public Component
 	{
@@ -21,8 +21,8 @@ namespace Pakal
 	public:		
 		virtual ~PhysicComponent(){}
 
-		Event<const IEntity*> event_collide;
-		Event<const IEntity*> event_end_collide;
+		Event<const Entity*> event_collide;
+		Event<const Entity*> event_end_collide;
 
 		struct BodyPart
 		{
