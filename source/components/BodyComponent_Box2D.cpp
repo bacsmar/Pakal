@@ -94,7 +94,7 @@ BasicTaskPtr BodyComponent_Box2D::initialize(const Settings& settings)
 	});	
 }
 
-BasicTaskPtr BodyComponent_Box2D::destroy()
+BasicTaskPtr BodyComponent_Box2D::terminate()
 {
 	return m_system->execute_block([=]()
 	{
