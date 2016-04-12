@@ -43,7 +43,7 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 
 SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
 {
-	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_SPRITE));;
+	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF));;
 }
 
 void SpriteNode_Irrlicht::setColor(const video::SColor& color)
