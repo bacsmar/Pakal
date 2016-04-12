@@ -27,15 +27,13 @@ bool  Pakal::MaterialManager::create_materials()
 
 	auto device = m_system->get_device();
 	TransparentSpriteShaderCallBack* transparentSpriteCB = new TransparentSpriteShaderCallBack(device);
-	NoTextureShaderCallBack* noTextureCB = new NoTextureShaderCallBack(device);
 	video::COGLES2MaterialSolidCB* TransparentAlphaChannelCB = new video::COGLES2MaterialSolidCB(); 
 
 	create_material_renderer(MaterialType::EMT_TRANSPARENT_SPRITE, "SimpleVertex.vs", "SimpleFragment.fs", transparentSpriteCB, video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF);
-	create_material_renderer(MaterialType::EMT_NO_TEXTURE, "SimpleNoTexture.vs", "SimpleNoTexture.fs", noTextureCB);
 	create_material_renderer(MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL, "COGLES2Solid.vsh", "COGLES2TransparentAlphaChannel.fsh", TransparentAlphaChannelCB, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-	transparentSpriteCB->drop();
-	noTextureCB->drop();
+	transparentSpriteCB->drop();	
+	TransparentAlphaChannelCB->drop();
 	
 	return m_shaders.size() > 0;
 }
@@ -69,11 +67,12 @@ void Pakal::MaterialManager::create_material_renderer(MaterialType type, const s
 	if (materialType != -1)
 	{
 		LOG_INFO("[MaterialManager]: shader parsed. %s %s", vsFileName.c_str(), psFileName.c_str());
-		//if( driver->getDriverType() == video::EDT_OPENGL_NO_FIXED)
+		if( driver->getDriverType() == video::EDT_OPENGL_NO_FIXED)
 		{
 			// attrib location is Set in COGLNoFixedMaterialRenderer.cpp ln: 138
 			//			for (size_t i = 0; i < EVA_COUNT; ++i)
 			//Driver->extGlBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
+			//auto renderer = static_cast<video::COGLNoFixedMaterialRenderer*>(driver->getMaterialRenderer(materialType));
 			auto renderer = static_cast<video::COGLNoFixedMaterialRenderer*>(driver->getMaterialRenderer(materialType));
 
 			auto descriptor = driver->addVertexDescriptor((video::E_MATERIAL_TYPE)materialType, video::EVT_STANDARD);
