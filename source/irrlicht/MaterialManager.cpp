@@ -2,8 +2,6 @@
 #include "MaterialCallbacks.h"
 #include "IVertexDescriptor.h"
 
-//#include <irrlicht/source/Irrlicht/COpenGLSLMaterialRenderer.h>
-#include <irrlicht/source/Irrlicht/OpenGLNoFixed/COGLNoFixedMaterialRenderer.h>
 #include <irrlicht/source/Irrlicht/OpenGLNoFixed/COGLFixedPipelineRenderer.h>
 
 using namespace irr;
@@ -29,7 +27,7 @@ bool  Pakal::MaterialManager::create_materials()
 	TransparentSpriteShaderCallBack* transparentSpriteCB = new TransparentSpriteShaderCallBack(device);
 	video::COGLES2MaterialSolidCB* TransparentAlphaChannelCB = new video::COGLES2MaterialSolidCB(); 
 
-	create_material_renderer(MaterialType::EMT_TRANSPARENT_SPRITE, "SimpleVertex.vs", "SimpleFragment.fs", transparentSpriteCB, video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF);
+	create_material_renderer(MaterialType::EMT_TRANSPARENT_REF, "SimpleVertex.vs", "SimpleFragment.fs", transparentSpriteCB, video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF);
 	create_material_renderer(MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL, "COGLES2Solid.vsh", "COGLES2TransparentAlphaChannel.fsh", TransparentAlphaChannelCB, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
 	transparentSpriteCB->drop();	
@@ -66,35 +64,8 @@ void Pakal::MaterialManager::create_material_renderer(MaterialType type, const s
 
 	if (materialType != -1)
 	{
-		LOG_INFO("[MaterialManager]: shader parsed. %s %s", vsFileName.c_str(), psFileName.c_str());
-		if( driver->getDriverType() == video::EDT_OPENGL_NO_FIXED)
-		{
-			// attrib location is Set in COGLNoFixedMaterialRenderer.cpp ln: 138
-			//			for (size_t i = 0; i < EVA_COUNT; ++i)
-			//Driver->extGlBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
-			//auto renderer = static_cast<video::COGLNoFixedMaterialRenderer*>(driver->getMaterialRenderer(materialType));
-			auto renderer = static_cast<video::COGLNoFixedMaterialRenderer*>(driver->getMaterialRenderer(materialType));
-
-			auto descriptor = driver->addVertexDescriptor((video::E_MATERIAL_TYPE)materialType, video::EVT_STANDARD);
-
-			auto id = renderer->getVertexShaderAttribID("inVertexPosition");
-			if (id >= 0)
-				descriptor->addAttribute("inVertexPosition", 3, video::EVAS_POSITION, video::EVAT_FLOAT, id);
-
-			id = renderer->getVertexShaderAttribID("inVertexNormal");
-			if (id >= 0)
-				descriptor->addAttribute("inVertexNormal", 3, video::EVAS_NORMAL, video::EVAT_FLOAT, id);
-
-			id = renderer->getVertexShaderAttribID("inVertexColor");
-			if (id >= 0)
-				descriptor->addAttribute("inVertexColor", 4, video::EVAS_COLOR, video::EVAT_UBYTE, id);
-
-			id = renderer->getVertexShaderAttribID("inTexCoord0");
-			if (id >= 0)
-				descriptor->addAttribute("inTexCoord0", 2, video::EVAS_TEXCOORD0, video::EVAT_FLOAT, id);
-
-			m_shaders[type] = materialType;
-		}
+		LOG_INFO("[MaterialManager]: shader parsed. %s %s", vsFileName.c_str(), psFileName.c_str());		
+		m_shaders[type] = materialType;
 		return;
 	}
 	LOG_WARNING("[MaterialManager]: shader error. %s %s", vsFileName.c_str(), psFileName.c_str());

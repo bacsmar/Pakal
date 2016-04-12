@@ -20,7 +20,7 @@ namespace Pakal
 
 		enum class MaterialType
 		{
-			EMT_TRANSPARENT_SPRITE,
+			EMT_TRANSPARENT_REF,
 			EMT_TRANSPARENT_ALPHA_CHANNEL,
 		};
 
