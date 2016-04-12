@@ -24,7 +24,7 @@ namespace Pakal
 		~BodyComponent_Box2D();
 
 		BasicTaskPtr initialize(const Settings& settings) override;
-		BasicTaskPtr destroy() override;
+		BasicTaskPtr terminate() override;
 
 		void set_density(float density) override;
 		void set_friction(float friction) override;

@@ -34,7 +34,7 @@ namespace Pakal
 	};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
-		virtual BasicTaskPtr destroy() = 0;
+		virtual BasicTaskPtr terminate() = 0;
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
 		virtual tmath::vector3df get_position() = 0;

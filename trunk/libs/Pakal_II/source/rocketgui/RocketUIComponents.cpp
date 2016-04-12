@@ -2,12 +2,31 @@
 #include "LogMgr.h"
 #include "Rocket/Core/Element.h"
 
+
 Pakal::RocketLabel::RocketLabel(RocketUI* manager) : m_rocket_ui(manager)
 {
 }
 
+Pakal::RocketLabel::~RocketLabel()
+{
+	evt_ui.clear();
+	unsuscribe_to_events();
+}
+
+void Pakal::RocketLabel::ProcessEvent(Rocket::Core::Event& event)
+{
+	evt_ui.notify({ *this, event.GetType().CString()});
+}
+
+void Pakal::RocketLabel::enable_ui_events(bool enable)
+{
+	enable ? suscribe_to_events() : unsuscribe_to_events();
+}
+
 void Pakal::RocketLabel::set_ui_control(unsigned int documentId, const std::string& controlName)
 {
+	unsuscribe_to_events();		
+
 	m_document_id = documentId;
 	m_control_name = controlName;
 	m_element = m_rocket_ui->get_element(m_document_id, m_control_name.c_str());
@@ -51,4 +70,25 @@ void Pakal::RocketLabel::set_width(unsigned width) const
 	char buffer[24];
 	if (m_element)
 		m_element->SetProperty("width", itoa(width,buffer, 10));
+}
+
+void Pakal::RocketLabel::suscribe_to_events()
+{
+	if (m_element == nullptr)
+		return;
+	m_element->AddEventListener("click", this);
+	m_element->AddEventListener("focus", this);
+	m_element->AddEventListener("mouseover", this);
+	m_element->AddEventListener("mouseout", this);
+}
+
+void Pakal::RocketLabel::unsuscribe_to_events()
+{
+	if (m_element == nullptr)
+		return;	
+
+	m_element->RemoveEventListener("click", this);
+	m_element->RemoveEventListener("focus", this);
+	m_element->RemoveEventListener("mouseover", this);
+	m_element->RemoveEventListener("mouseout", this);
 }
