@@ -105,7 +105,7 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		ASSERT(m_node == nullptr);
 
 		m_node = 
-			new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager());
+			new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager(), m_system->get_material_manager());
 
 		m_paused = settings.init_paused;
 		m_size_factor = settings.size;
