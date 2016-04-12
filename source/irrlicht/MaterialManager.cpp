@@ -1,6 +1,5 @@
 #include "MaterialManager.h"
 #include "MaterialCallbacks.h"
-#include "IVertexDescriptor.h"
 
 #include <irrlicht/source/Irrlicht/OpenGLNoFixed/COGLFixedPipelineRenderer.h>
 
