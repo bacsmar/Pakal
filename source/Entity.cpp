@@ -14,7 +14,7 @@ void Entity::set_descriptor(const std::string& descriptor)
 {
 	m_descriptor = descriptor;
 }
-const std::string& Entity::get_descriptor()
+const std::string& Entity::get_descriptor() const
 {
 	return m_descriptor;
 }

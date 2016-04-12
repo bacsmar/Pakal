@@ -15,10 +15,6 @@ namespace Pakal
 
 	protected:		
 		EntityManager* const m_entityManager;
-
-		virtual BasicTaskPtr initialize() = 0;
-		virtual BasicTaskPtr terminate() = 0;
-
 	public:
 		explicit Entity(EntityManager* m);
 
@@ -30,7 +26,10 @@ namespace Pakal
 		virtual Component* get_component(const std::string& componentName) const;
 
 		void set_descriptor(const std::string& descriptor);
-		const std::string& get_descriptor();
+		const std::string& get_descriptor() const;
+
+		virtual BasicTaskPtr initialize() = 0;
+		virtual BasicTaskPtr terminate() = 0;
 	};
 
 	template <class T>
