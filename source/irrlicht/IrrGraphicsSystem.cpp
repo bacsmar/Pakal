@@ -54,7 +54,8 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	parameters.Bits = m_settings.bits;
 	parameters.Fullscreen =  m_settings.full_screen;
 	parameters.Vsync =  m_settings.vsync;
-	parameters.DriverType = EDT_OPENGL;
+	//parameters.DriverType = EDT_OPENGL;
+	parameters.DriverType = EDT_OPENGL_NO_FIXED;
 	parameters.WindowId = reinterpret_cast<void*>(args.windowId);	
 	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
 
