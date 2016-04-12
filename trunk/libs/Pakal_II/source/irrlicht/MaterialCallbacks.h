@@ -4,7 +4,7 @@
 namespace Pakal
 {
 	//////////////////////////////////////////////////////////////////////////
-	class MyShaderCallBack : public irr::video::IShaderConstantSetCallBack
+	class TransparentSpriteShaderCallBack : public irr::video::IShaderConstantSetCallBack
 	{
 		irr::IrrlichtDevice* m_device = nullptr;
 
@@ -25,7 +25,7 @@ namespace Pakal
 		irr::s32 TextureUnit0 = 0;
 		irr::core::matrix4 textureMatrix;
 	public:
-		explicit MyShaderCallBack(irr::IrrlichtDevice* device) : m_device(device)
+		explicit TransparentSpriteShaderCallBack(irr::IrrlichtDevice* device) : m_device(device)
 		{}
 
 		void OnSetMaterial(const irr::video::SMaterial& material) override
@@ -73,6 +73,47 @@ namespace Pakal
 
 			services->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
 			services->setPixelShaderConstant(AlphaRefID, &AlphaRef, 1);
+
+		}
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	class NoTextureShaderCallBack : public irr::video::IShaderConstantSetCallBack
+	{
+		irr::IrrlichtDevice* m_device = nullptr;
+
+	protected:
+		bool FirstUpdate = true;
+
+		irr::s32 WVPMatrixID = -1;		
+	public:
+		explicit NoTextureShaderCallBack(irr::IrrlichtDevice* device) : m_device(device)
+		{}
+
+		void OnSetMaterial(const irr::video::SMaterial& material) override
+		{			
+		};
+
+		void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData) override
+		{
+			if (FirstUpdate)
+			{
+				WVPMatrixID = services->getVertexShaderConstantID("uWVPMatrix");
+				FirstUpdate = false;
+			}
+			irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+			irr::core::matrix4 textureMatrix0 = driver->getTransform(irr::video::ETS_TEXTURE_0);
+			irr::core::matrix4 textureMatrix1 = driver->getTransform(irr::video::ETS_TEXTURE_1);
+
+			const irr::core::matrix4 W = driver->getTransform(irr::video::ETS_WORLD);
+			const irr::core::matrix4 V = driver->getTransform(irr::video::ETS_VIEW);
+			const irr::core::matrix4 P = driver->getTransform(irr::video::ETS_PROJECTION);
+
+			// vertex shader parameters
+			irr::core::matrix4 Matrix = P * V * W;
+			services->setVertexShaderConstant(WVPMatrixID, Matrix.pointer(), 16);			
 
 		}
 	};

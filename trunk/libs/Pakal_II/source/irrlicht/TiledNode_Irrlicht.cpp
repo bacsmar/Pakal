@@ -35,7 +35,7 @@ TiledNode_Irrlicht::TiledNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 
 TiledNode_Irrlicht::TiledNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : TiledNode_Irrlicht(parent, mgr)
 {
-	//m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_SPRITE));;
+	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_SPRITE));;
 }
 
 void TiledNode_Irrlicht::setColor(const video::SColor& color)

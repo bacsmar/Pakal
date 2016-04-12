@@ -22,49 +22,51 @@
 #include "IrrRocketRenderer.h"
 #include <IVideoDriver.h>
 #include <SMeshBuffer.h>
+#include <irrlicht/source/Irrlicht/os.h>
+#include "irrlicht/MaterialManager.h"
 
 //#define ENABLE_SCISSOR_TEST
 
 IrrRocketRenderer::IrrRocketRenderer(irr::video::IVideoDriver* driver) : Driver(driver)
 {
-    //ctor
-    //ScissorEnabled = false;
+	//ctor
+	//ScissorEnabled = false;
 
-    Material2D.Lighting = false;
-    Material2D.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	Material2D.Lighting = false;	
+	Material2D.MaterialType = (irr::video::E_MATERIAL_TYPE)Pakal::MaterialManager::MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL;	
 	Material2D.ZWriteEnable = false;
-    Material2D.ZBuffer = true;
-	Material2D.setFlag(irr::video::EMF_BILINEAR_FILTER,true);
+	Material2D.ZBuffer = true;
+	Material2D.setFlag(irr::video::EMF_BILINEAR_FILTER, true);
 
-    irr::scene::SMeshBuffer* b = new irr::scene::SMeshBuffer();
-    b->Vertices.push_back(irr::video::S3DVertex(-0.5, -0.5, 1, 0, 0, -1, irr::video::SColor(255,255,0,0), 0, 0));
-    b->Vertices.push_back(irr::video::S3DVertex(-0.5,  0.5, 1, 0, 0, -1, irr::video::SColor(255,255,0,0), 0, 0));
-    b->Vertices.push_back(irr::video::S3DVertex( 0.5,  0.5, 1, 0, 0, -1, irr::video::SColor(255,255,0,0), 0, 0));
-    b->Vertices.push_back(irr::video::S3DVertex( 0.5, -0.5, 1, 0, 0, -1, irr::video::SColor(255,255,0,0), 0, 0));
+	irr::scene::SMeshBuffer* b = new irr::scene::SMeshBuffer();
+	b->Vertices.push_back(irr::video::S3DVertex(-0.5, -0.5, 1, 0, 0, -1, irr::video::SColor(255, 255, 0, 0), 0, 0));
+	b->Vertices.push_back(irr::video::S3DVertex(-0.5, 0.5, 1, 0, 0, -1, irr::video::SColor(255, 255, 0, 0), 0, 0));
+	b->Vertices.push_back(irr::video::S3DVertex(0.5, 0.5, 1, 0, 0, -1, irr::video::SColor(255, 255, 0, 0), 0, 0));
+	b->Vertices.push_back(irr::video::S3DVertex(0.5, -0.5, 1, 0, 0, -1, irr::video::SColor(255, 255, 0, 0), 0, 0));
 
-    b->Indices.push_back(0);
-    b->Indices.push_back(2);
-    b->Indices.push_back(1);
+	b->Indices.push_back(0);
+	b->Indices.push_back(2);
+	b->Indices.push_back(1);
 
-    b->Indices.push_back(0);
-    b->Indices.push_back(3);
-    b->Indices.push_back(2);
+	b->Indices.push_back(0);
+	b->Indices.push_back(3);
+	b->Indices.push_back(2);
 
-    b->Material.ZWriteEnable = true;
-    b->Material.ZBuffer = true;
-    b->Material.ColorMask = irr::video::ECM_NONE;
-    b->Material.Lighting = false;
-    b->Material.MaterialType = irr::video::EMT_SOLID;
-    ScissorBuffer = b;
+	b->Material.ZWriteEnable = true;
+	b->Material.ZBuffer = true;
+	b->Material.ColorMask = irr::video::ECM_NONE;
+	b->Material.Lighting = false;
+	b->Material.MaterialType = irr::video::EMT_SOLID;
+	ScissorBuffer = b;
 
-    //ScissorScreen = Driver->addRenderTargetTexture(irr::core::dimension2du(Driver->getScreenSize().Width, Driver->getScreenSize().Height), "#RocketScissor");
+	//ScissorScreen = Driver->addRenderTargetTexture(irr::core::dimension2du(Driver->getScreenSize().Width, Driver->getScreenSize().Height), "#RocketScissor");
 }
 
 IrrRocketRenderer::~IrrRocketRenderer()
 {
-    //dtor
-    ScissorBuffer->drop();
-    //Driver->removeTexture(ScissorScreen);
+	//dtor
+	ScissorBuffer->drop();
+	//Driver->removeTexture(ScissorScreen);
 }
 
 void IrrRocketRenderer::RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation)
@@ -72,17 +74,17 @@ void IrrRocketRenderer::RenderGeometry(Rocket::Core::Vertex* vertices, int num_v
 	//irr::core::vector3df scaleSet(1024.f/Driver->getViewPort().getWidth(), 768.f/Driver->getViewPort().getHeight(), 1);
 
 	irr::core::array<irr::video::S3DVertex> Vertices;
-	for (irr::s32 i = 0; i<num_vertices; ++i)
+	for (irr::s32 i = 0; i < num_vertices; ++i)
 	{
 		Vertices.push_back(irr::video::S3DVertex(vertices[i].position.x, vertices[i].position.y, 0, 0, 0, 1, irr::video::SColor(
-			vertices[i].colour.alpha,
-			vertices[i].colour.red,
-			vertices[i].colour.green,
-			vertices[i].colour.blue),
-			vertices[i].tex_coord.x, vertices[i].tex_coord.y));
+			                                         vertices[i].colour.alpha,
+			                                         vertices[i].colour.red,
+			                                         vertices[i].colour.green,
+			                                         vertices[i].colour.blue),
+		                                         vertices[i].tex_coord.x, vertices[i].tex_coord.y));
 	}
 	irr::core::array<irr::u16> Indices;
-	for (irr::s32 i = 0; i<num_indices; i += 3)
+	for (irr::s32 i = 0; i < num_indices; i += 3)
 	{
 		Indices.push_back(indices[i]);
 		Indices.push_back(indices[i + 2]);
@@ -96,53 +98,54 @@ void IrrRocketRenderer::RenderGeometry(Rocket::Core::Vertex* vertices, int num_v
 	transform.setTranslation(irr::core::vector3df(translation.x, translation.y, 0));
 	Driver->setTransform(irr::video::ETS_WORLD, transform);
 
-	Driver->drawIndexedTriangleList(&Vertices[0], num_vertices, &Indices[0], (int)(((float)num_indices) / 3.f));
-	//Driver->draw2DVertexPrimitiveList(&Vertices[0], Vertices.size(), indices, num_indices/3);
+	Driver->drawIndexedTriangleList(&Vertices[0], num_vertices, &Indices[0], num_indices / 3);
 }
 
 
 Rocket::Core::CompiledGeometryHandle IrrRocketRenderer::CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture)
 {
-    irr::scene::SMeshBuffer* buffer = new irr::scene::SMeshBuffer();
-    for (irr::s32 i=0;i<num_vertices;++i)
-    {
-        buffer->Vertices.push_back(irr::video::S3DVertex(vertices[i].position.x, vertices[i].position.y, 0, 0, 0, 1, irr::video::SColor(vertices[i].colour.alpha, vertices[i].colour.red, vertices[i].colour.green, vertices[i].colour.blue), vertices[i].tex_coord.x, vertices[i].tex_coord.y));
-    }
+	irr::scene::SMeshBuffer* buffer = new irr::scene::SMeshBuffer();
+	for (irr::s32 i = 0; i < num_vertices; ++i)
+	{
+		buffer->Vertices.push_back(irr::video::S3DVertex(vertices[i].position.x, vertices[i].position.y, 0, 0, 0, 1, irr::video::SColor(vertices[i].colour.alpha, vertices[i].colour.red, vertices[i].colour.green, vertices[i].colour.blue), vertices[i].tex_coord.x, vertices[i].tex_coord.y));
+	}
 
-    for (irr::s32 i=0;i<num_indices;i+=3)
-    {
-        buffer->Indices.push_back(indices[i]);
-        buffer->Indices.push_back(indices[i+2]);
-        buffer->Indices.push_back(indices[i+1]);
-    }
+	for (irr::s32 i = 0; i < num_indices; i += 3)
+	{
+		buffer->Indices.push_back(indices[i]);
+		buffer->Indices.push_back(indices[i + 2]);
+		buffer->Indices.push_back(indices[i + 1]);
+	}
 
-    buffer->Material.setTexture(0, (irr::video::ITexture*)texture);
+	buffer->Material.setTexture(0, (irr::video::ITexture*)texture);
 
-    return (Rocket::Core::CompiledGeometryHandle)buffer;
+	return (Rocket::Core::CompiledGeometryHandle)buffer;
 }
 
 void IrrRocketRenderer::RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rocket::Core::Vector2f& translation)
 {
-    irr::scene::SMeshBuffer* buffer = (irr::scene::SMeshBuffer*)geometry;		
-	
-    irr::core::matrix4 transform;
+	irr::scene::SMeshBuffer* buffer = (irr::scene::SMeshBuffer*)geometry;
+
+	irr::core::matrix4 transform;
 	irr::core::matrix4 transformScale;
-    
-	
-	transform.setTranslation(irr::core::vector3df(translation.x, translation.y, 0));    	
+
+
+	transform.setTranslation(irr::core::vector3df(translation.x, translation.y, 0));
 
 	Driver->setTransform(irr::video::ETS_WORLD, transform);
 
+	auto texture = buffer->Material.getTexture(0);
 
-    Material2D.setTexture(0, buffer->Material.getTexture(0));
-    Driver->setMaterial(Material2D);
+	Material2D.setTexture(0, texture);
 
-    Driver->drawMeshBuffer(buffer);	
+	Driver->setMaterial(Material2D);
+
+	Driver->drawMeshBuffer(buffer);
 }
 
 void IrrRocketRenderer::ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry)
 {
-    ((irr::scene::SMeshBuffer*)geometry)->drop();
+	((irr::scene::SMeshBuffer*)geometry)->drop();
 }
 
 void IrrRocketRenderer::EnableScissorRegion(bool enable)
@@ -152,11 +155,11 @@ void IrrRocketRenderer::EnableScissorRegion(bool enable)
 	if (enable)
 	{
 
-		//Driver->setViewPort(ScissorArea);
+	//Driver->setViewPort(ScissorArea);
 
 		Material2D.ZBuffer = true;
 
-		//Driver->setRenderTarget(ScissorScreen, false, true);
+	//Driver->setRenderTarget(ScissorScreen, false, true);
 
 		Driver->setMaterial(ScissorBuffer->getMaterial());
 
@@ -172,7 +175,7 @@ void IrrRocketRenderer::EnableScissorRegion(bool enable)
 		Driver->setTransform(irr::video::ETS_WORLD, ScissorTransform[3]);
 		Driver->drawMeshBuffer(ScissorBuffer);
 
-		//Driver->setRenderTarget(0, false, false);
+	//Driver->setRenderTarget(0, false, false);
 
 	}
 	else
@@ -184,13 +187,13 @@ void IrrRocketRenderer::EnableScissorRegion(bool enable)
 		Material2D.ZBuffer = false;
 
 		//Driver->setRenderTarget(0, false, true);
-	}	
+	}
 }
 
 void IrrRocketRenderer::SetScissorRegion(int x, int y, int width, int height)
 {
-    //printf("Scissor: %i %i %i %i\n", x, y, width, height);
-    //ScissorArea = irr::core::rect<irr::s32>(x,y,x+width,y+height);
+	//printf("Scissor: %i %i %i %i\n", x, y, width, height);
+	//ScissorArea = irr::core::rect<irr::s32>(x,y,x+width,y+height);
 #ifdef ENABLE_SCISSOR_TEST
     ScissorTransform[0].setTranslation(irr::core::vector3df(x+width/2.f,y/2.f,0));
     ScissorTransform[0].setScale(irr::core::vector3df(width, y, 1));
@@ -206,20 +209,20 @@ void IrrRocketRenderer::SetScissorRegion(int x, int y, int width, int height)
 #endif
 
 
-    //EnableScissorRegion(true);
+	//EnableScissorRegion(true);
 }
 
 bool IrrRocketRenderer::LoadTexture(Rocket::Core::TextureHandle& texture_handle, Rocket::Core::Vector2i& texture_dimensions, const Rocket::Core::String& source)
 {
-    irr::video::ITexture* texture = Driver->getTexture(source.CString());
-    texture_handle = (Rocket::Core::TextureHandle)texture;
-    if (texture)
-    {
-        texture_dimensions.x = texture->getSize().Width;
-        texture_dimensions.y = texture->getSize().Height;
-        return true;
-    }
-    return false;
+	irr::video::ITexture* texture = Driver->getTexture(source.CString());
+	texture_handle = (Rocket::Core::TextureHandle)texture;
+	if (texture)
+	{
+		texture_dimensions.x = texture->getSize().Width;
+		texture_dimensions.y = texture->getSize().Height;
+		return true;
+	}
+	return false;
 }
 
 
@@ -231,28 +234,30 @@ It is laid out in tightly-packed rows, so is exactly (source_dimensions.x * sour
 The source_dimensions variable is set to the dimensions of the raw texture data.
 */
 irr::u32 RocketTextureID = 0;
+
 bool IrrRocketRenderer::GenerateTexture(Rocket::Core::TextureHandle& texture_handle, const Rocket::Core::byte* source, const Rocket::Core::Vector2i& source_dimensions)
 {
-    //irr::os::Printer::log("Generate Texture....");
-    irr::core::stringc RocketTextureName = "#Rocket::Core::TextureHandle::";
-    RocketTextureName.append(RocketTextureID++);
-    irr::video::ITexture* texture = Driver->addTexture(irr::core::dimension2du(source_dimensions.x, source_dimensions.y), RocketTextureName.c_str());
-    if (texture)
-    {
-        void* data = texture->lock();
-        memcpy(data, source, source_dimensions.x*source_dimensions.y*4);
-        texture->unlock();
-        texture->regenerateMipMapLevels();
-        texture_handle = (Rocket::Core::TextureHandle)texture;
-        //irr::os::Printer::log("DONE create Font Texture");
-        return true;
-    }
-    //irr::os::Printer::log("Failed create Font Texture");
-    return false;
+	//irr::os::Printer::log("Generate Texture....");
+	irr::core::stringc RocketTextureName = "#Rocket::Core::TextureHandle::";
+	RocketTextureName.append(RocketTextureID++);
+	irr::video::ITexture* texture = Driver->addTexture(irr::core::dimension2du(source_dimensions.x, source_dimensions.y), RocketTextureName.c_str());
+	if (texture)
+	{
+		void* data = texture->lock();
+		memcpy(data, source, source_dimensions.x * source_dimensions.y * 4);
+		texture->unlock();
+		texture->regenerateMipMapLevels();
+		texture_handle = (Rocket::Core::TextureHandle)texture;
+		// irr::os::Printer::log("DONE create Font Texture");
+		return true;
+	}
+	irr::os::Printer::log("Failed create Font Texture");
+	return false;
 }
 
 void IrrRocketRenderer::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
 {
-    if (texture_handle)
-        Driver->removeTexture((irr::video::ITexture*)texture_handle);
+	if (texture_handle)
+		Driver->removeTexture((irr::video::ITexture*)texture_handle);
 }
+
