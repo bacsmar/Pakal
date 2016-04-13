@@ -33,13 +33,15 @@ void GameStateManager::transition_to_state(BaseGameState* new_state, bool deallo
 
 	new_state->m_game_state_manager = this;
 	new_state->m_deallocate_on_pop = deallocate_on_pop;
+
+	state->on_terminate(m_engine);
 	new_state->on_initialize(m_engine);
 	
 	states.pop();
 	states.push(new_state);
 
-	state->on_terminate(m_engine);
-	if (state->m_deallocate_on_pop) SAFE_DEL(state);
+	if (state->m_deallocate_on_pop) 
+		SAFE_DEL(state);
 
 }
 
