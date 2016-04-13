@@ -97,7 +97,6 @@
     <ClInclude Include="..\source\IInputManager.h" />
     <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\math\matrix.h" />
-    <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
     <ClInclude Include="..\source\math\matrix3.h" />
@@ -119,7 +118,6 @@
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
-    <ClInclude Include="..\source\components\BodyComponent_Box2D.h" />
     <ClInclude Include="..\source\EventSystemUtils.h" />
     <ClInclude Include="..\source\GraphicsSystem.h" />
     <ClInclude Include="..\source\BasicTask.h" />
@@ -216,7 +214,6 @@
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\source\System.cpp" />
-    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />

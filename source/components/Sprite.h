@@ -6,6 +6,7 @@
 #pragma once
 #include <vector>
 #include "PakalMath.h"
+#include <memory>
 
 namespace Pakal
 {
@@ -56,15 +57,23 @@ namespace Pakal
 
 	struct _PAKALExport SpriteSheet
 	{
+		std::vector<Sprite*> animations;	
 		std::string texture_name;
 		std::string default_animation;
 
 		float	 meters_scale = 1;
-		unsigned pixels_scale = 100;	// by default 100:1 (pixels:meters)		
-
-		std::vector<Sprite*> animations;
+		unsigned pixels_scale = 100;	// by default 100:1 (pixels:meters)
 
 		void persist(Archive* archive);
+
+		~SpriteSheet() 
+		{
+			for (auto animation : animations)
+			{
+				SAFE_DEL(animation);
+			}
+			animations.clear();
+		}
 
 		inline float get_length() const
 		{
@@ -80,5 +89,7 @@ namespace Pakal
 
 		bool load(TextReader& reader, std::istream& stream);
 	};
+
+	using SpriteSheetPtr = std::shared_ptr<SpriteSheet>;
 
 }

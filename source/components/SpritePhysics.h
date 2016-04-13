@@ -167,7 +167,16 @@ namespace Pakal
 
 	struct SpriteSheetPhysics
 	{
-		std::vector<SpritePhysics*> bodies;
+		std::vector<SpritePhysics*> bodies;		
+
+		~SpriteSheetPhysics()
+		{
+			for (auto body : bodies)
+			{
+				SAFE_DEL(body);
+			}
+			bodies.clear();
+		}
 
 		void persist(Archive* archive)
 		{
@@ -190,4 +199,5 @@ namespace Pakal
 		}
 	};
 
+	using SpriteSheetPhysicsPtr = std::shared_ptr<SpriteSheetPhysics>;
 }
