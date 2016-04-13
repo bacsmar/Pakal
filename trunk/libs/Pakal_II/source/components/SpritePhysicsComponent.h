@@ -17,9 +17,14 @@ namespace Pakal
 			StaticBody = 0,
 			//KinematicBody,
 			DynamicBody,
-		};		
+		};
 
-		virtual BasicTaskPtr initialize(const SpriteSheetPhysics& loader) = 0;
+		struct Settings
+		{
+			SpriteSheetPhysicsPtr sprite_physics = std::make_shared<SpriteSheetPhysics>();
+		};
+
+		virtual BasicTaskPtr initialize(const Settings& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;

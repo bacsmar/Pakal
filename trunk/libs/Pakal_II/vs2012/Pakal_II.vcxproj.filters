@@ -52,9 +52,6 @@
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
-      <Filter>Components\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\InputManager_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
     </ClCompile>
@@ -215,9 +212,10 @@
     <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
- <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
+    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
       <Filter>Components\UI</Filter>
-    </ClCompile>    <ClCompile Include="..\source\EntityManager.cpp">
+    </ClCompile>
+    <ClCompile Include="..\source\EntityManager.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\Entity.cpp">
@@ -364,12 +362,6 @@
     </ClInclude>
     <ClInclude Include="..\source\ComponentFactory.h">
       <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
-      <Filter>Components\Physics</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\Shapes.h">
       <Filter>Components\Physics</Filter>

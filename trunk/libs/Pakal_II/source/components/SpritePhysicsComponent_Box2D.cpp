@@ -14,17 +14,18 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 	m_system = nullptr;
 }
 
-BasicTaskPtr SpritebodyComponent_Box2D::initialize(const SpriteSheetPhysics& loader)
+BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 {
-	return m_system->execute_block([=]()
+	auto loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
+	return m_system->execute_block([=]()	// copy the smartpointer, just to keep our data alive.
 	{
-		if (loader.bodies.size() < 1)
+		if (loader->bodies.size() < 1)
 		{
 			LOG_ERROR("[SpritebodyComponent] there are no bodies in the loader");
 			return;
 		}
 		// bodies
-		for(auto spriteBody : loader.bodies)
+		for(auto spriteBody : loader->bodies)
 		{
 			b2BodyDef bodydef;
 			bodydef.type = spriteBody->dynamic ? b2_dynamicBody : b2_staticBody;
@@ -98,10 +99,6 @@ BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 
 	return m_system->execute_block([=]()
 	{
-		for( auto& body : m_bodies)
-		{
-			m_system->destroy_body(body.second);
-		}
 		m_bodies.clear();
 	});
 }

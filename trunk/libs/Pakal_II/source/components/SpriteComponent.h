@@ -14,8 +14,7 @@ namespace Pakal
 	public:
 		struct Settings
 		{
-			//std::string resource_file;
-			SpriteSheet sprite_sheet;
+			SpriteSheetPtr sprite_sheet = std::make_shared<SpriteSheet>();
 			tmath::vector3df position;
 			bool init_paused = false;			
 			float speed = 1;

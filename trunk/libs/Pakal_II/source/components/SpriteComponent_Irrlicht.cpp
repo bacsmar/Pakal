@@ -100,18 +100,20 @@ void SpriteComponent_Irrlicht::set_height(float height, bool keep_relation)
 
 BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 {
-	return m_system->execute_block([=]() 
+	return m_system->execute_block([=,&settings]()
 	{
 		ASSERT(m_node == nullptr);
 
-		m_node = 
-			new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(), m_system->get_device()->getSceneManager(), m_system->get_material_manager());
+		m_node = new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(),
+		                                 m_system->get_device()->getSceneManager(),
+		                                 m_system->get_material_manager());
 
 		m_paused = settings.init_paused;
 		m_size_factor = settings.size;
 		m_node->setPosition(vector3df(settings.position.x, settings.position.y, settings.position.z));
-
-		load(settings.sprite_sheet);		
+		
+		m_sprite_sheet = settings.sprite_sheet;
+		load(*settings.sprite_sheet.get());
 		m_system->add_to_update_list(this);
 
 	});
@@ -126,11 +128,7 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 		m_system->remove_from_update_list(this);
 		
 		m_node->detach();
-		m_node->drop();
-		for (const auto& it : m_animations)
-		{
-			delete it.second;
-		}
+		m_node->drop();		
 		m_animations.clear();
 	});
 }
@@ -148,7 +146,7 @@ void SpriteComponent_Irrlicht::load(const SpriteSheet& spriteSheet)
 	for(auto animation : spriteSheet.animations)
 	{
 		m_animations[animation->name] = animation;
-	}
+	}	
 
 	normalize_size({ spriteSheet.pixels_scale, spriteSheet.pixels_scale});
 	set_size(spriteSheet.meters_scale);

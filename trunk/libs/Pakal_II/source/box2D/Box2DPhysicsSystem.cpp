@@ -3,8 +3,6 @@
 #include "Box2DPhysicsListeners.h"
 
 #include "ComponentFactory.h"
-#include "components/BodyComponent.h"
-#include "Components/BodyComponent_Box2D.h"
 #include "Components/SpritePhysicsComponent_Box2D.h"
 #include "LogMgr.h"
 
@@ -29,8 +27,7 @@ Box2DPhysicsSystem::Box2DPhysicsSystem(const Settings& settings) :
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::register_component_factories( std::vector<IComponentFactory*> &factories )
 {	
-	LOG_INFO("[PhysicsSystem] Registering Box2D components");
-	factories.emplace_back(CreateComponentFactory<BodyComponent,BodyComponent_Box2D>(this) );
+	LOG_INFO("[PhysicsSystem] Registering Box2D components");	
 	factories.emplace_back(CreateComponentFactory<SpritePhysicsComponent, SpritebodyComponent_Box2D>(this) );
 }
 //////////////////////////////////////////////////////////////////////////

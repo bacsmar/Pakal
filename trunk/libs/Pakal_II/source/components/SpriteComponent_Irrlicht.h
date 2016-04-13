@@ -16,9 +16,6 @@
 #include "Irrlicht.h"
 #include "GraphicsSystem.h"
 
-
-
-
 namespace Pakal
 {
 	class IrrGraphicsSystem;
@@ -34,6 +31,7 @@ namespace Pakal
 		bool				m_paused;
 		IrrGraphicsSystem*	m_system;
 		Sprite*	m_current_animation;
+		SpriteSheetPtr		m_sprite_sheet;
 
 		SpriteNode_Irrlicht*	m_node;
 		std::unordered_map<std::string, Sprite*>	m_animations;
