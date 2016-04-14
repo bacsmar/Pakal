@@ -57,6 +57,7 @@ namespace Pakal
 		tmath::vector2di draw_area_size = {400,200};
 		irr::f32 m_normalization_factor;
 		float m_size_factor;
+		SpriteSheetPtr m_sprite_sheet;
 	};	
 
 }
