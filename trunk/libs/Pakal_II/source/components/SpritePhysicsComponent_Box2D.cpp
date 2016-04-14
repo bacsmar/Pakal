@@ -98,8 +98,11 @@ BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 	m_fixtures.clear();
 
 	return m_system->execute_block([=]()
+	{		for (auto& body : m_bodies)
 	{
-		m_bodies.clear();
+		m_system->destroy_body(body.second);
+	}
+	m_bodies.clear();
 	});
 }
 
