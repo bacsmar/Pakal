@@ -100,7 +100,7 @@ void SpriteComponent_Irrlicht::set_height(float height, bool keep_relation)
 
 BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 {
-	return m_system->execute_block([=,&settings]()
+	return m_system->execute_block([=]()
 	{
 		ASSERT(m_node == nullptr);
 
