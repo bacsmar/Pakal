@@ -18,7 +18,9 @@ void GameStateManager::terminate()
 		states.pop();
 
 		state->on_terminate(m_engine);
-		if (state->m_deallocate_on_pop) SAFE_DEL(state);
+
+		if (state->m_deallocate_on_pop) 
+			SAFE_DEL(state);
 	}
 }
 
@@ -69,8 +71,11 @@ void GameStateManager::pop_state()
 	state->on_terminate(m_engine);
 	states.pop();
 
-	if (state->m_deallocate_on_pop) SAFE_DEL(state);
-	if (states.empty())  return;
+	if (state->m_deallocate_on_pop) 
+		SAFE_DEL(state);
+
+	if (states.empty())  
+		return;
 	
 	state = peek_state();
 	state->on_activate(m_engine);

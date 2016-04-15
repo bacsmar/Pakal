@@ -35,16 +35,14 @@ namespace Pakal
 
 		struct Settings
 		{
-			tmath::vector2di resolution;
-			int bits;
-			bool full_screen;
-			bool vsync;
-			unsigned max_fps;
-			unsigned window_id;
+			tmath::vector2di resolution = {800,600};
+			int bits = 32;
+			bool full_screen = false;
+			bool vsync = false;
+			unsigned max_fps = 1000;
+			unsigned window_id = 0;
 			std::function<IUIManager*(GraphicsSystem* gs)>	ui_manager_allocator;
-
-			Settings() : resolution(800,600), bits(32), full_screen(false), vsync(false), max_fps(1000), window_id(0)
-			{}
+			std::string resources_dir = "./";
 
 			void persist(Archive* archive);
 

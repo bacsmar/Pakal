@@ -82,6 +82,7 @@ void GraphicsSystem::Settings::persist(Archive* archive)
 	archive->value("max_fps", max_fps);
 	archive->value("resolution_x", resolution.x);
 	archive->value("resolution_y", resolution.y);	
+	archive->value("resources_dir", resources_dir);
 }
 
 void GraphicsSystem::set_window_caption(const char* title)

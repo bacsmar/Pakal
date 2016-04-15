@@ -197,6 +197,7 @@ void Engine::on_terminate()
 
 void Engine::on_pause()
 {
+	LOG_INFO("%s", get_systems_fps().c_str());
 	std::vector<BasicTaskPtr> pauseTaks;
 
 	for (auto s : m_systems)

@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "config.h"
 
 #include "persist/Archive.h"
 
@@ -15,6 +16,12 @@
 	#ifndef PAKAL_STATIC_LIB
 		#pragma comment(lib, "Irrlicht.lib")
 	#endif
+#endif
+
+#ifdef PAKAL_USE_DUMMY_GRAPHICS
+	#include "DummyGraphicsSystem.h"
+	#pragma comment(lib, "opengl32.lib")
+	#pragma comment(lib, "winmm.lib")
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1
@@ -88,6 +95,11 @@ Engine::Settings::Settings()
 	#endif
 	
 	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new IrrGraphicsSystem(settings); };
+#elif PAKAL_USE_OGRE == 1
+
+#else
+	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new DummyUIManager();  };
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new DummyGraphicsSystem(settings); };
 #endif
 
 #if PAKAL_USE_BOX2D == 1
