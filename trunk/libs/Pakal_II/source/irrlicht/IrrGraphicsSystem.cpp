@@ -58,6 +58,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	parameters.DriverType = EDT_OPENGL_NO_FIXED;
 	parameters.WindowId = reinterpret_cast<void*>(args.windowId);	
 	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
+	parameters.OGLES2ShaderPath = m_settings.resources_dir.c_str();
 
 #ifdef PAKAL_ANDROID_PLATFORM
 	parameters.DriverType = EDT_OGLES2;	

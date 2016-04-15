@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\DummyGraphicsSystem.h" />
     <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h" />
     <ClInclude Include="..\source\components\DynamicMesh\MeshBuilder.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\DummyGraphicsSystem.cpp" />
     <ClCompile Include="..\source\PakalMath.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />
@@ -390,6 +392,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>winmm.lib;opengl32.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">
     <ClCompile>
@@ -414,6 +419,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
+    <Lib>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

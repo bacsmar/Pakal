@@ -54,10 +54,11 @@ namespace Pakal
 
 		struct Fixture
 		{
-			float density = 1.0;
-			float friction = 0.0;;
-			float restitution = 0.5;
+			float density = 1.0f;
+			float friction = 0.0f;;
+			float restitution = 0.5f;
 			bool is_sensor = false;
+			float scale = 1.f;
 
 			/// The collision category bits. Normally you would just set one bit.
 			std::uint16_t  category_bits = 1;
@@ -85,6 +86,7 @@ namespace Pakal
 				archive->value("is_sensor", is_sensor);
 				archive->value("categoryBits", category_bits);
 				archive->value("maskBits", mask_bits);
+				archive->value("scale", scale);
 			}
 			// get memory consumption
 			inline size_t get_memory_consumption() const

@@ -59,8 +59,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 				if (fixture.type == "CIRCLE")
 				{
 					b2CircleShape shape;
-					shape.m_radius = fixture.m_circle.r * m_scale;
-					shape.m_p = { fixture.m_circle.x *m_scale, fixture.m_circle.y * m_scale };
+					shape.m_radius = fixture.m_circle.r * m_scale * fixture.scale;
+					shape.m_p = { fixture.m_circle.x * m_scale * fixture.scale, fixture.m_circle.y * m_scale * fixture.scale };
 
 					fixtureDef.shape = &shape;
 					auto fixturePtr = body->CreateFixture(&fixtureDef);
@@ -75,7 +75,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 						std::vector<b2Vec2> vertices;
 						for( const auto& vertex : polygon.m_vertices)
 						{
-							vertices.emplace_back( b2Vec2(vertex.x *m_scale, vertex.y * m_scale) );
+							vertices.emplace_back(b2Vec2(vertex.x * m_scale * fixture.scale, vertex.y * m_scale * fixture.scale));
 						}
 						b2PolygonShape shape;
 						shape.Set(&vertices[0], vertices.size());

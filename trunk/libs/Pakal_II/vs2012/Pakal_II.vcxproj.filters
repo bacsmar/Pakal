@@ -224,6 +224,9 @@
     <ClCompile Include="..\source\EntityDescriptor.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\DummyGraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem</Filter>
+</ClCompile>
     <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp">
       <Filter>Components\GFX\DynamicMesh</Filter>
     </ClCompile>
@@ -656,6 +659,9 @@
     </ClInclude>
     <ClInclude Include="..\source\IEntityProvider.h">
       <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DummyGraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h">
       <Filter>Components\GFX\DynamicMesh</Filter>
