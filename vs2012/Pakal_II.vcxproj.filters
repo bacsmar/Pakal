@@ -224,6 +224,36 @@
     <ClCompile Include="..\source\EntityDescriptor.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\UVMapping.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.cc">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.cc">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.cc">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.cc">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\common\shapes.cc">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PakalMath.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -627,6 +657,42 @@
     <ClInclude Include="..\source\IEntityProvider.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\VertexInfo.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\UVMapping.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\MeshFns.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\MeshBuilder.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\poly2tri.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\shapes.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\utils.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h">
+      <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -724,6 +790,12 @@
     </Filter>
     <Filter Include="Components\UI">
       <UniqueIdentifier>{3e1e6e8b-03c2-45bf-9792-a8bfacdf0de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\DynamicMesh">
+      <UniqueIdentifier>{e61a5829-0fe1-402e-8521-070b073e9519}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\DynamicMesh\poly2tri">
+      <UniqueIdentifier>{3f6ab334-446e-4ba0-b5bc-dc3be8420b9e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

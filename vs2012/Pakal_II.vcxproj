@@ -19,6 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\MeshBuilder.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\shapes.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\utils.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\poly2tri.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\UVMapping.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\MeshFns.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\VertexInfo.h" />
     <ClInclude Include="..\source\IEntityProvider.h" />
     <ClInclude Include="..\source\EntityDescriptor.h" />
     <ClInclude Include="..\source\components\CameraComponent.h" />
@@ -155,6 +167,16 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\PakalMath.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\common\shapes.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\UVMapping.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp" />
     <ClCompile Include="..\source\Entity.cpp" />
     <ClCompile Include="..\source\EntityDescriptor.cpp" />
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
