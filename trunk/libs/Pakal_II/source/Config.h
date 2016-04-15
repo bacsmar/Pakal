@@ -19,7 +19,7 @@
 //! compile with ogre3D
 #define PAKAL_USE_OGRE 0
 //! compile with Irrlicht
-#define PAKAL_USE_IRRLICHT 0
+#define PAKAL_USE_IRRLICHT 1
 
 #if PAKAL_USE_OGRE == 0 && PAKAL_USE_IRRLICHT == 0
 	#define PAKAL_USE_DUMMY_GRAPHICS 1
