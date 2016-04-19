@@ -105,7 +105,7 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(initializationTasks);
 	
 	// Initialize engine
-	initialize()->wait();
+	initialize();
 
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> threadlessSystems;
