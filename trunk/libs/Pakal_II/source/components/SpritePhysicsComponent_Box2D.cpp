@@ -93,12 +93,11 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 }
 
 BasicTaskPtr SpritebodyComponent_Box2D::terminate()
-{
-	m_active_body = nullptr;
-	m_fixtures.clear();
-
+{	
 	return m_system->execute_block([=]()
 	{
+		m_active_body = nullptr;
+		m_fixtures.clear();
 		for( auto& body : m_bodies)
 		{
 			m_system->destroy_body(body.second);
