@@ -30,6 +30,7 @@ namespace Pakal
 		virtual void set_color(unsigned color) const = 0;
 		virtual void set_font_color(unsigned color) const = 0;
 		virtual void set_width(unsigned width) const = 0;
+		virtual void terminate() = 0;
 		virtual ~UILabel(){};
 	};
 }
