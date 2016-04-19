@@ -72,6 +72,12 @@ void Pakal::RocketLabel::set_width(unsigned width) const
 		m_element->SetProperty("width", itoa(width,buffer, 10));
 }
 
+void Pakal::RocketLabel::terminate()
+{
+	unsuscribe_to_events();
+	m_element = nullptr;
+}
+
 void Pakal::RocketLabel::suscribe_to_events()
 {
 	if (m_element == nullptr)
