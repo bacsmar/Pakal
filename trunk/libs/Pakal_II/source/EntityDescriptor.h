@@ -1,5 +1,6 @@
 #pragma once
 #include "Config.h"
+#include "RTTI.h"
 #include <string>
 
 namespace Pakal
@@ -8,11 +9,17 @@ namespace Pakal
 
 	class _PAKALExport EntityDescriptor
 	{
-		std::string m_name;
+		friend class EntityManager;
+
+		DECLARE_RTTI(EntityDescriptor);
+
+		std::string   m_name;
+	protected:
+
+		virtual ~EntityDescriptor();
 
 	public:
 		explicit EntityDescriptor(const char* name);
-		virtual ~EntityDescriptor();
 
 		const std::string& get_name() { return m_name; };
 		virtual void persist(Archive* a);
