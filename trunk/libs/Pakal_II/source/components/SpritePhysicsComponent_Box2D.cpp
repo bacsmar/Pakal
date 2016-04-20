@@ -15,10 +15,10 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 }
 
 BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
-{
-	auto loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
+{	
 	return m_system->execute_block([=]()	// copy the smartpointer, just to keep our data alive.
 	{
+		auto& loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
 		if (loader->bodies.size() < 1)
 		{
 			LOG_ERROR("[SpritebodyComponent] there are no bodies in the loader");
@@ -37,6 +37,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 			//body->SetTransform( b2Vec2(animation-> position.x, animation->position.y), body->GetAngle());
 			body->SetFixedRotation(spriteBody->fixed_rotation);			
 			body->SetUserData(this);
+
+			body->SetTransform(b2Vec2(_loader.position.x, _loader.position.y), body->GetAngle());
 
 			m_bodies[spriteBody->name] = body;
 
