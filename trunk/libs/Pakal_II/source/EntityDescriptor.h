@@ -21,7 +21,8 @@ namespace Pakal
 	public:
 		explicit EntityDescriptor(const char* name);
 
-		const std::string& get_name() { return m_name; };
+		const std::string& get_name() const
+		{ return m_name; };
 		virtual void persist(Archive* a);
 	};
 
