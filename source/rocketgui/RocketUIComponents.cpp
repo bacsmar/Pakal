@@ -29,6 +29,8 @@ void Pakal::RocketLabel::set_ui_control(unsigned int documentId, const std::stri
 
 	m_document_id = documentId;
 	m_control_name = controlName;
+
+	
 	m_element = m_rocket_ui->get_element(m_document_id, m_control_name.c_str());
 	ASSERT(m_element);
 	if(m_element == nullptr)
