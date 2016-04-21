@@ -30,9 +30,9 @@ namespace Pakal
 
 		explicit MaterialManager(IrrGraphicsSystem* irrlichtGraphicsSystem) : m_system(irrlichtGraphicsSystem) {}
 
-		inline unsigned get_material(MaterialType type) const
+		inline irr::video::E_MATERIAL_TYPE get_material(MaterialType type) const
 		{
-			return m_call_delegate(type);
+			return static_cast<irr::video::E_MATERIAL_TYPE>(m_call_delegate(type));
 		}
 
 	protected:

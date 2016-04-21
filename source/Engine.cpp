@@ -21,6 +21,7 @@ using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
+	stop_timer_system();
 	os_manager()->terminate();
 	SAFE_DEL(m_graphics_system)
 	SAFE_DEL(m_physics_system)
@@ -165,7 +166,7 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(terminationTasks);
 
 	//terminate managers
-	stop_timer_system();
+	
 	m_sound_manager->terminate();
 	m_entity_manager->terminate();
 	m_component_manager->terminate();
