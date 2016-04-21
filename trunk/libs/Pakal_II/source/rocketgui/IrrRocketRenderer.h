@@ -16,12 +16,18 @@ namespace irr
         class IMeshBuffer;
     }
 }
+
+namespace Pakal
+{
+	class IrrGraphicsSystem;
+}
+
 class IrrRocketRenderer : public Rocket::Core::RenderInterface
 {
 public:		
 
         /** Default constructor */
-		explicit IrrRocketRenderer(irr::video::IVideoDriver* driver);
+		explicit IrrRocketRenderer(Pakal::IrrGraphicsSystem* graphicsSystem);
         /** Default destructor */
         virtual ~IrrRocketRenderer();
 
@@ -57,6 +63,7 @@ public:
         void ReleaseTexture(Rocket::Core::TextureHandle texture_handle) override;
     protected:
         irr::video::IVideoDriver* Driver;
+		Pakal::IrrGraphicsSystem* m_graphics_system;
 
         irr::scene::IMeshBuffer* ScissorBuffer;
         irr::core::matrix4 ScissorTransform[4];

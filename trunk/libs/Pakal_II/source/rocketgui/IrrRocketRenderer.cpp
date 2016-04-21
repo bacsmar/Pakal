@@ -27,13 +27,13 @@
 
 //#define ENABLE_SCISSOR_TEST
 
-IrrRocketRenderer::IrrRocketRenderer(irr::video::IVideoDriver* driver) : Driver(driver)
+IrrRocketRenderer::IrrRocketRenderer(Pakal::IrrGraphicsSystem* graphicsSystem) : Driver(graphicsSystem->get_driver()), m_graphics_system(graphicsSystem)
 {
 	//ctor
 	//ScissorEnabled = false;
 
 	Material2D.Lighting = false;	
-	Material2D.MaterialType = (irr::video::E_MATERIAL_TYPE)Pakal::MaterialManager::MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL;	
+	Material2D.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 	Material2D.ZWriteEnable = false;
 	Material2D.ZBuffer = true;
 	Material2D.setFlag(irr::video::EMF_BILINEAR_FILTER, true);
@@ -117,6 +117,7 @@ Rocket::Core::CompiledGeometryHandle IrrRocketRenderer::CompileGeometry(Rocket::
 		buffer->Indices.push_back(indices[i + 1]);
 	}
 
+	Material2D.MaterialType = Material2D.MaterialType = m_graphics_system->get_material_manager()->get_material(Pakal::MaterialManager::MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL);
 	buffer->Material.setTexture(0, (irr::video::ITexture*)texture);
 
 	return (Rocket::Core::CompiledGeometryHandle)buffer;

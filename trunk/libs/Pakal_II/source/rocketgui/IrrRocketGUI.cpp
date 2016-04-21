@@ -23,7 +23,7 @@ void IrrRocketUI::setup_render_interface()
 	auto swidth = driver->getViewPort().getWidth();
 	//auto sheight = driver->getScreenSize().Height;	
 	auto sheight = driver->getViewPort().getHeight();	
-	m_renderInterface = new IrrRocketRenderer(gs->get_device()->getVideoDriver());
+	m_renderInterface = new IrrRocketRenderer(gs);
 	
 	Rocket::Core::SetRenderInterface(m_renderInterface);
 
