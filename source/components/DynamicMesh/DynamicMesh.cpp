@@ -1,8 +1,8 @@
 #include "DynamicMesh.h"
 #include "MeshFns.h"
-#include "persist/Archive.h"
 #include "UVMapping.h"
 #include "poly2tri/poly2tri.h"
+#include "persist/Archive.h"
 #include <algorithm>
 #include <memory>
 
@@ -93,9 +93,8 @@ std::vector<DynamicMesh::Segment> DynamicMesh::generate_segments()
 		prev = cur;
 	}
 
-	std::vector<Segment*> segmentsptrs;
 	size = segments.size();
-	segments.reserve(size);
+	std::vector<Segment*> segmentsptrs(size);
 	std::transform(segments.begin(), segments.end(), segmentsptrs.begin(), [](Segment& seg) { return &seg; });
 
 	for (int i = 0; i < size; i++)
@@ -110,22 +109,10 @@ std::vector<DynamicMesh::Segment> DynamicMesh::generate_segments()
 	return segments;
 }
 
-void DynamicMesh::persist(Archive* a)
-{
-	a->value("fill_mode", m_fillMode);
-	a->value("strech_threshold", m_strechThreshold);
-	a->value("ambient_color", m_ambientColor);
-	a->value("smooth_factor", m_smoothFactor);
-	a->value("pixels_per_unit", m_pixelsPerUnit);
-	a->value("angle_corner_split_treshold", m_splitCornersThreshold);
-	a->value("is_closed", m_closed);
-	a->value("split_when_different", m_splitWhenDifferent);
-}
-
-DynamicMesh::DynamicMesh()
+DynamicMesh::DynamicMesh(const std::vector<VertexInfo*>& vertices, UVMapping* mapping) : m_uvMapping(mapping), m_vertices(vertices)
 {}
 
-DynamicMesh::DynamicMesh(std::vector<VertexInfo*> vertices, UVMapping* mapping) : m_uvMapping(mapping) , m_vertices(vertices)
+DynamicMesh::DynamicMesh()
 {}
 
 DynamicMesh::~DynamicMesh()
@@ -198,8 +185,6 @@ void DynamicMesh::draw_cap(tmath::rectf rect, SegmentSide side, tmath::vector2df
 		math::swap(top, otherTop);
 		math::swap(bottom, otherBottom);
 	}
-
-	tmath::vector3df offset = { 0, 0, zOffset };
 
 	m_edgeBuilder.add_quad({ bottom.x, bottom.y, zOffset }, 
 					   { top.x, top.y, zOffset }, 
@@ -306,9 +291,8 @@ void DynamicMesh::draw_fill(std::vector<tmath::vector2df>& fillVertices)
 	if (!m_closed)
 		fillVertices.push_back(m_vertices.back()->position);
 
-	std::vector<p2t::Point*> points;
 	std::vector<p2t::Point*> hole;
-	points.reserve(fillVertices.size());
+	std::vector<p2t::Point*> points(fillVertices.size());
 
 	std::transform(fillVertices.begin(), fillVertices.end(),
 				   points.begin(), [](const tmath::vector2df& v){ return new p2t::Point(v.x, v.y); });
@@ -337,6 +321,7 @@ void DynamicMesh::draw_fill(std::vector<tmath::vector2df>& fillVertices)
 		triangulator = new p2t::CDT(points);
 	}
 
+	triangulator->Triangulate();
 	auto&& triangles = triangulator->GetTriangles();
 
 	auto upf = get_units_per_fill_uv();
@@ -354,15 +339,12 @@ void DynamicMesh::draw_fill(std::vector<tmath::vector2df>& fillVertices)
 								   { float(p2.x / upf.x), float(p2.y / upf.y) });
 	}
 
-
-	//triangles[0].
-
 	delete triangulator;
 	std::for_each(points.begin(), points.end(), std::default_delete<p2t::Point>());
 	std::for_each(hole.begin(), hole.end(), std::default_delete<p2t::Point>());
 }
 
-void DynamicMesh::Tesellate()
+void DynamicMesh::tesellate()
 {
 	m_edgeBuilder.clear();
 	m_fillBuilder.clear();
@@ -383,4 +365,3 @@ void DynamicMesh::Tesellate()
 
 	draw_fill(fillVertices);
 }
-

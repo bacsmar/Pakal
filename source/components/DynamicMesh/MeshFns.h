@@ -9,7 +9,7 @@ namespace Pakal
 	{
 		inline float angle_between(const tmath::vector2df& fst, const tmath::vector2df& snd)
 		{
-			float sin = fst.x * snd.y * snd.x * fst.y;
+			float sin = fst.x * snd.y - snd.x * fst.y;
 			float cos = fst.x * snd.x + fst.y * snd.y;
 
 			return static_cast<float>(std::atan2(sin, cos)) * float(180 / tmg::pi);

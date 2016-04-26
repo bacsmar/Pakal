@@ -19,8 +19,11 @@ namespace Pakal
 
 	struct _PAKALExport VertexInfo
 	{
-		VertexDirection direction;
 		tmath::vector2df position;
+		VertexDirection direction = VertexDirection::Auto;
+
+		VertexInfo() {};
+		VertexInfo(tmath::vector2df pos, VertexDirection dir = VertexDirection::Auto) : position(pos), direction(dir) {}
 
 		void persist(Archive* a);
 	};

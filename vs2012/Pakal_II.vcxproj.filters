@@ -226,7 +226,7 @@
     </ClCompile>
     <ClCompile Include="..\source\DummyGraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
-</ClCompile>
+    </ClCompile>
     <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp">
       <Filter>Components\GFX\DynamicMesh</Filter>
     </ClCompile>
@@ -256,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="..\source\PakalMath.cpp">
       <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -458,9 +461,6 @@
     </ClInclude>
     <ClInclude Include="..\source\sfml\SoundManagerSFML.h">
       <Filter>Managers\SoundManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\SFXComponent.h">
-      <Filter>Components\SFX</Filter>
     </ClInclude>
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
       <Filter>Components\SFX</Filter>
@@ -698,6 +698,15 @@
     </ClInclude>
     <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h">
       <Filter>Components\GFX\DynamicMesh\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SFXComponent.h">
+      <Filter>Components\SFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

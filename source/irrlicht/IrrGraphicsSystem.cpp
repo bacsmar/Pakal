@@ -10,6 +10,7 @@
 #include "Components/SpriteComponent_Irrlicht.h"
 #include "Components/CameraComponent_Irrlicht.h"
 #include "components/TileMapComponent_Irrlicht.h"
+#include "components/DynamicMesh/DynamicMeshComponent_Irrlicht.h"
 #include "ResourceManager.h"
 
 #include <irrlicht/source/Irrlicht/CTimer.h>
@@ -216,6 +217,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<TileMapComponent, TileMapComponent_Irrlicht>(this));
+	factories.emplace_back(CreateComponentFactory<DynamicMeshComponent, DynamicMeshComponent_Irrlicht>(this));
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)

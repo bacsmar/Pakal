@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include "IReadFile.h"
+#include <istream>
 
 namespace Pakal
 {
