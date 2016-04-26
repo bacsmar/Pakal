@@ -237,4 +237,14 @@ namespace Pakal
 			return{ first, last };
 		}
 	}
+
+	namespace std_utils
+	{
+		template<class T>
+		class address
+		{
+		public:
+			T* operator() (T& obj) { return &obj; }
+		};
+	}
 }

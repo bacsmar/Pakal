@@ -6,7 +6,7 @@
 #include "Config.h"
 #include "math/tm.h"
 #include "math/tmg.h"
-#include "persist/Archive.h"
+#include "persist/PersistUtils.h"
 
 //#include <math.h>
 //#include <float.h>
@@ -83,9 +83,21 @@ namespace Pakal
 	};
 
 	template<>
+	struct Persist<tmath::vector3df>
+	{
+		static void persist(Archive* a, tmath::vector3di& vec);
+	};
+
+	template<>
 	struct Persist<tmath::rectf>
 	{
 		static void persist(Archive* a, tmath::rectf& rect);
+	};
+
+	template<>
+	struct Persist<tmath::vector2di>
+	{
+		static void persist(Archive* a, tmath::vector2di& rect);
 	};
 
 }

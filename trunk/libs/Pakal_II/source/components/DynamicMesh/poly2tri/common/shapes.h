@@ -372,7 +372,7 @@ public:
 			minX = std::min(minX, p->x);
 			maxX = std::max(maxX, p->x);
 			minY = std::min(minY, p->y);
-			maxY = std::min(maxY, p->y);
+			maxY = std::max(maxY, p->y);
 		}
 
 		return { (maxX - minX), (maxY - minY)};

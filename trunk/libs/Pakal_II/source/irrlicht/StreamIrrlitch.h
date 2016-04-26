@@ -22,7 +22,7 @@ namespace Pakal
 		{
 			m_source->read(static_cast<char*>(buffer), sizeToRead);
 
-			return m_source->gcount();
+			return (irr::s32)m_source->gcount();
 		}
 		bool seek(long finalPos, bool relativeMovement) override
 		{
@@ -35,7 +35,7 @@ namespace Pakal
 			auto curr = m_source->tellg();
 
 			m_source->seekg(0, m_source->end);
-			long pos = m_source->tellg();
+			long pos = (long)m_source->tellg();
 
 			m_source->seekg(curr, m_source->beg);
 
@@ -43,11 +43,11 @@ namespace Pakal
 		}
 		long getPos() const override
 		{
-			return m_source->tellg();
+			return (long)m_source->tellg();
 		}
 		const irr::io::path& getFileName() const override
 		{
-			ASSERT(false, "esperaba no llegar a esto, creo que tendre que hacer una pequeña modificacion al resourcemanager");
+			ASSERT_MSG(false, "esperaba no llegar a esto, creo que tendre que hacer una pequeña modificacion al resourcemanager");
 			return "";
 		}
 	};

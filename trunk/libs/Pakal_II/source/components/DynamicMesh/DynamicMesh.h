@@ -10,18 +10,19 @@
 
 namespace Pakal
 {
-	class Archive;
-
-	enum class FillMode
-	{
-		None = 0,
-		Fill,
-		Inverted
-	};
 
 
 	class _PAKALExport DynamicMesh
 	{
+	public:
+		enum class FillMode
+		{
+			None = 0,
+			Fill,
+			Inverted
+		};
+	private:
+
 		struct Segment
 		{
 			VertexDirection direction, prev_direction, next_direction;
@@ -44,16 +45,16 @@ namespace Pakal
 		UVMapping* m_uvMapping = nullptr;
 		std::vector<VertexInfo*> m_vertices;
 
-		FillMode m_fillMode = FillMode::Fill;
+		FillMode m_fillMode = FillMode::None;
 		float m_strechThreshold = 0.5f;
-		tmath::vector3di m_ambientColor;
+		tmath::vector3di m_ambientColor = {255,255,255};
 
-		int m_smoothFactor  = 5;
-		int m_pixelsPerUnit = 96;
-		int m_splitCornersThreshold = 90;
+		int m_smoothFactor  = 1;
+		int m_pixelsPerUnit = 64;
+		int m_splitCornersThreshold = 180;
 
-		bool m_closed = true;
-		bool m_splitWhenDifferent = false;
+		bool m_closed = false;
+		bool m_splitWhenDifferent = true;
 
 		bool is_inverted()
 		{
@@ -79,15 +80,15 @@ namespace Pakal
 		}
 
 	public:
+		DynamicMesh(const std::vector<VertexInfo*>& vertices,UVMapping* mapping);
 		DynamicMesh();
-		DynamicMesh(std::vector<VertexInfo*> vertices, UVMapping* mapping);
 		virtual ~DynamicMesh();
 
-		const MeshBuilder& get_edge_mesh() const
+		MeshBuilder& get_edge_mesh() 
 		{
 			return m_edgeBuilder;
 		}
-		const MeshBuilder& get_fill_mesh() const
+		MeshBuilder& get_fill_mesh() 
 		{
 			return m_fillBuilder;
 		}
@@ -96,7 +97,7 @@ namespace Pakal
 		{
 			return m_vertices;
 		}
-		UVMapping* get_texture() const
+		UVMapping* get_uv_mapping() const
 		{
 			return m_uvMapping;
 		}
@@ -174,8 +175,6 @@ namespace Pakal
 			m_splitWhenDifferent = splitWhenDifferent;
 		}
 
-		void Tesellate();
-		void persist(Archive* a);
-
+		void tesellate();
 	};
 }

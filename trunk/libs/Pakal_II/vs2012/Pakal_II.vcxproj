@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\SFXComponent.h" />
     <ClInclude Include="..\source\DummyGraphicsSystem.h" />
     <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h" />
@@ -85,7 +88,6 @@
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
     <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
     <ClInclude Include="..\source\sfml\StreamSFML.h" />
-    <ClInclude Include="..\source\SFXComponent.h" />
     <ClInclude Include="..\source\SimpleTimer.h" />
     <ClInclude Include="..\source\State.h" />
     <ClInclude Include="..\source\StateMachine.h" />
@@ -168,6 +170,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\DummyGraphicsSystem.cpp" />
     <ClCompile Include="..\source\PakalMath.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />

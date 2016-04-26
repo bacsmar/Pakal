@@ -13,10 +13,8 @@ void UVMapping::Segment::persist(Archive* a)
 
 void UVMapping::persist(Archive* a)
 {
-	a->value("edge_size_x", edge_size.x);
-	a->value("edge_size_y", edge_size.y);
-	a->value("fill_size_x", fill_size.x);
-	a->value("fill_size_y", fill_size.y);
+	a->value("edge_size", edge_size);
+	a->value("fill_size", fill_size);
 	a->value("top", top);
 	a->value("left", left);
 	a->value("right", right);
