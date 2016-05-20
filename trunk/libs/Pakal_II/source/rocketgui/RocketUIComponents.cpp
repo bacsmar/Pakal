@@ -29,7 +29,6 @@ void Pakal::RocketLabel::set_ui_control(unsigned int documentId, const std::stri
 
 	m_document_id = documentId;
 	m_control_name = controlName;
-
 	
 	m_element = m_rocket_ui->get_element(m_document_id, m_control_name.c_str());
 	ASSERT(m_element);
@@ -72,6 +71,23 @@ void Pakal::RocketLabel::set_width(unsigned width) const
 	char buffer[24];
 	if (m_element)
 		m_element->SetProperty("width", itoa(width,buffer, 10));
+}
+
+void Pakal::RocketLabel::set_width_percent(unsigned width) const
+{	
+	auto buffer = std::to_string(width)+"%";
+	if (m_element)
+		m_element->SetProperty("width", buffer.c_str());
+}
+
+int Pakal::RocketLabel::get_width() const
+{	
+	if (m_element)
+	{
+		auto width = m_element->GetProperty("width");
+		return atoi(width->ToString().CString());
+	}
+	return 0;
 }
 
 void Pakal::RocketLabel::terminate()
