@@ -49,7 +49,7 @@ namespace Pakal
 		virtual ~BasicTask() {};
 
 
-		inline bool is_completed() { return m_completed; }
+		inline bool is_completed() const { return m_completed; }
 		void wait();		
 
 		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = NULL_THREAD);

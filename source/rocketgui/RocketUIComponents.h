@@ -24,6 +24,8 @@ namespace Pakal
 		void set_color(unsigned color) const override;
 		void set_font_color(unsigned color) const override;
 		void set_width(unsigned width) const override;
+		void set_width_percent(unsigned width) const override;
+		int get_width() const override;
 		void terminate() override;
 	private:
 
