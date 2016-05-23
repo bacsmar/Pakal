@@ -14,12 +14,12 @@ bool  Pakal::MaterialManager::create_materials()
 	auto hasPixelShaderSupport = driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) && driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1);
 	if (false == hasPixelShaderSupport)
 	{
-		LOG_WARNING("WARNING: Pixel shaders disabled because of missing driver/hardware support.");
+		LOG_ERROR("WARNING: Pixel shaders disabled because of missing driver/hardware support.");
 	}
 	auto hasVertexShaderSupport = driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0) && driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1);
 	if (false == hasVertexShaderSupport)
 	{
-		LOG_WARNING("WARNING: Vertex shaders disabled because of missing driver/hardware support.");
+		LOG_ERROR("WARNING: Vertex shaders disabled because of missing driver/hardware support.");
 	}
 
 	auto device = m_system->get_device();
@@ -63,11 +63,11 @@ void Pakal::MaterialManager::create_material_renderer(MaterialType type, const s
 
 	if (materialType != -1)
 	{
-		LOG_INFO("[MaterialManager]: shader parsed. %s %s", vsFileName.c_str(), psFileName.c_str());		
+		LOG_INFO("[MaterialManager]: material created: %s %s", vsFileName.c_str(), psFileName.c_str());		
 		m_shaders[type] = materialType;
 		return;
 	}
-	LOG_WARNING("[MaterialManager]: shader error. %s %s", vsFileName.c_str(), psFileName.c_str());
+	LOG_WARNING("[MaterialManager]: Material error. %s %s", vsFileName.c_str(), psFileName.c_str());
 }
 
 unsigned Pakal::MaterialManager::internal_get_material(MaterialType type)

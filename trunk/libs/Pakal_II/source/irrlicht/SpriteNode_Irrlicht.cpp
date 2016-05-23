@@ -23,12 +23,9 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 
 	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	m_material.MaterialTypeParam = 0.5f;
-	//m_material.BlendOperation = video::EBO_NONE;
-	//m_material.ZWriteEnable = false;
-	//m_material.MaterialType = video::EMT_SOLID;
-	//m_material.MaterialType = video::EMT_TRANSPARENT_ADD_COLOR;
-	
+	m_material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+	m_material.MaterialType = (video::E_MATERIAL_TYPE)30;
+	m_material.MaterialTypeParam = 0.1f;		
 
 	m_box.reset(-1.0f,-1.0f,0.0f);
 	m_box.addInternalPoint(1.0f,1.0f,0.0f);
@@ -43,7 +40,7 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 
 SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
 {
-	m_material.MaterialType = static_cast<video::E_MATERIAL_TYPE>(materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF));;
+	m_material.MaterialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);
 }
 
 void SpriteNode_Irrlicht::setColor(const video::SColor& color)
