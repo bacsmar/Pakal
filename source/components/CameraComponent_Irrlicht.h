@@ -22,6 +22,8 @@ namespace Pakal
 		void	set_position(tmath::vector3df position) override;
 		tmath::vector3df get_position() const override;
 
+		void bind_target_and_rotation(bool bound) override;
+
 		~CameraComponent_Irrlicht() override;	
 	protected:
 		IrrGraphicsSystem*				m_system;

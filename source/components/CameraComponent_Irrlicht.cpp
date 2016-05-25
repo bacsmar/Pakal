@@ -72,6 +72,11 @@ Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::get_position() const
 	return{ position.X , position.Y, position.Z };
 }
 
+void Pakal::CameraComponent_Irrlicht::bind_target_and_rotation(bool bound)
+{	
+	m_camera->bindTargetAndRotation(bound);
+}
+
 Pakal::CameraComponent_Irrlicht::~CameraComponent_Irrlicht()
 {
 	//ASSERT(m_camera == nullptr);

@@ -26,6 +26,8 @@ namespace Pakal
 
 		virtual void set_position(tmath::vector3df position) = 0;
 		virtual tmath::vector3df  get_position() const = 0;
+
+		virtual void bind_target_and_rotation(bool bound) = 0;
 	
 		virtual ~CameraComponent(){}
 
