@@ -45,7 +45,7 @@ namespace Pakal
 		virtual float get_normalization_factor() const = 0;
 		virtual void set_scale(const tmath::vector3df& factor) = 0;
 
-		virtual void set_position(tmath::vector3df position) = 0;
+		virtual void set_position(const tmath::vector3df & position) = 0;
 		virtual tmath::vector3df  get_position() const = 0;
 
 		virtual void play() = 0;

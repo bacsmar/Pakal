@@ -55,14 +55,14 @@ void SpriteComponent_Irrlicht::set_size(float size)
 	m_node->setScale(irr::core::vector3df(1.f,1.f,1.f) * m_normalization_factor * m_size_factor);
 }
 
-void SpriteComponent_Irrlicht::set_position(tmath::vector3df position)
+void SpriteComponent_Irrlicht::set_position(const tmath::vector3df & position)
 {
 	m_node->setPosition(core::vector3df(position.x,position.y,position.z));
 }
 
 tmath::vector3df SpriteComponent_Irrlicht::get_position() const
 {
-	auto& posVector = m_node->getPosition();
+	const auto& posVector = m_node->getPosition();
 	return tmath::vector3df(posVector.X,posVector.Y, posVector.Z);
 }
 
@@ -78,7 +78,7 @@ float SpriteComponent_Irrlicht::get_rotation() const
 
 tmath::vector3df SpriteComponent_Irrlicht::get_scale() const
 {
-	auto currentScale = m_node->getScale();
+	const auto & currentScale = m_node->getScale();
 	return { currentScale.X, currentScale.Y ,1.f};
 }
 
@@ -229,7 +229,7 @@ void SpriteComponent_Irrlicht::set_frame(size_t frameIndex, bool resetTime)
 	});	
 }
 
-void SpriteComponent_Irrlicht::normalize_size(tmath::vector2du size)
+void SpriteComponent_Irrlicht::normalize_size(const tmath::vector2du & size)
 {
 	f64 length = size.x*size.x + size.y*size.y;
 	if (length == 0)

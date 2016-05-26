@@ -68,7 +68,7 @@ void Pakal::CameraComponent_Irrlicht::set_position(tmath::vector3df position)
 
 Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::get_position() const
 {
-	auto position = m_camera->getPosition();
+	const auto& position = m_camera->getPosition();
 	return{ position.X , position.Y, position.Z };
 }
 

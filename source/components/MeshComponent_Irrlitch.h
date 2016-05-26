@@ -4,7 +4,10 @@
 
 
 namespace irr { namespace video { class ITexture; } }
-namespace irr { namespace scene { class IMeshSceneNode; } }
+namespace irr { namespace scene {
+	class IAnimatedMesh;
+	class IAnimatedMeshSceneNode;
+	class IMeshSceneNode; } }
 namespace irr { namespace scene { class IMesh; } }
 
 namespace Pakal
@@ -18,8 +21,10 @@ namespace Pakal
 		IrrGraphicsSystem*			m_system;
 
 		irr::video::ITexture*		m_texture;
-		irr::scene::IMesh*			m_mesh;
+		irr::scene::IMesh*			m_mesh;		
 		irr::scene::IMeshSceneNode* m_node;
+		//irr::scene::IAnimatedMesh*			m_mesh;
+		//irr::scene::IAnimatedMeshSceneNode* m_node;
 
 	public:
 		explicit MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem) : m_system(irrGraphicsSystem), m_texture(nullptr), m_mesh(nullptr), m_node(nullptr) {};
