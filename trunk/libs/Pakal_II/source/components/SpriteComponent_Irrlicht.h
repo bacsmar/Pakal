@@ -43,7 +43,7 @@ namespace Pakal
 
 		float m_size_factor;
 		float m_normalization_factor;
-		void normalize_size(tmath::vector2du size);
+		void normalize_size(const tmath::vector2du & size);
 
 	public:	
 		SpriteComponent_Irrlicht(IrrGraphicsSystem* system);
@@ -64,7 +64,7 @@ namespace Pakal
 		void set_scale(const tmath::vector3df& factor) override;
 		void set_size(float size) override;
 
-		void set_position(tmath::vector3df position) override;
+		void set_position(const tmath::vector3df & position) override;
 		tmath::vector3df get_position() const override;
 
 		virtual unsigned get_duration() const override;

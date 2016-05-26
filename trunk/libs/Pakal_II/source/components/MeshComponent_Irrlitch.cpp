@@ -1,5 +1,6 @@
 #include "MeshComponent_Irrlitch.h"
 #include "irrlicht/IrrGraphicsSystem.h"
+#include <irrlicht/MaterialManager.h>
 
 using namespace Pakal;
 
@@ -78,7 +79,7 @@ void MeshComponent_Irrlitch::set_position(const tmath::vector3df& position)
 
 tmath::vector3df MeshComponent_Irrlitch::get_position()
 {
-	auto vector3D = m_node->getPosition();
+	const auto& vector3D = m_node->getPosition();
 
 	return tmath::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }
@@ -116,6 +117,6 @@ void MeshComponent_Irrlitch::set_angle(const tmath::vector3df& angle)
 
 tmath::vector3df MeshComponent_Irrlitch::get_angle()
 {
-	auto& r = m_node->getRotation();
+	const auto& r = m_node->getRotation();
 	return tmath::vector3df(r.X,r.Y,r.Z);
 }
