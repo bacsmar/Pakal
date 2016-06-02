@@ -9,6 +9,25 @@ namespace Pakal
 	{
 		/// Pi value
 		const double pi = 3.1415926535897932384626433832795;
+		const float PI = 3.14159265359f;
+		
+		//! Constant for 64bit PI.
+		const double PI64 = 3.1415926535897932384626433832795028841971693993751;
+
+		//! Constant for 64bit reciprocal of PI.
+		const double RECIPROCAL_PI64 = 1.0/PI64;
+
+		//! 32bit Constant for converting from degrees to radians
+		const float DEGTORAD = PI / 180.0f;
+
+		//! 32bit constant for converting from radians to degrees (formally known as GRAD_PI)
+		const float RADTODEG   = 180.0f / PI;
+
+		//! 64bit constant for converting from degrees to radians (formally known as GRAD_PI2)
+		const double DEGTORAD64 = PI64 / 180.0;
+
+		//! 64bit constant for converting from radians to degrees
+		const double RADTODEG64 = 180.0 / PI64;
 
 		/// Converts degres to radian
 		template<typename T>
@@ -66,6 +85,61 @@ namespace Pakal
 			q.x = static_cast<T>(0.0);
 			q.y = static_cast<T>(0.0);
 			q.z = sin(rad);
+		}
+
+		//! Rotates outVector by a specified number of degrees around the Y axis and the specified center.		
+		template<class T>
+		void rotateXZBy(tmath::vectorn<T, 3>& outVector, double degrees, const tmath::vectorn<T, 3>& center = tmath::vectorn<T, 3>())
+		{
+			degrees *= DEGTORAD64;
+			double cs = cos(degrees);
+			double sn = sin(degrees);
+			outVector.x -= center.x;
+			outVector.z -= center.z;
+			auto x = outVector.x;
+			auto z = outVector.z;
+			
+			outVector.x = static_cast<T>(x*cs -z*sn);
+			outVector.z = static_cast<T>(x*sn + z*cs);
+
+			outVector.x += center.x;
+			outVector.z += center.z;
+		}
+
+		//! Rotates outVector by a specified number of degrees around the Z axis and the specified center.		
+		template<class T>
+		void rotateXYBy(tmath::vectorn<T, 3>& outVector, double degrees, const tmath::vectorn<T, 3>& center = tmath::vectorn<T, 3>())
+		{
+			degrees *= DEGTORAD64;
+			double cs = cos(degrees);
+			double sn = sin(degrees);
+			outVector.x -= center.x;
+			outVector.y -= center.y;
+			auto x = outVector.x;
+			auto y = outVector.y;
+			outVector.x = static_cast<T>(x*cs - y*sn);
+			outVector.y = static_cast<T>(x*sn + y*cs);
+				
+			outVector.x += center.x;
+			outVector.y += center.y;
+		}
+
+		//! Rotates outVector by a specified number of degrees around the X axis and the specified center.		
+		template<class T>
+		void rotateYZBy(tmath::vectorn<T, 3>& outVector, double degrees, const tmath::vectorn<T, 3>& center = tmath::vectorn<T, 3>())
+		{
+			degrees *= DEGTORAD64;
+			double cs = cos(degrees);
+			double sn = sin(degrees);
+			outVector.z -= center.z;
+			outVector.y -= center.y;
+			auto z = outVector.z;
+			auto y = outVector.y;
+			outVector.y = static_cast<T>(y*cs - z*sn);
+			outVector.z = static_cast<T>(y*sn + z*cs);
+
+			outVector.z += center.z;
+			outVector.y += center.y;
 		}
 
 		/// Converts a quaternion orientation into euler angles
