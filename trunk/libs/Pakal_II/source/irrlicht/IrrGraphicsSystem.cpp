@@ -19,6 +19,9 @@
 #include "irrlicht/ZipSourceIrrlitch.h"
 
 #include "MaterialManager.h"
+#include <components/AnimatedMeshComponent.h>
+#include <components/AnimatedMeshComponent_Irrlitch.h>
+#include <components/GridComponent_Irrlicht.h>
 
 
 using namespace irr;
@@ -55,8 +58,8 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	parameters.Bits = m_settings.bits;
 	parameters.Fullscreen =  m_settings.full_screen;
 	parameters.Vsync =  m_settings.vsync;
-	//parameters.DriverType = EDT_OPENGL;
-	parameters.DriverType = EDT_OPENGL_NO_FIXED;
+	parameters.DriverType = EDT_OPENGL;
+	//parameters.DriverType = EDT_OPENGL_NO_FIXED;
 	parameters.WindowId = reinterpret_cast<void*>(args.windowId);	
 	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
 	parameters.OGLES2ShaderPath = m_settings.resources_dir.c_str();
@@ -214,6 +217,8 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
 	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
+	factories.emplace_back( CreateComponentFactory<AnimatedMeshComponent,AnimatedMeshComponent_Irrlitch>(this));
+	factories.emplace_back( CreateComponentFactory<GridComponent, GridComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<TileMapComponent, TileMapComponent_Irrlicht>(this));
