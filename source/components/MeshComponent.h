@@ -18,8 +18,9 @@ namespace Pakal
 		{
 			std::string mesh_name;
 			std::string texture_name;
-			tmath::vector3df position;
-			tmath::vector3df size;
+			tmath::vector3df position = {};
+			tmath::vector3df size = {};
+			bool animated = false;
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;

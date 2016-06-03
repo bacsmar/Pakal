@@ -45,13 +45,11 @@ struct Edge;
 
 struct Point {
 
-  double x, y;
+  double x = 0.0, y = 0.0;
 
   /// Default constructor does nothing (for performance).
-  Point()
-  {
-    x = 0.0;
-    y = 0.0;
+  Point() : x(0.0), y(0.0)
+  {    
   }
 
   /// The edges this point constitutes an upper ending point

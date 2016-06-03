@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent.h" />
+    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\GridComponent.h" />
+    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\SFXComponent.h" />
     <ClInclude Include="..\source\DummyGraphicsSystem.h" />
     <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
@@ -48,6 +52,7 @@
     <ClInclude Include="..\source\components\TileMapComponent.h" />
     <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\UIComponent.h" />
+    <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
     <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h" />
     <ClInclude Include="..\source\irrlicht\MaterialManager.h" />
     <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
@@ -170,8 +175,11 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\DummyGraphicsSystem.cpp" />
+    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
     <ClCompile Include="..\source\PakalMath.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />

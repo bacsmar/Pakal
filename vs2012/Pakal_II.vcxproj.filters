@@ -6,9 +6,6 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\LogMgr.cpp">
       <Filter>Managers\LogManager</Filter>
     </ClCompile>
@@ -78,9 +75,6 @@
     </ClCompile>
     <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp">
       <Filter>Components\Music</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
-      <Filter>Components\GFX\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
       <Filter>Components\GFX\Sprite</Filter>
@@ -191,9 +185,6 @@
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
       <Filter>Components\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp">
-      <Filter>Components\GFX\Tiles</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp">
       <Filter>Components\GFX\Tiles</Filter>
     </ClCompile>
@@ -208,9 +199,6 @@
     </ClCompile>
     <ClCompile Include="..\source\components\CharacterComponent.cpp">
       <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
-      <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
       <Filter>Components\UI</Filter>
@@ -260,14 +248,32 @@
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp">
       <Filter>Components\GFX\DynamicMesh</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp">
+      <Filter>Components\GFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\BaseGameState.h">
       <Filter>Managers\GameStateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
-      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\LogMgr.h">
       <Filter>Managers\LogManager</Filter>
@@ -312,9 +318,6 @@
       <Filter>Systems\PhysicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IDebugDrawer.h">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\TaskFwd.h">
@@ -468,9 +471,6 @@
     <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
       <Filter>Components\Music</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\SpriteComponent.h">
       <Filter>Components\GFX\Sprite</Filter>
     </ClInclude>
@@ -609,9 +609,6 @@
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp">
-      <Filter>Components\GFX\Tiles</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\TileMapComponent.h">
       <Filter>Components\GFX\Tiles</Filter>
     </ClInclude>
@@ -635,12 +632,6 @@
     </ClInclude>
     <ClInclude Include="..\source\components\CharacterComponent.h">
       <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\MaterialManager.h">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h">
-      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\UIComponent.h">
       <Filter>Components\UI</Filter>
@@ -707,6 +698,39 @@
     </ClInclude>
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h">
       <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\MaterialManager.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\GridSceneNode.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GridComponent.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h">
+      <Filter>Components\GFX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -811,6 +835,9 @@
     </Filter>
     <Filter Include="Components\GFX\DynamicMesh\poly2tri">
       <UniqueIdentifier>{3f6ab334-446e-4ba0-b5bc-dc3be8420b9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\GraphicsSystem\Irrlicht">
+      <UniqueIdentifier>{b74b8732-45fb-47c3-929b-7d3d551d581a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

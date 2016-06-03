@@ -1,25 +1,59 @@
-#include "MeshComponent_Irrlitch.h"
+#include "AnimatedMeshComponent_Irrlitch.h"
 #include "irrlicht/IrrGraphicsSystem.h"
 #include <irrlicht/MaterialManager.h>
 
 using namespace Pakal;
 
-MeshComponent_Irrlitch::~MeshComponent_Irrlitch() 
+AnimatedMeshComponent_Irrlitch::~AnimatedMeshComponent_Irrlitch()
 {
 	m_system = nullptr;
 	ASSERT( m_node == nullptr);
 }
 
-BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
+BasicTaskPtr AnimatedMeshComponent_Irrlitch::initialize(const Settings& settings)
+{
+	return m_system->execute_block([=]()
+	{
+		if (!settings.mesh_name.empty())
+		{
+			set_mesh(settings.mesh_name);
+		}
+		if (!settings.texture_name.empty())
+		{
+			set_texture(settings.texture_name);
+		}
+		if (m_node)
+		{ 
+			set_position(settings.position);
+			if (settings.size != tmath::vector3df())
+			{
+				set_size(settings.size);
+			}
+		}
+	});
+}
+
+BasicTaskPtr AnimatedMeshComponent_Irrlitch::destroy()
 {
 	return m_system->execute_block([=]()
 	{
 		if (m_node)
-			m_node->remove();	
+		{
+			m_node->remove();
+			m_node = nullptr;
+		}	
+	});
+}
 
-		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());
+BasicTaskPtr AnimatedMeshComponent_Irrlitch::set_mesh(const std::string& meshName)
+{
+	return m_system->execute_block([=]()
+	{
+		if (m_node)
+			m_node->remove();
 
-		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);		
+		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());		
+		m_node = m_system->get_smgr()->addAnimatedMeshSceneNode(m_mesh);
 
 		m_node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 
@@ -33,7 +67,7 @@ BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 	});
 }
 
-BasicTaskPtr MeshComponent_Irrlitch::set_texture(const std::string& textureName)
+BasicTaskPtr AnimatedMeshComponent_Irrlitch::set_texture(const std::string& textureName)
 {
 	return m_system->execute_block([=]()
 	{
@@ -43,20 +77,20 @@ BasicTaskPtr MeshComponent_Irrlitch::set_texture(const std::string& textureName)
 
 }
 
-void MeshComponent_Irrlitch::set_position(const tmath::vector3df& position)
+void AnimatedMeshComponent_Irrlitch::set_position(const tmath::vector3df& position)
 {
 	irr::core::vector3df v(position.x,position.y,position.z);
 	m_node->setPosition(v);
 }
 
-tmath::vector3df MeshComponent_Irrlitch::get_position()
+tmath::vector3df AnimatedMeshComponent_Irrlitch::get_position()
 {
 	const auto& vector3D = m_node->getPosition();
 
 	return tmath::vector3df(vector3D.X,vector3D.Y,vector3D.Z);
 }
 
-tmath::vector3df MeshComponent_Irrlitch::get_size()
+tmath::vector3df AnimatedMeshComponent_Irrlitch::get_size()
 {
 	auto v =  m_node->getTransformedBoundingBox().getExtent();
 	v *= m_node->getScale();
@@ -64,7 +98,7 @@ tmath::vector3df MeshComponent_Irrlitch::get_size()
 	return tmath::vector3df(v.X,v.Y,v.Z);
 }
 
-void MeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
+void AnimatedMeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
 {
 	auto v =  m_node->getTransformedBoundingBox().getExtent();
 	
@@ -82,48 +116,13 @@ void MeshComponent_Irrlitch::set_size(const tmath::vector3df& size)
 	m_node->setScale(v);
 }
 
-void MeshComponent_Irrlitch::set_angle(const tmath::vector3df& angle)
+void AnimatedMeshComponent_Irrlitch::set_angle(const tmath::vector3df& angle)
 {
 	m_node->setRotation(irr::core::vector3df(angle.x,angle.y,angle.z));
 }
 
-tmath::vector3df MeshComponent_Irrlitch::get_angle()
+tmath::vector3df AnimatedMeshComponent_Irrlitch::get_angle()
 {
 	const auto& r = m_node->getRotation();
 	return tmath::vector3df(r.X,r.Y,r.Z);
-}
-
-BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
-{
-	return m_system->execute_block([=]()
-	{
-		if (!settings.mesh_name.empty())
-		{
-			set_mesh(settings.mesh_name);
-		}
-		if (!settings.texture_name.empty())
-		{
-			set_texture(settings.texture_name);
-		}
-		if (m_node)
-		{
-			set_position(settings.position);
-			if (settings.size != tmath::vector3df())
-			{
-				set_size(settings.size);
-			}
-		}
-	});
-}
-
-BasicTaskPtr MeshComponent_Irrlitch::destroy()
-{
-	return m_system->execute_block([=]()
-	{
-		if (m_node)
-		{
-			m_node->remove();
-			m_node = nullptr;
-		}
-	});
 }
