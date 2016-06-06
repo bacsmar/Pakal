@@ -11,7 +11,8 @@ namespace Pakal
 		virtual ~GridComponent(){}
 
 		struct Settings
-		{};
+		{
+		};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
 		virtual BasicTaskPtr destroy() = 0;

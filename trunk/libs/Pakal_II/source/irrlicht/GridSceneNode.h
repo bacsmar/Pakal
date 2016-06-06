@@ -51,28 +51,28 @@ public:
     void RegenerateGrid();
  
     //! Returns the Spacing of the grid
-    irr::u32 GetSpacing();
+    irr::u32 GetSpacing() const;
  
     //! Returns the total size of the grid
-    irr::u32 GetSize();
+    irr::u32 GetSize() const;
  
     //! Returns the Grid Color
-    irr::video::SColor GetGridColor();
+    irr::video::SColor GetGridColor() const;
  
     //! Returns the offset of the accent lines
-    irr::u32 GetAccentlineOffset();
+    irr::u32 GetAccentlineOffset() const;
  
     //! Returns the Accent Line Color
-    irr::video::SColor GetAccentlineColor();
+    irr::video::SColor GetAccentlineColor() const;
  
     //! Returns the Active State of the Axis Lines
-    bool AreAxisLineActive();
+    bool AreAxisLineActive() const;
  
     //! Returns the Color of the "X" axis lines
-    irr::video::SColor GetAxisLineXColor();
+    irr::video::SColor GetAxisLineXColor() const;
  
     //! Returns the Color of the "Z" axis lines
-    irr::video::SColor GetAxisLineZColor();
+    irr::video::SColor GetAxisLineZColor() const;
  
     //! Sets Spacing
     void SetSpacing(irr::u32 newspacing);
@@ -100,7 +100,7 @@ public:
     void SetAxisLineZColor(irr::video::SColor ZLine);
  
     //! Allows for setting a complete new material
-    void SetMaterial(irr::video::SMaterial newMaterial);
+    void SetMaterial(irr::video::SMaterial newMaterial) const;
  
 private:
     irr::u32 m_spacing;

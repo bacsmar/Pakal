@@ -20,6 +20,7 @@ CGridSceneNode::CGridSceneNode(ISceneNode* parent, scene::ISceneManager* smgr, s
     m_buffer->getMaterial().ZWriteEnable = false;
     m_buffer->getMaterial().BackfaceCulling = true;
     m_buffer->getMaterial().AntiAliasing = true;
+	//m_buffer->getMaterial().MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
  
     // Set the default culling state to Frustum Box
     AutomaticCullingState = scene::EAC_FRUSTUM_BOX;
@@ -35,8 +36,10 @@ CGridSceneNode::~CGridSceneNode()
  
 CGridSceneNode* CGridSceneNode::clone(scene::ISceneNode *newParent, scene::ISceneManager *newSceneManager)
 {
-    if (!newParent) newParent = Parent;
-    if (!newSceneManager) newSceneManager = SceneManager;
+    if (!newParent) 
+		newParent = Parent;
+    if (!newSceneManager) 
+		newSceneManager = SceneManager;
  
     CGridSceneNode* clone = new CGridSceneNode(
         Parent,
@@ -50,7 +53,7 @@ CGridSceneNode* CGridSceneNode::clone(scene::ISceneNode *newParent, scene::IScen
         m_AxisLineState);
  
     if (!clone)
-        return 0x0;
+        return nullptr;
  
     clone->SetAxisLineXColor(m_XLineColor);
     clone->SetAxisLineZColor(m_ZLineColor);
@@ -215,42 +218,42 @@ video::SMaterial& CGridSceneNode::getMaterial(u32 i)
     return m_buffer->getMaterial();
 }
  
-u32 CGridSceneNode::GetSpacing()
+u32 CGridSceneNode::GetSpacing() const
 {
     return m_spacing;
 }
  
-u32 CGridSceneNode::GetSize()
+u32 CGridSceneNode::GetSize() const
 {
     return m_size;
 }
  
-u32 CGridSceneNode::GetAccentlineOffset()
+u32 CGridSceneNode::GetAccentlineOffset() const
 {
     return m_accentlineoffset;
 }
  
-video::SColor CGridSceneNode::GetAccentlineColor()
+video::SColor CGridSceneNode::GetAccentlineColor() const
 {
     return m_accentgridcolor;
 }
  
-video::SColor CGridSceneNode::GetGridColor()
+video::SColor CGridSceneNode::GetGridColor() const
 {
     return m_gridcolor;
 }
  
-bool CGridSceneNode::AreAxisLineActive()
+bool CGridSceneNode::AreAxisLineActive() const
 {
     return m_AxisLineState;
 }
  
-video::SColor CGridSceneNode::GetAxisLineXColor()
+video::SColor CGridSceneNode::GetAxisLineXColor() const
 {
     return m_XLineColor;
 }
  
-video::SColor CGridSceneNode::GetAxisLineZColor()
+video::SColor CGridSceneNode::GetAxisLineZColor() const
 {
     return m_ZLineColor;
 }
@@ -300,7 +303,7 @@ void CGridSceneNode::SetAxisLineZColor(video::SColor ZLine)
     m_ZLineColor = ZLine;
 }
  
-void CGridSceneNode::SetMaterial(video::SMaterial newMaterial)
+void CGridSceneNode::SetMaterial(video::SMaterial newMaterial) const
 {
     m_buffer->getMaterial() = newMaterial;
 }
