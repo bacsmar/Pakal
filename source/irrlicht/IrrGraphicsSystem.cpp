@@ -22,6 +22,7 @@
 #include <components/AnimatedMeshComponent.h>
 #include <components/AnimatedMeshComponent_Irrlitch.h>
 #include <components/GridComponent_Irrlicht.h>
+#include <components/TerrainComponent_Irrlicht.h>
 
 
 using namespace irr;
@@ -219,6 +220,7 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
 	factories.emplace_back( CreateComponentFactory<AnimatedMeshComponent,AnimatedMeshComponent_Irrlitch>(this));
 	factories.emplace_back( CreateComponentFactory<GridComponent, GridComponent_Irrlicht>(this));
+	factories.emplace_back( CreateComponentFactory<TerrainComponent, TerrainComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<TileMapComponent, TileMapComponent_Irrlicht>(this));

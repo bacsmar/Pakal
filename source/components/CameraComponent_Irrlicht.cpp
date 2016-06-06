@@ -46,29 +46,19 @@ Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::get_rotation() const
 	return{ rotation.X , rotation.Y, rotation.Z };
 }
 
-void Pakal::CameraComponent_Irrlicht::set_target(const tmath::vector3df& targetPosition)
+Pakal::BasicTaskPtr Pakal::CameraComponent_Irrlicht::set_target(const tmath::vector3df& targetPosition)
 {
-	m_system->execute_block([=]()
+	return m_system->execute_block([=]()
 	{
 		m_camera->setTarget({ targetPosition.x, targetPosition.y, targetPosition.z });
 	});
 }
 
-void Pakal::CameraComponent_Irrlicht::set_position(const tmath::vector3df& position)
+Pakal::BasicTaskPtr Pakal::CameraComponent_Irrlicht::set_position(const tmath::vector3df& position)
 {
-	m_system->execute_block([=]()
+	return m_system->execute_block([=]()
 	{
 		m_camera->setPosition({ position.x, position.y, position.z });
-	});
-}
-
-void Pakal::CameraComponent_Irrlicht::set_target_and_position(const tmath::vector3df& targetPosition, const tmath::vector3df& position)
-{
-	m_system->execute_block([=]()
-	{
-		m_camera->setTarget({ targetPosition.x, targetPosition.y, targetPosition.z });
-		m_camera->setPosition({ position.x, position.y, position.z });
-		
 	});
 }
 

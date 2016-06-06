@@ -18,9 +18,9 @@ namespace Pakal
 
 		void	set_rotation(const tmath::vector3df & rotation) override;
 		tmath::vector3df	get_rotation() const override;
-		void	set_target(const tmath::vector3df & targetPosition) override;
-		void	set_position(const tmath::vector3df & position) override;
-		void	set_target_and_position(const tmath::vector3df & target, const tmath::vector3df & position) override;
+		BasicTaskPtr	set_target(const tmath::vector3df & targetPosition) override;
+		BasicTaskPtr	set_position(const tmath::vector3df & position) override;
+		
 		tmath::vector3df camera_translate_cordinate_to_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size)override;
 		tmath::vector3df camera_cast_ray_from_screen_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size)override;
 		tmath::vector3df get_position() const override;

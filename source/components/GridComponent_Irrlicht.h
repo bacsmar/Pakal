@@ -19,6 +19,7 @@ namespace Pakal
 		virtual ~GridComponent_Irrlicht();
 		void show() override;
 		void hide() override;
+
 		BasicTaskPtr initialize(const Settings& settings) override;
 		BasicTaskPtr destroy() override;
 	};

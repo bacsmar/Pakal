@@ -269,6 +269,9 @@
     <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp">
       <Filter>Components\GFX</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp">
+      <Filter>Components\GFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -730,6 +733,12 @@
       <Filter>Components\GFX</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\GridComponent_Irrlicht.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TerrainComponent.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
   </ItemGroup>

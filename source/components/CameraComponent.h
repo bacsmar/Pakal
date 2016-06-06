@@ -22,10 +22,9 @@ namespace Pakal
 		virtual void set_rotation(const tmath::vector3df & rotation) = 0;
 		virtual tmath::vector3df get_rotation() const = 0;
 
-		virtual void set_target(const tmath::vector3df & targetPosition)= 0;
+		virtual BasicTaskPtr set_target(const tmath::vector3df & targetPosition)= 0;
+		virtual BasicTaskPtr set_position(const tmath::vector3df & position) = 0;
 
-		virtual void set_position(const tmath::vector3df & position) = 0;
-		virtual void set_target_and_position(const tmath::vector3df & target, const tmath::vector3df & position) = 0;
 		virtual tmath::vector3df camera_translate_cordinate_to_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size) = 0;
 		virtual tmath::vector3df camera_cast_ray_from_screen_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size) = 0;
 		virtual tmath::vector3df  get_position() const = 0;
