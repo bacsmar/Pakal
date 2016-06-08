@@ -95,7 +95,7 @@ namespace Pakal
 
 	void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
 	{		
-		OSManager::WindowArgs e;
+		Pakal::WindowArgs e;
 		e.windowId = (unsigned)window;
 		e.size_x = ANativeWindow_getWidth(window);
 		e.size_y = ANativeWindow_getHeight(window);
@@ -103,19 +103,19 @@ namespace Pakal
 	}
 	void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* window)
 	{		
-		OSManager::WindowArgs e;
+		Pakal::WindowArgs e;
 		e.windowId = (unsigned)window;
 		get_osWrapper()->on_window_destroyed(e);		
 	}
 	void onNativeWindowRedrawNeeded(ANativeActivity* activity, ANativeWindow* window)
 	{
-		OSManager::WindowArgs e;
+		Pakal::WindowArgs e;
 		e.windowId = (unsigned)window;
 		get_osWrapper()->on_window_redraw_needed(e);
 	}
 	void onNativeWindowResized(ANativeActivity* activity, ANativeWindow* window)
 	{
-		OSManager::WindowArgs e;
+		Pakal::WindowArgs e;
 		e.windowId = (unsigned)window;
 		e.size_x = ANativeWindow_getWidth(window);
 		e.size_y = ANativeWindow_getHeight(window);
@@ -196,7 +196,7 @@ void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void*
 	// let sfml register the activity and stuff.. but.. 
 	sf::ANativeActivity_onCreate(activity, savedState, savedStateSize);	
 		
-	Pakal::OSManagerInstance = &OSManager::instance();	// set OSManager Instance
+	Pakal::OSManagerInstance = &static_cast<OsWrapperAndroid&>(OsWrapperAndroid::instance());	// set OSManager Instance
 
 	get_osWrapper()->activity = activity;
 	//OSManager::instance().configuration = AConfiguration_new();
@@ -233,4 +233,36 @@ void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void*
 std::string OsWrapperAndroid::get_app_path()
 {
 	return std::string(activity->obbPath) + "/";
+}
+
+void OsWrapperAndroid::on_app_started()
+{
+}
+
+void OsWrapperAndroid::on_app_resumed()
+{
+}
+
+void OsWrapperAndroid::on_app_paused()
+{
+}
+
+void OsWrapperAndroid::on_app_stoped()
+{
+}
+
+void OsWrapperAndroid::on_app_finished()
+{
+}
+
+void OsWrapperAndroid::on_window_redraw_needed(const WindowArgs& windowArgs)
+{
+}
+
+void OsWrapperAndroid::on_window_resized(const WindowArgs& windowArgs)
+{
+}
+
+void OsWrapperAndroid::on_window_focused(bool b)
+{
 }
