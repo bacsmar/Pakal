@@ -2,8 +2,6 @@
 //
 //
 ////////////////////////////////////////////////////////////
-
-#pragma once
 #include "Sprite.h"
 #include "persist/Archive.h"
 #include "persist/TextReader.h"

@@ -55,8 +55,7 @@ namespace Pakal
 		Box2DPhysicsSystem* m_system = nullptr;
 	private:
 		std::unordered_map<std::string,b2Body*> m_bodies;
-		b2Body*	m_active_body = nullptr;
-		float m_normalization_factor = 1.f;
+		b2Body*	m_active_body = nullptr;		
 		float m_scale = 1.f;
 		std::vector<b2Fixture*> m_fixtures;
 	};	

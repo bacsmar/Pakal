@@ -63,6 +63,7 @@
     <IncludePath>$(VS_NdkRoot)/sources/android/support/include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\build\tmp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <UseMultiToolTask>true</UseMultiToolTask>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
@@ -93,13 +94,14 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CppLanguageStandard>gnu++11</CppLanguageStandard>
-      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;NDEBUG;PICOJSON_USE_LOCALE=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs\pugixml\src;$(SolutionDir)/libs/librocket/include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFileDirectory>$(OutDir)</PrecompiledHeaderOutputFileDirectory>
       <ExceptionHandling>Enabled</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\android\OsWrapperAndroid.h" />
     <ClInclude Include="..\source\components\AnimatedMeshComponent.h" />
     <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\components\CameraComponent.h" />
@@ -127,6 +129,7 @@
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
     <ClInclude Include="..\source\components\TerrainComponent.h" />
     <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\UIComponent.h" />
     <ClInclude Include="..\source\Entity.h" />
     <ClInclude Include="..\source\EntityDescriptor.h" />
@@ -176,6 +179,7 @@
     <ClInclude Include="..\source\StateMachine.h" />
     <ClInclude Include="..\source\ThreadPool.h" />
     <ClInclude Include="..\source\Timer.h" />
+    <ClInclude Include="..\source\unix\ClockImpl.h" />
     <ClInclude Include="..\source\Utils.h" />
     <ClInclude Include="..\source\components\Sprite.h" />
     <ClInclude Include="..\source\components\SpriteComponent.h" />
@@ -248,12 +252,13 @@
     <ClInclude Include="..\source\Task.h" />
     <ClInclude Include="..\source\TaskFwd.h" />
     <ClInclude Include="..\source\PakalTime.h" />
-    <ClInclude Include="..\source\win32\ClockImpl.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\android\OsWrapperAndroid.cpp" />
     <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\CharacterComponent.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />
@@ -267,7 +272,9 @@
     <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
+    <ClCompile Include="..\source\components\Sprite.cpp" />
     <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\Entity.cpp" />
     <ClCompile Include="..\source\EntityDescriptor.cpp" />
     <ClCompile Include="..\source\EntityManager.cpp" />
@@ -320,6 +327,7 @@
     <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
+    <ClCompile Include="..\source\unix\ClockImpl.cpp" />
     <ClCompile Include="..\source\WindowCreatorSFML.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />

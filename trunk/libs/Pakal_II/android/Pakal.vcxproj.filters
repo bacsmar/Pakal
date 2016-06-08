@@ -263,6 +263,21 @@
     <ClCompile Include="..\source\Entity.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\Sprite.cpp">
+      <Filter>Components\GFX\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\android\OsWrapperAndroid.cpp">
+      <Filter>Foundation\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\unix\ClockImpl.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\CharacterComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -406,9 +421,6 @@
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Clock.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\win32\ClockImpl.h">
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\source\PakalTime.h">
@@ -712,6 +724,15 @@
     <ClInclude Include="..\source\Entity.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\android\OsWrapperAndroid.h">
+      <Filter>Foundation\Android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\unix\ClockImpl.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -815,6 +836,9 @@
     </Filter>
     <Filter Include="Components\UI">
       <UniqueIdentifier>{a00f8b76-a6ba-40cb-8e8f-bdcac32143be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Android">
+      <UniqueIdentifier>{f8dd78bb-d5ad-4097-9bb0-18d207ed333c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@ namespace Pakal
 	{
 		DECLARE_RTTI_WITH_BASE(AutomataComponent, Component);
 	public:
-		~AutomataComponent() override;
+		virtual ~AutomataComponent() override;
 		AutomataComponent();
 
 		void update() const;

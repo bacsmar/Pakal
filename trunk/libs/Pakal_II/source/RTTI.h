@@ -11,6 +11,7 @@
 #include "Config.h"
 #include <type_traits>
 #include <string>
+#include "Utils.h"
 
 namespace Pakal
 {
@@ -69,11 +70,7 @@ namespace Pakal
 			return is_RTTI_valid<T, Root>();
 		}
 	};
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	namespace crypt_utils
-	{
-		extern uint32_t hash_joaat(const std::string& key);	// from utils.h
-	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	class _PAKALExport RTTI
 	{
