@@ -57,7 +57,7 @@ namespace Pakal
 		BasicTaskPtr pause() override final;
 		BasicTaskPtr resume() override final;
 
-		BasicTaskPtr execute_block(const std::function<void()>& block);
+		BasicTaskPtr execute_block(const std::function<void()>& block) override final;
 	};
 
 }

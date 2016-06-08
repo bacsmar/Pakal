@@ -6,9 +6,6 @@
     <ClCompile Include="..\source\GraphicsSystem.cpp">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\LogMgr.cpp">
       <Filter>Managers\LogManager</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
     <ClCompile Include="..\source\EngineSettings.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp">
-      <Filter>Components\Body</Filter>
     </ClCompile>
     <ClCompile Include="..\source\InputManager_SFML.cpp">
       <Filter>Managers\InputManager</Filter>
@@ -194,20 +188,86 @@
     <ClCompile Include="..\source\luaintf\src\LuaState.cpp">
       <Filter>Foundation\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
       <Filter>Components\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PakalMath.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\UVMapping.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\common\shapes.cc">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.cc">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.cc">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.cc">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.cc">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp">
+      <Filter>Components\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp">
+      <Filter>Components\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\InputHandlerComponent.cpp">
+      <Filter>Components\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
+      <Filter>Components\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
+      <Filter>Components\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntityDescriptor.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\EntityManager.cpp">
+      <Filter>Managers\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Entity.cpp">
+      <Filter>Managers\EntityManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
     <ClInclude Include="..\source\BaseGameState.h">
       <Filter>Managers\GameStateManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
-      <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\LogMgr.h">
       <Filter>Managers\LogManager</Filter>
@@ -254,9 +314,6 @@
     <ClInclude Include="..\source\IDebugDrawer.h">
       <Filter>Systems\GraphicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
-      <Filter>Systems\GraphicsSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\TaskFwd.h">
       <Filter>Managers\EventManager</Filter>
     </ClInclude>
@@ -273,9 +330,6 @@
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\EntitySystem.h">
-      <Filter>Managers\EntityManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\IEntity.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\GenericEntity.h">
@@ -344,15 +398,6 @@
     </ClInclude>
     <ClInclude Include="..\source\ComponentFactory.h">
       <Filter>Managers\ComponentManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent.h">
-      <Filter>Components\Body</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\BodyComponent_Box2D.h">
-      <Filter>Components\Body</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\Shapes.h">
-      <Filter>Components\Body</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IInputManager.h">
       <Filter>Managers\InputManager</Filter>
@@ -492,9 +537,6 @@
     <ClInclude Include="..\source\components\ScriptComponent.h">
       <Filter>Components\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysics.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\GamepadComponent.h">
       <Filter>Components\Input</Filter>
     </ClInclude>
@@ -558,12 +600,6 @@
     <ClInclude Include="..\source\components\CppBindClass_lua.h">
       <Filter>Components\Script</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\PakalMath.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -574,6 +610,108 @@
       <Filter>Components\GFX</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\GridSceneNode.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\MeshBuilder.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\MeshFns.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\UVMapping.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\VertexInfo.h">
+      <Filter>Components\GFX\DynamicMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\shapes.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\utils.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\poly2tri.h">
+      <Filter>Components\GFX\DynamicMesh\PolyTri</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h">
+      <Filter>Components\GFX\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GridComponent.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TerrainComponent.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h">
+      <Filter>Components\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\ICharacterHandler.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\InputHandlerComponent.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysics.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
+      <Filter>Components\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\rocketgui\RocketUIComponents.h">
+      <Filter>Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\components\UIComponent.h">
+      <Filter>Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntityDescriptor.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\EntityManager.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Entity.h">
+      <Filter>Managers\EntityManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Systems">
@@ -651,9 +789,6 @@
     <Filter Include="Components\Input">
       <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Components\Body">
-      <UniqueIdentifier>{be2b3729-8acc-4761-a9d9-6abf4bf147be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Foundation\Lua">
       <UniqueIdentifier>{ee993985-72fd-4ec3-a022-f45f81614f43}</UniqueIdentifier>
     </Filter>
@@ -665,6 +800,21 @@
     </Filter>
     <Filter Include="Components\GFX\Mesh">
       <UniqueIdentifier>{8a88f294-d7a7-4573-aa10-6048a2492c59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems\GraphicsSystem\Irrlicht">
+      <UniqueIdentifier>{f456a1ba-5811-4a18-b391-e4c69b8e4500}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Physics">
+      <UniqueIdentifier>{0db26e14-2819-4661-a3f0-5a2faca02a79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\DynamicMesh">
+      <UniqueIdentifier>{8dcc888d-0625-4b73-87ef-2ccf5d7927f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\GFX\DynamicMesh\PolyTri">
+      <UniqueIdentifier>{2214687b-8a17-40ef-b27f-d826876bc2b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\UI">
+      <UniqueIdentifier>{a00f8b76-a6ba-40cb-8e8f-bdcac32143be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

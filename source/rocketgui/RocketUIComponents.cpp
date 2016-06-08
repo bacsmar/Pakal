@@ -67,15 +67,14 @@ void Pakal::RocketLabel::set_font_color(unsigned color) const
 }
 
 void Pakal::RocketLabel::set_width(unsigned width) const
-{	
-	char buffer[24];
+{
 	if (m_element)
-		m_element->SetProperty("width", itoa(width,buffer, 10));
+		m_element->SetProperty("width", std::to_string(width).c_str());
 }
 
 void Pakal::RocketLabel::set_width_percent(unsigned width) const
 {	
-	auto buffer = std::to_string(width)+"%";
+	auto buffer = std::to_string(width) + '%';
 	if (m_element)
 		m_element->SetProperty("width", buffer.c_str());
 }

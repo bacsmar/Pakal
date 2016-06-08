@@ -18,7 +18,7 @@ namespace Pakal
 	{
 	public:
 
-		enum class MaterialType
+		enum class MaterialType : int
 		{
 			EMT_TRANSPARENT_REF,
 			EMT_TRANSPARENT_ALPHA_CHANNEL,
@@ -40,7 +40,8 @@ namespace Pakal
 
 	private:
 		IrrGraphicsSystem* m_system = nullptr;
-		std::unordered_map<MaterialType,int> m_shaders;	// key = our type, value = irrlicht type
+		using ShaderMap = std::map<MaterialType, int>;
+		ShaderMap m_shaders;	// key = our type, value = irrlicht type
 
 		virtual bool create_materials();
 		void create_material_renderer(MaterialType type, const std::string vsFileName, const std::string& psFileName, 
