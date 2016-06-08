@@ -1,6 +1,6 @@
 #include "EntitySystem.h"
 #include "RTTI.h"
-#include "IEntity.h"
+#include "Entity.h"
 
 #include "Task.h"
 #include "InboxQueue.h"

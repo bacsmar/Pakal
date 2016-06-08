@@ -153,7 +153,7 @@ bool DynamicMesh::should_close_segment(const Segment& segment, SegmentSide side)
 	}
 
 	//Check if the segments are different
-	if (m_splitWhenDifferent && (side == SegmentSide::Left && segment.direction != segment.prev_direction || (side == SegmentSide::Right && segment.direction != segment.next_direction)))
+	if (m_splitWhenDifferent && ((side == SegmentSide::Left && segment.direction != segment.prev_direction) || (side == SegmentSide::Right && segment.direction != segment.next_direction)))
 	{
 		return true;
 	}

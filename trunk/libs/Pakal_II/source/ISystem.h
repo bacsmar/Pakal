@@ -31,6 +31,8 @@ namespace Pakal
 		virtual SystemState get_state() = 0;
 		virtual bool is_threaded() = 0;
 		virtual const char* get_system_name() = 0;
+
+		virtual BasicTaskPtr execute_block(const std::function<void()>& block) = 0;
 	};
 }
 

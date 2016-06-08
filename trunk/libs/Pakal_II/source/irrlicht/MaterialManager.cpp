@@ -1,7 +1,11 @@
 #include "MaterialManager.h"
 #include "MaterialCallbacks.h"
 
+#ifndef __ANDROID__
 #include <irrlicht/source/Irrlicht/OpenGLNoFixed/COGLFixedPipelineRenderer.h>
+#else
+#include <irrlicht/source/Irrlicht/COGLES2FixedPipelineRenderer.h>
+#endif
 
 using namespace irr;
 using namespace io;

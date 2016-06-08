@@ -100,10 +100,11 @@ namespace Pakal
 		static void persist(Archive* a, tmath::vector2di& rect);
 	};
 
-	Pakal::tmath::vector3df get_intersection_on_plane_and_line(
-		const Pakal::tmath::vector3df& lineVOrigin,
-		const Pakal::tmath::vector3df&  lineVDirection,
-		const Pakal::tmath::vector3df& plane_normal, double plane_D_value);
+	tmath::vector3df get_intersection_on_plane_and_line(
+		const tmath::vector3df& lineVOrigin,
+		const tmath::vector3df&  lineVDirection,
+		const tmath::vector3df& planeNormal, 
+		double planeDValue);
 
 
 }

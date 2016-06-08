@@ -92,19 +92,47 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <CppLanguageStandard>c++11</CppLanguageStandard>
-      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>gnu++11</CppLanguageStandard>
+      <PreprocessorDefinitions>ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs\pugixml\src;$(SolutionDir)/libs/librocket/include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFileDirectory>$(OutDir)</PrecompiledHeaderOutputFileDirectory>
       <ExceptionHandling>Enabled</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\components\AnimatedMeshComponent.h" />
+    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\components\CameraComponent.h" />
     <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\CppBindClass_lua.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\MeshBuilder.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\MeshFns.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\shapes.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\common\utils.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\poly2tri.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\UVMapping.h" />
+    <ClInclude Include="..\source\components\DynamicMesh\VertexInfo.h" />
+    <ClInclude Include="..\source\components\GridComponent.h" />
+    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\ICharacterHandler.h" />
+    <ClInclude Include="..\source\components\InputHandlerComponent.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
+    <ClInclude Include="..\source\components\TerrainComponent.h" />
+    <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\UIComponent.h" />
+    <ClInclude Include="..\source\Entity.h" />
+    <ClInclude Include="..\source\EntityDescriptor.h" />
+    <ClInclude Include="..\source\EntityManager.h" />
+    <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
+    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
@@ -135,6 +163,7 @@
     <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h" />
     <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h" />
     <ClInclude Include="..\source\rocketgui\RocketInput.h" />
+    <ClInclude Include="..\source\rocketgui\RocketUIComponents.h" />
     <ClInclude Include="..\source\script\ScriptableGameState.h" />
     <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
     <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
@@ -164,9 +193,7 @@
     <ClInclude Include="..\source\Clock.h" />
     <ClInclude Include="..\source\InputManager_SFML.h" />
     <ClInclude Include="..\source\IInputManager.h" />
-    <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\math\matrix.h" />
-    <ClInclude Include="..\source\components\BodyComponent.h" />
     <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
     <ClInclude Include="..\source\math\matrix3.h" />
@@ -188,7 +215,6 @@
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
     <ClInclude Include="..\source\SingletonHolder.h" />
-    <ClInclude Include="..\source\components\BodyComponent_Box2D.h" />
     <ClInclude Include="..\source\EventSystemUtils.h" />
     <ClInclude Include="..\source\GraphicsSystem.h" />
     <ClInclude Include="..\source\BasicTask.h" />
@@ -211,7 +237,6 @@
     <ClInclude Include="..\source\ComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
     <ClInclude Include="..\source\IDebugDrawer.h" />
-    <ClInclude Include="..\source\IEntity.h" />
     <ClInclude Include="..\source\InboxQueue.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
@@ -227,8 +252,28 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\common\shapes.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\advancing_front.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.cc" />
+    <ClCompile Include="..\source\components\DynamicMesh\UVMapping.cpp" />
+    <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp" />
+    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
     <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
+    <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp" />
+    <ClCompile Include="..\source\Entity.cpp" />
+    <ClCompile Include="..\source\EntityDescriptor.cpp" />
+    <ClCompile Include="..\source\EntityManager.cpp" />
+    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
+    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp" />
+    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppFunction.cpp" />
@@ -236,6 +281,7 @@
     <ClCompile Include="..\source\luaintf\src\LuaCompat.cpp" />
     <ClCompile Include="..\source\luaintf\src\LuaRef.cpp" />
     <ClCompile Include="..\source\luaintf\src\LuaState.cpp" />
+    <ClCompile Include="..\source\PakalMath.cpp" />
     <ClCompile Include="..\source\persist\JsonReader.cpp" />
     <ClCompile Include="..\source\persist\JsonWriter.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
@@ -251,6 +297,7 @@
     <ClCompile Include="..\source\persist\Archive.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
     <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
+    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp" />
     <ClCompile Include="..\source\script\ScriptableGameState.cpp" />
     <ClCompile Include="..\source\SimpleTimer.cpp" />
     <ClCompile Include="..\source\State.cpp" />
@@ -277,7 +324,6 @@
     <ClCompile Include="..\source\ResourceManager.cpp" />
     <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\source\System.cpp" />
-    <ClCompile Include="..\source\components\BodyComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
