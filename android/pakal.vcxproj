@@ -58,6 +58,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IncludePath>$(VS_NdkRoot)/sources/android/support/include;$(IncludePath)</IncludePath>
+    <IntDir>$(SolutionDir)\build\tmp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)\build\$(Platform)\$(Configuration)\</OutDir>
+    <UseMultiToolTask>true</UseMultiToolTask>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IncludePath>$(VS_NdkRoot)/sources/android/support/include;$(IncludePath)</IncludePath>
@@ -73,14 +76,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;_IRR_ANDROID_PLATFORM_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS</PreprocessorDefinitions>
-      <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs;$(SolutionDir)libs\pugixml\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;ANDROID;OS_ANDROID;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;__ANDROID__;PUGIXML_NO_EXCEPTIONS;PICOJSON_USE_LOCALE=0;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB</PreprocessorDefinitions>
+      <CppLanguageStandard>gnu++11</CppLanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs\Pakal_II\source;$(SolutionDir)libs\Box2D;$(SolutionDir)libs\oolua\include;$(SolutionDir)libs\lua\src;$(SolutionDir)libs\Irrlicht\include;$(SolutionDir)libs\SFML\include;$(SolutionDir)libs\pugixml\src;$(SolutionDir)/libs/librocket/include;$(SolutionDir)libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CLanguageStandard>Default</CLanguageStandard>
       <CompileAs>Default</CompileAs>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <ExceptionHandling>Enabled</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -360,9 +364,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\sfml-config\main\main.vcxproj">
       <Project>{2a40931b-762c-4656-b3fa-73448b18718f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\sfml-config\sfml-audio\sfml-audio.vcxproj">
-      <Project>{a51707a0-ee5b-4174-8fba-1a81bd9dccdc}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\sfml-config\sfml-window\sfml-window.vcxproj">
       <Project>{41537961-2cab-4260-8e7b-7d4657b42047}</Project>

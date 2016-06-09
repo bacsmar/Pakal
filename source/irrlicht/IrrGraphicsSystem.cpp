@@ -24,6 +24,10 @@
 #include <components/GridComponent_Irrlicht.h>
 #include <components/TerrainComponent_Irrlicht.h>
 
+#ifdef PAKAL_ANDROID_PLATFORM
+#include "android/osWrapperAndroid.h"
+#endif
+
 
 using namespace irr;
 using namespace irr::core;
@@ -43,7 +47,8 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
 	smgr(nullptr),
 	guienv(nullptr),
 	m_render_info(new RendererInfo())
-{}
+{
+}
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
 {
@@ -63,12 +68,14 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	//parameters.DriverType = EDT_OPENGL_NO_FIXED;
 	parameters.WindowId = reinterpret_cast<void*>(args.windowId);	
 	parameters.WindowSize = dimension2di(args.size_x, args.size_y);	
-	parameters.OGLES2ShaderPath = m_settings.resources_dir.c_str();
+	parameters.OGLES2ShaderPath = m_settings.resources_dir.c_str();	
 
 #ifdef PAKAL_ANDROID_PLATFORM
-	parameters.DriverType = EDT_OGLES2;	
-	// TODO
-	//parameters.PrivateData = m_os_manager->activity;
+	parameters.DriverType = EDT_OGLES2;		
+	auto os_manger = &static_cast<OsWrapperAndroid&>(OsWrapperAndroid::instance());	// set OSManager Instance
+	LOG_DEBUG("[Graphic System] WindowId = %d", args.windowId);
+	LOG_DEBUG("[Graphic System] AndroidActivity = %X", os_manger->activity);
+	parameters.PrivateData = os_manger->activity;
 	parameters.OGLES2ShaderPath = "";
 #endif		
 	device = createDeviceEx(parameters);
@@ -76,6 +83,8 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();	
+
+	LOG_DEBUG("[Graphic System] adding file sources");
 
 	ResourceMgr.register_source<DirectorySource>([this]() { return new DirectorySourceIrrlitch(device->getFileSystem()); });
 	ResourceMgr.register_source<ZipSource>([this]() { return new ZipSourceIrrlitch(device->getFileSystem()); });

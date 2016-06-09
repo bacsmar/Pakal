@@ -12,8 +12,6 @@
 #include <string>
 #include "ResourceManager.h"
 
-#include "OSManager.h"
-
 namespace Pakal
 {
 	class MaterialManager;
