@@ -20,8 +20,10 @@
 
 #ifdef PAKAL_USE_DUMMY_GRAPHICS
 	#include "DummyGraphicsSystem.h"
+#if defined(PAKAL_WIN32_PLATFORM)
 	#pragma comment(lib, "opengl32.lib")
 	#pragma comment(lib, "winmm.lib")
+#endif
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1
@@ -36,11 +38,13 @@
 
 #if PAKAL_USE_ROCKET == 1
 	#include "rocketgui/IrrRocketGUI.h"
+#if defined(PAKAL_WIN32_PLATFORM)
 	#pragma comment(lib, "RocketControls.lib")
 	#pragma comment(lib, "RocketCore.lib")
 #endif
+#endif
 
-#if PAKAL_USE_SCRIPTS
+#if PAKAL_USE_SCRIPTS && defined(PAKAL_WIN32_PLATFORM)
 #pragma comment(lib, "oolua.lib")
 #pragma comment(lib, "lua.lib")
 #endif
