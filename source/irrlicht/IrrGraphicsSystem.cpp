@@ -73,8 +73,6 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 #ifdef PAKAL_ANDROID_PLATFORM
 	parameters.DriverType = EDT_OGLES2;		
 	auto os_manger = &static_cast<OsWrapperAndroid&>(OsWrapperAndroid::instance());	// set OSManager Instance
-	LOG_DEBUG("[Graphic System] WindowId = %d", args.windowId);
-	LOG_DEBUG("[Graphic System] AndroidActivity = %X", os_manger->activity);
 	parameters.PrivateData = os_manger->activity;
 	parameters.OGLES2ShaderPath = "";
 #endif		
@@ -99,6 +97,9 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	}
 
 	LOG_INFO("[Graphic System] Starting irrlicht...done");	
+
+	//fpsText = guienv->addStaticText(L"", rect<s32>(40, 40, 60, 62), true);
+	//fpsText->setOverrideColor(video::SColor(255, 255, 255, 255));	
 
 	// setting up events
 	OSMgr.event_window_resized += {m_resized_callback_id, [this](const WindowArgs& a)
@@ -191,6 +192,8 @@ void IrrGraphicsSystem::draw()
 	//{
 		draw_axis();
 	//}
+
+	//fpsText->setText(core::stringw(driver->getFPS()).c_str());
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
@@ -226,10 +229,10 @@ void IrrGraphicsSystem::register_component_factories(std::vector<IComponentFacto
 {
 	LOG_INFO("[Graphic System] Registering Irrlicht Components");
 
-	factories.emplace_back( CreateComponentFactory<MeshComponent,MeshComponent_Irrlitch>(this));
-	factories.emplace_back( CreateComponentFactory<AnimatedMeshComponent,AnimatedMeshComponent_Irrlitch>(this));
-	factories.emplace_back( CreateComponentFactory<GridComponent, GridComponent_Irrlicht>(this));
-	factories.emplace_back( CreateComponentFactory<TerrainComponent, TerrainComponent_Irrlicht>(this));
+	factories.emplace_back(CreateComponentFactory<MeshComponent, MeshComponent_Irrlitch>(this));
+	factories.emplace_back(CreateComponentFactory<AnimatedMeshComponent, AnimatedMeshComponent_Irrlitch>(this));
+	factories.emplace_back(CreateComponentFactory<GridComponent, GridComponent_Irrlicht>(this));
+	factories.emplace_back(CreateComponentFactory<TerrainComponent, TerrainComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<SpriteComponent, SpriteComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<CameraComponent, CameraComponent_Irrlicht>(this));
 	factories.emplace_back(CreateComponentFactory<TileMapComponent, TileMapComponent_Irrlicht>(this));

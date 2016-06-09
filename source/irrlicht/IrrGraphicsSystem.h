@@ -47,7 +47,8 @@ namespace Pakal
 		MaterialManager*			m_material_manager = nullptr;
 
 		RendererInfo				*m_render_info = nullptr;
-		std::vector<IDebugDrawerClient*>	m_debug_renderers;		
+		std::vector<IDebugDrawerClient*>	m_debug_renderers;
+		//irr::gui::IGUIStaticText* fpsText = nullptr;
 		virtual ~IrrGraphicsSystem();
 
 		void on_init_graphics(const WindowArgs& args) override;
