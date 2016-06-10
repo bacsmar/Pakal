@@ -8,7 +8,6 @@
 
 #include "EventSystemUtils.h"
 
-
 namespace Pakal
 {
 		using EventId = unsigned;
@@ -37,7 +36,7 @@ namespace Pakal
 			EventId* id;
 			std::thread::id tid;
 
-			Delegate(EventId& id, const std::function<void(const TArgs&)>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			Delegate(EventId& id, const std::function<void(const TArgs&)>&& callback, std::thread::id tId = NULL_THREAD) : callback(callback), id(&id), tid(tId)
 			{}
 		};
 		template <>
@@ -47,7 +46,7 @@ namespace Pakal
 			EventId* id;
 			std::thread::id tid;
 
-			Delegate(EventId& id,const std::function<void()>&& callback, std::thread::id tid = NULL_THREAD) : callback(callback), id(&id)
+			Delegate(EventId& id,const std::function<void()>&& callback, std::thread::id tId = NULL_THREAD) : callback(callback), id(&id), tid(tId)
 			{}
 		};
 

@@ -252,6 +252,10 @@ namespace Pakal
 		unsigned windowId = 0;
 		unsigned size_x = 0;
 		unsigned size_y = 0;
+		WindowArgs(unsigned window_id, unsigned sizeX, unsigned sizeY) : 
+			windowId(window_id), size_x(sizeX), size_y(sizeY){}
+		WindowArgs():
+			windowId(0), size_x(0), size_y(0) {}
 	};
 
 	struct TextArgs

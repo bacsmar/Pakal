@@ -16,148 +16,14 @@ static void Android_JNI_ThreadDestroyed(void*);
 //// PAKAL
 namespace Pakal
 {
-//	static OsWrapperAndroid* OSManagerInstance = nullptr;
-//
-//	inline OsWrapperAndroid* get_osWrapper()
-//	{
-//		ASSERT(OSManagerInstance);
-//		return OSManagerInstance;
-//	}
-//
-//	static void print_cur_config()
-//	{
-//		char lang[2], country[2];
-//		AConfiguration_getLanguage(get_osWrapper()->configuration, lang);
-//		AConfiguration_getCountry(get_osWrapper()->configuration, country);
-//
-//		LOG_ERROR("Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d "
-//			"keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d "
-//			"modetype=%d modenight=%d",
-//			AConfiguration_getMcc(get_osWrapper()->configuration),
-//			AConfiguration_getMnc(get_osWrapper()->configuration),
-//			lang[0], lang[1], country[0], country[1],
-//			AConfiguration_getOrientation(get_osWrapper()->configuration),
-//			AConfiguration_getTouchscreen(get_osWrapper()->configuration),
-//			AConfiguration_getDensity(get_osWrapper()->configuration),
-//			AConfiguration_getKeyboard(get_osWrapper()->configuration),
-//			AConfiguration_getNavigation(get_osWrapper()->configuration),
-//			AConfiguration_getKeysHidden(get_osWrapper()->configuration),
-//			AConfiguration_getNavHidden(get_osWrapper()->configuration),
-//			AConfiguration_getSdkVersion(get_osWrapper()->configuration),
-//			AConfiguration_getScreenSize(get_osWrapper()->configuration),
-//			AConfiguration_getScreenLong(get_osWrapper()->configuration),
-//			AConfiguration_getUiModeType(get_osWrapper()->configuration),
-//			AConfiguration_getUiModeNight(get_osWrapper()->configuration));
-//	}
-//
-//	void onStart(ANativeActivity* activity)
-//	{
-//		get_osWrapper()->on_app_started();
-//	}
-//
-//	void onResume(ANativeActivity* activity)
-//	{
-//		get_osWrapper()->on_app_resumed();
-//	}
-//
-//	void onPause(ANativeActivity* activity)
-//	{
-//		get_osWrapper()->on_app_paused();
-//	}
-//
-//	void onStop(ANativeActivity* activity)
-//	{
-//		get_osWrapper()->on_app_stoped();
-//	}
-//
-//	void onDestroy(ANativeActivity* activity)
-//	{
-//		int orientation = AConfiguration_getOrientation(get_osWrapper()->configuration);
-//		if (orientation == get_osWrapper()->orientation)
-//		{
-//			get_osWrapper()->on_app_finished();
-//		}		
-//	}
-//
-//	void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
-//	{
-//		Pakal::WindowArgs e;
-//		e.windowId = (unsigned)window;
-//		e.size_x = ANativeWindow_getWidth(window);
-//		e.size_y = ANativeWindow_getHeight(window);
-//		get_osWrapper()->on_window_created(e);
-//	}
-//
-//	void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* window)
-//	{
-//		Pakal::WindowArgs e;
-//		e.windowId = (unsigned)window;
-//		get_osWrapper()->on_window_destroyed(e);
-//	}
-//
-//	void onNativeWindowRedrawNeeded(ANativeActivity* activity, ANativeWindow* window)
-//	{
-//		Pakal::WindowArgs e;
-//		e.windowId = (unsigned)window;
-//		get_osWrapper()->on_window_redraw_needed(e);
-//	}
-//
-//	void onNativeWindowResized(ANativeActivity* activity, ANativeWindow* window)
-//	{
-//		Pakal::WindowArgs e;
-//		e.windowId = (unsigned)window;
-//		e.size_x = ANativeWindow_getWidth(window);
-//		e.size_y = ANativeWindow_getHeight(window);
-//		get_osWrapper()->on_window_resized(e);
-//	}
-//
-//	void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
-//	{
-//		//sf::onInputQueueCreated(activity, queue); //SFML
-//	}
-//
-//	void onInputQueueDestroyed(ANativeActivity* activity, AInputQueue* queue)
-//	{
-//		//sf::onInputQueueDestroyed(activity, queue); //SFML
-//	}
-//
-//	void onWindowFocusChanged(ANativeActivity* activity, int hasFocus)
-//	{
-//		get_osWrapper()->on_window_focused(hasFocus != 0);
-//	}
-//
-//	void onContentRectChanged(ANativeActivity* activity, const ARect* rect)
-//	{
-//		//sf::onContentRectChanged(activity, rect);	//SFML
-//	}
-//
-//	void onConfigurationChanged(ANativeActivity* activity)
-//	{
-//		AConfiguration* config = get_osWrapper()->configuration;
-//
-//		AConfiguration_getOrientation(config);
-//		AConfiguration_fromAssetManager(config, activity->assetManager);
-//		print_cur_config();
-//	}
-//
-//	void* onSaveInstanceState(ANativeActivity* activity, size_t* outSize)
-//	{
-//		return nullptr;
-//	}
-//
-//	void onLowMemory(ANativeActivity* activity)
-//	{
-//	}
 }
 
 OsWrapperAndroid::~OsWrapperAndroid()
 {
-//	AConfiguration_delete(configuration);
 }
 
 OsWrapperAndroid::OsWrapperAndroid(): activity(nullptr)
 {
-	//configuration = AConfiguration_new();
 }
 
 //void OsWrapperAndroid::ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize)

@@ -47,7 +47,7 @@ namespace Pakal
 		}
 		const irr::io::path& getFileName() const override
 		{
-			ASSERT_MSG(false, "esperaba no llegar a esto, creo que tendre que hacer una pequeña modificacion al resourcemanager");
+			ASSERT_MSG(false, "esperaba no llegar a esto, creo que tendre que hacer una pequena modificacion al resourcemanager");
 			static irr::io::path blank;
 			return blank;
 		}
