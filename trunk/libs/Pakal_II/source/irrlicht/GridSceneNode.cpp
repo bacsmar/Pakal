@@ -19,7 +19,8 @@ CGridSceneNode::CGridSceneNode(ISceneNode* parent, scene::ISceneManager* smgr, s
     m_buffer->getMaterial().FogEnable = false;
     m_buffer->getMaterial().ZWriteEnable = false;
     m_buffer->getMaterial().BackfaceCulling = true;
-    m_buffer->getMaterial().AntiAliasing = true;
+    m_buffer->getMaterial().AntiAliasing = true;	
+	m_buffer->setHardwareMappingHint(scene::EHM_STATIC);
 	//m_buffer->getMaterial().MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
  
     // Set the default culling state to Frustum Box
