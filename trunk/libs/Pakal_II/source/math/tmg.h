@@ -142,6 +142,44 @@ namespace Pakal
 			outVector.y += center.y;
 		}
 
+		//! Builds a direction vector from (this) rotation vector.
+		/** This vector is assumed to be a rotation vector composed of 3 Euler angle rotations, in degrees.
+		The implementation performs the same calculations as using a matrix to do the rotation.
+
+		\param[in] forwards  The direction representing "forwards" which will be rotated by this vector.
+		If you do not provide a direction, then the +Z axis (0, 0, 1) will be assumed to be forwards.
+		\return A direction vector calculated by rotating the forwards direction by the 3 Euler angles
+		(in degrees) represented by this vector. */
+		template<class T>
+		Pakal::tmath::vectorn<T, 3> rotationToDirection(const tmath::vectorn<T, 3> & rotation_vector, const tmath::vectorn<T, 3> & forwards = tmath::vectorn<T, 3>( 0, 0, 1 ))
+		{
+			const double cr = cos(DEGTORAD64 * rotation_vector.x);
+			const double sr = sin(DEGTORAD64 * rotation_vector.x);
+			const double cp = cos(DEGTORAD64 * rotation_vector.y);
+			const double sp = sin(DEGTORAD64 * rotation_vector.y);
+			const double cy = cos(DEGTORAD64 * rotation_vector.z);
+			const double sy = sin(DEGTORAD64 * rotation_vector.z);
+
+			const double srsp = sr*sp;
+			const double crsp = cr*sp;
+
+			const double pseudoMatrix[] = {
+				(cp*cy), (cp*sy), (-sp),
+				(srsp*cy - cr*sy), (srsp*sy + cr*cy), (sr*cp),
+				(crsp*cy + sr*sy), (crsp*sy - sr*cy), (cr*cp) };
+
+			return tmath::vectorn<T, 3>(
+				(T)(forwards.x * pseudoMatrix[0] +
+					forwards.y * pseudoMatrix[3] +
+					forwards.z * pseudoMatrix[6]),
+				(T)(forwards.x * pseudoMatrix[1] +
+					forwards.y * pseudoMatrix[4] +
+					forwards.z * pseudoMatrix[7]),
+				(T)(forwards.x * pseudoMatrix[2] +
+					forwards.y * pseudoMatrix[5] +
+					forwards.z * pseudoMatrix[8]));
+		}
+
 		/// Converts a quaternion orientation into euler angles
 		template<class T>
 		void q2e(const tmath::quaternion<T>& q, T& anglex, T& angley, T& anglez)
