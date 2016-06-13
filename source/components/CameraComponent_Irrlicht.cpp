@@ -62,7 +62,17 @@ Pakal::BasicTaskPtr Pakal::CameraComponent_Irrlicht::set_position(const tmath::v
 	});
 }
 
-Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::camera_translate_cordinate_to_point(const Pakal::tmath::vector2df& cordinate, const Pakal::tmath::vector2df& scene_size)
+void Pakal::CameraComponent_Irrlicht::set_target_and_position(const tmath::vector3df& targetPosition, const tmath::vector3df& position)
+{
+	m_system->execute_block([=]()
+	{
+		m_camera->setTarget({ targetPosition.x, targetPosition.y, targetPosition.z });
+		m_camera->setPosition({ position.x, position.y, position.z });
+
+	});
+}
+
+Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::translate_cordinate_to_point(const Pakal::tmath::vector2df& cordinate, const Pakal::tmath::vector2df& scene_size)
 {
 	const irr::scene::SViewFrustum* f = m_camera->getViewFrustum();
 	irr::core::vector3df nearLeftUp = f->getNearLeftUp();//--- get how many units we see
@@ -82,7 +92,7 @@ Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::camera_translate_cordin
 	return pakal_world_point;
 }
 
-Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::camera_cast_ray_from_screen_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size)
+Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::cast_ray_from_screen_point(const Pakal::tmath::vector2df & cordinate, const Pakal::tmath::vector2df & screen_size)
 {
   
 	const irr::scene::SViewFrustum* f = m_camera->getViewFrustum();
