@@ -19,7 +19,7 @@ namespace Pakal
 			std::string msg;
 		};
 
-		Pakal::Event<UIMessage> evt_ui;
+		Pakal::Event<const UIMessage&> evt_ui;
 	};
 
 	class _PAKALExport UILabel : public Component, public UIElement
@@ -34,5 +34,19 @@ namespace Pakal
 		virtual int get_width() const = 0;
 		virtual void terminate() = 0;
 		virtual ~UILabel(){};
+	};
+
+	class _PAKALExport UILayout : public Component, public UIElement
+	{
+		DECLARE_RTTI_WITH_BASE(UILayout, Component);
+	public:
+		// pure virtual methods
+	};
+
+	class _PAKALExport UILayoutElement : public Component, public UIElement
+	{
+		DECLARE_RTTI_WITH_BASE(UILayoutElement, Component);
+	public:
+		// pure virtual methods
 	};
 }
