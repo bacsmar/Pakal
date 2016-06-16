@@ -48,7 +48,7 @@ namespace Pakal
 
 		RendererInfo				*m_render_info = nullptr;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;
-		//irr::gui::IGUIStaticText* fpsText = nullptr;
+		
 		virtual ~IrrGraphicsSystem();
 
 		void on_init_graphics(const WindowArgs& args) override;
