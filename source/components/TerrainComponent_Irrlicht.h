@@ -13,6 +13,7 @@ namespace Pakal
 
 		IrrGraphicsSystem				*m_system;
 		irr::scene::ITerrainSceneNode	*m_node;
+		irr::scene::ITriangleSelector	*m_terrain_selector;
 	public:
 
 		explicit TerrainComponent_Irrlicht(IrrGraphicsSystem* irrGraphicsSystem);;		

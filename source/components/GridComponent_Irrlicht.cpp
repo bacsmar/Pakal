@@ -33,6 +33,7 @@ Pakal::BasicTaskPtr Pakal::GridComponent_Irrlicht::initialize(const Settings& se
 	{
 		ASSERT(m_node == nullptr);		
 		m_node = new CGridSceneNode(m_system->get_smgr()->getRootSceneNode(), m_system->get_smgr(), -1, 1U);
+		m_node->setVisible(settings.visible);
 		m_node->drop();
 	});
 }

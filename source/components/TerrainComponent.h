@@ -15,7 +15,7 @@ namespace Pakal
 
 		struct Settings
 		{
-			std::string terrain_file_name;
+			std::string highmap_file_name;
 			std::string terrain_texture;
 			std::string terrain_detail_texture;
 			void persist(Archive* archive);
@@ -31,7 +31,7 @@ namespace Pakal
 
 	inline void TerrainComponent::Settings::persist(Archive* archive)
 	{
-		archive->value("file_name", terrain_file_name);
+		archive->value("highmap", highmap_file_name);
 		archive->value("texture", terrain_texture);
 		archive->value("detail_texture", terrain_detail_texture);
 	}
