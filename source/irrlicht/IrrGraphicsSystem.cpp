@@ -49,6 +49,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
 	m_render_info(new RendererInfo())
 {
 }
+
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
 {
@@ -96,10 +97,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 		r->set_drawer(m_render_info);
 	}
 
-	LOG_INFO("[Graphic System] Starting irrlicht...done");	
-
-	//fpsText = guienv->addStaticText(L"", rect<s32>(40, 40, 60, 62), true);
-	//fpsText->setOverrideColor(video::SColor(255, 255, 255, 255));	
+	LOG_INFO("[Graphic System] Starting irrlicht...done");
 
 	// setting up events
 	OSMgr.event_window_resized += {m_resized_callback_id, [this](const WindowArgs& a)
@@ -109,19 +107,23 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 
 	OSMgr.event_window_destroyed += {m_destroyed_callback_id, [this](const WindowArgs& a)
 	{
+		LOG_INFO("[Graphic System] window destroyed -> destroying surface");
+		//device->getContextManager()->destroyContext();
 		device->getContextManager()->destroySurface();
+		device->getContextManager()->terminate();
 	}, THIS_THREAD};
 
 	//// next time we only need to recreate the openGL context
 	OSMgr.event_window_created += {m_created_callback_id, [this](const WindowArgs& a)
+	//OSMgr.event_window_redraw_needed += {m_created_callback_id, [this](const WindowArgs& a)
 	{
+		LOG_INFO("[Graphic System] window %X created -> recreating surface", a.windowId);
 		SEvent event;
 		event.EventType = irr::EET_USER_EVENT;
-		event.UserEvent.UserData1 = 0;	// for pakal IrrDevice 0 means... restar the context...
-		event.UserEvent.UserData2 = a.windowId;
+		event.UserEvent.UserData1 = 0;	// for pakal IrrDevice 0 means... restart the context...
+		event.UserEvent.UserData2 = a.windowId;		
 		device->postEventFromUser(event);
 	}, THIS_THREAD};
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,9 +193,7 @@ void IrrGraphicsSystem::draw()
 	//if (m_draw_axis)
 	//{
 		draw_axis();
-	//}
-
-	//fpsText->setText(core::stringw(driver->getFPS()).c_str());
+	//}	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::end_scene()
