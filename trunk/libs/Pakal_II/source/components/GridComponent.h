@@ -12,6 +12,7 @@ namespace Pakal
 
 		struct Settings
 		{
+			bool visible = false;
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
