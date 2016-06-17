@@ -23,6 +23,7 @@
 #include <components/AnimatedMeshComponent_Irrlitch.h>
 #include <components/GridComponent_Irrlicht.h>
 #include <components/TerrainComponent_Irrlicht.h>
+#include "SceneNodeBatcher.h"
 
 #ifdef PAKAL_ANDROID_PLATFORM
 #include "android/osWrapperAndroid.h"
@@ -46,14 +47,15 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
 	driver(nullptr),	
 	smgr(nullptr),
 	guienv(nullptr),
-	m_render_info(new RendererInfo())
+	m_render_info(new RendererInfo()),
+	m_batch_scene(nullptr)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
 IrrGraphicsSystem::~IrrGraphicsSystem()
 {
-	SAFE_DEL(m_render_info);
+	SAFE_DEL(m_render_info);	
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
@@ -81,7 +83,9 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	
 	driver	= device->getVideoDriver();
 	smgr	= device->getSceneManager();
-	guienv	= device->getGUIEnvironment();	
+	guienv	= device->getGUIEnvironment();
+
+	m_batch_scene = new SceneNodeBatcher(smgr);
 
 	LOG_DEBUG("[Graphic System] adding file sources");
 
@@ -139,6 +143,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	device->drop();
 	device = nullptr;
 	SAFE_DEL(m_material_manager);
+	SAFE_DEL(m_batch_scene);
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::begin_scene()

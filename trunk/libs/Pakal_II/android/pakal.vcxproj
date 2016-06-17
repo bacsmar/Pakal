@@ -140,7 +140,10 @@
     <ClInclude Include="..\source\Entity.h" />
     <ClInclude Include="..\source\EntityDescriptor.h" />
     <ClInclude Include="..\source\EntityManager.h" />
+    <ClInclude Include="..\source\irrlicht\BatchSceneNode.h" />
+    <ClInclude Include="..\source\irrlicht\CBatchingMesh.h" />
     <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
+    <ClInclude Include="..\source\irrlicht\SceneNodeBatcher.h" />
     <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
@@ -284,8 +287,11 @@
     <ClCompile Include="..\source\Entity.cpp" />
     <ClCompile Include="..\source\EntityDescriptor.cpp" />
     <ClCompile Include="..\source\EntityManager.cpp" />
+    <ClCompile Include="..\source\irrlicht\BatchSceneNode.cpp" />
+    <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp" />
     <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
     <ClCompile Include="..\source\irrlicht\MaterialManager.cpp" />
+    <ClCompile Include="..\source\irrlicht\SceneNodeBatcher.cpp" />
     <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />

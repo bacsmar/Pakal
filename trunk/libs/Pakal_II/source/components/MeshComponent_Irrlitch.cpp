@@ -1,6 +1,8 @@
 #include "MeshComponent_Irrlitch.h"
 #include "irrlicht/IrrGraphicsSystem.h"
 #include <irrlicht/MaterialManager.h>
+#include <irrlicht/SceneNodeBatcher.h>
+#include <irrlicht/BatchSceneNode.h>
 
 using namespace Pakal;
 
@@ -14,22 +16,16 @@ BasicTaskPtr MeshComponent_Irrlitch::set_mesh(const std::string& meshName)
 {
 	return m_system->execute_block([=]()
 	{
-		if (m_node)
-			m_node->remove();	
+		if (m_mesh)
+			m_mesh->drop();
 
 		m_mesh = m_system->get_smgr()->getMesh(meshName.c_str());
 
-		m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);		
-
-		m_node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
-
-		//auto mat = m_node->getMaterial(0).MaterialType;
-
-		//auto materialManager = m_system->get_material_manager();		
-		//auto materialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);		
-		//m_node->setMaterialType(materialType);
-
-		m_node->setVisible(true);
+		if (!m_node)
+		{
+			m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
+		}
+		m_node->setMesh(m_mesh);
 	});
 }
 
@@ -95,24 +91,48 @@ tmath::vector3df MeshComponent_Irrlitch::get_angle()
 
 BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 {
+	m_static = settings.is_static;	
 	return m_system->execute_block([=]()
-	{
-		if (!settings.mesh_name.empty())
+	{		
+		irr::core::vector3df	position{ settings.position.x, settings.position.y, settings.position.z };
+		m_texture = m_system->get_driver()->getTexture(settings.texture_name.c_str());
+		m_mesh = m_system->get_smgr()->getMesh(settings.mesh_name.c_str());
+
+		if (m_texture)
 		{
-			set_mesh(settings.mesh_name);
-		}
-		if (!settings.texture_name.empty())
-		{
-			set_texture(settings.texture_name);
-		}
-		if (m_node)
-		{
-			set_position(settings.position);
-			if (settings.size != tmath::vector3df())
+			for (unsigned i = 0; i < m_mesh->getMeshBufferCount(); i++)
 			{
-				set_size(settings.size);
+				m_mesh->getMeshBuffer(i)->getMaterial().setTexture(0, m_texture);
+				m_mesh->getMeshBuffer(i)->getMaterial().setFlag(irr::video::EMF_LIGHTING, false);
 			}
 		}
+
+		if (settings.is_static)
+		{
+			m_node = m_system->get_batcher()->add_static_mesh(m_mesh, position);
+		}
+		else  // non static nodes....
+		{
+			m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
+			if (m_node)
+			{
+				set_position(settings.position);
+				if (settings.size != tmath::vector3df())
+				{
+					set_size(settings.size);
+				}
+			}
+
+			m_node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
+
+			//auto mat = m_node->getMaterial(0).MaterialType;
+
+			//auto materialManager = m_system->get_material_manager();		
+			//auto materialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);		
+			//m_node->setMaterialType(materialType);
+
+			m_node->setVisible(true);
+		}		
 	});
 }
 
