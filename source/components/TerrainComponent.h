@@ -18,6 +18,8 @@ namespace Pakal
 			std::string highmap_file_name;
 			std::string terrain_texture;
 			std::string terrain_detail_texture;
+			tmath::vector3df	position;
+			tmath::vector3df	scale;
 			void persist(Archive* archive);
 		};
 

@@ -20,6 +20,7 @@ namespace Pakal
 	class IDebugDrawerClient;
 	struct RendererInfo;
 	class OSManager;
+	class SceneNodeBatcher;
 
 	class _PAKALExport IrrGraphicsSystem final : public GraphicsSystem
 	{		
@@ -29,7 +30,9 @@ namespace Pakal
 		inline irr::scene::ISceneManager* get_smgr() const	{ return smgr;		}
 		inline irr::gui::IGUIEnvironment* get_guienv() const { return guienv;	}
 		inline MaterialManager*				get_material_manager() const { return m_material_manager; }
-		inline const char* get_system_name() override { return nameof(IrrGraphicsSystem);  };
+		inline const char* get_system_name() override { return nameof(IrrGraphicsSystem);  }
+
+		inline SceneNodeBatcher*			get_batcher() const { return m_batch_scene; }
 
 		explicit IrrGraphicsSystem(const Settings& settings);
 
@@ -48,6 +51,7 @@ namespace Pakal
 
 		RendererInfo				*m_render_info = nullptr;
 		std::vector<IDebugDrawerClient*>	m_debug_renderers;
+		SceneNodeBatcher*				m_batch_scene;
 		
 		virtual ~IrrGraphicsSystem();
 

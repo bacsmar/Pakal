@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "MeshComponent.h"
+#include <vector3d.h>
 
 
 namespace irr { namespace video { class ITexture; } }
@@ -22,7 +23,8 @@ namespace Pakal
 
 		irr::video::ITexture*		m_texture;
 		irr::scene::IMesh*			m_mesh;
-		irr::scene::IMeshSceneNode* m_node;		
+		irr::scene::IMeshSceneNode* m_node;
+		bool m_static = false;		
 
 	public:
 		explicit MeshComponent_Irrlitch(IrrGraphicsSystem* irrGraphicsSystem) : m_system(irrGraphicsSystem), m_texture(nullptr), m_mesh(nullptr), m_node(nullptr) {};
