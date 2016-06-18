@@ -19,7 +19,13 @@ using namespace Pakal;
 
 
 RocketUI::RocketUI(GraphicsSystem* renderInterface) 
-	: m_graphics_system(renderInterface), m_mouse_move_e(0), m_mouse_released_e(0), m_mouse_pressed_e(0)
+	: m_graphics_system(renderInterface), 
+	m_mouse_move_e(0), 
+	m_mouse_released_e(0), 
+	m_mouse_pressed_e(0), 
+	m_text_entered_e(0), 
+	m_key_down_e(0), 
+	m_key_up_e(0)
 {
 }
 
@@ -240,6 +246,9 @@ void RocketUI::initialize()
 	OSMgr.get_input_manager()->event_mouse_released += {m_mouse_released_e, std::bind(&RocketInput::process_mouse_released, std::placeholders::_1)};
 	OSMgr.get_input_manager()->event_mouse_pressed += {m_mouse_pressed_e, std::bind(&RocketInput::process_mouse_pressed, std::placeholders::_1)};
 
+	OSMgr.get_input_manager()->event_text += {m_text_entered_e, std::bind(&RocketInput::process_text_input, std::placeholders::_1)};
+	OSMgr.get_input_manager()->event_key_down += {m_key_down_e, std::bind(&RocketInput::process_key_down, std::placeholders::_1)};
+	OSMgr.get_input_manager()->event_key_up += {m_key_up_e, std::bind(&RocketInput::process_key_up, std::placeholders::_1)};
 }
 
 void RocketUI::terminate()
@@ -247,6 +256,10 @@ void RocketUI::terminate()
 	OSMgr.get_input_manager()->event_mouse_pressed -= m_mouse_pressed_e;
 	OSMgr.get_input_manager()->event_mouse_released -= m_mouse_released_e;
 	OSMgr.get_input_manager()->event_mouse_moved -= m_mouse_move_e;
+
+	OSMgr.get_input_manager()->event_text -= m_text_entered_e;
+	OSMgr.get_input_manager()->event_key_down -= m_key_down_e;
+	OSMgr.get_input_manager()->event_key_up -= m_key_up_e;
 
 	m_loaded_documents.clear();
 

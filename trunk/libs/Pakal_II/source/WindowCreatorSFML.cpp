@@ -61,8 +61,10 @@ void WindowCreatorSFML::process_window_events()
 				m_os_manager->event_window_resized(args);
 			}
 				break;
-			case sf::Event::LostFocus:	m_os_manager->event_window_focused(false);	break;
-			case sf::Event::GainedFocus: m_os_manager->event_window_focused(true); break;
+			case sf::Event::LostFocus:	
+				m_os_manager->event_window_focused(false);	break;
+			case sf::Event::GainedFocus: 
+				m_os_manager->event_window_focused(true); break;
 			case sf::Event::TextEntered: 
 			{
 				TextArgs args;
@@ -74,6 +76,9 @@ void WindowCreatorSFML::process_window_events()
 			{
 				KeyArgs args;
 				args.key = static_cast<Key>(e.key.code);
+				args.key_modifier |= e.key.alt ? KeyArgs::KM_ALT : 0;
+				args.key_modifier |= e.key.control ? KeyArgs::KM_CTRL : 0;
+				args.key_modifier |= e.key.shift ? KeyArgs::KM_SHIFT : 0;
 				m_os_manager->get_input_manager()->event_key_down(args);
 			}
 				break;
@@ -81,6 +86,9 @@ void WindowCreatorSFML::process_window_events()
 			{
 				KeyArgs args;
 				args.key = static_cast<Key>(e.key.code);
+				args.key_modifier |= e.key.alt ? KeyArgs::KM_ALT : 0;
+				args.key_modifier |= e.key.control ? KeyArgs::KM_CTRL : 0;
+				args.key_modifier |= e.key.shift ? KeyArgs::KM_SHIFT : 0;
 				m_os_manager->get_input_manager()->event_key_up(args);
 			}
 				break;

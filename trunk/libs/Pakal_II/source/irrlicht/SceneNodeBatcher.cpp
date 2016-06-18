@@ -23,7 +23,7 @@ Pakal::BatchSceneNode* Pakal::SceneNodeBatcher::add_static_mesh(scene::IMesh* me
 	m_batching_mesh->addMesh(mesh, position);
 	m_mesh_count++;
 	m_batching_mesh->getSourceBufferCount();
-	if (m_mesh_count == 2000)
+	if (m_mesh_count == 200)
 	{
 		m_batching_mesh->update();
 		//m_batching_mesh->setHardwareMappingHint(scene::EHM_STATIC, scene::EBT_VERTEX_AND_INDEX);
@@ -34,5 +34,5 @@ Pakal::BatchSceneNode* Pakal::SceneNodeBatcher::add_static_mesh(scene::IMesh* me
 		//node->setScale(core::vector3df(10, 10, 10));
 		//node->setDebugDataVisible(scene::EDS_BBOX_BUFFERS);
 	}
-	return new Pakal::BatchSceneNode(nullptr, m_scene_manager, -1);;
+	return new Pakal::BatchSceneNode(nullptr, m_scene_manager, -1);
 }

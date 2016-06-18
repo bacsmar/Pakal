@@ -32,7 +32,12 @@ namespace Pakal
 
 	static void process_mouse_move(Pakal::MouseArgs args);
 	static void process_mouse_pressed(Pakal::MouseArgs args);
-	static void process_mouse_released(Pakal::MouseArgs args);
+	static void process_mouse_released(Pakal::MouseArgs args);	
+	static void process_text_input(Pakal::TextArgs args);
+	static void process_key_down(Pakal::KeyArgs args);
+	static void process_key_up(Pakal::KeyArgs args);
+
+	static Rocket::Core::Input::KeyIdentifier pakal_to_rocket(Pakal::Key key);
 
 	protected:
 		static Rocket::Core::Context* context;
