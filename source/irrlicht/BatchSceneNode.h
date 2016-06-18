@@ -11,10 +11,8 @@ namespace Pakal
 	class BatchSceneNode : public irr::scene::IMeshSceneNode
 	{
 	public:		
-		//BatchSceneNode(irr::scene::IMesh* mesh, ISceneNode* parent, irr::scene::ISceneManager* mgr, irr::s32 id);
-
 		BatchSceneNode(ISceneNode* parent, irr::scene::ISceneManager* mgr, irr::s32 id)
-			: IMeshSceneNode(parent, mgr, id), m_buffer(nullptr), m_batcher(nullptr)
+			: IMeshSceneNode(parent, mgr, id), m_batcher(nullptr)
 		{
 		}
 
@@ -32,8 +30,7 @@ namespace Pakal
 		irr::scene::IShadowVolumeSceneNode* addShadowVolumeSceneNode(const irr::scene::IMesh* shadowMesh, irr::s32 id, bool zfailmethod, irr::f32 infinity) override;
 		void setReadOnlyMaterials(bool readonly) override;
 		bool isReadOnlyMaterials() const override;
-	private:
-		irr::scene::IDynamicMeshBuffer * m_buffer;
+	private:		
 		SceneNodeBatcher* m_batcher;
 	};
 

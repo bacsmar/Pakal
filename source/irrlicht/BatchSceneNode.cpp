@@ -2,20 +2,13 @@
 
 using namespace irr;
 
-/*Pakal::BatchSceneNode::BatchSceneNode(irr::scene::IMesh* mesh, 
-	ISceneNode* parent, 
-	irr::scene::ISceneManager* mgr, 
-	irr::s32 id): 
-	CMeshSceneNode(mesh, parent, mgr, id) 
-{
-}
-*/
 void Pakal::BatchSceneNode::setVisible(bool isVisible)
 {
 }
 
 void Pakal::BatchSceneNode::remove()
 {
+	this->drop();
 }
 
 void Pakal::BatchSceneNode::setScale(const irr::core::vector3df& scale)

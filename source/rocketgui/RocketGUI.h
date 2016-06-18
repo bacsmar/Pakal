@@ -69,5 +69,8 @@ namespace Pakal
 		EventId m_mouse_move_e;
 		EventId m_mouse_released_e;
 		EventId m_mouse_pressed_e;
+		EventId m_text_entered_e;
+		EventId m_key_down_e;
+		EventId m_key_up_e;
 	};
 }
