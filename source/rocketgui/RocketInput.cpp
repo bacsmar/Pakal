@@ -31,7 +31,8 @@ void Pakal::RocketInput::process_mouse_move(Pakal::MouseArgs  args)
 
 void Pakal::RocketInput::process_text_input(Pakal::TextArgs args)
 {
-	context->ProcessTextInput(args.unicode);
+	if (args.unicode >= 32)
+		context->ProcessTextInput(args.unicode);
 }
 
 void Pakal::RocketInput::process_key_down(Pakal::KeyArgs args)
