@@ -16,9 +16,10 @@ namespace Pakal
 		{
 			SpriteSheetPtr sprite_sheet = std::make_shared<SpriteSheet>();
 			tmath::vector3df position;
-			bool init_paused = false;			
+			bool init_paused = false;
 			float speed = 1;
 			float size = 1;
+			bool is_batched = false;
 		};
 
 		Event<void> event_animation_ended;

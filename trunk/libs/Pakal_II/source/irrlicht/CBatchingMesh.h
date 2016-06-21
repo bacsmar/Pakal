@@ -34,25 +34,25 @@ public:
 
 	//! adds a mesh to the buffers with the given offset
 	/** \Return: Returns an array of ID numbers */
-	core::array<s32> addMesh(IMesh* mesh, 
+	core::array<s32> addMesh(const IMesh* mesh, 
 		core::vector3df pos = core::vector3df(0,0,0), 
 		core::vector3df rot = core::vector3df(0,0,0),
 		core::vector3df scale = core::vector3df(1,1,1));
 
 	//! adds a mesh with the given transformation
 	/** \Return: Returns an array of ID numbers */
-	core::array<s32> addMesh(IMesh* mesh, const core::matrix4 &transform);
+	core::array<s32> addMesh(const IMesh* mesh, const core::matrix4 &transform);
 
 	//! adds a mesh buffer with the given transformation
 	/** \Return: Returns the ID of this mesh buffer */
-	s32 addMeshBuffer(IMeshBuffer* buffer,
+	s32 addMeshBuffer(const IMeshBuffer* buffer,
 		core::vector3df pos = core::vector3df(0,0,0), 
 		core::vector3df rot = core::vector3df(0,0,0),
 		core::vector3df scale = core::vector3df(1,1,1));
 
 	//! adds a mesh with the given transformation
 	/** \Return Returns the ID of this mesh buffer */
-	s32 addMeshBuffer(IMeshBuffer* buffer, const core::matrix4 &transform);
+	s32 addMeshBuffer(const IMeshBuffer* buffer, const core::matrix4 &transform);
 
 	//! updates bouding box from internal buffers
 	void recalculateBoundingBox();
@@ -114,7 +114,7 @@ public:
 private:
 
 	// add a buffer to the source buffers array if it doesn't already exist
-	void addSourceBuffer(IMeshBuffer* source);
+	void addSourceBuffer(const IMeshBuffer* source);
 
 	// updates the vertices in dest buffer from the source one
 	void updateDestFromSourceBuffer(u32 id);
@@ -128,7 +128,7 @@ private:
 		  : SourceBuffer(0), DestReference(0), FirstVertex(0), VertexCount(0), 
 			FirstIndex(0), IndexCount(0), Initialized(false) { }
 
-		IMeshBuffer* SourceBuffer;
+		const IMeshBuffer* SourceBuffer;
 		u32 DestReference;
 		u32 FirstVertex, VertexCount, FirstIndex, IndexCount;
 		core::matrix4 Transform;
@@ -152,7 +152,7 @@ private:
 	};
 
 	//! Source mesh buffers, these are locked
-	core::array<IMeshBuffer*>         SourceBuffers;
+	core::array<const IMeshBuffer*>         SourceBuffers;
 
 	core::array<SBufferReference>     BufferReferences;
 	core::array<SMaterialReference>   MaterialReferences;

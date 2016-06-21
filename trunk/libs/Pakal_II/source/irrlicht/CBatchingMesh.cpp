@@ -97,7 +97,7 @@ void CBatchingMesh::update()
 
 //! adds a mesh to the buffers with the given offset
 /** \Returns Returns an array of ID numbers */
-core::array<s32> CBatchingMesh::addMesh(IMesh* mesh, core::vector3df pos, core::vector3df rot, core::vector3df scale)
+core::array<s32> CBatchingMesh::addMesh(const IMesh* mesh, core::vector3df pos, core::vector3df rot, core::vector3df scale)
 {
 	core::matrix4 m;
 	m.setRotationDegrees(rot);
@@ -111,7 +111,7 @@ core::array<s32> CBatchingMesh::addMesh(IMesh* mesh, core::vector3df pos, core::
 }
 
 //! adds a mesh with the given transformation
-core::array<s32> CBatchingMesh::addMesh(IMesh* mesh, const core::matrix4 &transform)
+core::array<s32> CBatchingMesh::addMesh(const IMesh* mesh, const core::matrix4 &transform)
 {
 	core::array<s32> bufferNos;
 
@@ -127,7 +127,7 @@ core::array<s32> CBatchingMesh::addMesh(IMesh* mesh, const core::matrix4 &transf
 
 //! adds a mesh buffer with the given transformation
 /** \Return Returns the ID of this mesh buffer */
-s32 CBatchingMesh::addMeshBuffer(IMeshBuffer* buffer, core::vector3df pos, core::vector3df rot, core::vector3df scale)
+s32 CBatchingMesh::addMeshBuffer(const IMeshBuffer* buffer, core::vector3df pos, core::vector3df rot, core::vector3df scale)
 {
 	core::matrix4 m;
 	m.setRotationDegrees(rot);
@@ -142,7 +142,7 @@ s32 CBatchingMesh::addMeshBuffer(IMeshBuffer* buffer, core::vector3df pos, core:
 
 //! adds a mesh with the given transformation
 /** \Return Returns the ID of this mesh buffer */
-s32 CBatchingMesh::addMeshBuffer(IMeshBuffer* buffer, const core::matrix4 &transform)
+s32 CBatchingMesh::addMeshBuffer(const IMeshBuffer* buffer, const core::matrix4 &transform)
 {
 	if (!buffer || IsFinal)
 		return -1;
@@ -363,7 +363,7 @@ IMeshBuffer* CBatchingMesh::getSourceBuffer(s32 id)
 	if ((u32)id > BufferReferences.size() || IsFinal)
 		return 0;
 	else
-		return BufferReferences[id].SourceBuffer;
+		return const_cast<IMeshBuffer*>(BufferReferences[id].SourceBuffer);
 }
 
 //! returns the matrix of the source buffer
@@ -405,8 +405,8 @@ void CBatchingMesh::recalculateDestBufferBoundingBox(u32 i)
 
 void CBatchingMesh::updateDestFromSourceBuffer(u32 i)
 {
-	u16* ind = BufferReferences[i].SourceBuffer->getIndices();
-	void*ver = BufferReferences[i].SourceBuffer->getVertices();
+	auto ind = BufferReferences[i].SourceBuffer->getIndices();
+	auto ver = BufferReferences[i].SourceBuffer->getVertices();
 	core::matrix4 m = BufferReferences[i].Transform;
 	u32 fi = BufferReferences[i].FirstIndex;
 	u32 fv = BufferReferences[i].FirstVertex;
@@ -472,7 +472,7 @@ void CBatchingMesh::updateDestFromSourceBuffer(u32 i)
 	}
 }
 
-void CBatchingMesh::addSourceBuffer(IMeshBuffer *source)
+void CBatchingMesh::addSourceBuffer(const IMeshBuffer *source)
 {
 	bool found = false;
 	for (u32 i=0; i<SourceBuffers.size(); ++i)

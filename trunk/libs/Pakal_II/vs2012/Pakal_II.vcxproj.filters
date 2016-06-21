@@ -281,6 +281,9 @@
     <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp">
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\irrlicht\SpriteBatcher.cpp">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -757,6 +760,9 @@
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\CBatchingMesh.h">
+      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\irrlicht\SpriteBatcher.hpp">
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClInclude>
   </ItemGroup>

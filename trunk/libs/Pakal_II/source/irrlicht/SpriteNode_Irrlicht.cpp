@@ -17,14 +17,16 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_buffer.Material.Lighting = true;
 	m_buffer.Material.EmissiveColor = m_buffer.Material.AmbientColor;
 	m_buffer.Material.GouraudShading = false;
-	//m_material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
+	//m_buffer.Material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
+	//m_buffer.Material.ZBuffer = video::ECFN_ALWAYS;	// disable Z buffer test...		default value!
 	m_buffer.Material.FrontfaceCulling = false;		// enable both faces drawing
 	m_buffer.Material.BackfaceCulling = false;
 
 	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
 	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
-	m_buffer.Material.MaterialType = (video::E_MATERIAL_TYPE)30;
+	//m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
+	//m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+	//m_buffer.Material.MaterialType = (video::E_MATERIAL_TYPE)30;
 	m_buffer.Material.MaterialTypeParam = 0.1f;
 
 	m_buffer.BoundingBox.reset(-1.0f,-1.0f,0.0f);

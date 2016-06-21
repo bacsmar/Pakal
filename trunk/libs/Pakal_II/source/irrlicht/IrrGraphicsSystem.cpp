@@ -24,6 +24,7 @@
 #include <components/GridComponent_Irrlicht.h>
 #include <components/TerrainComponent_Irrlicht.h>
 #include "SceneNodeBatcher.h"
+#include "SpriteBatcher.hpp"
 
 #ifdef PAKAL_ANDROID_PLATFORM
 #include "android/osWrapperAndroid.h"
@@ -86,6 +87,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	guienv	= device->getGUIEnvironment();
 
 	m_batch_scene = new SceneNodeBatcher(smgr);
+	m_sprite_batcher = new SpriteBatcher(smgr);
 
 	LOG_DEBUG("[Graphic System] adding file sources");
 
@@ -144,6 +146,7 @@ void IrrGraphicsSystem::on_terminate_graphics()
 	device = nullptr;
 	SAFE_DEL(m_material_manager);
 	SAFE_DEL(m_batch_scene);
+	SAFE_DEL(m_sprite_batcher);
 }
 //////////////////////////////////////////////////////////////////////////
 void IrrGraphicsSystem::begin_scene()
