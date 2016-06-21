@@ -54,7 +54,6 @@
     <ClInclude Include="..\source\components\TileMapComponent.h" />
     <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\UIComponent.h" />
-    <ClInclude Include="..\source\irrlicht\BatchSceneNode.h" />
     <ClInclude Include="..\source\irrlicht\CBatchingMesh.h" />
     <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
     <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h" />
@@ -186,7 +185,6 @@
     <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\DummyGraphicsSystem.cpp" />
-    <ClCompile Include="..\source\irrlicht\BatchSceneNode.cpp" />
     <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp" />
     <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
     <ClCompile Include="..\source\irrlicht\SceneNodeBatcher.cpp" />

@@ -29,7 +29,7 @@ namespace Pakal
 		void add_sprite(SpriteNode_Irrlicht* sprite);
 		void remove_sprite(SpriteNode_Irrlicht *sprite);
 
-		inline void set_dirty();
+		void set_dirty();
 		void render() override;
 		const irr::core::aabbox3d<float>& getBoundingBox() const override;
 		virtual void OnRegisterSceneNode() override;

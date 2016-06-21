@@ -2,7 +2,6 @@
 #include "irrlicht/IrrGraphicsSystem.h"
 #include <irrlicht/MaterialManager.h>
 #include <irrlicht/SceneNodeBatcher.h>
-#include <irrlicht/BatchSceneNode.h>
 
 using namespace Pakal;
 
@@ -93,8 +92,7 @@ BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 {
 	m_static = settings.is_static;	
 	return m_system->execute_block([=]()
-	{		
-		irr::core::vector3df	position{ settings.position.x, settings.position.y, settings.position.z };
+	{
 		m_texture = m_system->get_driver()->getTexture(settings.texture_name.c_str());
 		m_mesh = m_system->get_smgr()->getMesh(settings.mesh_name.c_str());
 
@@ -109,11 +107,12 @@ BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 
 		if (settings.is_static)
 		{
-			m_node = m_system->get_batcher()->add_static_mesh(m_mesh, position);
+			m_node = m_system->get_batcher()->add_mesh(m_mesh);
 		}
 		else  // non static nodes....
 		{
 			m_node = m_system->get_smgr()->addMeshSceneNode(m_mesh);
+		}
 			if (m_node)
 			{
 				set_position(settings.position);
@@ -131,8 +130,7 @@ BasicTaskPtr MeshComponent_Irrlitch::initialize(const Settings& settings)
 			//auto materialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);		
 			//m_node->setMaterialType(materialType);
 
-			m_node->setVisible(true);
-		}		
+			m_node->setVisible(true);		
 	});
 }
 

@@ -12,14 +12,14 @@ using namespace irr;
 using namespace scene;
 using namespace Pakal;
 
-SpriteBatcher::SpriteBatcher(irr::scene::ISceneManager* mgr, irr::s32 id): 
-	ISceneNode(mgr->getRootSceneNode(), mgr, id)
-	,m_scene_manager(mgr)
+SpriteBatcher::SpriteBatcher(irr::scene::ISceneManager* mgr, irr::s32 id) : 
+	ISceneNode(mgr->getRootSceneNode(), mgr, id),
+	m_scene_manager(mgr)
 {
 	m_sprites.reserve(256);
 	m_batching_mesh = new irr::scene::CBatchingMesh();
 	//m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh,this);
-	m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
+	//m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
 }
 
 SpriteBatcher::~SpriteBatcher()
@@ -71,18 +71,23 @@ void SpriteBatcher::OnRegisterSceneNode()
 
 void SpriteBatcher::update_mesh_buffer()
 {
-
-	static int count = 0;
-	count++;
-
 	m_batching_mesh->clear();
 	for( auto sprite : m_sprites)
 	{
 		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getPosition(), sprite->getRotation(),
 			sprite->getScale());
 	}
+
+	LOG_DEBUG("[SpriteBatcher] refreshing %d meshes", m_batching_mesh->getSourceBufferCount());
+
 	m_batching_mesh->update();
 	m_batching_mesh->setHardwareMappingHint(EHM_STREAM, EBT_VERTEX_AND_INDEX);
+
+	if (m_node)
+		m_node->remove();
+	m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
 	m_node->setVisible(m_sprites.size() > 0);
 	m_dirty = false;
+
+	LOG_INFO("[SpriteBatcher] done");
 }
