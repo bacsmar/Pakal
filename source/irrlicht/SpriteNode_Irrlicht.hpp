@@ -37,11 +37,10 @@ namespace Pakal
 		void set_texture(irr::video::ITexture *texture);
 		void set_frame(std::size_t frameIndex, const Pakal::Sprite& sprite);
 
-	private:
-		//irr::core::aabbox3d<irr::f32>	m_box;
-		//irr::video::S3DVertex			m_vertices[4];
-		//irr::u16						m_indices[6];
-		//irr::video::SMaterial			m_material;
+		inline const irr::scene::SMeshBuffer* getMeshBuffer() const
+		{ return &m_buffer; }
+
+	private:		
 		irr::scene::SMeshBuffer			m_buffer;
 		irr::video::ITexture*			m_texture;
 		irr::core::recti				m_frame_rect;

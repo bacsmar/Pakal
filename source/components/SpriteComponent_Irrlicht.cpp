@@ -7,6 +7,7 @@
 #include "LogMgr.h"
 #include "persist/XmlReader.h"
 #include "ResourceManager.h"
+#include <irrlicht/SpriteBatcher.hpp>
 
 
 using namespace Pakal;
@@ -104,9 +105,19 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 	{
 		ASSERT(m_node == nullptr);
 
-		m_node = new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(),
-		                                 m_system->get_device()->getSceneManager(),
-		                                 m_system->get_material_manager());
+		if (settings.is_batched == false)
+		{
+			m_node = new SpriteNode_Irrlicht(m_system->get_device()->getSceneManager()->getRootSceneNode(),
+				m_system->get_device()->getSceneManager(),
+				m_system->get_material_manager());
+		}else
+		{
+			m_node = new SpriteNode_Irrlicht(nullptr,
+				m_system->get_device()->getSceneManager(),
+				m_system->get_material_manager());
+
+			m_system->get_sprite_batcher()->add_sprite(m_node);
+		}
 
 		m_paused = settings.init_paused;
 		m_size_factor = settings.size;
@@ -126,7 +137,7 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 	return m_system->execute_block([=]() 
 	{
 		m_system->remove_from_update_list(this);
-		
+		m_system->get_sprite_batcher()->remove_sprite(m_node);
 		m_node->detach();
 		m_node->drop();		
 		m_animations.clear();
