@@ -29,7 +29,6 @@ void Pakal::SceneNodeBatcher::render()
 {
 	if (m_dirty)
 		refresh();
-	auto count = m_batching_mesh->getSourceBufferCount();
 }
 
 const irr::core::aabbox3d<float>& Pakal::SceneNodeBatcher::getBoundingBox() const
