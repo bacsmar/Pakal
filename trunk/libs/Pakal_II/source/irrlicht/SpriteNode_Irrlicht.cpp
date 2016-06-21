@@ -14,42 +14,45 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	: ISceneNode(parent,mgr),
     m_texture(nullptr)
 {
-	m_material.Lighting = true;		
-	m_material.EmissiveColor = m_material.AmbientColor;
-	m_material.GouraudShading = false;
+	m_buffer.Material.Lighting = true;
+	m_buffer.Material.EmissiveColor = m_buffer.Material.AmbientColor;
+	m_buffer.Material.GouraudShading = false;
 	//m_material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
-	m_material.FrontfaceCulling = false;		// enable both faces drawing
-	m_material.BackfaceCulling = false;
+	m_buffer.Material.FrontfaceCulling = false;		// enable both faces drawing
+	m_buffer.Material.BackfaceCulling = false;
 
 	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
-	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	m_material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
-	m_material.MaterialType = (video::E_MATERIAL_TYPE)30;
-	m_material.MaterialTypeParam = 0.1f;		
+	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+	m_buffer.Material.MaterialType = (video::E_MATERIAL_TYPE)30;
+	m_buffer.Material.MaterialTypeParam = 0.1f;
 
-	m_box.reset(-1.0f,-1.0f,0.0f);
-	m_box.addInternalPoint(1.0f,1.0f,0.0f);
+	m_buffer.BoundingBox.reset(-1.0f,-1.0f,0.0f);
+	m_buffer.BoundingBox.addInternalPoint(1.0f,1.0f,0.0f);
 
-	m_indices[0] = 0;
-	m_indices[1] = 2;
-	m_indices[2] = 1;
-	m_indices[3] = 0;
-	m_indices[4] = 3;
-	m_indices[5] = 2;		
+	m_buffer.Vertices.set_used(4);
+	m_buffer.Indices.set_used(6);
+	m_buffer.Indices[0] = 0;
+	m_buffer.Indices[1] = 2;
+	m_buffer.Indices[2] = 1;
+	m_buffer.Indices[3] = 0;
+	m_buffer.Indices[4] = 3;
+	m_buffer.Indices[5] = 2;
 }
 
-SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
+SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, 
+	MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
 {
-	m_material.MaterialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);
+	//m_material.MaterialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);
 }
 
 void SpriteNode_Irrlicht::setColor(const video::SColor& color)
 {
     // Update the vertices' color
-    m_vertices[0].Color = color;
-    m_vertices[1].Color = color;
-    m_vertices[2].Color = color;
-    m_vertices[3].Color = color;
+	m_buffer.Vertices[0].Color = color;
+	m_buffer.Vertices[1].Color = color;
+	m_buffer.Vertices[2].Color = color;
+	m_buffer.Vertices[3].Color = color;
 }
 
 void SpriteNode_Irrlicht::set_texture(irr::video::ITexture* texture)
@@ -68,7 +71,7 @@ irr::core::rectf SpriteNode_Irrlicht::getGlobalBounds() const
 }
 const core::aabbox3d<f32>& SpriteNode_Irrlicht::getBoundingBox() const
 {
-	return m_box;
+	return m_buffer.BoundingBox;
 }
 
 void SpriteNode_Irrlicht::detach()
@@ -108,10 +111,10 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite
 		float top = static_cast<float>(m_frame_rect.UpperLeftCorner.Y);
 		float bottom = top + static_cast<float>(height);		
 		
-        m_vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + relativePos);
-        m_vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );
-        m_vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );
-        m_vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );
+		m_buffer.Vertices[0].Pos = vector2Dto3D(core::vector2df(0.f, 0.f) + relativePos);
+		m_buffer.Vertices[1].Pos = vector2Dto3D(core::vector2df(0.f, static_cast<float>(height)) + relativePos );
+		m_buffer.Vertices[2].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), static_cast<float>(height)) + relativePos );
+		m_buffer.Vertices[3].Pos = vector2Dto3D(core::vector2df(static_cast<float>(width), 0.f) + relativePos );
 		
 		// these are for texture coords (UV)
 		core::dimension2du d = m_texture->getSize();
@@ -120,16 +123,16 @@ void SpriteNode_Irrlicht::set_frame(std::size_t frameIndex, const Sprite& sprite
 		top /= d.Height;
 		bottom /= d.Height;	
 
-        m_vertices[0].TCoords = core::vector2df(left, top);
-        m_vertices[1].TCoords = core::vector2df(left, bottom);
-        m_vertices[2].TCoords = core::vector2df(right, bottom);
-        m_vertices[3].TCoords = core::vector2df(right, top);		
+		m_buffer.Vertices[0].TCoords = core::vector2df(left, top);
+		m_buffer.Vertices[1].TCoords = core::vector2df(left, bottom);
+		m_buffer.Vertices[2].TCoords = core::vector2df(right, bottom);
+		m_buffer.Vertices[3].TCoords = core::vector2df(right, top);
 
-		m_box.reset(m_vertices[0].Pos);
+		m_buffer.BoundingBox.reset(m_buffer.Vertices[0].Pos);
 		for (s32 i=1; i<4; ++i)
-			m_box.addInternalPoint(m_vertices[i].Pos);
+			m_buffer.BoundingBox.addInternalPoint(m_buffer.Vertices[i].Pos);
 
-		m_material.setTexture(0, m_texture);		
+		m_buffer.Material.setTexture(0, m_texture);		
     }    
 }
 
@@ -137,11 +140,11 @@ void SpriteNode_Irrlicht::render()
 {
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();		
 
-	driver->setMaterial(m_material);
+	driver->setMaterial(m_buffer.Material);
 
 	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 	//driver->drawVertexPrimitiveList(m_vertices, 4, m_indices, 2);
-	driver->drawIndexedTriangleList(m_vertices, 4, m_indices, 2);
+	driver->drawIndexedTriangleList(&m_buffer.Vertices[0], 4, &m_buffer.Indices[0], 2);
 }
 
 void SpriteNode_Irrlicht::OnRegisterSceneNode()

@@ -17,7 +17,8 @@ namespace Pakal
 	{
 	public:    
 		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr);
-		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, MaterialManager* materialManager);
+		explicit SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, 
+			MaterialManager* materialManager);
 
 		virtual ~SpriteNode_Irrlicht();
 
@@ -26,7 +27,7 @@ namespace Pakal
 		void setColor(const irr::video::SColor& color);	
 
 		virtual irr::u32 getMaterialCount() const override { return 1; }
-		virtual irr::video::SMaterial& getMaterial(irr::u32 i) override { return m_material; } 
+		virtual irr::video::SMaterial& getMaterial(irr::u32 i) override { return m_buffer.Material; } 
 
 		virtual void OnRegisterSceneNode() override;
 		virtual void render() override;
@@ -37,11 +38,12 @@ namespace Pakal
 		void set_frame(std::size_t frameIndex, const Pakal::Sprite& sprite);
 
 	private:
-		irr::core::aabbox3d<irr::f32>	m_box;
+		//irr::core::aabbox3d<irr::f32>	m_box;
+		//irr::video::S3DVertex			m_vertices[4];
+		//irr::u16						m_indices[6];
+		//irr::video::SMaterial			m_material;
+		irr::scene::SMeshBuffer			m_buffer;
 		irr::video::ITexture*			m_texture;
-		irr::video::S3DVertex			m_vertices[4];
-		irr::u16						m_indices[6];
-		irr::video::SMaterial			m_material;
-		irr::core::recti				m_frame_rect;	
+		irr::core::recti				m_frame_rect;
 	};
 }
