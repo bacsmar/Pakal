@@ -19,7 +19,7 @@ SpriteBatcher::SpriteBatcher(irr::scene::ISceneManager* mgr, irr::s32 id) :
 	m_sprites.reserve(256);
 	m_batching_mesh = new irr::scene::CBatchingMesh();
 	//m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh,this);
-	//m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
+	m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
 }
 
 SpriteBatcher::~SpriteBatcher()
@@ -82,10 +82,9 @@ void SpriteBatcher::update_mesh_buffer()
 
 	m_batching_mesh->update();
 	m_batching_mesh->setHardwareMappingHint(EHM_STREAM, EBT_VERTEX_AND_INDEX);
+	
+	static_cast<IMeshSceneNode*>(m_node)->setMesh(m_batching_mesh);
 
-	if (m_node)
-		m_node->remove();
-	m_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
 	m_node->setVisible(m_sprites.size() > 0);
 	m_dirty = false;
 
