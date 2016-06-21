@@ -16,10 +16,10 @@ void Pakal::SceneNodeBatcher::refresh()
 	}
 	LOG_DEBUG("[SceneNode batcher] refreshing %d meshes", m_batching_mesh->getSourceBufferCount());	
 	m_batching_mesh->update();
-	m_batching_mesh->setHardwareMappingHint(scene::EHM_STREAM, scene::EBT_VERTEX_AND_INDEX);
-	if(m_batch_root_node)
-		m_batch_root_node->remove();
-	m_batch_root_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);	
+	m_batching_mesh->setHardwareMappingHint(scene::EHM_STREAM, scene::EBT_VERTEX_AND_INDEX);	
+
+	static_cast<scene::IMeshSceneNode*>(m_batch_root_node)->setMesh(m_batching_mesh);
+
 	m_batch_root_node->setVisible(m_nodes.size() > 0);
 	m_dirty = false;
 	LOG_INFO("[SceneNode batcher] done");
@@ -58,7 +58,7 @@ Pakal::SceneNodeBatcher::SceneNodeBatcher(irr::scene::ISceneManager* sceneManage
 {
 	m_batching_mesh = new irr::scene::CBatchingMesh();
 	m_scene_manager->addMeshSceneNode(m_batching_mesh);
-	//m_batch_root_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
+	m_batch_root_node = m_scene_manager->addMeshSceneNode(m_batching_mesh);
 }
 
 scene::IMeshSceneNode* Pakal::SceneNodeBatcher::add_mesh(scene::IMesh* mesh)
