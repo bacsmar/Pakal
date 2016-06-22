@@ -77,9 +77,8 @@ void SpriteBatcher::reset_mesh_buffer()
 {
 	m_batching_mesh->clear();
 	for (auto sprite : m_sprites)
-	{
-		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getPosition(), sprite->getRotation(),
-			sprite->getScale());
+	{		
+		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getAbsoluteTransformation());
 	}
 
 	m_batching_mesh->update();

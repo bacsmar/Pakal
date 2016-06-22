@@ -73,8 +73,9 @@ scene::IMeshSceneNode* Pakal::SceneNodeBatcher::add_mesh(scene::IMesh* mesh)
 
 void Pakal::SceneNodeBatcher::remove_node(irr::scene::IMeshSceneNode* mesh)
 {
-	std::remove_if(m_nodes.begin(), m_nodes.end(), 
-		[=](const irr::scene::IMeshSceneNode* s) { return s == mesh; });
+	auto it = std::remove(m_nodes.begin(), m_nodes.end(), mesh);
+	if (it != m_nodes.end())
+		m_nodes.erase(it);
 	set_dirty();
 }
 
