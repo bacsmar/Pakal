@@ -37,7 +37,10 @@ void SpriteBatcher::add_sprite(SpriteNode_Irrlicht* sprite)
 
 void SpriteBatcher::remove_sprite(SpriteNode_Irrlicht* sprite)
 {
-	std::remove_if(m_sprites.begin(), m_sprites.end(), [=](const SpriteNode_Irrlicht* s) { return s == sprite; });
+	auto found = std::remove(m_sprites.begin(), m_sprites.end(), sprite);
+	if( found != m_sprites.end())
+		m_sprites.erase(found);
+
 	set_dirty();
 }
 
