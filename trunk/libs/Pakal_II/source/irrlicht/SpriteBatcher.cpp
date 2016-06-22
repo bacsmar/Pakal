@@ -80,12 +80,12 @@ void SpriteBatcher::reset_mesh_buffer()
 	{		
 		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getAbsoluteTransformation());
 	}
-
+	LOG_DEBUG("[SpriteBatcher batcher] refreshing %d meshes", m_batching_mesh->getSourceBufferCount());
 	m_batching_mesh->update();
 	m_batching_mesh->setHardwareMappingHint(EHM_STREAM, EBT_VERTEX_AND_INDEX);
 
 	static_cast<IMeshSceneNode*>(m_node)->setMesh(m_batching_mesh);
-
+	LOG_INFO("[SpriteBatcher batcher] done");
 	m_node->setVisible(m_sprites.size() > 0);
 	m_is_dirty = false;
 }
