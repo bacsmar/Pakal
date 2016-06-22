@@ -23,6 +23,7 @@ namespace Pakal
 		{
 			SpriteSheetPhysicsPtr sprite_physics = std::make_shared<SpriteSheetPhysics>();
 			tmath::vector3df position;
+			float scale = 1.f;
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& loader) = 0;
