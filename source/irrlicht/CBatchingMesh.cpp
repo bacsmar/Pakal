@@ -97,7 +97,7 @@ void CBatchingMesh::update()
 
 //! adds a mesh to the buffers with the given offset
 /** \Returns Returns an array of ID numbers */
-core::array<s32> CBatchingMesh::addMesh(const IMesh* mesh, core::vector3df pos, core::vector3df rot, core::vector3df scale)
+core::array<s32> CBatchingMesh::addMesh(const IMesh* mesh, const core::vector3df& pos, const core::vector3df& rot, const core::vector3df& scale)
 {
 	core::matrix4 m;
 	m.setRotationDegrees(rot);
@@ -127,7 +127,7 @@ core::array<s32> CBatchingMesh::addMesh(const IMesh* mesh, const core::matrix4 &
 
 //! adds a mesh buffer with the given transformation
 /** \Return Returns the ID of this mesh buffer */
-s32 CBatchingMesh::addMeshBuffer(const IMeshBuffer* buffer, core::vector3df pos, core::vector3df rot, core::vector3df scale)
+s32 CBatchingMesh::addMeshBuffer(const IMeshBuffer* buffer, const core::vector3df& pos, const core::vector3df& rot, const core::vector3df& scale)
 {
 	core::matrix4 m;
 	m.setRotationDegrees(rot);
