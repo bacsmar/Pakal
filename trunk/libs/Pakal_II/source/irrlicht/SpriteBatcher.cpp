@@ -31,7 +31,6 @@ SpriteBatcher::~SpriteBatcher()
 
 void SpriteBatcher::add_sprite(SpriteNode_Irrlicht* sprite)
 {
-	//sprite->setParent(this);
 	m_sprites.push_back(sprite);
 	set_dirty();
 }
@@ -44,14 +43,16 @@ void SpriteBatcher::remove_sprite(SpriteNode_Irrlicht* sprite)
 
 void SpriteBatcher::set_dirty()
 {
-	m_dirty = true;
+	m_is_dirty = true;
 	m_batching_mesh->clear();
 }
 
 void SpriteBatcher::render()
 {
-	if (m_dirty)
-		update_mesh_buffer();
+	if (m_is_dirty)
+		reset_mesh_buffer();
+	else
+		refresh_mesh_buffer();
 }
 
 const irr::core::aabbox3d<float>& SpriteBatcher::getBoundingBox() const
@@ -69,24 +70,29 @@ void SpriteBatcher::OnRegisterSceneNode()
 	ISceneNode::OnRegisterSceneNode();
 }
 
-void SpriteBatcher::update_mesh_buffer()
+void SpriteBatcher::reset_mesh_buffer()
 {
 	m_batching_mesh->clear();
-	for( auto sprite : m_sprites)
+	for (auto sprite : m_sprites)
 	{
 		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getPosition(), sprite->getRotation(),
 			sprite->getScale());
 	}
 
-	LOG_DEBUG("[SpriteBatcher] refreshing %d meshes", m_batching_mesh->getSourceBufferCount());
-
 	m_batching_mesh->update();
 	m_batching_mesh->setHardwareMappingHint(EHM_STREAM, EBT_VERTEX_AND_INDEX);
-	
+
 	static_cast<IMeshSceneNode*>(m_node)->setMesh(m_batching_mesh);
 
 	m_node->setVisible(m_sprites.size() > 0);
-	m_dirty = false;
+	m_is_dirty = false;
+}
 
-	LOG_INFO("[SpriteBatcher] done");
+void SpriteBatcher::refresh_mesh_buffer()
+{
+	unsigned i = 0;
+	for (auto sprite : m_sprites)
+	{
+		m_batching_mesh->moveMeshBuffer(i++, sprite->getRelativeTransformation());
+	}
 }

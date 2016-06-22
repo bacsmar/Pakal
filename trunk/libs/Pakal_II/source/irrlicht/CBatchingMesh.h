@@ -35,9 +35,9 @@ public:
 	//! adds a mesh to the buffers with the given offset
 	/** \Return: Returns an array of ID numbers */
 	core::array<s32> addMesh(const IMesh* mesh, 
-		core::vector3df pos = core::vector3df(0,0,0), 
-		core::vector3df rot = core::vector3df(0,0,0),
-		core::vector3df scale = core::vector3df(1,1,1));
+		const core::vector3df& pos = core::vector3df(0,0,0), 
+		const core::vector3df& rot = core::vector3df(0,0,0),
+		const core::vector3df& scale = core::vector3df(1,1,1));
 
 	//! adds a mesh with the given transformation
 	/** \Return: Returns an array of ID numbers */
@@ -46,9 +46,9 @@ public:
 	//! adds a mesh buffer with the given transformation
 	/** \Return: Returns the ID of this mesh buffer */
 	s32 addMeshBuffer(const IMeshBuffer* buffer,
-		core::vector3df pos = core::vector3df(0,0,0), 
-		core::vector3df rot = core::vector3df(0,0,0),
-		core::vector3df scale = core::vector3df(1,1,1));
+		const core::vector3df& pos = core::vector3df(0,0,0), 
+		const core::vector3df& rot = core::vector3df(0,0,0),
+		const core::vector3df& scale = core::vector3df(1,1,1));
 
 	//! adds a mesh with the given transformation
 	/** \Return Returns the ID of this mesh buffer */
