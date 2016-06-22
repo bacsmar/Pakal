@@ -278,9 +278,6 @@
     <ClCompile Include="..\source\components\CharacterComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\irrlicht\BatchSceneNode.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp">
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClCompile>
@@ -741,9 +738,6 @@
     </ClInclude>
     <ClInclude Include="..\source\unix\ClockImpl.h">
       <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\BatchSceneNode.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClInclude>
     <ClInclude Include="..\source\irrlicht\CBatchingMesh.h">
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>

@@ -78,9 +78,9 @@ void SpriteBatcher::reset_mesh_buffer()
 	m_batching_mesh->clear();
 	for (auto sprite : m_sprites)
 	{		
-		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getAbsoluteTransformation());
-	}
-	LOG_DEBUG("[SpriteBatcher batcher] refreshing %d meshes", m_batching_mesh->getSourceBufferCount());
+		m_batching_mesh->addMeshBuffer(sprite->getMeshBuffer(), sprite->getRelativeTransformation());
+	}	
+	LOG_DEBUG("[SpriteBatcher batcher] refreshing %d meshes, %d buffers used", m_batching_mesh->getSourceBufferCount(), m_batching_mesh->getMeshBufferCount());
 	m_batching_mesh->update();
 	m_batching_mesh->setHardwareMappingHint(EHM_STREAM, EBT_VERTEX_AND_INDEX);
 
