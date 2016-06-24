@@ -219,6 +219,7 @@ void RocketUI::register_component_factories(std::vector<IComponentFactory*>& fac
 	LOG_INFO("[RocketUI] Registering Components");
 
 	factories.emplace_back(CreateComponentFactory<UILabel, RocketLabel>(this));
+	factories.emplace_back(CreateComponentFactory<UILayoutElement, RocketLayoutElement>(this));
 }
 
 void RocketUI::initialize()

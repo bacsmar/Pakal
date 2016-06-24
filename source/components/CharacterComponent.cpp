@@ -22,6 +22,11 @@ std::string Pakal::CharacterComponent::get_character_handler_typename() const
 	return m_character_handler_typename;
 }
 
+std::string Pakal::CharacterComponent::get_character_handler_fileName() const
+{
+	return m_character_handler_file_name;
+}
+
 bool Pakal::CharacterComponent::suscribe_to_input_handler(InputHandler* inputHandler)
 {
 	const auto& handler = m_listened_inputsComponents.find({ inputHandler,0 });

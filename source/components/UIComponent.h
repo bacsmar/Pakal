@@ -4,6 +4,8 @@
 
 namespace Pakal
 {
+	class UILayoutElement;
+
 	class _PAKALExport UIElement
 	{
 	public:
@@ -36,17 +38,37 @@ namespace Pakal
 		virtual ~UILabel(){};
 	};
 
-	class _PAKALExport UILayout : public Component, public UIElement
-	{
-		DECLARE_RTTI_WITH_BASE(UILayout, Component);
-	public:
-		// pure virtual methods
-	};
 
 	class _PAKALExport UILayoutElement : public Component, public UIElement
 	{
 		DECLARE_RTTI_WITH_BASE(UILayoutElement, Component);
 	public:
+		virtual bool add_element_inside(UILayoutElement*) const=0;
+		virtual void remove_inside_elements() const = 0;
+		virtual bool add_element_after(UILayoutElement*) const = 0;
+		virtual void load_style(const std::string& theme_name) const=0;
+	
+
+		virtual void set_width(int pixels) const = 0;
+		virtual void set_with_percentage(float container_percentage) const = 0;
+		virtual void set_heigth(int pixels) const = 0;
+		virtual void set_heigth_percentage(float container_percentage) const = 0;
+		virtual void set_padding(int pixels) const = 0;
+		virtual void set_padding_percentage(float containter_percentage) const = 0;
+		virtual void set_alpha_color(unsigned color, unsigned alpha_percentage) const = 0;
+		virtual void set_color(unsigned color) const = 0;
+		virtual void set_font_color(unsigned color) const = 0;
+		
+		virtual void set_id_value(const std::string & newId) = 0;
+		virtual std::string get_controled_element_name() const=0;
+		virtual void clone_on (UILayoutElement* target) const = 0;
+		virtual ~UILayoutElement() {};
+		virtual void terminate() = 0;
+	private:
+
 		// pure virtual methods
 	};
+
+
+
 }
