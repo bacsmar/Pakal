@@ -25,6 +25,7 @@
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\GridComponent.h" />
     <ClInclude Include="..\source\components\GridComponent_Irrlicht.h" />
+    <ClInclude Include="..\source\components\InputBinder.h" />
     <ClInclude Include="..\source\components\SFXComponent.h" />
     <ClInclude Include="..\source\components\TerrainComponent.h" />
     <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h" />

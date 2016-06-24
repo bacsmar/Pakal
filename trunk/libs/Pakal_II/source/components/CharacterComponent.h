@@ -18,12 +18,17 @@ namespace Pakal
 	protected:
 		// Character handler stuff, access from InputComponent only
 		std::string get_character_handler_typename() const override;
+		std::string get_character_handler_fileName() const override;
 		bool suscribe_to_input_handler(InputHandler* inputHandler) override;
 		void unsuscribe(InputHandler* inputHandler) override;		
 
 		inline void set_character_handler_typename(const std::string& type)
 		{
 			m_character_handler_typename = type;
+		};
+		inline void set_character_handler_fileName(const std::string& type)
+		{
+			m_character_handler_file_name = type;
 		};
 
 	private:		
@@ -39,5 +44,6 @@ namespace Pakal
 		};
 		std::set<ListenedInput> m_listened_inputsComponents;
 		std::string m_character_handler_typename = "Biped";
+		std::string m_character_handler_file_name="Biped";
 	};
 }

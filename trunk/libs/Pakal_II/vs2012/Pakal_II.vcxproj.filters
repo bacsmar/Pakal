@@ -750,6 +750,9 @@
     <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\components\InputBinder.h">
+      <Filter>Components\Input</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\irrlicht\SceneNodeBatcher.h">
       <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClInclude>

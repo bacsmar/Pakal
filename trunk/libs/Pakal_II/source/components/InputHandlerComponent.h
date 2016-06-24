@@ -17,7 +17,7 @@ namespace Pakal
 		bool has_linked_components() const;;
 		void set_handled_character(ICharacterHandler* characterHandler);;
 		void remove_subscriptions();
-		virtual bool load_mapping(const std::string& mappingName) = 0;
+		virtual bool load_mapping(const std::string& mappingName, const std::string& mappingFileName) = 0;
 
 		Event<std::string> evt_translated_command;
 	private:
@@ -40,20 +40,29 @@ namespace Pakal
 				DOWN, UP,
 			};
 			Type event_type;
+			static Type translateEvent(const std::string& stringValue)
+			{
+				if (stringValue.compare("DOWN") == 0) return Type::DOWN;
+				if (0 == stringValue.compare("UP"))return Type::UP;
+				return Type::UP;
+			}
 		};		
 
 		explicit KeyboardHandlerComponent(IInputManager* inputManager);
-		~KeyboardHandlerComponent();		
+		~KeyboardHandlerComponent();
 	protected:		
-		bool load_mapping(const std::string& mappingName) override;
+		bool load_mapping(const std::string& mappingName, const std::string& mappingFileName) override;
 	private:
 		void traslate_command_kdown(Pakal::KeyArgs args);
-		void traslate_command_kUp(Pakal::KeyArgs args);		
+		void traslate_command_kUp(Pakal::KeyArgs args);
+		Pakal::Key t_string_to_PakalKey(const std::string&);
+		void loadPakalMapping();
 
 		IInputManager*		m_input_manager_ref;
 		Pakal::EventId	m_id_event_key_down;
 		Pakal::EventId	m_id_event_key_up;		
 		std::list<KeyMapping>	m_key_map;
+		std::map<std::string, Pakal::Key> m_PakalMapping;
 	};
 
 

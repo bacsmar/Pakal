@@ -76,8 +76,10 @@ Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::translate_cordinate_to_
 {
 	const irr::scene::SViewFrustum* f = m_camera->getViewFrustum();
 	irr::core::vector3df nearLeftUp = f->getNearLeftUp();//--- get how many units we see
-	irr::core::vector3df lefttoright = f->getNearRightDown() - nearLeftUp;
-	irr::core::vector3df uptodown = f->getNearLeftUp() - nearLeftUp;
+	//irr::core::vector3df lefttoright = f->getNearRightDown() - nearLeftUp;
+	irr::core::vector3df lefttoright = f->getNearRightUp() - nearLeftUp;
+	//irr::core::vector3df uptodown = f->getNearLeftUp() - nearLeftUp;
+	irr::core::vector3df uptodown = f->getNearLeftDown() - nearLeftUp;
 	Pakal::tmath::vector2df points_2d;
 	points_2d.x = cordinate.x / scene_size.x;
 	points_2d.y = cordinate.y / scene_size.y;
@@ -99,10 +101,10 @@ Pakal::tmath::vector3df Pakal::CameraComponent_Irrlicht::cast_ray_from_screen_po
 	irr::core::vector3df farLeftUp = f->getFarLeftUp();
 	irr::core::vector3df lefttoright = f->getFarRightUp() - farLeftUp;
 	irr::core::vector3df uptodown = f->getFarLeftDown() - farLeftUp;
+
+
 	Pakal::tmath::vector2df  proportion = { cordinate.x / screen_size.x, cordinate.y / screen_size.y };
 	auto irr_vector3df = farLeftUp + (lefttoright * proportion.x) + (uptodown * proportion.y);
-
-
 	return { irr_vector3df.X,irr_vector3df.Y,irr_vector3df.Z};
 }
 
