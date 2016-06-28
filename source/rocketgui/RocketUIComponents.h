@@ -63,8 +63,7 @@ namespace Pakal
 		void set_heigth(int pixels)const override;
 		void set_heigth_percentage(float container_percentage) const override;
 		void set_padding(int pixels)const override;
-		void set_padding_percentage(float containter_percentage)const override;
-		void set_alpha_color(unsigned color, unsigned alpha_percentage)const override;
+		void set_padding_percentage(float containter_percentage)const override;		
 
 		void clone_on(UILayoutElement* target) const override;
 

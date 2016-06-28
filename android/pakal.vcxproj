@@ -143,6 +143,7 @@
     <ClInclude Include="..\source\irrlicht\CBatchingMesh.h" />
     <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
     <ClInclude Include="..\source\irrlicht\SceneNodeBatcher.h" />
+    <ClInclude Include="..\source\irrlicht\SpriteBatcher.hpp" />
     <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
@@ -290,6 +291,7 @@
     <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
     <ClCompile Include="..\source\irrlicht\MaterialManager.cpp" />
     <ClCompile Include="..\source\irrlicht\SceneNodeBatcher.cpp" />
+    <ClCompile Include="..\source\irrlicht\SpriteBatcher.cpp" />
     <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
     <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />

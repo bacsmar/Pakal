@@ -54,8 +54,7 @@ namespace Pakal
 		virtual void set_heigth(int pixels) const = 0;
 		virtual void set_heigth_percentage(float container_percentage) const = 0;
 		virtual void set_padding(int pixels) const = 0;
-		virtual void set_padding_percentage(float containter_percentage) const = 0;
-		virtual void set_alpha_color(unsigned color, unsigned alpha_percentage) const = 0;
+		virtual void set_padding_percentage(float containter_percentage) const = 0;		
 		virtual void set_color(unsigned color) const = 0;
 		virtual void set_font_color(unsigned color) const = 0;
 		
