@@ -12,6 +12,10 @@ namespace Pakal {
 	class StateMachine;
 	class ScriptComponent;
 	class Archive;
+	namespace trait_utils {
+		template <typename T, typename... Args>
+		class is_only_constructible;
+	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class  _PAKALExport  TransitionCondition
 	{
@@ -71,7 +75,7 @@ namespace Pakal {
 	{
 		friend StateMachine;
 		friend Archive;
-		friend std::is_constructible<State>;
+		friend trait_utils::is_only_constructible<State>;
 	protected:
 		std::string m_name;
 		std::string on_enter_str;
@@ -81,12 +85,8 @@ namespace Pakal {
 		std::vector<TransitionCondition>  m_transition_conditions;
 		std::unordered_map<std::string, State*> m_transition_commands;
 
-		explicit State(const std::string& name) : m_name(name){}
-		explicit State() : event_enter([]() {}), event_exit([](){}), event_update([]()
-		{
-			
-		}) {}
-
+		explicit State(const std::string& name) : m_name(name){}	
+		explicit State() : event_enter([]() {}), event_exit([](){}), event_update([](){}) {}
 		~State(void) {}
 
 		inline State* exec_conditions()

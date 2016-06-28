@@ -242,17 +242,16 @@ void Pakal::RocketLayoutElement::set_with_percentage(float width) const
 }
 
 void Pakal::RocketLayoutElement::set_heigth(int pixels) const
-{
-	char buffer[24];
+{	
 	if (m_element)
-		m_element->SetProperty("heigth", itoa(pixels, buffer, 10));
+		m_element->SetProperty("heigth", std::to_string(pixels).c_str());
 }
 
 void Pakal::RocketLayoutElement::set_heigth_percentage(float container_percentage) const
 {
 	if (m_element) {
 		auto inner_height = m_element->GetClientHeight();
-		set_heigth((container_percentage*inner_height) / 100.f);
+		set_heigth((container_percentage*inner_height) * 0.01f);
 	}
 }
 
@@ -269,22 +268,6 @@ void Pakal::RocketLayoutElement::set_padding_percentage(float containter_percent
 	if (m_element) {
 		m_element->SetAttribute("padding", buffer);
 	}
-}
-
-void Pakal::RocketLayoutElement::set_alpha_color(unsigned color, unsigned alpha_percentage) const
-{
-	char buffer[24];
-	sprintf(buffer, "#%06X", color);
-	if (alpha_percentage > 100) alpha_percentage = 100;
-	float real_percentage = float(alpha_percentage) / 100;
-	sprintf(buffer, "#%03f", real_percentage);
-
-	std::string send_text = "{background - color:rgba(" + buffer[0] + buffer[1] + ','
-		+ buffer[2] + buffer[3] + ','
-		+ buffer[4] + buffer[5] + ','+ sprintf(buffer, "#%03f", real_percentage);;
-
-	if (m_element)
-		m_element->SetAttribute("background-color", send_text);
 }
 
 void Pakal::RocketLayoutElement::clone_on(UILayoutElement* target) const
