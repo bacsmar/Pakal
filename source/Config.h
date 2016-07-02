@@ -26,7 +26,7 @@
 #endif
 
 //! compile with http://www.sfml-dev.org
-#define PAKAL_USE_SFML_AUDIO 0
+#define PAKAL_USE_SFML_AUDIO 1
 #define PAKAL_USE_SFML_INPUT 1 
 #define PAKAL_USE_SFML_WINDOW 1 
 #define PAKAL_USE_SFML (PAKAL_USE_SFML_AUDIO || PAKAL_USE_SFML_INPUT || PAKAL_USE_SFML_WINDOW)
