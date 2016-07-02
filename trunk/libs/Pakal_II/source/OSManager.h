@@ -31,6 +31,7 @@ namespace Pakal
 			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
 			virtual void close_window() = 0;
 			virtual void process_window_events() = 0;
+			virtual void flush() {};
 			virtual void set_title(const std::string& title) = 0;
 			virtual ~IWindowManager() {}
 		};
@@ -70,6 +71,7 @@ namespace Pakal
 		void terminate();
 
 		TaskPtr<WindowArgs> setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel);
+		void flush_window();
 		void close_window();
 
 		void  process_window_events();

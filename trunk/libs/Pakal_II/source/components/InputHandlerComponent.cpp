@@ -172,7 +172,7 @@ void Pakal::KeyboardHandlerComponent::loadPakalMapping()
 	m_PakalMapping.insert(std::make_pair("K", Pakal::Key::K));
 	m_PakalMapping.insert(std::make_pair("L", Pakal::Key::L));
 	m_PakalMapping.insert(std::make_pair("M", Pakal::Key::M));
-	m_PakalMapping.insert(std::make_pair("Ñ", Pakal::Key::N));
+	m_PakalMapping.insert(std::make_pair("N", Pakal::Key::N));
 	m_PakalMapping.insert(std::make_pair("O", Pakal::Key::O));
 	m_PakalMapping.insert(std::make_pair("P", Pakal::Key::P));
 	m_PakalMapping.insert(std::make_pair("Q", Pakal::Key::Q));

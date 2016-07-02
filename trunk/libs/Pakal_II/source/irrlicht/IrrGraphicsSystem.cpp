@@ -191,7 +191,7 @@ void IrrGraphicsSystem::draw()
 	if (smgr->getActiveCamera() == nullptr)
 		return;
 	smgr->drawAll();
-	guienv->drawAll();
+	//guienv->drawAll();
 
 	for (auto &r : m_debug_renderers)
 	{

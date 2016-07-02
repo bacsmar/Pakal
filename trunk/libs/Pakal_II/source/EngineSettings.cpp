@@ -121,7 +121,11 @@ Engine::Settings::Settings()
 #endif
 
 #if PAKAL_USE_SFML_WINDOW == 1
-	os_manager_settings.window_manager_allocator = [](OSManager* manager) { return new WindowCreatorSFML(manager); };
+#ifdef PAKAL_ANDROID_PLATFORM
+	os_manager_settings.window_manager_allocator = [](OSManager* manager) { return new WindowCreatorSFML(manager, true); };
+#else
+	os_manager_settings.window_manager_allocator = [](OSManager* manager) { return new WindowCreatorSFML(manager, false); };
+#endif
 #endif
 
 }

@@ -26,19 +26,7 @@ namespace Pakal
 		OsWrapperAndroid();
 	public:
 		ANativeActivity*	activity;
-//		static void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize);
-//		static int get_window_from_surface(int surfacePtr);
 		std::string get_app_path() override;
-		//void on_app_started();
-		//void on_app_resumed();
-		//void on_app_paused();
-		//void on_app_stoped();
-		//void on_app_finished();
-		//void on_window_redraw_needed(const WindowArgs& windowArgs);
-		//void on_window_resized(const WindowArgs& windowArgs);
-		//void on_window_focused(bool b);				
-		//AConfiguration*		configuration;
-		//unsigned			orientation;
 	};
 
 

@@ -10,9 +10,13 @@ using namespace Pakal;
 
 void GraphicsSystem::on_initialize()
 {
-	OSMgr.setup_window(m_settings.window_id, m_settings.resolution, m_settings.full_screen, m_settings.bits)
-		->continue_with(std::bind(&GraphicsSystem::on_init_graphics,this,std::placeholders::_1),THIS_THREAD)
-		->wait();	
+	OSMgr.setup_window(m_settings.window_id, m_settings.resolution, m_settings.full_screen, m_settings.bits)		
+		->continue_with([this](const Pakal::WindowArgs& args)
+		{
+			OSMgr.process_window_events();
+			on_init_graphics(args);
+		}, THIS_THREAD)
+		->wait(false);	
 	m_ui_manager->initialize();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -34,7 +38,8 @@ void GraphicsSystem::on_update(unsigned long dtMilliSeconds)
 			updatable->update(static_cast<unsigned>(dtMilliSeconds));
 		}
 	}
-	on_update_graphics(dtMilliSeconds);	
+	on_update_graphics(dtMilliSeconds);
+	OSMgr.flush_window();
 }
 //////////////////////////////////////////////////////////////////////////
 
