@@ -24,28 +24,31 @@ unsigned WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2
 
 	auto windowScreenStyle = fullscreen ? sf::Style::Fullscreen : sf::Style::Default;
 	auto videoMode = sf::VideoMode(dimensions.x, dimensions.y, bitsPerPixel);
-
-	m_window.create(videoMode, "", windowScreenStyle, sf::ContextSettings(), true);
-	m_window.setSize({ static_cast<unsigned>(dimensions.x), static_cast<unsigned>(dimensions.y) });
+	auto contextSettings = sf::ContextSettings(8,8);	// z buffer, stencil buffer
+	
+	m_window = new sf::Window();
+	m_window->create(videoMode, "", windowScreenStyle, contextSettings, !m_manage_context);
+	m_window->setSize({ static_cast<unsigned>(dimensions.x), static_cast<unsigned>(dimensions.y) });
 
 	m_window_created = true;
-	m_window_handle = m_window.getSystemHandle();
+	m_window_handle = m_window->getSystemHandle();
 	return reinterpret_cast<unsigned>(m_window_handle);
 
 }
 
 void WindowCreatorSFML::close_window()
 {
-	m_window.close();
+	m_window->close();
+	SAFE_DEL(m_window);
 	m_window_created = false;
 }
 
 void WindowCreatorSFML::process_window_events() 
 {		
 	ASSERT(m_window_created);
-
+	
 	sf::Event e;
-	while (m_window.pollEvent(e))
+	while (m_window->pollEvent(e))
 	{
 		switch (e.type)
 		{
@@ -147,5 +150,11 @@ void WindowCreatorSFML::process_window_events()
 
 void WindowCreatorSFML::set_title(const std::string& title)
 {	
-	m_window.setTitle(title);
+	m_window->setTitle(title);
+}
+
+void WindowCreatorSFML::flush()
+{
+	if(m_manage_context)
+		m_window->display();
 }

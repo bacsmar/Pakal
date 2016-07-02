@@ -27,9 +27,31 @@ Pakal::EventScheduler::~EventScheduler()
 	m_inboxes.clear();	
 }
 
-void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition)
+void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition, bool blocking)
 {
-	while(!condition());
+	// just wait for other thread to trigger our condition
+	if( blocking)
+	{
+		while (!condition());
+	}		
+	else// the condition could be in this thread.. so dispatch tasks...
+	{
+		if (condition())
+			return;
+
+		auto currentTid = THIS_THREAD;
+		m_mutex.lock();
+		auto dispatcher = std::find_if(m_dispatchers.begin(), m_dispatchers.end(), [currentTid](AsyncTaskDispatcher* d)
+		{
+			return d->thread_id() == currentTid;
+		});
+		m_mutex.unlock();
+
+		if (dispatcher != m_dispatchers.end())
+			while (!condition()) (*dispatcher)->dispatch_one_task(false);
+		else
+			while (!condition());
+	}
 }
 
 Pakal::InboxTask* Pakal::EventScheduler::find_inbox_for_thread(std::thread::id tid)

@@ -36,7 +36,7 @@ namespace Pakal
 	public:
 		static EventScheduler& instance();
 
-		void wait_this_thread(const std::function<bool()>& condition);
+		void wait_this_thread(const std::function<bool()>& condition, bool blocking);
 
 		void register_dispatcher_for_thread(AsyncTaskDispatcher* dispatcher,std::thread::id tid);
 		void deregister_dispatcher(AsyncTaskDispatcher* dispatcher);

@@ -44,6 +44,11 @@ TaskPtr<WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vect
 	return m_windows_setup_task.get_task();
 }
 
+void OSManager::flush_window()
+{
+	m_window_impl->flush();
+}
+
 void OSManager::close_window()
 {
 	m_window_impl->close_window();

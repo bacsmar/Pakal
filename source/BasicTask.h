@@ -50,7 +50,10 @@ namespace Pakal
 
 
 		inline bool is_completed() const { return m_completed; }
-		void wait();		
+		// param blocking, 
+		// if blocking is true, we are waiting other thread to trigger our condition
+		// if false: then the condition is in this very thread, this function will still dispatch events...
+		void wait(bool blocking = true);
 
 		BasicTaskPtr continue_with(const std::function<void()>& callBack, std::thread::id callBackThread = NULL_THREAD);
 

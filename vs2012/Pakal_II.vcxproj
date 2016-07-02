@@ -414,7 +414,8 @@
       </Command>
     </PostBuildEvent>
     <Lib>
-      <AdditionalDependencies>winmm.lib;opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">
