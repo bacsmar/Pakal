@@ -29,6 +29,7 @@ namespace Pakal
 	void MusicComponentSFML::terminate()
 	{
 		stop();
+		m_player.openFromMemory(nullptr, 0);
 		m_buffer = nullptr;
 
 	}
