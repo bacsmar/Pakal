@@ -19,6 +19,8 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_buffer.Material.GouraudShading = false;
 	//m_buffer.Material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
 	//m_buffer.Material.ZBuffer = video::ECFN_ALWAYS;	// disable Z buffer test...		default value!
+	m_buffer.Material.ZWriteEnable = true;
+	//m_buffer.Material.ZWriteFineControl = video::EZI_ZBUFFER_FLAG;
 	m_buffer.Material.FrontfaceCulling = false;		// enable both faces drawing
 	m_buffer.Material.BackfaceCulling = false;
 
@@ -29,8 +31,8 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	//m_buffer.Material.MaterialType = (video::E_MATERIAL_TYPE)30;
 	m_buffer.Material.MaterialTypeParam = 0.1f;
 
-	m_buffer.BoundingBox.reset(-1.0f,-1.0f,0.0f);
-	m_buffer.BoundingBox.addInternalPoint(1.0f,1.0f,0.0f);
+	m_buffer.BoundingBox.reset(-1.0f, -1.0f, 0.0f);
+	m_buffer.BoundingBox.addInternalPoint(1.0f, 1.0f, 0.0f);
 
 	m_buffer.Vertices.set_used(4);
 	m_buffer.Indices.set_used(6);
@@ -45,7 +47,7 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, 
 	MaterialManager* materialManager) : SpriteNode_Irrlicht(parent, mgr)
 {
-	//m_material.MaterialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);
+	//m_buffer.Material.MaterialType = materialManager->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_REF);
 }
 
 void SpriteNode_Irrlicht::setColor(const video::SColor& color)

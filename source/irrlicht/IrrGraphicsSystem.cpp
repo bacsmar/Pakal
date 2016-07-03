@@ -86,6 +86,8 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	smgr	= device->getSceneManager();
 	guienv	= device->getGUIEnvironment();
 
+	smgr->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
+
 	m_batch_scene = new SceneNodeBatcher(smgr);
 	m_sprite_batcher = new SpriteBatcher(smgr);
 
