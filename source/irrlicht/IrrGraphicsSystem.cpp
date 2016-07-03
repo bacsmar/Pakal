@@ -49,7 +49,7 @@ IrrGraphicsSystem::IrrGraphicsSystem(const Settings& settings)
 	smgr(nullptr),
 	guienv(nullptr),
 	m_render_info(new RendererInfo()),
-	m_batch_scene(nullptr)
+	m_batch_scene(nullptr), m_sprite_batcher(nullptr)
 {
 }
 
@@ -120,8 +120,7 @@ void IrrGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	}, THIS_THREAD};
 
 	//// next time we only need to recreate the openGL context
-	OSMgr.event_window_created += {m_created_callback_id, [this](const WindowArgs& a)
-	//OSMgr.event_window_redraw_needed += {m_created_callback_id, [this](const WindowArgs& a)
+	OSMgr.event_window_created += {m_created_callback_id, [this](const WindowArgs& a)	
 	{
 		LOG_INFO("[Graphic System] window %X created -> recreating surface", a.windowId);
 		SEvent event;
@@ -191,7 +190,7 @@ void IrrGraphicsSystem::draw()
 	if (smgr->getActiveCamera() == nullptr)
 		return;
 	smgr->drawAll();
-	//guienv->drawAll();
+	guienv->drawAll();	
 
 	for (auto &r : m_debug_renderers)
 	{
