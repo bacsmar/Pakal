@@ -125,7 +125,8 @@ BasicTaskPtr SpriteComponent_Irrlicht::initialize(const Settings& settings)
 		
 		m_sprite_sheet = settings.sprite_sheet;
 		load(*settings.sprite_sheet.get());
-		m_system->add_to_update_list(this);
+		if(m_animations.size() > 0)
+			m_system->add_to_update_list(this);
 
 	});
 }
@@ -136,7 +137,8 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 
 	return m_system->execute_block([=]() 
 	{
-		m_system->remove_from_update_list(this);
+		if (m_animations.size() > 0)
+			m_system->remove_from_update_list(this);
 		m_system->get_sprite_batcher()->remove_sprite(m_node);
 		m_node->detach();
 		m_node->drop();		

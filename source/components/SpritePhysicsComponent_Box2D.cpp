@@ -16,6 +16,7 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 
 BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 {	
+	m_scale = _loader.scale;
 	return m_system->execute_block([=]()	// copy the smartpointer, just to keep our data alive.
 	{
 		auto& loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
@@ -54,8 +55,8 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 				fixtureDef.isSensor = fixture.is_sensor;
 				fixtureDef.filter.maskBits = fixture.mask_bits;
 				fixtureDef.filter.categoryBits = fixture.category_bits;
-				//fixtureDef.filter 
-				//fixtureDef.userData				
+				//fixtureDef.filter
+				//fixtureDef.userData
 
 
 				if (fixture.type == "CIRCLE")
@@ -90,7 +91,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 				}								
 			}
 		}
-		m_active_body = m_bodies.begin()->second;		
+		m_active_body = m_bodies.begin()->second;
 	});
 }
 
