@@ -42,6 +42,8 @@ namespace Pakal
 
 		};
 
+		virtual void set_gravity(const tmath::vector3df& gravity) = 0;
+
 	protected:
 		Settings m_settings;
 

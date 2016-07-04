@@ -56,7 +56,9 @@ namespace Pakal
 		virtual void clear_world() override;
 		
 		inline void enable();
-		inline void disable();		
+		inline void disable();
+
+		void set_gravity(const tmath::vector3df& gravity) override;
 
 	private:
 		b2World				* m_world;

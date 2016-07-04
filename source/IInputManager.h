@@ -5,8 +5,8 @@
 #include "IComponentProvider.h"
 #include "InputDevice.h"
 #include "Event.h"
-
 #include "EventArgs.h"
+#include "PakalMath.h"
 
 namespace Pakal
 {
@@ -26,5 +26,19 @@ namespace Pakal
 		Event<TextArgs>  event_text;
 		Event<KeyArgs>  event_key_down;
 		Event<KeyArgs>  event_key_up;
+
+		enum class Sensors
+		{
+			Accelerometer,
+			Gyroscope,
+			Magnetometer,
+			Gravity,
+			UserAcceleration,
+			Orientation,
+		};
+
+		virtual tmath::vector3df get_sensor_value(Sensors sensor) const = 0;
+		virtual bool is_sensor_available(Sensors sensor) const = 0;
+		virtual void set_sensor_enabled(Sensors sensor, bool value) = 0;
 	};
 }

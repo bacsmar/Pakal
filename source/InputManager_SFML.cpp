@@ -69,3 +69,41 @@ void InputManager_SFML::register_component_factories(std::vector<IComponentFacto
 {	
 	factories.emplace_back(CreateComponentFactory<GamepadComponent, GamepadComponent>(this));
 }
+
+sf::Sensor::Type pakal_sensor_SFML(InputManager_SFML::Sensors sensor)
+{	
+	switch (sensor)
+	{
+	case InputManager_SFML:: Sensors::Accelerometer:
+		return sf::Sensor::Accelerometer;
+	case InputManager_SFML:: Sensors::Gyroscope:
+		return sf::Sensor::Gyroscope;
+	case InputManager_SFML:: Sensors::Magnetometer:
+		return sf::Sensor::Magnetometer;
+	case InputManager_SFML:: Sensors::Gravity:
+		return sf::Sensor::Gravity;
+	case InputManager_SFML:: Sensors::UserAcceleration:
+		return sf::Sensor::UserAcceleration;
+	case InputManager_SFML:: Sensors::Orientation:
+		return sf::Sensor::Orientation;
+	default: break;
+	}
+	return { sf::Sensor::Gravity };
+}
+
+tmath::vector3df InputManager_SFML::get_sensor_value(Sensors sensor) const
+{	
+	auto s = pakal_sensor_SFML(sensor);
+	auto v = sf::Sensor::getValue(s);
+	return{ v.x, v.y, v.z };
+}
+
+bool InputManager_SFML::is_sensor_available(Sensors sensor) const
+{
+	return sf::Sensor::isAvailable(pakal_sensor_SFML(sensor));
+}
+
+void InputManager_SFML::set_sensor_enabled(Sensors sensor, bool value)
+{
+	sf::Sensor::setEnabled(pakal_sensor_SFML(sensor), value);
+}

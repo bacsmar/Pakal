@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "IInputManager.h"
+#include "PakalMath.h"
 
 namespace Pakal
 {
@@ -24,5 +25,9 @@ namespace Pakal
 		virtual ITouchDevice*	get_touch_device(unsigned id) const override;
 
 		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
+
+		tmath::vector3df get_sensor_value(Sensors sensor) const override;
+		bool is_sensor_available(Sensors sensor) const override;
+		void set_sensor_enabled(Sensors sensor, bool value) override;
 	};
 }
