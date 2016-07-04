@@ -124,6 +124,12 @@ namespace Pakal
 				return vectorn<T, 2>(x * num, y * num);
 			}
 
+			template <class X>
+			inline const vectorn<T, 2> operator*(const X& num) const
+			{
+				return vectorn<T, 2>( (T)(x * num), (T)(y * num));
+			}
+
 			friend inline const vectorn<T, 2> operator *(const T& s, const vectorn<T, 2>& v)
 			{
 				return v * s;

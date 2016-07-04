@@ -29,5 +29,7 @@ namespace Pakal
 		tmath::vector3df get_sensor_value(Sensors sensor) const override;
 		bool is_sensor_available(Sensors sensor) const override;
 		void set_sensor_enabled(Sensors sensor, bool value) override;
+
+		tmath::vector2di get_mouse_position() const override;
 	};
 }

@@ -92,6 +92,16 @@ void GameStateManager::pop_states(int amount)
 
 }
 
+void GameStateManager::pause()
+{
+	peek_state()->on_deactivate(m_engine);
+}
+
+void GameStateManager::resume()
+{
+	peek_state()->on_activate(m_engine);
+}
+
 BaseGameState* GameStateManager::peek_state()
 {
 	return states.top();

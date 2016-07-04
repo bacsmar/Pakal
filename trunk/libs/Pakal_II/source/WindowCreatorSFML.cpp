@@ -28,7 +28,7 @@ unsigned WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2
 	
 	m_window = new sf::Window();
 	m_window->create(videoMode, "", windowScreenStyle, contextSettings, !m_manage_context);
-	m_window->setSize({ static_cast<unsigned>(dimensions.x), static_cast<unsigned>(dimensions.y) });
+	m_window->setSize({ static_cast<unsigned>(dimensions.x), static_cast<unsigned>(dimensions.y) });	
 
 	m_window_created = true;
 	m_window_handle = m_window->getSystemHandle();
@@ -157,4 +157,16 @@ void WindowCreatorSFML::flush()
 {
 	if(m_manage_context)
 		m_window->display();
+}
+
+tmath::vector2di WindowCreatorSFML::get_position()
+{
+	auto pos = m_window->getPosition();
+	return{ pos.x,pos.y };
+}
+
+tmath::vector2di WindowCreatorSFML::get_size()
+{
+	auto pos = m_window->getSize();
+	return{ (int)pos.x,(int)pos.y };
 }
