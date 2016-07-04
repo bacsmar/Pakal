@@ -14,22 +14,16 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	: ISceneNode(parent,mgr),
     m_texture(nullptr)
 {
-	m_buffer.Material.Lighting = true;
-	m_buffer.Material.EmissiveColor = m_buffer.Material.AmbientColor;
-	m_buffer.Material.GouraudShading = false;
-	//m_buffer.Material.ZBuffer = video::ECFN_DISABLED;	// disable Z buffer test...		default value!
-	//m_buffer.Material.ZBuffer = video::ECFN_ALWAYS;	// disable Z buffer test...		default value!
-	m_buffer.Material.ZWriteEnable = true;
-	//m_buffer.Material.ZWriteFineControl = video::EZI_ZBUFFER_FLAG;
+	m_buffer.Material.Lighting = false;
+	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;	
+	//m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;			
 	m_buffer.Material.FrontfaceCulling = false;		// enable both faces drawing
 	m_buffer.Material.BackfaceCulling = false;
 
-	//-Material renderers which offers blending feature(eg.EMT_TRANSPARENT_ALPHA_CHANNEL, EMT_ONETEXTURE_BLEND etc.) require SMaterial::BlendOperation set to other value than EBO_NONE.
-	m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	//m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
-	//m_buffer.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
-	//m_buffer.Material.MaterialType = (video::E_MATERIAL_TYPE)30;
-	m_buffer.Material.MaterialTypeParam = 0.1f;
+	//m_buffer.Material.ZBuffer = video::ECFN_LESSEQUAL;	//default value	
+	m_buffer.Material.ZWriteEnable = true;
+	//m_buffer.Material.setFlag(irr::video::EMF_BILINEAR_FILTER, true);
+	//m_buffer.Material.ZWriteFineControl = video::EZI_ZBUFFER_FLAG;
 
 	m_buffer.BoundingBox.reset(-1.0f, -1.0f, 0.0f);
 	m_buffer.BoundingBox.addInternalPoint(1.0f, 1.0f, 0.0f);
@@ -42,6 +36,9 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_buffer.Indices[3] = 0;
 	m_buffer.Indices[4] = 3;
 	m_buffer.Indices[5] = 2;
+
+	video::SColor color(255, 255, 255, 255);
+	setColor(color);	
 }
 
 SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, irr::scene::ISceneManager* mgr, 
@@ -146,8 +143,7 @@ void SpriteNode_Irrlicht::render()
 
 	driver->setMaterial(m_buffer.Material);
 
-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-	//driver->drawVertexPrimitiveList(m_vertices, 4, m_indices, 2);
+	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);	
 	driver->drawIndexedTriangleList(&m_buffer.Vertices[0], 4, &m_buffer.Indices[0], 2);
 }
 
