@@ -20,8 +20,9 @@ SpriteNode_Irrlicht::SpriteNode_Irrlicht(ISceneNode* parent, ISceneManager* mgr)
 	m_buffer.Material.FrontfaceCulling = false;		// enable both faces drawing
 	m_buffer.Material.BackfaceCulling = false;
 
-	//m_buffer.Material.ZBuffer = video::ECFN_LESSEQUAL;	//default value	
+	m_buffer.Material.ZBuffer = video::ECFN_LESSEQUAL;	//default value	
 	m_buffer.Material.ZWriteEnable = true;
+	m_buffer.Material.MaterialTypeParam = 0.3f;
 	//m_buffer.Material.setFlag(irr::video::EMF_BILINEAR_FILTER, true);
 	//m_buffer.Material.ZWriteFineControl = video::EZI_ZBUFFER_FLAG;
 
