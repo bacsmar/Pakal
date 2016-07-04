@@ -32,6 +32,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 			bodydef.type = spriteBody->dynamic ? b2_dynamicBody : b2_staticBody;
 			bodydef.awake = spriteBody->awake;
 			bodydef.gravityScale = spriteBody->gravity_scale;
+			bodydef.allowSleep = spriteBody->allow_sleep;
 
 			auto body = m_system->create_body(&bodydef);
 

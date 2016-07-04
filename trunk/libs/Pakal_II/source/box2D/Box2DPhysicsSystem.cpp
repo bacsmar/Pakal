@@ -56,6 +56,15 @@ void Box2DPhysicsSystem::destroy_joint(b2Joint* joint)
 inline void Box2DPhysicsSystem::enable()	{ m_contact_listener->Enable(); }
 //////////////////////////////////////////////////////////////////////////
 inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
+
+void Box2DPhysicsSystem::set_gravity(const tmath::vector3df& gravity)
+{
+	execute_block([=]()
+	{
+		m_world->SetGravity({ gravity.x,  gravity.y});
+	});
+}
+
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::do_debug_draw()
 {

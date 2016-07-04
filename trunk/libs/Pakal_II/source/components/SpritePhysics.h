@@ -107,6 +107,7 @@ namespace Pakal
 		bool		fixed_rotation = false;
 		//vector2df	position;
 		bool		awake = true;
+		bool		allow_sleep = true;
 		float		gravity_scale = 1.f;
 
 		inline size_t get_size() const
@@ -121,6 +122,7 @@ namespace Pakal
 			archive->value("fixed_rotation", fixed_rotation);
 			//archive->value("position", position);
 			archive->value("awake", awake);
+			archive->value("allow_sleep", allow_sleep);
 			archive->value("gravity_scale", gravity_scale);
 			archive->value("fixtures","fixture",m_fixtures);
 		}
