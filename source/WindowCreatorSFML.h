@@ -20,5 +20,7 @@ namespace Pakal
 		void process_window_events() override final;
 		void set_title(const std::string& title) override;
 		void flush() override final;
+		tmath::vector2di get_position() override;
+		tmath::vector2di get_size() override;
 	};
 }

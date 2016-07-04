@@ -10,7 +10,27 @@
 
 namespace Pakal
 {
-	class _PAKALExport IInputManager : public IManager, public IComponentProvider
+	struct ISensor
+	{
+		virtual ~ISensor()
+		{
+		}
+
+		enum class Sensors
+		{
+			Accelerometer,
+			Gyroscope,
+			Magnetometer,
+			Gravity,
+			UserAcceleration,
+			Orientation,
+		};
+		virtual tmath::vector3df get_sensor_value(Sensors sensor) const = 0;
+		virtual bool is_sensor_available(Sensors sensor) const = 0;
+		virtual void set_sensor_enabled(Sensors sensor, bool value) = 0;
+	};
+
+	class _PAKALExport IInputManager : public IManager, public IComponentProvider, public ISensor
 	{
 	public:
 		virtual ~IInputManager(){}
@@ -25,20 +45,8 @@ namespace Pakal
 		Event<MouseArgs>  event_mouse_wheel;
 		Event<TextArgs>  event_text;
 		Event<KeyArgs>  event_key_down;
-		Event<KeyArgs>  event_key_up;
+		Event<KeyArgs>  event_key_up;		
 
-		enum class Sensors
-		{
-			Accelerometer,
-			Gyroscope,
-			Magnetometer,
-			Gravity,
-			UserAcceleration,
-			Orientation,
-		};
-
-		virtual tmath::vector3df get_sensor_value(Sensors sensor) const = 0;
-		virtual bool is_sensor_available(Sensors sensor) const = 0;
-		virtual void set_sensor_enabled(Sensors sensor, bool value) = 0;
+		virtual tmath::vector2di get_mouse_position() const = 0;
 	};
 }

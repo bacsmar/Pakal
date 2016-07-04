@@ -107,3 +107,9 @@ void InputManager_SFML::set_sensor_enabled(Sensors sensor, bool value)
 {
 	sf::Sensor::setEnabled(pakal_sensor_SFML(sensor), value);
 }
+
+tmath::vector2di InputManager_SFML::get_mouse_position() const
+{
+	auto pos = sf::Mouse::getPosition();
+	return{ pos.x, pos.y };
+}

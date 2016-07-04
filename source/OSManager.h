@@ -33,6 +33,8 @@ namespace Pakal
 			virtual void process_window_events() = 0;
 			virtual void flush() {};
 			virtual void set_title(const std::string& title) = 0;
+			virtual tmath::vector2di get_position() = 0;
+			virtual tmath::vector2di get_size() = 0;
 			virtual ~IWindowManager() {}
 		};
 		struct Settings

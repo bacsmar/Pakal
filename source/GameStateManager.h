@@ -27,6 +27,9 @@ namespace Pakal
 		void pop_state();
 		void pop_states(int amount);
 
+		void pause();
+		void resume();
+
 		BaseGameState* peek_state();
 		int size() const;
 	};
