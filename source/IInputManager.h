@@ -30,7 +30,16 @@ namespace Pakal
 		virtual void set_sensor_enabled(Sensors sensor, bool value) = 0;
 	};
 
-	class _PAKALExport IInputManager : public IManager, public IComponentProvider, public ISensor
+	struct IKeyboard
+	{
+		virtual ~IKeyboard()
+		{
+		}
+
+		virtual bool is_key_pressed(Pakal::Key key) = 0;
+	};
+
+	class _PAKALExport IInputManager : public IManager, public IComponentProvider, public ISensor, public IKeyboard
 	{
 	public:
 		virtual ~IInputManager(){}
