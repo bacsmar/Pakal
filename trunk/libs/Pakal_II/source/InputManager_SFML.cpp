@@ -113,3 +113,9 @@ tmath::vector2di InputManager_SFML::get_mouse_position() const
 	auto pos = sf::Mouse::getPosition();
 	return{ pos.x, pos.y };
 }
+
+bool InputManager_SFML::is_key_pressed(Pakal::Key key)
+{
+	auto k = (sf::Keyboard::Key)(key);
+	return sf::Keyboard::isKeyPressed(k);
+}
