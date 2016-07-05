@@ -146,6 +146,16 @@ BasicTaskPtr SpriteComponent_Irrlicht::terminate()
 	});
 }
 
+void SpriteComponent_Irrlicht::set_visible(bool visible)
+{
+	m_node->setVisible(visible);
+}
+
+bool SpriteComponent_Irrlicht::is_visible()
+{
+	return m_node->isVisible();
+}
+
 void SpriteComponent_Irrlicht::load(const SpriteSheet& spriteSheet)
 {	
 	auto texture = m_system->get_driver()->getTexture(spriteSheet.texture_name.c_str());

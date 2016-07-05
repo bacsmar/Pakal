@@ -52,6 +52,9 @@ namespace Pakal
 		virtual BasicTaskPtr initialize(const Settings& settings) override;
 		virtual BasicTaskPtr terminate() override;
 
+		void set_visible(bool visible) override;
+		bool is_visible() override;
+
 		void set_animation(const std::string& name) override;
 
 		void set_flipped(bool value) override;
