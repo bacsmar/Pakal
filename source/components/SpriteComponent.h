@@ -27,7 +27,10 @@ namespace Pakal
 		virtual BasicTaskPtr initialize(const Settings& settings) = 0;
 		virtual BasicTaskPtr terminate() = 0;
 
-		virtual void set_animation(const std::string& name) = 0;
+		virtual void set_visible(bool visible) = 0;
+		virtual bool is_visible() = 0;
+
+		virtual void set_animation(const std::string& name) = 0;		
 		
 		virtual void set_flipped(bool val) = 0;
 		virtual void set_looped(bool val) = 0;
