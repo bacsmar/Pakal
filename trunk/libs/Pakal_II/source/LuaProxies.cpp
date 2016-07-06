@@ -27,7 +27,8 @@ namespace Pakal
 	void _PAKALExport register_script_interface_for<SpriteComponent>(SpriteComponent* obj, Script& script, const std::string& name)
 	{				
 		script.register_class<SpriteComponent>(name)
-			.add_function("set_animation", &SpriteComponent::set_animation)
+			//.add_function("set_animation", &SpriteComponent::set_animation)
+			.add_function("set_animation", fn_type_cast<SpriteComponent, void, unsigned>(&SpriteComponent::set_animation))
 			.add_function("set_flipped", &SpriteComponent::set_flipped)
 			.add_function("is_playing", &SpriteComponent::is_playing)
 			.add_function("is_flipped", &SpriteComponent::is_flipped)

@@ -286,6 +286,30 @@ void SpriteComponent_Irrlicht::set_animation(const std::string& animationName)
 	}
 }
 
+void SpriteComponent_Irrlicht::set_animation(unsigned index)
+{
+	ASSERT(m_animations.size() >= index);
+
+	if (m_animations.size() >= index)
+	{
+		unsigned i = 0;
+		for (auto &animation : m_animations)
+		{
+			if (i == index)
+			{
+				set_animation(*animation.second);
+				return;
+			}
+			i++;
+		}
+	}
+}
+
+unsigned SpriteComponent_Irrlicht::get_animation_count() const
+{
+	return m_animations.size();
+}
+
 void SpriteComponent_Irrlicht::play()
 {
 	m_paused = false;
