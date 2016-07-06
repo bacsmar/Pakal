@@ -31,6 +31,8 @@ namespace Pakal
 		virtual bool is_visible() = 0;
 
 		virtual void set_animation(const std::string& name) = 0;		
+		virtual void set_animation(unsigned index) = 0;		
+		virtual unsigned get_animation_count() const = 0;
 		
 		virtual void set_flipped(bool val) = 0;
 		virtual void set_looped(bool val) = 0;

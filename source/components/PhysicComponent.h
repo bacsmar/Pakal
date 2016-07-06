@@ -18,6 +18,7 @@ namespace Pakal
 	class _PAKALExport PhysicComponent : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(PhysicComponent, Component);		
+		friend class ContactListener;
 	public:		
 		virtual ~PhysicComponent(){}
 
@@ -38,7 +39,7 @@ namespace Pakal
 			{}
 			std::string type;
 		};
-
+	protected:
 		// internal use only
 		bool on_collide(const PhysicComponent& other)
 		{

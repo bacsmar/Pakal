@@ -56,6 +56,8 @@ namespace Pakal
 		bool is_visible() override;
 
 		void set_animation(const std::string& name) override;
+		void set_animation(unsigned index) override;
+		unsigned get_animation_count() const override;
 
 		void set_flipped(bool value) override;
 		void set_looped(bool value) override;
