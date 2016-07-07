@@ -1,6 +1,7 @@
 #pragma once
 #include "PakalMath.h"
 #include <vector>
+#include <memory>
 
 namespace Pakal
 {
@@ -26,6 +27,8 @@ namespace Pakal
 		void persist(Archive* a);
 		tmath::rectf to_uv(tmath::rectf rect);
 	};
+
+	using UVMappingPtr = std::shared_ptr<UVMapping>;
 
 }
 

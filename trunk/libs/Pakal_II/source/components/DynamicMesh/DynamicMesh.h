@@ -42,7 +42,7 @@ namespace Pakal
 		MeshBuilder m_edgeBuilder;
 		MeshBuilder m_fillBuilder;
 
-		UVMapping* m_uvMapping = nullptr;
+		UVMappingPtr m_uvMapping = nullptr;
 		std::vector<VertexInfo*> m_vertices;
 
 		FillMode m_fillMode = FillMode::None;
@@ -56,7 +56,7 @@ namespace Pakal
 		bool m_closed = false;
 		bool m_splitWhenDifferent = true;
 
-		bool is_inverted()
+		bool is_inverted() const
 		{
 			return m_fillMode == FillMode::Inverted && m_vertices.size() > 2;
 		}
@@ -80,15 +80,23 @@ namespace Pakal
 		}
 
 	public:
-		DynamicMesh(const std::vector<VertexInfo*>& vertices,UVMapping* mapping);
+		DynamicMesh(const std::vector<VertexInfo*>& vertices, UVMappingPtr mapping);
 		DynamicMesh();
 		virtual ~DynamicMesh();
 
-		MeshBuilder& get_edge_mesh() 
+		const MeshBuilder& get_edge_mesh() const
 		{
 			return m_edgeBuilder;
 		}
-		MeshBuilder& get_fill_mesh() 
+		MeshBuilder& get_edge_mesh()
+		{
+			return m_edgeBuilder;
+		}
+		const MeshBuilder& get_fill_mesh() const
+		{
+			return m_fillBuilder;
+		}
+		MeshBuilder& get_fill_mesh()
 		{
 			return m_fillBuilder;
 		}
@@ -97,7 +105,7 @@ namespace Pakal
 		{
 			return m_vertices;
 		}
-		UVMapping* get_uv_mapping() const
+		UVMappingPtr get_uv_mapping() const
 		{
 			return m_uvMapping;
 		}
@@ -134,7 +142,7 @@ namespace Pakal
 			return m_splitWhenDifferent;
 		}
 
-		void set_uv_mapping(UVMapping* uvMapping)
+		void set_uv_mapping(UVMappingPtr uvMapping)
 		{
 			m_uvMapping = uvMapping;
 		}

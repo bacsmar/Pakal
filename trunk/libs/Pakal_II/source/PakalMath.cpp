@@ -10,7 +10,7 @@ void Persist<tmath::vectorn<int, 3>>::persist(Archive* a, tmath::vector3di& vec)
 	a->value("z", vec.z);
 }
 
-void Persist<tmath::vectorn<float, 3>>::persist(Archive* a, tmath::vector3di& vec)
+void Persist<tmath::vectorn<float, 3>>::persist(Archive* a, tmath::vector3df& vec)
 {
 	a->value("x", vec.x);
 	a->value("y", vec.y);

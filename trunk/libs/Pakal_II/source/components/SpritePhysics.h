@@ -16,6 +16,7 @@ namespace Pakal
 		class vector2df : public tmath::vector2df
 		{
 		public:
+			using tmath::vector2df::vector2df;
 			void persist(Archive* archive)
 			{
 				archive->value("x", x);

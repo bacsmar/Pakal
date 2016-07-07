@@ -25,6 +25,10 @@ namespace Pakal
 		{
 			return m_positions;
 		}
+		const std::vector<tmath::vector3df>& get_positions() const
+		{
+			return m_positions;
+		}
 
 		void add_quad(const tmath::vector3df& p0, const tmath::vector3df& p1, const tmath::vector3df& p2, const tmath::vector3df& p3, const tmath::vector2df& uv0, const tmath::vector2df& uv1, const tmath::vector2df& uv2, const tmath::vector2df& uv3);
 
