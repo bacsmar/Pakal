@@ -3,14 +3,15 @@
 
 #include "irrlicht/IrrGraphicsSystem.h"
 #include "irrlicht.h"
-#include "irrlicht/MaterialManager.h"
 #include "dimension2d.h"
+#include <irrlicht/SceneNodeBatcher.h>
 
 using namespace Pakal;
 using namespace irr::scene;
 using namespace irr::video;
 
-DynamicMeshComponent_Irrlicht::DynamicMeshComponent_Irrlicht(IrrGraphicsSystem* graphicsSystem) : m_system(graphicsSystem) , m_mesh(new irr::scene::SMesh()), m_node(nullptr) , m_fillTexture(nullptr), m_edgeTexture(nullptr), m_mapping(nullptr)
+DynamicMeshComponent_Irrlicht::DynamicMeshComponent_Irrlicht(IrrGraphicsSystem* graphicsSystem) : m_system(graphicsSystem) , 
+m_mesh(new irr::scene::SMesh()), m_node(nullptr) , m_fillTexture(nullptr), m_edgeTexture(nullptr), m_mapping(nullptr)
 {}
 
 DynamicMeshComponent_Irrlicht::~DynamicMeshComponent_Irrlicht()
@@ -21,6 +22,24 @@ DynamicMeshComponent_Irrlicht::~DynamicMeshComponent_Irrlicht()
 std::vector<VertexInfo>& DynamicMeshComponent_Irrlicht::get_vertices()
 {
 	return m_vertices;
+}
+
+void DynamicMeshComponent_Irrlicht::set_vertices(const std::vector<VertexInfo>& vertices)
+{
+	m_vertices.clear();
+	m_vertices = vertices;
+}
+
+const std::vector<tmath::vector3df>& DynamicMeshComponent_Irrlicht::get_generated_vertices() const
+{
+	return m_meshGenerator.get_edge_mesh().get_positions();
+}
+
+void DynamicMeshComponent_Irrlicht::set_texture(const std::string& textureName, TextureType type)
+{
+	auto buffer = (SMeshBuffer*)m_mesh->getMeshBuffer(type == TextureType::Edge ? 0 : 1);
+	auto texture = m_fillTexture = m_system->get_driver()->getTexture(textureName.c_str());
+	buffer->Material.setTexture(0, texture);
 }
 
 BasicTaskPtr DynamicMeshComponent_Irrlicht::intialize(const Settings& settings)
@@ -41,7 +60,9 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::intialize(const Settings& settings)
 	auto fillT = settings.fill_texture;
 	auto edgeT = settings.edges_texture;
 
-	return m_system->execute_block([this,fillT,edgeT]()
+	auto is_static_geometry = settings.is_static_geometry;
+
+	return m_system->execute_block([this,fillT,edgeT, is_static_geometry]()
 	{
 		m_fillTexture = m_system->get_driver()->getTexture(fillT.c_str());
 		m_edgeTexture = m_system->get_driver()->getTexture(edgeT.c_str());
@@ -70,13 +91,19 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::intialize(const Settings& settings)
 			m_mapping->fill_size = { int(size.Width), int(size.Height) };
 		}
 
-	
-		m_node = m_system->get_smgr()->addMeshSceneNode(this->m_mesh);
+		if(is_static_geometry)
+		{
+			m_node = m_system->get_batcher()->add_mesh(m_mesh);
+		}		
+		else
+		{
+			m_node = m_system->get_smgr()->addMeshSceneNode(this->m_mesh);
+		}		
 		m_node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 		m_node->setMaterialFlag(EMF_NORMALIZE_NORMALS, true);
 		m_node->setMaterialFlag(EMF_BACK_FACE_CULLING, false);
 		m_node->setMaterialFlag(EMF_FRONT_FACE_CULLING, false);
-		m_node->setMaterialType(m_system->get_material_manager()->get_material(MaterialManager::MaterialType::EMT_TRANSPARENT_ALPHA_CHANNEL));
+		m_node->setMaterialType(EMT_TRANSPARENT_ALPHA_CHANNEL);
 		m_node->setVisible(true);
 	});
 }
@@ -88,7 +115,7 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::terminate()
 
 	return m_system->execute_block([this]()
 	{
-		m_node->getParent()->removeChild(m_node);
+		m_node->remove();
 		m_node = nullptr;
 		m_fillTexture = m_edgeTexture = nullptr;
 	});
@@ -98,7 +125,6 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::tesellate()
 {
 	std::vector<VertexInfo*> pointers(m_vertices.size());
 	std::transform(m_vertices.begin(), m_vertices.end(), pointers.begin(), std_utils::address<VertexInfo>());
-
 
 	m_meshGenerator.set_vertices(pointers);
 	m_meshGenerator.tesellate();
@@ -115,10 +141,9 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::tesellate()
 		if (m_edgeTexture)
 		{
 			auto edgeBuffer = static_cast<SMeshBuffer*>(m_mesh->getMeshBuffer(0));
-			auto& edgeVertices = m_meshGenerator.get_edge_mesh().get_positions();
-			auto& edgeUVs = m_meshGenerator.get_edge_mesh().get_uvs();
-			auto& edgeIndices = m_meshGenerator.get_edge_mesh().get_indices();
-
+			const auto& edgeVertices = m_meshGenerator.get_edge_mesh().get_positions();
+			const auto& edgeUVs = m_meshGenerator.get_edge_mesh().get_uvs();
+			const auto& edgeIndices = m_meshGenerator.get_edge_mesh().get_indices();
 
 			int vertexCount = edgeVertices.size();
 			edgeBuffer->Vertices.clear();
@@ -136,7 +161,6 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::tesellate()
 					edgeUVs[i].y));
 			}
 
-
 			int indexCount = edgeIndices.size();
 			edgeBuffer->Indices.clear();
 			edgeBuffer->Indices.reallocate(indexCount);
@@ -150,11 +174,10 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::tesellate()
 
 		if (m_fillTexture)
 		{
-			auto fillBuffer = static_cast<SMeshBuffer*>(m_mesh->getMeshBuffer(1));
-			auto& fillVertices = m_meshGenerator.get_fill_mesh().get_positions();
-			auto& fillUVs = m_meshGenerator.get_fill_mesh().get_uvs();
-			auto& fillIndices = m_meshGenerator.get_fill_mesh().get_indices();
-
+			const auto fillBuffer = static_cast<SMeshBuffer*>(m_mesh->getMeshBuffer(1));
+			const auto& fillVertices = m_meshGenerator.get_fill_mesh().get_positions();
+			const auto& fillUVs = m_meshGenerator.get_fill_mesh().get_uvs();
+			const auto& fillIndices = m_meshGenerator.get_fill_mesh().get_indices();
 
 			int vertexCount = fillVertices.size();
 			fillBuffer->Vertices.clear();
@@ -171,7 +194,6 @@ BasicTaskPtr DynamicMeshComponent_Irrlicht::tesellate()
 					fillUVs[i].x,
 					fillUVs[i].y));
 			}
-
 
 			int indexCount = fillIndices.size();
 			fillBuffer->Indices.clear();

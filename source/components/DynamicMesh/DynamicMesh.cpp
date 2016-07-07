@@ -109,7 +109,7 @@ std::vector<DynamicMesh::Segment> DynamicMesh::generate_segments()
 	return segments;
 }
 
-DynamicMesh::DynamicMesh(const std::vector<VertexInfo*>& vertices, UVMapping* mapping) : m_uvMapping(mapping), m_vertices(vertices)
+DynamicMesh::DynamicMesh(const std::vector<VertexInfo*>& vertices, UVMappingPtr mapping) : m_uvMapping(mapping), m_vertices(vertices)
 {}
 
 DynamicMesh::DynamicMesh()

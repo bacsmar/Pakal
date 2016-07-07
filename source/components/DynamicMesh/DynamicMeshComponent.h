@@ -21,7 +21,7 @@ namespace Pakal
 			std::string edges_texture;
 
 			float strech_threshold = 0.5f;
-			DynamicMesh::FillMode fill_mode = DynamicMesh::FillMode::Fill;
+			DynamicMesh::FillMode fill_mode = DynamicMesh::FillMode::None;
 			tmath::vector3di ambient_color = { 255,255,255};
 
 			int smooth_factor = 5;
@@ -31,12 +31,13 @@ namespace Pakal
 			bool is_closed = false;
 			bool split_when_different = false;
 
-			UVMapping* mapping;
+			UVMappingPtr mapping;
 			std::vector<VertexInfo> vertices;
+			bool is_static_geometry = false;
 
 			void persist(Archive* a)
 			{
-				a->value("uv_mapping", mapping);
+				a->value("uv_mapping", *mapping);
 				a->value("vertices_info", "vertex", vertices);
 				a->value("fill_mode", fill_mode);
 				a->value("strech_threshold", strech_threshold);
@@ -54,6 +55,8 @@ namespace Pakal
 		virtual BasicTaskPtr terminate() = 0;
 
 		virtual std::vector<VertexInfo>& get_vertices() = 0;
+		virtual const std::vector<tmath::vector3df>& get_generated_vertices() const = 0;
+		virtual void set_vertices(const std::vector<VertexInfo>&) = 0;
 		virtual BasicTaskPtr tesellate() = 0;
 	};
 

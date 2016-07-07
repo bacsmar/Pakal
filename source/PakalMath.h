@@ -85,7 +85,7 @@ namespace Pakal
 	template<>
 	struct Persist<tmath::vector3df>
 	{
-		static void persist(Archive* a, tmath::vector3di& vec);
+		static void persist(Archive* a, tmath::vector3df& vec);
 	};
 
 	template<>
