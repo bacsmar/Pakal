@@ -24,7 +24,7 @@ namespace Pakal
 		explicit BaseGameState(const std::string& name): m_game_state_manager(nullptr), m_deallocate_on_pop(false), m_name(name) {}
 		virtual ~BaseGameState() { }
 
-		inline const GameStateManager* get_manager() const { return m_game_state_manager; };
+		inline GameStateManager* get_manager() const { return m_game_state_manager; };
 
 		virtual void on_initialize(Engine* engine) = 0;
 		virtual void on_terminate(Engine* engine) = 0;
