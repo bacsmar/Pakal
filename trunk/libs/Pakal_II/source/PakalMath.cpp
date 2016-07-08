@@ -31,6 +31,12 @@ void Persist<tmath::vectorn<int, 2>>::persist(Archive* a, tmath::vector2di& rect
 	a->value("y", rect.y);
 }
 
+void Persist<tmath::vectorn<float, 2>>::persist(Archive* a, tmath::vector2df& rect)
+{
+	a->value("x", rect.x);
+	a->value("y", rect.y);
+}
+
 Pakal::tmath::vector3df Pakal::get_intersection_on_plane_and_line(
 	const Pakal::tmath::vector3df& lineVOrigin, 
 	const Pakal::tmath::vector3df& lineVDirection, 

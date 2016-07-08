@@ -99,6 +99,11 @@ namespace Pakal
 	{
 		static void persist(Archive* a, tmath::vector2di& rect);
 	};
+	template<>
+	struct Persist<tmath::vector2df>
+	{
+		static void persist(Archive* a, tmath::vector2df& rect);
+	};
 
 	tmath::vector3df get_intersection_on_plane_and_line(
 		const tmath::vector3df& lineVOrigin,
