@@ -139,9 +139,50 @@ void WindowCreatorSFML::process_window_events()
 			case sf::Event::JoystickMoved: break;
 			case sf::Event::JoystickConnected: break;
 			case sf::Event::JoystickDisconnected: break;
-			case sf::Event::TouchBegan: break;
-			case sf::Event::TouchMoved: break;
-			case sf::Event::TouchEnded: break;
+			case sf::Event::TouchBegan: {
+
+				//TODO: change this method  to an specialized class this was only for debug purposes
+				//TouchArgs args;
+				//args.x = e.touch.x;
+				//args.y = e.touch.y;
+				//args.finger = e.touch.finger;
+				//m_os_manager->get_input_manager()->event_touch_began(args);
+				MouseArgs args;
+				args.button_id = static_cast<MouseButton> (e.touch.finger);
+				args.x = e.touch.x;
+				args.y = e.touch.y;
+				m_os_manager->get_input_manager()->event_mouse_pressed(args);
+			} break;
+			case sf::Event::TouchMoved: {
+				//TODO: change this method  to an specialized class this was only for debug purposes
+				//TouchArgs args;
+				//args.x = e.touch.x;
+				//args.y = e.touch.y;
+				//args.finger = e.touch.finger;
+				//m_os_manager->get_input_manager()->event_touch_moved(args);
+
+				MouseArgs args;
+				args.button_id = static_cast<MouseButton> (e.touch.finger);
+				args.x = e.touch.x;
+				args.y = e.touch.y;
+				m_os_manager->get_input_manager()->event_mouse_moved(args);
+
+			} break;
+			case sf::Event::TouchEnded: 
+			{
+				//TODO: change this method  to an specialized class this was only for debug purposes
+				//TouchArgs args;
+				//args.x = e.touch.x;
+				//args.y = e.touch.y;
+				//args.finger = e.touch.finger;
+				//m_os_manager->get_input_manager()->event_touch_ended(args);
+				MouseArgs args;
+				args.button_id =static_cast<MouseButton> (e.touch.finger);
+				args.x = e.touch.x;
+				args.y = e.touch.y;
+				//m_os_manager->get_input_manager()->event_mouse_pressed(args);
+				m_os_manager->get_input_manager()->event_mouse_released(args);
+			} break;
 			case sf::Event::SensorChanged: break;
 			default: break;
 		}

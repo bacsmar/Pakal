@@ -16,7 +16,7 @@ void GameStateManager::terminate()
 	{
 		BaseGameState* state = states.top();
 		states.pop();
-
+		
 		state->on_terminate(m_engine);
 
 		if (state->m_deallocate_on_pop) 
