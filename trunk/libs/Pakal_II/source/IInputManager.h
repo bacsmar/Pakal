@@ -54,7 +54,12 @@ namespace Pakal
 		Event<MouseArgs>  event_mouse_wheel;
 		Event<TextArgs>  event_text;
 		Event<KeyArgs>  event_key_down;
-		Event<KeyArgs>  event_key_up;		
+		Event<KeyArgs>  event_key_up;	
+
+		Event<TouchArgs> event_touch_began;
+		Event<TouchArgs> event_touch_moved;
+		Event<TouchArgs> event_touch_ended;
+
 
 		virtual tmath::vector2di get_mouse_position() const = 0;
 	};

@@ -258,6 +258,13 @@ namespace Pakal
 			windowId(0), size_x(0), size_y(0) {}
 	};
 
+	struct TouchArgs
+	{
+		unsigned int finger; ///< Index of the finger in case of multi-touch events
+		int x;               ///< X position of the touch, relative to the left of the owner window
+		int y;               ///< Y position of the touch, relative to the top of the owner window
+	};
+
 	struct TextArgs
 	{
 		unsigned unicode;
