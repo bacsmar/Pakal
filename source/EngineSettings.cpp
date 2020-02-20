@@ -51,12 +51,12 @@
 
 #if defined(PAKAL_WIN32_PLATFORM )
 
-		// pugixml
-#if defined(_DEBUG)
-	#pragma comment(lib, "pugixmlsd.lib")
-#else
-	#pragma comment(lib, "pugixmls.lib")
-#endif	// pugixml
+//		// pugixml
+//#if defined(_DEBUG)
+//	#pragma comment(lib, "pugixmlsd.lib")
+//#else
+//	#pragma comment(lib, "pugixmls.lib")
+//#endif	// pugixml
 
 #if PAKAL_USE_SFML == 1
 #if defined( _DEBUG)

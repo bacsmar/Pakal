@@ -1,0 +1,3 @@
+[submodule "source/persist"]
+	path = source/persist
+	url = https://github.com/bacsmar/pakal_persist.git
