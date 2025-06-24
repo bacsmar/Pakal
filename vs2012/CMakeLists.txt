@@ -12,7 +12,8 @@ if(NOT CMAKE_VS_PLATFORM_NAME)
 endif()
 message("${CMAKE_VS_PLATFORM_NAME} architecture in use")
 
-if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32"))
+# Add support for x64 architecture
+if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32" OR "${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64"))
     message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} arch is not supported!")
 endif()
 
@@ -44,6 +45,13 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG_STATIC "")
     set(CMAKE_CXX_FLAGS_RELEASE "")
     set(CMAKE_CXX_FLAGS_RELEASE_STATIC "")
+    # Enable multicore compilation for all configurations
+    add_compile_options(/MP)
+elseif(UNIX AND CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
+    # Linux-specific compiler flags
+    set(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fexceptions -fno-rtti -O2 -pipe")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
 ################################################################################
@@ -570,7 +578,8 @@ if(MSVC)
             /Od;
             /RTC1;
             /MDd;
-            /ZI
+            /ZI;
+            /MP
         >
         $<$<CONFIG:release_static>:
             /GL;
@@ -585,7 +594,8 @@ if(MSVC)
             /Zi;
             /Ot;
             /GR-;
-            /GS-
+            /GS-;
+            /MP
         >
         $<$<CONFIG:Release>:
             /O2;
@@ -615,6 +625,19 @@ if(MSVC)
             /INCREMENTAL:NO
         >
     )
+elseif(UNIX AND CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:
+            -g
+        >
+        $<$<CONFIG:Release>:
+            -O3
+        >
+        -Wall
+        -Wextra
+        -Wno-unused-parameter
+    )
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
 endif()
 
 ################################################################################
@@ -653,4 +676,21 @@ target_link_directories(${PROJECT_NAME} PUBLIC
         "${CMAKE_SOURCE_DIR}//libs/SFML-2.1/lib"
     ">"
 )
+
+# Output directory for Linux
+if(UNIX)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/$<CONFIG>"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/$<CONFIG>"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/$<CONFIG>"
+    )
+endif()
+
+# Linux-specific definitions
+if(UNIX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        "$<$<CONFIG:Debug>:LINUX_BUILD>"
+        "$<$<CONFIG:Release>:LINUX_BUILD>"
+    )
+endif()
 
