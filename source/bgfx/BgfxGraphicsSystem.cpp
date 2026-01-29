@@ -19,7 +19,8 @@
 
 namespace Pakal
 {
-	BgfxGraphicsSystem::BgfxGraphicsSystem(const Settings& settings) : GraphicsSystem(settings)
+	BgfxGraphicsSystem::BgfxGraphicsSystem(const Settings& settings) : GraphicsSystem(settings),
+		m_resized_callback_id(0), m_destroyed_callback_id(0), m_created_callback_id(0)
 	{
 		LOG_INFO("[BgfxGraphicsSystem] Constructing bgfx graphics system");
 	}
@@ -116,18 +117,9 @@ namespace Pakal
 		LOG_INFO("[BgfxGraphicsSystem] Terminating bgfx graphics system");
 
 		// Remove event listeners
-		if (m_created_callback_id != INVALID_EVENT_ID)
-		{
-			OSMgr.event_window_created.remove_listener(m_created_callback_id);
-		}
-		if (m_resized_callback_id != INVALID_EVENT_ID)
-		{
-			OSMgr.event_window_resized.remove_listener(m_resized_callback_id);
-		}
-		if (m_destroyed_callback_id != INVALID_EVENT_ID)
-		{
-			OSMgr.event_window_destroyed.remove_listener(m_destroyed_callback_id);
-		}
+		OSMgr.event_window_created	 -= m_created_callback_id;
+		OSMgr.event_window_resized	 -= m_resized_callback_id;
+		OSMgr.event_window_destroyed -= m_destroyed_callback_id;
 
 		// Cleanup UI manager
 		if (m_ui_manager)
