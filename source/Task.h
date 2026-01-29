@@ -85,6 +85,7 @@ namespace Pakal
 				friend class TaskUtils;
 			public:
 				explicit DummyTaskAtomic(const std::function<void(void)>& job) : BasicTask(job){}
+				inline void runTask() { run(); }
 				std::atomic_int	m_result;				
 			};
 
@@ -101,7 +102,7 @@ namespace Pakal
 				t->m_result-= 1;
 				if (t->m_result == 0)
 				{
-					t->run();
+					t->runTask();
 				}
 			};
 
