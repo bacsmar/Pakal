@@ -2,7 +2,7 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: BgfxDebugDrawer.h
 // Original Author: Salvador Noel Romo Garcia.
-// Creation Date: january 29 2026
+// Creation Date: January 29, 2026
 //
 // Purpose: bgfx debug drawer implementation for Box2D visualization
 //

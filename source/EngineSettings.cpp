@@ -99,7 +99,7 @@ Engine::Settings::Settings()
 #if PAKAL_USE_BGFX == 1
 
 	// bgfx doesn't have a built-in UI manager yet
-	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new DummyUIManager();  };
+	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new DummyUIManager(); };
 	
 	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new BgfxGraphicsSystem(settings); };
 

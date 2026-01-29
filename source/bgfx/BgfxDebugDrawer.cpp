@@ -2,7 +2,7 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: BgfxDebugDrawer.cpp
 // Original Author: Salvador Noel Romo Garcia.
-// Creation Date: january 29 2026
+// Creation Date: January 29, 2026
 //
 // Purpose: bgfx debug drawer implementation for Box2D visualization
 //
@@ -154,7 +154,10 @@ namespace Pakal
 			}
 			else
 			{
-				color.Set(1.0f, 1.0f, 1.0f);
+				color.r = 1.0f;
+				color.g = 1.0f;
+				color.b = 1.0f;
+				color.a = 1.0f;
 			}
 			DrawSolidCircle(centers[i], radius, b2Vec2(0, 0), color);
 		}

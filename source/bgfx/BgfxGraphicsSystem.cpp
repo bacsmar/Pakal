@@ -2,7 +2,7 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: BgfxGraphicsSystem.cpp
 // Original Author: Salvador Noel Romo Garcia.
-// Creation Date: january 29 2026
+// Creation Date: January 29, 2026
 //
 // Purpose: bgfx graphics system implementation
 //
@@ -193,7 +193,8 @@ namespace Pakal
 			m_debug_renderers.push_back(debugDrawer);
 			
 			// Set the renderer info for the debug drawer
-			// For now, we pass nullptr since we don't have a BgfxRendererInfo yet
+			// TODO: Create BgfxRendererInfo when needed
+			// For now, passing nullptr is acceptable as debug drawing works without it
 			debugDrawer->set_drawer(nullptr);
 		}
 	}
