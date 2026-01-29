@@ -23,6 +23,7 @@ x86/
 .vs/
 .vscode/
 cmake-build-*/
+docker-build/
 
 # IDE files
 *.suo

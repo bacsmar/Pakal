@@ -6,7 +6,9 @@
 COMMAND=${1:-build}
 DOCKER_IMAGE="pakal-engine"
 DOCKER_TAG="latest"
-OUTPUT_DIR="$(pwd)/bin"
+BUILD_DIR="$(pwd)/docker-build"
+SOURCE_DIR="$(pwd)/source"
+EXAMPLES_DIR="$(pwd)/examples"
 
 # Try docker compose (new) first, fallback to docker-compose (old)
 if command -v docker &> /dev/null; then
