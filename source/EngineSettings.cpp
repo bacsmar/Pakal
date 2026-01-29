@@ -2,6 +2,7 @@
 #include "config.h"
 
 #include "persist/Archive.h"
+#include "DummyUIManager.h"
 
 #if PAKAL_USE_SFML_WINDOW == 1
 	#include "WindowCreatorSFML.h"
