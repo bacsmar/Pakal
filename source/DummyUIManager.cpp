@@ -1,4 +1,5 @@
 #include "DummyUIManager.h"
+#include "Task.h"
 
 using namespace Pakal;
 

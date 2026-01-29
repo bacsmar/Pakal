@@ -28,6 +28,12 @@ file(GLOB_RECURSE PAKAL_SOURCES
     "${CMAKE_SOURCE_DIR}/source/components/*.h"
 )
 
+# Exclude platform-specific files
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/android/.*")
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/win32/.*")
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/unix/.*")
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/examples/.*")
+
 # Platform-specific source files
 if(UNIX AND NOT APPLE)
     list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp)
@@ -99,7 +105,7 @@ endif()
 if(MSVC)
     target_compile_options(Pakal PRIVATE /O2 /W4)
 else()
-    target_compile_options(Pakal PRIVATE -O2 -Wall -Wextra -Wno-ignored-qualifiers)
+    target_compile_options(Pakal PRIVATE -O2 -Wall -Wextra)
     if(UNIX AND NOT APPLE)
         target_compile_options(Pakal PRIVATE -fPIC)
     endif()
