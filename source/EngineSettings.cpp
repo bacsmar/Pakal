@@ -5,11 +5,13 @@
 #include "DummyUIManager.h"
 
 #if PAKAL_USE_SFML_WINDOW == 1
-	#include "WindowCreatorSFML.h"
+	#include "sfml/WindowCreatorSFML.h"
 #endif
 
 #if PAKAL_USE_BOX2D == 1
 	#include "box2D/Box2DPhysicsSystem.h"
+#else
+	#include "DummyPhysicsSystem.h"
 #endif
 
 #if PAKAL_USE_BGFX == 1
@@ -38,7 +40,7 @@
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
-	#include "InputManager_SFML.h"
+	#include "sfml/InputManager_SFML.h"
 #endif
 
 #if PAKAL_USE_ROCKET == 1
@@ -120,6 +122,10 @@ Engine::Settings::Settings()
 
 #if PAKAL_USE_BOX2D == 1
 	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
+#else
+	physics_system_allocator = [](Engine* engine, const PhysicsSystem::Settings& settings) { 
+		return new DummyPhysicsSystem(settings); 
+	};
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1

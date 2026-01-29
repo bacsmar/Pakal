@@ -36,13 +36,17 @@ int main(int argc, char* argv[])
 	try
 	{
 		// Create engine with default settings (DummyUIManager already configured)
+		std::cout << "creating settings!" << std::endl;
 		Engine::Settings settings;
 		
 		// Create engine
+		std::cout << "creating engine!" << std::endl;
 		Engine engine(settings);
 		
 		// Create and run application
+		std::cout << "creating application!" << std::endl;
 		BasicApplication app;
+		std::cout << "running engine!" << std::endl;
 		engine.run(&app);
 		
 		std::cout << "Engine finished successfully!" << std::endl;

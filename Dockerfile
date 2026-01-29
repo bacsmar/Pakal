@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libx11-dev \
     libgl1-mesa-dev \
     liblua5.3-dev \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # === STAGE 1: Compile bgfx (cached, won't rebuild unless external/ changes) ===
@@ -50,8 +51,7 @@ RUN apt-get update && apt-get install -y \
     libsfml-dev \
     libx11-6 \
     libgl1 \
-    liblua5.3-0 \
-    && rm -rf /var/lib/apt/lists/*
+    liblua5.3-0 \    xvfb \    && rm -rf /var/lib/apt/lists/*
 
 # Copy built binaries and libraries from builder
 COPY --from=builder /workspace/build/bin /workspace/bin
