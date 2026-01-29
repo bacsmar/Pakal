@@ -11,6 +11,10 @@
 	#include "box2D/Box2DPhysicsSystem.h"
 #endif
 
+#if PAKAL_USE_BGFX == 1
+	#include "bgfx/BgfxGraphicsSystem.h"
+#endif
+
 #if PAKAL_USE_IRRLICHT == 1
 	#include "irrlicht/IrrGraphicsSystem.h"
 	#ifndef PAKAL_STATIC_LIB
@@ -92,7 +96,14 @@ using namespace Pakal;
 Engine::Settings::Settings()
 {
 
-#if PAKAL_USE_IRRLICHT == 1
+#if PAKAL_USE_BGFX == 1
+
+	// bgfx doesn't have a built-in UI manager yet
+	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new DummyUIManager();  };
+	
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new BgfxGraphicsSystem(settings); };
+
+#elif PAKAL_USE_IRRLICHT == 1
 
 	#if PAKAL_USE_ROCKET == 1
 		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new IrrRocketUI(gs);  };
