@@ -68,14 +68,33 @@ else()
     message(FATAL_ERROR "❌ SFML not found. Install with: sudo apt-get install libsfml-dev")
 endif()
 
-# bgfx library
+# bgfx library (built with its own makefile, we link the prebuilt .a)
 set(BGFX_DIR ${CMAKE_SOURCE_DIR}/external/bgfx)
-if(EXISTS ${BGFX_DIR}/CMakeLists.txt)
-    add_subdirectory(${BGFX_DIR} external/bgfx)
-    target_link_libraries(Pakal bgfx)
+set(BX_DIR ${CMAKE_SOURCE_DIR}/external/bx)
+set(BIMG_DIR ${CMAKE_SOURCE_DIR}/external/bimg)
+
+# Link prebuilt bgfx libraries (built via makefile in Dockerfile)
+set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/linux64_gcc/bin)
+set(BGFX_LIBS
+    ${BGFX_BUILD_DIR}/libbgfxRelease.a
+    ${BGFX_BUILD_DIR}/libbxRelease.a
+    ${BGFX_BUILD_DIR}/libbimgRelease.a
+)
+
+if(EXISTS ${BGFX_BUILD_DIR}/libbgfxRelease.a)
+    message(STATUS "✓ Found prebuilt bgfx library")
+    target_include_directories(Pakal PUBLIC 
+        ${BGFX_DIR}/include
+        ${BX_DIR}/include
+        ${BX_DIR}/include/compat/linux
+        ${BIMG_DIR}/include
+    )
+    target_link_libraries(Pakal 
+        ${BGFX_LIBS}
+        dl
+    )
 else()
-    message(STATUS "⚠️  bgfx CMakeLists.txt not found (submodules may not be initialized)")
-    message(STATUS "   Run: git submodule update --init --recursive")
+    message(WARNING "⚠️  bgfx library not found. Build it with: cd external/bgfx && make linux-gcc-release64")
 endif()
 
 # Box2D physics library (optional)
@@ -93,10 +112,10 @@ endif()
 
 # Platform-specific libraries
 if(UNIX AND NOT APPLE)
-    target_link_libraries(Pakal X11 GL)
+    target_link_libraries(Pakal X11 GL pthread)
 elseif(APPLE)
     find_package(OpenGL REQUIRED)
-    target_link_libraries(Pakal OpenGL::OpenGL)
+    target_link_libraries(Pakal OpenGL::OpenGL pthread)
 elseif(WIN32)
     target_link_libraries(Pakal opengl32 user32 gdi32)
 endif()
@@ -105,7 +124,18 @@ endif()
 if(MSVC)
     target_compile_options(Pakal PRIVATE /O2 /W4)
 else()
-    target_compile_options(Pakal PRIVATE -O2 -Wall -Wextra)
+    target_compile_options(Pakal PRIVATE -O2 -Wall -Wextra 
+        -Wno-address 
+        -Wno-nonnull-compare
+        -Wno-unused-parameter
+        -Wno-ignored-qualifiers
+        -Wno-implicit-fallthrough
+        -Wno-deprecated-copy
+        -Wno-strict-aliasing
+        -Wno-maybe-uninitialized
+        -Wno-delete-incomplete
+        -Wno-missing-field-initializers
+        -Wno-unused-variable)
     if(UNIX AND NOT APPLE)
         target_compile_options(Pakal PRIVATE -fPIC)
     endif()
@@ -114,6 +144,13 @@ endif()
 # Add subdirectories for additional components if they have CMakeLists
 if(EXISTS ${CMAKE_SOURCE_DIR}/source/components/CMakeLists.txt)
     add_subdirectory(${CMAKE_SOURCE_DIR}/source/components)
+endif()
+
+# Build examples
+if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
+    add_executable(PakalBasicExample ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
+    target_link_libraries(PakalBasicExample Pakal)
+    target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
 # Print configuration summary

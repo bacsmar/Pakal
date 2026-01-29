@@ -4,8 +4,9 @@
 # Usage: ./docker-build.sh [build|shell|rebuild|clean]
 
 COMMAND=${1:-build}
-DOCKER_IMAGE="pakal-builder"
+DOCKER_IMAGE="pakal-engine"
 DOCKER_TAG="latest"
+OUTPUT_DIR="$(pwd)/bin"
 
 # Try docker compose (new) first, fallback to docker-compose (old)
 if command -v docker &> /dev/null; then
@@ -26,26 +27,41 @@ case $COMMAND in
   build)
     echo "🔨 Building Pakal Engine with Docker..."
     docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
-    echo "✅ Docker image built. Running compilation..."
-    docker run --rm -v $(pwd):/workspace -w /workspace $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
-    echo "✅ Build complete! Output in ./build/bin"
+    
+    echo "✅ Build complete! Extracting binaries..."
+    mkdir -p "$OUTPUT_DIR"
+    
+    # Create temporary container to extract files
+    CONTAINER_ID=$(docker create $DOCKER_IMAGE:$DOCKER_TAG)
+    docker cp "$CONTAINER_ID":/workspace/build/bin/ "$OUTPUT_DIR" 2>/dev/null || true
+    docker cp "$CONTAINER_ID":/workspace/build/lib/ "$OUTPUT_DIR" 2>/dev/null || true
+    docker rm "$CONTAINER_ID" > /dev/null
+    
+    echo "✅ Binaries extracted to $OUTPUT_DIR/"
+    ls -lah "$OUTPUT_DIR"/bin/ 2>/dev/null || echo "   (binaries directory)"
     ;;
   shell)
     echo "🐚 Starting interactive shell in Docker container..."
-    docker run --rm -it -v $(pwd):/workspace -w /workspace $DOCKER_IMAGE:$DOCKER_TAG /bin/bash
+    docker run --rm -it $DOCKER_IMAGE:$DOCKER_TAG /bin/bash
     ;;
   rebuild)
-    echo "🔄 Rebuilding Docker image..."
+    echo "🔄 Rebuilding Docker image (no cache)..."
     docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG .
-    docker run --rm -v $(pwd):/workspace -w /workspace $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
-    echo "✅ Rebuild complete! Output in ./build/bin"
+    
+    echo "✅ Rebuild complete! Extracting binaries..."
+    mkdir -p "$OUTPUT_DIR"
+    
+    CONTAINER_ID=$(docker create $DOCKER_IMAGE:$DOCKER_TAG)
+    docker cp "$CONTAINER_ID":/workspace/build/bin/ "$OUTPUT_DIR" 2>/dev/null || true
+    docker cp "$CONTAINER_ID":/workspace/build/lib/ "$OUTPUT_DIR" 2>/dev/null || true
+    docker rm "$CONTAINER_ID" > /dev/null
+    
+    echo "✅ Binaries extracted to $OUTPUT_DIR/"
     ;;
   clean)
-    echo "🧹 Cleaning Docker containers and build artifacts..."
+    echo "🧹 Cleaning Docker image and binaries..."
     docker rmi -f $DOCKER_IMAGE:$DOCKER_TAG 2>/dev/null || true
-    rm -rf build/
+    rm -rf "$OUTPUT_DIR"
     echo "✅ Cleaned!"
     ;;
   *)

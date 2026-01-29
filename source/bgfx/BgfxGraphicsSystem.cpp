@@ -141,15 +141,6 @@ namespace Pakal
 		// Touch view to ensure it's rendered
 		bgfx::touch(m_main_view_id);
 
-		// // Update all updatable components
-		// {
-		// 	std::lock_guard<std::mutex> lock(m_updatablesMutex);
-		// 	for (auto* updatable : m_updatables)
-		// 	{
-		// 		updatable->update(static_cast<unsigned>(dt));
-		// 	}
-		// }
-
 		// Execute debug drawing
 		for (auto* debugDrawer : m_debug_renderers)
 		{
