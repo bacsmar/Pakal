@@ -1,7 +1,7 @@
 #include "ScriptableGameState.h"
 
 #if PAKAL_USE_SCRIPTS == 1
-#include "Components/ScriptComponent.h"
+#include "components/ScriptComponent.h"
 #include "ResourceManager.h"
 #include "Engine.h"
 #include "ComponentManager.h"

@@ -1,6 +1,6 @@
 #include "state.h"
 #include "persist/Archive.h"
-#include "Components/ScriptComponent.h"
+#include "components/ScriptComponent.h"
 #include "LogMgr.h"
 
 void Pakal::TransitionCondition::persist(Archive* archive)
