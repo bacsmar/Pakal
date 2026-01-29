@@ -27,48 +27,70 @@ fi
 
 case $COMMAND in
   build)
-    echo "🔨 Building Pakal Engine with Docker..."
-    docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+    echo "🔨 Building Pakal Engine with Docker (using host volume mount)..."
+    mkdir -p "$BUILD_DIR"
     
-    echo "✅ Build complete! Extracting binaries..."
-    mkdir -p "$OUTPUT_DIR"
+    # Build Docker image first (once)
+    echo "📦 Building Docker image..."
+    docker build -t $DOCKER_IMAGE:$DOCKER_TAG . || exit 1
     
-    # Create temporary container to extract files
-    CONTAINER_ID=$(docker create $DOCKER_IMAGE:$DOCKER_TAG)
-    docker cp "$CONTAINER_ID":/workspace/build/bin/ "$OUTPUT_DIR" 2>/dev/null || true
-    docker cp "$CONTAINER_ID":/workspace/build/lib/ "$OUTPUT_DIR" 2>/dev/null || true
-    docker rm "$CONTAINER_ID" > /dev/null
+    # Compile with mounted volumes (much faster for rebuilds)
+    echo "🔧 Compiling Pakal..."
+    docker run --rm \
+      -v "$BUILD_DIR:/workspace/build" \
+      $DOCKER_IMAGE:$DOCKER_TAG \
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
     
-    echo "✅ Binaries extracted to $OUTPUT_DIR/"
-    ls -lah "$OUTPUT_DIR"/bin/ 2>/dev/null || echo "   (binaries directory)"
+    echo "✅ Build complete! Binaries in $BUILD_DIR/bin/"
+    ls -lah "$BUILD_DIR"/bin/ 2>/dev/null || echo "   (checking build directory)"
     ;;
+    
   shell)
     echo "🐚 Starting interactive shell in Docker container..."
-    docker run --rm -it $DOCKER_IMAGE:$DOCKER_TAG /bin/bash
+    mkdir -p "$BUILD_DIR"
+    docker run --rm -it \
+      -v "$BUILD_DIR:/workspace/build" \
+      $DOCKER_IMAGE:$DOCKER_TAG /bin/bash
     ;;
+    
   rebuild)
-    echo "🔄 Rebuilding Docker image (no cache)..."
-    docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG .
+    echo "🔄 Clean rebuild (removing $BUILD_DIR)..."
+    rm -rf "$BUILD_DIR"
+    mkdir -p "$BUILD_DIR"
     
-    echo "✅ Rebuild complete! Extracting binaries..."
-    mkdir -p "$OUTPUT_DIR"
+    docker run --rm \
+      -v "$BUILD_DIR:/workspace/build" \
+      $DOCKER_IMAGE:$DOCKER_TAG \
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
     
-    CONTAINER_ID=$(docker create $DOCKER_IMAGE:$DOCKER_TAG)
-    docker cp "$CONTAINER_ID":/workspace/build/bin/ "$OUTPUT_DIR" 2>/dev/null || true
-    docker cp "$CONTAINER_ID":/workspace/build/lib/ "$OUTPUT_DIR" 2>/dev/null || true
-    docker rm "$CONTAINER_ID" > /dev/null
-    
-    echo "✅ Binaries extracted to $OUTPUT_DIR/"
+    echo "✅ Rebuild complete!"
     ;;
+    
   clean)
-    echo "🧹 Cleaning Docker image and binaries..."
-    docker rmi -f $DOCKER_IMAGE:$DOCKER_TAG 2>/dev/null || true
-    rm -rf "$OUTPUT_DIR"
+    echo "🧹 Cleaning build artifacts..."
+    rm -rf "$BUILD_DIR"
     echo "✅ Cleaned!"
     ;;
+    
+  run)
+    echo "🚀 Running PakalBasicExample in Docker..."
+    docker run --rm -e DISPLAY=:99 \
+      -v "$BUILD_DIR:/workspace/build" \
+      $DOCKER_IMAGE:$DOCKER_TAG \
+      bash -c "Xvfb :99 -screen 0 1024x768x24 & sleep 1 && /workspace/build/bin/PakalBasicExample"
+    ;;
+    
   *)
     echo "❌ Unknown command: $COMMAND"
-    echo "Usage: $0 [build|shell|rebuild|clean]"
+    echo ""
+    echo "Usage: $0 [build|shell|rebuild|clean|run]"
+    echo ""
+    echo "Commands:"
+    echo "  build   - Build (reuses .o files, very fast)"
+    echo "  shell   - Open bash in container"
+    echo "  rebuild - Full clean rebuild"
+    echo "  clean   - Remove build artifacts"
+    echo "  run     - Run PakalBasicExample"
     exit 1
     ;;
 esac
