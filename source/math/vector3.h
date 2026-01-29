@@ -91,12 +91,12 @@ namespace Pakal
 			}
 
 			// comparison operations
-			inline bool operator ==(const vectorn<T,3>& v) const
+			inline const bool operator ==(const vectorn<T,3>& v) const
 			{
 				return (v.x == x && v.y == y && v.z == z);
 			}
 
-			inline bool operator !=(const vectorn<T,3>& v) const
+			inline const bool operator !=(const vectorn<T,3>& v) const
 			{
 				return !(v == *this);
 			}
