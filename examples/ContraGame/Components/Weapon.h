@@ -24,6 +24,7 @@ namespace Pakal
 		Weapon();
 		~Weapon() override = default;
 
+		void initialize();
 		void update(float deltaTime);
 
 		// Configuration

@@ -34,6 +34,17 @@ Weapon::Weapon()
 {
 }
 
+void Weapon::initialize()
+{
+	// Get EntityManager from parent entity
+	// TODO: Wire this up when entity system is integrated
+	// Entity* entity = get_parent_entity();
+	// if (entity && entity->get_manager())
+	// {
+	//     m_entityManager = entity->get_manager();
+	// }
+}
+
 void Weapon::update(float deltaTime)
 {
 	if (m_fireTimer > 0.0f)

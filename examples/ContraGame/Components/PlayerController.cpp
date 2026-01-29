@@ -14,6 +14,7 @@
 #include "IInputManager.h"
 #include "components/SpriteComponent.h"
 #include "components/PhysicComponent.h"
+#include <cmath>
 
 using namespace Pakal;
 
@@ -118,6 +119,9 @@ void PlayerController::handle_input(float deltaTime)
 	// Space for jump
 	// X/Z for shoot
 
+	// Save previous jump state to detect release
+	bool previousJumpPressed = m_jumpPressed;
+
 	// Movement input
 	bool leftPressed = false;   // m_inputManager->is_key_down(Key::Left) || m_inputManager->is_key_down(Key::A);
 	bool rightPressed = false;  // m_inputManager->is_key_down(Key::Right) || m_inputManager->is_key_down(Key::D);
@@ -136,7 +140,7 @@ void PlayerController::handle_input(float deltaTime)
 	}
 
 	// Track jump release for jump cut
-	if (!jumpPressed && m_jumpPressed)
+	if (!jumpPressed && previousJumpPressed)
 	{
 		m_jumpReleased = true;
 	}
@@ -306,16 +310,18 @@ void PlayerController::check_ground()
 	// Simplified ground check
 	// TODO: Use Box2D ray-cast to detect ground below player
 	
-	// For now, check velocity
+	// For now, check velocity with epsilon
 	bool wasGrounded = m_isGrounded;
+	
+	const float GROUND_EPSILON = 0.1f;
 	
 	if (m_velocityY <= 0.0f)
 	{
 		// TODO: Actual ray-cast implementation
 		// m_isGrounded = physics_raycast_down();
 		
-		// Temporary stub
-		m_isGrounded = (m_velocityY == 0.0f);
+		// Temporary stub - use epsilon comparison instead of exact equality
+		m_isGrounded = (std::abs(m_velocityY) < GROUND_EPSILON);
 	}
 	else
 	{

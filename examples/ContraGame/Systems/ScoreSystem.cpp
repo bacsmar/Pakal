@@ -12,10 +12,6 @@
 
 using namespace Pakal;
 
-const int ScoreSystem::SCORE_ENEMY_KILL;
-const int ScoreSystem::SCORE_COLLECTIBLE;
-const int ScoreSystem::SCORE_COMBO_MULTIPLIER;
-
 ScoreSystem::ScoreSystem()
 	: m_score(0)
 	, m_highScore(0)
@@ -30,8 +26,9 @@ void ScoreSystem::initialize()
 {
 	// Load high score from persistent storage
 	// TODO: Implement save/load system
-	// m_highScore = load_high_score();
-	m_highScore = 0;
+	// int savedHighScore = load_high_score();
+	// if (savedHighScore > m_highScore)
+	//     m_highScore = savedHighScore;
 
 	reset();
 }
@@ -69,13 +66,15 @@ void ScoreSystem::add_life()
 
 void ScoreSystem::lose_life()
 {
-	if (m_lives <= 0)
-		return;
-
 	m_lives--;
+	
+	// Clamp to zero
+	if (m_lives < 0)
+		m_lives = 0;
+	
 	on_lives_changed(m_lives);
 
-	if (m_lives <= 0)
+	if (m_lives == 0)
 	{
 		on_game_over();
 	}
