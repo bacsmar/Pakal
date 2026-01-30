@@ -161,7 +161,7 @@ namespace Pakal
 		
 		// Calculate direction to player
 		// TODO: Get actual positions from physics components
-		tmath::vector2df direction(1.0f, 0.0f); // Placeholder
+		tmath::vectorn<float, 2> direction(1.0f, 0.0f); // Placeholder
 		
 		// Fire weapon
 		m_weapon->fire(direction);

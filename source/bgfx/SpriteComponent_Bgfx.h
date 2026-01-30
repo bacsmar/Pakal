@@ -31,20 +31,20 @@ namespace Pakal
 		void set_texture_region(int x, int y, int width, int height); // For sprite sheets
 		
 		// Transform
-		void set_position(const tmath::vector2df& pos);
+		void set_position(const tmath::vectorn<float, 2>& pos);
 		void set_position(float x, float y);
-		tmath::vector2df get_position() const { return m_position; }
+		tmath::vectorn<float, 2> get_position() const { return m_position; }
 		
 		void set_rotation(float angle); // In radians
 		float get_rotation() const { return m_rotation; }
 		
-		void set_scale(const tmath::vector2df& scale);
+		void set_scale(const tmath::vectorn<float, 2>& scale);
 		void set_scale(float x, float y);
 		void set_scale(float uniform) { set_scale(uniform, uniform); }
-		tmath::vector2df get_scale() const { return m_scale; }
+		tmath::vectorn<float, 2> get_scale() const { return m_scale; }
 		
 		void set_origin(float x, float y); // Pivot point (0,0 = top-left, 0.5,0.5 = center)
-		tmath::vector2df get_origin() const { return m_origin; }
+		tmath::vectorn<float, 2> get_origin() const { return m_origin; }
 		
 		// Rendering properties
 		void set_layer(int layer); // Z-order for sorting
@@ -113,10 +113,10 @@ namespace Pakal
 		bool m_programLoaded;
 		
 		// Transform
-		tmath::vector2df m_position;
+		tmath::vectorn<float, 2> m_position;
 		float m_rotation; // radians
-		tmath::vector2df m_scale;
-		tmath::vector2df m_origin; // 0-1 normalized
+		tmath::vectorn<float, 2> m_scale;
+		tmath::vectorn<float, 2> m_origin; // 0-1 normalized
 		
 		// Texture region (for sprite sheets)
 		int m_texRegion[4]; // x, y, width, height in pixels

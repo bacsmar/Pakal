@@ -78,8 +78,7 @@ namespace Pakal
 		// This is shared by all sprites and doesn't change
 		uint16_t indices[] = { 0, 1, 2, 2, 3, 0 };
 		m_indexBuffer = bgfx::createIndexBuffer(
-			bgfx::makeRef(indices, sizeof(indices)),
-			BGFX_BUFFER_INDEX16
+			bgfx::makeRef(indices, sizeof(indices))
 		);
 		m_buffersCreated = true;
 	}
@@ -170,7 +169,7 @@ namespace Pakal
 		update_texture_coords();
 	}
 	
-	void SpriteComponent_Bgfx::set_position(const tmath::vector2df& pos)
+	void SpriteComponent_Bgfx::set_position(const tmath::vectorn<float, 2>& pos)
 	{
 		m_position = pos;
 		m_vertexBufferDirty = true;
@@ -178,7 +177,7 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::set_position(float x, float y)
 	{
-		set_position(tmath::vector2df(x, y));
+		set_position(tmath::vectorn<float, 2>(x, y));
 	}
 	
 	void SpriteComponent_Bgfx::set_rotation(float angle)
@@ -187,7 +186,7 @@ namespace Pakal
 		m_vertexBufferDirty = true;
 	}
 	
-	void SpriteComponent_Bgfx::set_scale(const tmath::vector2df& scale)
+	void SpriteComponent_Bgfx::set_scale(const tmath::vectorn<float, 2>& scale)
 	{
 		m_scale = scale;
 		m_vertexBufferDirty = true;
@@ -195,12 +194,12 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::set_scale(float x, float y)
 	{
-		set_scale(tmath::vector2df(x, y));
+		set_scale(tmath::vectorn<float, 2>(x, y));
 	}
 	
 	void SpriteComponent_Bgfx::set_origin(float x, float y)
 	{
-		m_origin = tmath::vector2df(x, y);
+		m_origin = tmath::vectorn<float, 2>(x, y);
 		m_vertexBufferDirty = true;
 	}
 	
@@ -435,7 +434,7 @@ namespace Pakal
 			m_position.x, m_position.y, (float)m_layer * 0.01f  // translation
 		);
 		
-		bx::mtxCopy(model, transform);
+		bx::memCopy(model, transform, sizeof(model));
 		
 		// Set model matrix
 		bgfx::setTransform(model);

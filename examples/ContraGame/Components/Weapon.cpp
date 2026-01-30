@@ -28,7 +28,7 @@ namespace Pakal
 		}
 	}
 	
-	void Weapon::fire(const tmath::vector2df& direction)
+	void Weapon::fire(const tmath::vectorn<float, 2>& direction)
 	{
 		if (!can_fire())
 			return;
@@ -52,7 +52,7 @@ namespace Pakal
 		}
 	}
 	
-	void Weapon::spawn_projectile(const tmath::vector2df& position, const tmath::vector2df& direction)
+	void Weapon::spawn_projectile(const tmath::vectorn<float, 2>& position, const tmath::vectorn<float, 2>& direction)
 	{
 		if (!m_entityManager)
 			return;

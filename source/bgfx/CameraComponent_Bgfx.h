@@ -33,8 +33,8 @@ namespace Pakal
 		
 		// Camera transform
 		void set_position(float x, float y);
-		void set_position(const tmath::vector2df& pos);
-		tmath::vector2df get_position() const { return m_position; }
+		void set_position(const tmath::vectorn<float, 2>& pos);
+		tmath::vectorn<float, 2> get_position() const { return m_position; }
 		
 		void set_zoom(float zoom);
 		float get_zoom() const { return m_zoom; }
@@ -57,8 +57,8 @@ namespace Pakal
 		void screen_to_world(float screenX, float screenY, float& worldX, float& worldY) const;
 		void world_to_screen(float worldX, float worldY, float& screenX, float& screenY) const;
 		
-		tmath::vector2df screen_to_world(const tmath::vector2df& screen) const;
-		tmath::vector2df world_to_screen(const tmath::vector2df& world) const;
+		tmath::vectorn<float, 2> screen_to_world(const tmath::vectorn<float, 2>& screen) const;
+		tmath::vectorn<float, 2> world_to_screen(const tmath::vectorn<float, 2>& world) const;
 		
 		// Get matrices
 		const float* get_view_matrix() const { return m_view; }
@@ -74,7 +74,7 @@ namespace Pakal
 		float m_proj[16];
 		
 		// Transform
-		tmath::vector2df m_position;
+		tmath::vectorn<float, 2> m_position;
 		float m_zoom;
 		
 		// Orthographic settings
@@ -86,7 +86,7 @@ namespace Pakal
 		// Follow target
 		Entity* m_followTarget;
 		float m_followSmooth;
-		tmath::vector2df m_targetPosition;
+		tmath::vectorn<float, 2> m_targetPosition;
 		
 		// Bounds
 		bool m_hasBounds;

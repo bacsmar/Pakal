@@ -21,7 +21,7 @@ namespace Pakal
 		virtual ~Weapon() = default;
 		
 		void update(float deltaTime);
-		void fire(const tmath::vector2df& direction);
+		void fire(const tmath::vectorn<float, 2>& direction);
 		bool can_fire() const { return m_fireTimer <= 0.0f; }
 		
 		void set_fire_rate(float rate) { m_fireRate = rate; }
@@ -34,7 +34,7 @@ namespace Pakal
 		float get_damage() const { return m_damage; }
 		
 	private:
-		void spawn_projectile(const tmath::vector2df& position, const tmath::vector2df& direction);
+		void spawn_projectile(const tmath::vectorn<float, 2>& position, const tmath::vectorn<float, 2>& direction);
 		
 		float m_fireRate;   // Time between shots in seconds
 		float m_projectileSpeed;

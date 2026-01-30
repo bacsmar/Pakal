@@ -84,7 +84,7 @@ namespace Pakal
 			return;
 		
 		// Fire in the direction the player is facing
-		tmath::vector2df direction(m_facingRight ? 1.0f : -1.0f, 0.0f);
+		tmath::vectorn<float, 2> direction(m_facingRight ? 1.0f : -1.0f, 0.0f);
 		m_weapon->fire(direction);
 	}
 	

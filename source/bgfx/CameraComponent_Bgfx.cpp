@@ -72,7 +72,7 @@ namespace Pakal
 		m_matricesDirty = true;
 	}
 	
-	void CameraComponent_Bgfx::set_position(const tmath::vector2df& pos)
+	void CameraComponent_Bgfx::set_position(const tmath::vectorn<float, 2>& pos)
 	{
 		m_position = pos;
 		m_matricesDirty = true;
@@ -174,11 +174,11 @@ namespace Pakal
 		
 		// Create view matrix
 		// Camera looks at (x, y, 0) from position (x, y, 10)
-		float eye[3] = { m_position.x, m_position.y, 10.0f };
-		float at[3] = { m_position.x, m_position.y, 0.0f };
-		float up[3] = { 0.0f, 1.0f, 0.0f };
+		bx::Vec3 eye = { m_position.x, m_position.y, 10.0f };
+		bx::Vec3 at = { m_position.x, m_position.y, 0.0f };
+		bx::Vec3 up = { 0.0f, 1.0f, 0.0f };
 		
-		bx::mtxLookAt(m_view, eye, at, up, bx::Handness::Right);
+		bx::mtxLookAt(m_view, eye, at, up);
 		
 		m_matricesDirty = false;
 	}
@@ -225,16 +225,16 @@ namespace Pakal
 		screenY = (1.0f - ndcY) * 0.5f * (float)m_viewport[3];
 	}
 	
-	tmath::vector2df CameraComponent_Bgfx::screen_to_world(const tmath::vector2df& screen) const
+	tmath::vectorn<float, 2> CameraComponent_Bgfx::screen_to_world(const tmath::vectorn<float, 2>& screen) const
 	{
-		tmath::vector2df result;
+		tmath::vectorn<float, 2> result;
 		screen_to_world(screen.x, screen.y, result.x, result.y);
 		return result;
 	}
 	
-	tmath::vector2df CameraComponent_Bgfx::world_to_screen(const tmath::vector2df& world) const
+	tmath::vectorn<float, 2> CameraComponent_Bgfx::world_to_screen(const tmath::vectorn<float, 2>& world) const
 	{
-		tmath::vector2df result;
+		tmath::vectorn<float, 2> result;
 		world_to_screen(world.x, world.y, result.x, result.y);
 		return result;
 	}

@@ -27,7 +27,7 @@ target_include_directories(ContraGame PRIVATE
 )
 
 # Set C++ standard
-set_property(TARGET ContraGame PROPERTY CXX_STANDARD 11)
+set_property(TARGET ContraGame PROPERTY CXX_STANDARD 20)
 
 # Copy assets to build directory
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets)

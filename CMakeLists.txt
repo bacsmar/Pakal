@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Pakal)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set output directories
@@ -144,6 +144,8 @@ else()
     if(UNIX AND NOT APPLE)
         target_compile_options(Pakal PRIVATE -fPIC)
     endif()
+    # Define BX_CONFIG_DEBUG for bx/bgfx
+    target_compile_definitions(Pakal PUBLIC BX_CONFIG_DEBUG=0)
 endif()
 
 # Add subdirectories for additional components if they have CMakeLists

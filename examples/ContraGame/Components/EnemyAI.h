@@ -60,7 +60,7 @@ namespace Pakal
 		float m_fireTimer;
 		
 		// Patrol
-		tmath::vector2df m_patrolStart;
+		tmath::vectorn<float, 2> m_patrolStart;
 		bool m_patrolRight;
 	};
 }
