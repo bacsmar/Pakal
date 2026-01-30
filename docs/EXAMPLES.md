@@ -64,11 +64,11 @@ public:
         m_spawnPoint = Vector3(0, 0, 0);
         
         // Inicializar componentes si es necesario
-        return TaskUtils::create_completed_task();
+        return TaskUtils::completed_task();
     }
     
     BasicTaskPtr terminate() override {
-        return TaskUtils::create_completed_task();
+        return TaskUtils::completed_task();
     }
     
     void take_damage(float amount) {

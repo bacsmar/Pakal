@@ -39,7 +39,7 @@ Crear subclases de `Entity` cuando:
    public:
        BasicTaskPtr initialize() override {
            // Lógica específica sin overhead de búsqueda de componentes
-           return TaskUtils::create_completed_task();
+           return TaskUtils::completed_task();
        }
        
        void update(float dt) {
@@ -289,7 +289,7 @@ protected:
 public:
     BasicTaskPtr initialize() override {
         m_physics = get_component<PhysicsComponent>();
-        return TaskUtils::create_completed_task();
+        return TaskUtils::completed_task();
     }
     
     void move_to(const Vector3& position) {
