@@ -10,7 +10,7 @@
 
 namespace Pakal
 {
-	struct ISensor
+	struct _PAKALExport ISensor
 	{
 		virtual ~ISensor()
 		{
@@ -30,7 +30,7 @@ namespace Pakal
 		virtual void set_sensor_enabled(Sensors sensor, bool value) = 0;
 	};
 
-	struct IKeyboard
+	struct _PAKALExport IKeyboard
 	{
 		virtual ~IKeyboard()
 		{

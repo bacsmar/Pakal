@@ -2,13 +2,20 @@
 #include "config.h"
 
 #include "persist/Archive.h"
+#include "DummyUIManager.h"
 
 #if PAKAL_USE_SFML_WINDOW == 1
-	#include "WindowCreatorSFML.h"
+	#include "sfml/WindowCreatorSFML.h"
 #endif
 
 #if PAKAL_USE_BOX2D == 1
 	#include "box2D/Box2DPhysicsSystem.h"
+#else
+	#include "DummyPhysicsSystem.h"
+#endif
+
+#if PAKAL_USE_BGFX == 1
+	#include "bgfx/BgfxGraphicsSystem.h"
 #endif
 
 #if PAKAL_USE_IRRLICHT == 1
@@ -33,7 +40,7 @@
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
-	#include "InputManager_SFML.h"
+	#include "sfml/InputManager_SFML.h"
 #endif
 
 #if PAKAL_USE_ROCKET == 1
@@ -51,12 +58,12 @@
 
 #if defined(PAKAL_WIN32_PLATFORM )
 
-		// pugixml
-#if defined(_DEBUG)
-	#pragma comment(lib, "pugixmlsd.lib")
-#else
-	#pragma comment(lib, "pugixmls.lib")
-#endif	// pugixml
+//		// pugixml
+//#if defined(_DEBUG)
+//	#pragma comment(lib, "pugixmlsd.lib")
+//#else
+//	#pragma comment(lib, "pugixmls.lib")
+//#endif	// pugixml
 
 #if PAKAL_USE_SFML == 1
 #if defined( _DEBUG)
@@ -92,7 +99,14 @@ using namespace Pakal;
 Engine::Settings::Settings()
 {
 
-#if PAKAL_USE_IRRLICHT == 1
+#if PAKAL_USE_BGFX == 1
+
+	// bgfx doesn't have a built-in UI manager yet
+	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new DummyUIManager(); };
+	
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new BgfxGraphicsSystem(settings); };
+
+#elif PAKAL_USE_IRRLICHT == 1
 
 	#if PAKAL_USE_ROCKET == 1
 		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new IrrRocketUI(gs);  };
@@ -108,6 +122,10 @@ Engine::Settings::Settings()
 
 #if PAKAL_USE_BOX2D == 1
 	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
+#else
+	physics_system_allocator = [](Engine* engine, const PhysicsSystem::Settings& settings) { 
+		return new DummyPhysicsSystem(settings); 
+	};
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_Static|Win32">
       <Configuration>Debug_Static</Configuration>
@@ -20,15 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\components\AnimatedMeshComponent.h" />
-    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent.h" />
-    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\GridComponent.h" />
-    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\InputBinder.h" />
     <ClInclude Include="..\source\components\SFXComponent.h" />
     <ClInclude Include="..\source\components\TerrainComponent.h" />
-    <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h" />
     <ClInclude Include="..\source\DummyGraphicsSystem.h" />
     <ClInclude Include="..\source\components\DynamicMesh\poly2tri\sweep\cdt.h" />
     <ClInclude Include="..\source\components\DynamicMesh\DynamicMesh.h" />
@@ -45,23 +41,12 @@
     <ClInclude Include="..\source\IEntityProvider.h" />
     <ClInclude Include="..\source\EntityDescriptor.h" />
     <ClInclude Include="..\source\components\CameraComponent.h" />
-    <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\CharacterComponent.h" />
-    <ClInclude Include="..\source\components\CppBindClass_lua.h" />
     <ClInclude Include="..\source\components\ICharacterHandler.h" />
     <ClInclude Include="..\source\components\InputHandlerComponent.h" />
     <ClInclude Include="..\source\components\MusicComponent.h" />
-    <ClInclude Include="..\source\components\ScriptComponent_Lua.h" />
     <ClInclude Include="..\source\components\TileMapComponent.h" />
-    <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h" />
     <ClInclude Include="..\source\components\UIComponent.h" />
-    <ClInclude Include="..\source\irrlicht\CBatchingMesh.h" />
-    <ClInclude Include="..\source\irrlicht\GridSceneNode.h" />
-    <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h" />
-    <ClInclude Include="..\source\irrlicht\MaterialManager.h" />
-    <ClInclude Include="..\source\irrlicht\SceneNodeBatcher.h" />
-    <ClInclude Include="..\source\irrlicht\SpriteBatcher.hpp" />
-    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp" />
     <ClInclude Include="..\source\PakalMath.h" />
     <ClInclude Include="..\source\PakalPath.h" />
     <ClInclude Include="..\source\persist\JsonReader.h" />
@@ -69,10 +54,8 @@
     <ClInclude Include="..\source\components\PhysicComponent.h" />
     <ClInclude Include="..\source\components\ScriptComponent.h" />
     <ClInclude Include="..\source\components\SpritePhysicsComponent.h" />
-    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h" />
     <ClInclude Include="..\source\components\SpritePhysics.h" />
     <ClInclude Include="..\source\EventArgs.h" />
-    <ClInclude Include="..\source\LuaProxies.h" />
     <ClInclude Include="..\source\components\AutomataComponent.h" />
     <ClInclude Include="..\source\Factory.h" />
     <ClInclude Include="..\source\components\GamepadComponent.h" />
@@ -86,19 +69,7 @@
     <ClInclude Include="..\source\persist\PersistUtils.h" />
     <ClInclude Include="..\source\persist\XmlReader.h" />
     <ClInclude Include="..\source\persist\XmlWriter.h" />
-    <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h" />
-    <ClInclude Include="..\source\rocketgui\RocketGUI.h" />
-    <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h" />
-    <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h" />
-    <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h" />
-    <ClInclude Include="..\source\rocketgui\RocketInput.h" />
-    <ClInclude Include="..\source\rocketgui\RocketUIComponents.h" />
     <ClInclude Include="..\source\script\ScriptableGameState.h" />
-    <ClInclude Include="..\source\sfml\Gamepad_SFML.h" />
-    <ClInclude Include="..\source\sfml\Keyboard_SFML.h" />
-    <ClInclude Include="..\source\sfml\MusicComponentSFML.h" />
-    <ClInclude Include="..\source\sfml\SFXComponentSFML.h" />
-    <ClInclude Include="..\source\sfml\StreamSFML.h" />
     <ClInclude Include="..\source\SimpleTimer.h" />
     <ClInclude Include="..\source\State.h" />
     <ClInclude Include="..\source\StateMachine.h" />
@@ -107,23 +78,13 @@
     <ClInclude Include="..\source\Utils.h" />
     <ClInclude Include="..\source\components\Sprite.h" />
     <ClInclude Include="..\source\components\SpriteComponent.h" />
-    <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h" />
-    <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h" />
-    <ClInclude Include="..\source\irrlicht\IrrlitchStream.h" />
-    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp" />
-    <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h" />
-    <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h" />
-    <ClInclude Include="..\source\WindowCreatorSFML.h" />
     <ClInclude Include="..\source\ZipSource.h" />
     <ClInclude Include="..\source\DirectorySource.h" />
     <ClInclude Include="..\source\ISource.h" />
     <ClInclude Include="..\source\MemoryStream.h" />
     <ClInclude Include="..\source\Clock.h" />
-    <ClInclude Include="..\source\InputManager_SFML.h" />
     <ClInclude Include="..\source\IInputManager.h" />
-    <ClInclude Include="..\source\components\Shapes.h" />
     <ClInclude Include="..\source\math\matrix.h" />
-    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h" />
     <ClInclude Include="..\source\math\matrix2.h" />
     <ClInclude Include="..\source\math\matrix3.h" />
     <ClInclude Include="..\source\math\matrix4.h" />
@@ -139,7 +100,6 @@
     <ClInclude Include="..\source\ISystem.h" />
     <ClInclude Include="..\source\OSManager.h" />
     <ClInclude Include="..\source\ResourceManager.h" />
-    <ClInclude Include="..\source\sfml\SoundManagerSFML.h" />
     <ClInclude Include="..\source\SoundManager.h" />
     <ClInclude Include="..\source\TaskCompletionSource.h" />
     <ClInclude Include="..\source\System.h" />
@@ -149,9 +109,6 @@
     <ClInclude Include="..\source\BasicTask.h" />
     <ClInclude Include="..\source\AsyncTaskDispatcher.h" />
     <ClInclude Include="..\source\BaseGameState.h" />
-    <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h" />
-    <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h" />
-    <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h" />
     <ClInclude Include="..\source\ComponentManager.h" />
     <ClInclude Include="..\source\components\MeshComponent.h" />
     <ClInclude Include="..\source\Config.h" />
@@ -169,8 +126,6 @@
     <ClInclude Include="..\source\Entity.h" />
     <ClInclude Include="..\source\InboxQueue.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
-    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h" />
-    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h" />
     <ClInclude Include="..\source\LogMgr.h" />
     <ClInclude Include="..\source\PhysicsSystem.h" />
     <ClInclude Include="..\source\Platform.h" />
@@ -181,15 +136,7 @@
     <ClInclude Include="..\source\win32\ClockImpl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp" />
-    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp" />
-    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp" />
-    <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\DummyGraphicsSystem.cpp" />
-    <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp" />
-    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp" />
-    <ClCompile Include="..\source\irrlicht\SceneNodeBatcher.cpp" />
-    <ClCompile Include="..\source\irrlicht\SpriteBatcher.cpp" />
     <ClCompile Include="..\source\PakalMath.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\DynamicMesh.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\MeshBuilder.cpp" />
@@ -202,28 +149,13 @@
     <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp" />
     <ClCompile Include="..\source\Entity.cpp" />
     <ClCompile Include="..\source\EntityDescriptor.cpp" />
-    <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp" />
     <ClCompile Include="..\source\components\CharacterComponent.cpp" />
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
-    <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp" />
     <ClCompile Include="..\source\components\Sprite.cpp" />
-    <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp" />
-    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp" />
-    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp" />
-    <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp" />
-    <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp" />
-    <ClCompile Include="..\source\luaintf\src\CppFunction.cpp" />
-    <ClCompile Include="..\source\luaintf\src\CppObject.cpp" />
-    <ClCompile Include="..\source\luaintf\src\LuaCompat.cpp" />
-    <ClCompile Include="..\source\luaintf\src\LuaRef.cpp" />
-    <ClCompile Include="..\source\luaintf\src\LuaState.cpp" />
     <ClCompile Include="..\source\persist\JsonReader.cpp" />
     <ClCompile Include="..\source\persist\JsonWriter.cpp" />
     <ClCompile Include="..\source\OSManager.cpp" />
-    <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp" />
-    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp" />
     <ClCompile Include="..\source\EngineComponents.cpp" />
-    <ClCompile Include="..\source\LuaProxies.cpp" />
     <ClCompile Include="..\source\persist\Attribute.cpp" />
     <ClCompile Include="..\source\persist\Element.cpp" />
     <ClCompile Include="..\source\persist\TextReader.cpp" />
@@ -231,39 +163,21 @@
     <ClCompile Include="..\source\persist\XmlReader.cpp" />
     <ClCompile Include="..\source\persist\Archive.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
-    <ClCompile Include="..\source\rocketgui\RocketInput.cpp" />
-    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp" />
     <ClCompile Include="..\source\script\ScriptableGameState.cpp" />
     <ClCompile Include="..\source\SimpleTimer.cpp" />
     <ClCompile Include="..\source\State.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />
     <ClCompile Include="..\source\components\GamepadComponent.cpp" />
-    <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp" />
-    <ClCompile Include="..\source\rocketgui\RocketGUI.cpp" />
-    <ClCompile Include="..\source\rocketgui\IrrRocketRenderer.cpp" />
-    <ClCompile Include="..\source\rocketgui\PakalRocketFileInterface.cpp" />
-    <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp" />
-    <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp" />
-    <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp" />
-    <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp" />
     <ClCompile Include="..\source\StateMachine.cpp" />
     <ClCompile Include="..\source\ThreadPool.cpp" />
     <ClCompile Include="..\source\Timer.cpp" />
     <ClCompile Include="..\source\Clock.cpp" />
-    <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp" />
-    <ClCompile Include="..\source\InputManager_SFML.cpp" />
-    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp" />
     <ClCompile Include="..\source\EngineSettings.cpp" />
-    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp" />
-    <ClCompile Include="..\source\WindowCreatorSFML.cpp" />
     <ClCompile Include="..\source\ResourceManager.cpp" />
-    <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp" />
     <ClCompile Include="..\source\System.cpp" />
     <ClCompile Include="..\source\EventSystemUtils.cpp" />
     <ClCompile Include="..\source\BasicTask.cpp" />
     <ClCompile Include="..\source\AsyncTaskDispatcher.cpp" />
-    <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp" />
-    <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp" />
     <ClCompile Include="..\source\CompileUnit_1.cpp" />
     <ClCompile Include="..\source\ComponentManager.cpp" />
     <ClCompile Include="..\source\Engine.cpp" />
@@ -273,7 +187,6 @@
     <ClCompile Include="..\source\GenericEntity.cpp" />
     <ClCompile Include="..\source\GraphicsSystem.cpp" />
     <ClCompile Include="..\source\InboxQueue.cpp" />
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp" />
     <ClCompile Include="..\source\LogMgr.cpp" />
     <ClCompile Include="..\source\PhysicsSystem.cpp" />
     <ClCompile Include="..\source\PakalTime.cpp" />
@@ -283,28 +196,29 @@
     <RootNamespace>pakal</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>Pakal_II</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Static|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -331,8 +245,8 @@
     <IntDir>$(SolutionDir)\build\tmp\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\tmp\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)\build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\build\tmp\$(ProjectName)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Static|Win32'">
@@ -345,9 +259,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/libs/irrlicht/include;$(SolutionDir)/libs/Pakal_II/source;$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/sfml/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/pugixml/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../source;C:\Program Files (x86)\Visual Leak Detector\include;../source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PAKAL_NONCLIENT_BUILD;PERSIST_NONCLIENT_BUILD;SFML_STATIC;_IRR_STATIC_LIB_;LUA_LIB;LUA_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -355,8 +268,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <MultiProcessorCompilation>
-      </MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -371,8 +283,8 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)/src;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;C:\Program Files (x86)\Visual Leak Detector\include;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../source;C:\Program Files (x86)\Visual Leak Detector\include;../source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;PAKAL_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -380,6 +292,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>cAudio.lib;oolua.lib;lua.lib;sqlite.lib;OpenAL32.lib;tinythread.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -395,7 +308,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/Pakal_II/Source;$(SolutionDir)/libs/lua/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../source;C:\Program Files (x86)\Visual Leak Detector\include;../source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PAKAL_STATIC_LIB;_IRR_STATIC_LIB_;POCO_STATIC;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;_PAKAL_LIB_;PERSIST_STATIC_LIB;PAKAL_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -406,8 +319,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <MultiProcessorCompilation>
-      </MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <PostBuildEvent>
       <Command>
@@ -421,8 +333,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_static|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/source;$(SolutionDir)/libs;$(SolutionDir)/libs/oolua/include;$(SolutionDir)/libs/lua/src;$(SolutionDir)/libs/cAudio/include;$(SolutionDir)/libs/OIS/includes;$(SolutionDir)/libs/Box2D;$(SolutionDir)/libs/TinyThread/source;$(OGRE_HOME)/include;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/boost;$(OGRE_HOME)/include/OGRE/overlay;$(SolutionDir)/libs/librocket/include;$(SolutionDir)/libs/SFML-2.1\include;$(SolutionDir)/libs/SFML\include;$(SolutionDir)/libs/scml;$(SolutionDir)/libs/pugixml/src;$(SolutionDir)/libs/Irrlicht/include;$(SolutionDir)/libs/spriter_cpp/;$(SolutionDir)/libs/poco-1.6.0\Foundation\include;$(SolutionDir)/libs/Pakal_II/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_IRR_STATIC_LIB_;POCO_STATIC;PAKAL_STATIC_LIB;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../source;C:\Program Files (x86)\Visual Leak Detector\include;../source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_IRR_STATIC_LIB_;POCO_STATIC;PAKAL_STATIC_LIB;SFML_STATIC;OV_EXCLUDE_STATIC_CALLBACKS;FLAC__NO_DLL;ROCKET_STATIC_LIB;PERSIST_STATIC_LIB;PAKAL_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>

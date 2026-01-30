@@ -5,8 +5,8 @@
 #include "LogMgr.h"
 #include <algorithm>
 #include "InputBinder.h"
-#include <Pakal_II/source/persist/XmlReader.h>
-#include <Pakal_II/source/ResourceManager.h>
+#include <persist/XmlReader.h>
+#include <ResourceManager.h>
 
 Pakal::InputHandler::~InputHandler()
 {

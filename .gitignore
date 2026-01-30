@@ -1,0 +1,58 @@
+# Build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# Build directories
+build/
+Build/
+bin/
+Bin/
+obj/
+Obj/
+Debug/
+Release/
+x64/
+x86/
+.vs/
+.vscode/
+cmake-build-*/
+docker-build/
+
+# IDE files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# External binaries (but keep submodules)
+*.pdb
+*.ilk
+*.idb
+
+# Logs
+*.log
+
+# Package manager
+node_modules/
+packages/

@@ -10,7 +10,7 @@
 #pragma once
 #include "config.h"
 
-#ifdef PAKAL_USE_IRRLICHT
+#if PAKAL_USE_IRRLICHT == 1
 	#include "irrlicht/IrrRendererInfo.h"
 	typedef Pakal::IrrRendererInfo BaseRenderInfo;
 #else

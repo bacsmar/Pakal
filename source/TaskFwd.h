@@ -4,6 +4,9 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <functional>
+#include <atomic>
+#include <condition_variable>
 
 namespace Pakal
 {

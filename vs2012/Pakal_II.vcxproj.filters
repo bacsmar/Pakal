@@ -21,12 +21,6 @@
     <ClCompile Include="..\source\InboxQueue.cpp">
       <Filter>Managers\EventManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\box2D\B2DebugDrawIrr.cpp">
-      <Filter>Systems\PhysicsSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\box2D\Box2DPhysicsSystem.cpp">
-      <Filter>Systems\PhysicsSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\BasicTask.cpp">
       <Filter>Managers\EventManager</Filter>
     </ClCompile>
@@ -49,17 +43,11 @@
     <ClCompile Include="..\source\ResourceManager.cpp">
       <Filter>Managers\ResourceManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\InputManager_SFML.cpp">
-      <Filter>Managers\InputManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\Clock.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="..\source\PakalTime.cpp">
       <Filter>Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\MeshComponent_Irrlitch.cpp">
-      <Filter>Components\GFX\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="..\source\ThreadPool.cpp">
       <Filter>Foundation</Filter>
@@ -67,48 +55,15 @@
     <ClCompile Include="..\source\Timer.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\sfml\SoundManagerSFML.cpp">
-      <Filter>Managers\SoundManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\sfml\SFXComponentSFML.cpp">
-      <Filter>Components\SFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\sfml\MusicComponentSFML.cpp">
-      <Filter>Components\Music</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\SpriteComponent_Irrlicht.cpp">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\AutomataComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\source\StateMachine.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\sfml\Keyboard_SFML.cpp">
-      <Filter>Managers\InputManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\sfml\Gamepad_SFML.cpp">
-      <Filter>Managers\InputManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\IrrRocketRenderer.cpp">
-      <Filter>Managers\UIManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\PakalRocketFileInterface.cpp">
-      <Filter>Managers\UIManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\RocketGUI.cpp">
-      <Filter>Managers\UIManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\IrrRocketGUI.cpp">
-      <Filter>Managers\UIManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\EngineComponents.cpp" />
     <ClCompile Include="..\source\State.cpp">
       <Filter>Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\LuaProxies.cpp">
-      <Filter>Foundation\LuaProxies</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\GamepadComponent.cpp">
       <Filter>Components\Input</Filter>
@@ -134,16 +89,7 @@
     <ClCompile Include="..\source\persist\XmlWriter.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\box2D\Box2DPhysicsListeners.cpp">
-      <Filter>Systems\PhysicsSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\RocketInput.cpp">
-      <Filter>Managers\UIManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\OSManager.cpp">
-      <Filter>Managers\OSManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\WindowCreatorSFML.cpp">
       <Filter>Managers\OSManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\persist\JsonReader.cpp">
@@ -158,50 +104,14 @@
     <ClCompile Include="..\source\SimpleTimer.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\ScriptComponent_Lua.cpp">
-      <Filter>Components\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\CppBindClass.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\CppBindModule.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\CppFunction.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\CppObject.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\LuaCompat.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\LuaRef.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\luaintf\src\LuaState.cpp">
-      <Filter>Foundation\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\CameraComponent_Irrlicht.cpp">
-      <Filter>Components\GFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\TileMapComponent_Irrlicht.cpp">
-      <Filter>Components\GFX\Tiles</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp">
       <Filter>Components\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\SpritePhysicsComponent_Box2D.cpp">
-      <Filter>Components\Physics</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\Sprite.cpp">
       <Filter>Components\GFX\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="..\source\components\CharacterComponent.cpp">
       <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\rocketgui\RocketUIComponents.cpp">
-      <Filter>Components\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EntityManager.cpp">
       <Filter>Managers\EntityManager</Filter>
@@ -245,42 +155,6 @@
     <ClCompile Include="..\source\PakalMath.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.cpp">
-      <Filter>Components\GFX\DynamicMesh</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\IrrGraphicsSystem.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\MaterialManager.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\TiledNode_Irrlicht.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\SpriteNode_Irrlicht.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\GridSceneNode.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\AnimatedMeshComponent_Irrlitch.cpp">
-      <Filter>Components\GFX\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\GridComponent_Irrlicht.cpp">
-      <Filter>Components\GFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\components\TerrainComponent_Irrlicht.cpp">
-      <Filter>Components\GFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\SceneNodeBatcher.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\CBatchingMesh.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\irrlicht\SpriteBatcher.cpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Engine.h" />
@@ -319,15 +193,6 @@
     </ClInclude>
     <ClInclude Include="..\source\Task.h">
       <Filter>Managers\EventManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\box2D\B2DebugDrawIrr.h">
-      <Filter>Systems\PhysicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\box2D\Box2DPhysicsSystem.h">
-      <Filter>Systems\PhysicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\box2D\Box2DPhysicsListeners.h">
-      <Filter>Systems\PhysicsSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IDebugDrawer.h">
       <Filter>Systems\GraphicsSystem</Filter>
@@ -414,13 +279,7 @@
     <ClInclude Include="..\source\ComponentFactory.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\Shapes.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\IInputManager.h">
-      <Filter>Managers\InputManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\InputManager_SFML.h">
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Clock.h">
@@ -431,9 +290,6 @@
     </ClInclude>
     <ClInclude Include="..\source\PakalTime.h">
       <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\MeshComponent_Irrlitch.h">
-      <Filter>Components\GFX\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\MeshComponent.h">
       <Filter>Components\GFX\Mesh</Filter>
@@ -450,21 +306,6 @@
     <ClInclude Include="..\source\ZipSource.h">
       <Filter>Managers\ResourceManager\Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrlitchStream.h">
-      <Filter>Managers\ResourceManager\Streams</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\StreamIrrlitch.h">
-      <Filter>Managers\ResourceManager\Streams</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\ZipSourceIrrlitch.h">
-      <Filter>Managers\ResourceManager\Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\DirectorySourceIrrlitch.h">
-      <Filter>Managers\ResourceManager\Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\sfml\StreamSFML.h">
-      <Filter>Managers\ResourceManager\Streams</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\Utils.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -474,19 +315,7 @@
     <ClInclude Include="..\source\Timer.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\sfml\SoundManagerSFML.h">
-      <Filter>Managers\SoundManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\sfml\SFXComponentSFML.h">
-      <Filter>Components\SFX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\sfml\MusicComponentSFML.h">
-      <Filter>Components\Music</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\SpriteComponent.h">
-      <Filter>Components\GFX\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\SpriteComponent_Irrlicht.h">
       <Filter>Components\GFX\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\Sprite.h">
@@ -510,12 +339,6 @@
     <ClInclude Include="..\source\InputDevice.h">
       <Filter>Managers\InputManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\sfml\Keyboard_SFML.h">
-      <Filter>Managers\InputManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\sfml\Gamepad_SFML.h">
-      <Filter>Managers\InputManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\ISystem.h">
       <Filter>Systems</Filter>
     </ClInclude>
@@ -527,24 +350,6 @@
     </ClInclude>
     <ClInclude Include="..\source\IUIManager.h">
       <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\IrrRocketRenderer.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\RocketSystemInterface.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\PakalRocketFileInterface.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\RocketGUI.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\IrrRocketGUI.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\LuaProxies.h">
-      <Filter>Foundation\LuaProxies</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\ScriptComponent.h">
       <Filter>Components\Script</Filter>
@@ -582,12 +387,6 @@
     <ClInclude Include="..\source\EventArgs.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\rocketgui\RocketInput.h">
-      <Filter>Managers\UIManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\WindowCreatorSFML.h">
-      <Filter>Managers\OSManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\persist\JsonReader.h">
       <Filter>Foundation\Persist</Filter>
     </ClInclude>
@@ -606,25 +405,13 @@
     <ClInclude Include="..\source\PakalPath.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\ScriptComponent_Lua.h">
-      <Filter>Components\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\CppBindClass_lua.h">
-      <Filter>Components\Script</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\PakalMath.h">
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\CameraComponent.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\CameraComponent_Irrlicht.h">
-      <Filter>Components\GFX</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\TileMapComponent.h">
-      <Filter>Components\GFX\Tiles</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\TileMapComponent_Irrlicht.h">
       <Filter>Components\GFX\Tiles</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\ICharacterHandler.h">
@@ -639,16 +426,10 @@
     <ClInclude Include="..\source\components\SpritePhysicsComponent.h">
       <Filter>Components\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\SpritePhysicsComponent_Box2D.h">
-      <Filter>Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\CharacterComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\UIComponent.h">
-      <Filter>Components\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\rocketgui\RocketUIComponents.h">
       <Filter>Components\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\source\EntityManager.h">
@@ -708,59 +489,17 @@
     <ClInclude Include="..\source\components\SFXComponent.h">
       <Filter>Components\SFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\DynamicMesh\DynamicMeshComponent_Irrlicht.h">
-      <Filter>Components\GFX\DynamicMesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrGraphicsSystem.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\IrrRendererInfo.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\MaterialCallbacks.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\MaterialManager.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\TiledNode_Irrlicht.hpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\SpriteNode_Irrlicht.hpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\GridSceneNode.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\AnimatedMeshComponent.h">
-      <Filter>Components\GFX\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\AnimatedMeshComponent_Irrlitch.h">
       <Filter>Components\GFX\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\GridComponent.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\components\GridComponent_Irrlicht.h">
-      <Filter>Components\GFX</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\components\TerrainComponent.h">
-      <Filter>Components\GFX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\components\TerrainComponent_Irrlicht.h">
       <Filter>Components\GFX</Filter>
     </ClInclude>
     <ClInclude Include="..\source\components\InputBinder.h">
       <Filter>Components\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\SceneNodeBatcher.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\CBatchingMesh.h">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\irrlicht\SpriteBatcher.hpp">
-      <Filter>Systems\GraphicsSystem\Irrlicht</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -824,9 +563,6 @@
     <Filter Include="Managers\UIManager">
       <UniqueIdentifier>{ae1b0036-dfc5-4971-b7ab-7b3ff3eba818}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Foundation\LuaProxies">
-      <UniqueIdentifier>{6bff8fc3-bb4a-4767-be96-1ec75b788833}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components\Music">
       <UniqueIdentifier>{90b50d09-2bb5-4fa1-a1e1-0d73c5b7eff5}</UniqueIdentifier>
     </Filter>
@@ -838,9 +574,6 @@
     </Filter>
     <Filter Include="Components\Input">
       <UniqueIdentifier>{d59120af-419e-4e2d-8bd9-72a6f9c84f48}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Foundation\Lua">
-      <UniqueIdentifier>{ee993985-72fd-4ec3-a022-f45f81614f43}</UniqueIdentifier>
     </Filter>
     <Filter Include="Components\GFX">
       <UniqueIdentifier>{4f391ff0-4709-489b-9d14-d7e6cfe1a9e3}</UniqueIdentifier>
@@ -865,9 +598,6 @@
     </Filter>
     <Filter Include="Components\GFX\DynamicMesh\poly2tri">
       <UniqueIdentifier>{3f6ab334-446e-4ba0-b5bc-dc3be8420b9e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Systems\GraphicsSystem\Irrlicht">
-      <UniqueIdentifier>{b74b8732-45fb-47c3-929b-7d3d551d581a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

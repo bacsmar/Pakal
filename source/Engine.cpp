@@ -87,6 +87,7 @@ void Engine::run(IPakalApplication* application)
 
 	m_application = application;
 	
+	
 	//Initialize managers
 	resource_manager()->initialize();
 	input_manager()->initialize();
@@ -106,7 +107,11 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(initializationTasks);
 	
 	// Initialize engine
-	initialize();
+	auto engineInitTask = initialize();
+	if (engineInitTask)
+	{
+		engineInitTask->wait(false);  // Non-blocking wait to process tasks while waiting
+	}
 
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> threadlessSystems;
@@ -124,36 +129,45 @@ void Engine::run(IPakalApplication* application)
 	Clock clock;
 	unsigned long dt = 0;
 
-
-	while (get_state() != SystemState::Terminated)
+	if (get_state() != SystemState::Terminated)
 	{
-		//Update the caption
-		m_graphics_system->set_window_caption(get_systems_fps().c_str());
-
-		//update threadless systems
-		for (auto s : threadlessSystems)
+		while (get_state() != SystemState::Terminated)
 		{
-			if (s->get_state() != SystemState::Terminated)
+			//Update the caption
+			m_graphics_system->set_window_caption(get_systems_fps().c_str());
+
+			//update threadless systems
+			for (auto s : threadlessSystems)
 			{
-				s->update(dt);
+				// Check Engine state before updating each system - allows quick exit on termination
+				if (get_state() == SystemState::Terminated)
+				{
+					break;
+				}
+				
+				if (s->get_state() != SystemState::Terminated)
+				{
+					s->update(dt);
+				}
 			}
-		}
 
-		//process window events
-		if (get_state() != SystemState::Paused)
-		{
-			os_manager()->process_window_events();
-		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			os_manager()->process_window_events();
-			clock.restart();
-		}			
+			//process window events
+			if (get_state() != SystemState::Paused)
+			{
+				os_manager()->process_window_events();
+			}
+			else
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				os_manager()->process_window_events();
+				clock.restart();
+			}			
 
-		//update the dt
-		dt = clock.restart().asMilliseconds();
+			//update the dt
+			dt = clock.restart().asMilliseconds();
+		}
 	}
+
 
 	//terminate systems
 	std::vector<BasicTaskPtr> terminationTasks;
@@ -161,12 +175,14 @@ void Engine::run(IPakalApplication* application)
 	for(auto s : m_systems)
 	{
 		if (s->get_state() != SystemState::Terminated)
+		{
 			terminationTasks.push_back(s->terminate());
+		}
 	}
+	
 	TaskUtils::wait_all(terminationTasks);
 
 	//terminate managers
-	
 	m_sound_manager->terminate();
 	m_entity_manager->terminate();
 	m_component_manager->terminate();
@@ -190,9 +206,11 @@ void Engine::on_initialize()
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
+	
 	os_manager()->event_app_finished.remove_listener(m_listener_terminate);
 
 	m_application->end(*this);
+	
 }
 //////////////////////////////////////////////////////////////////////////
 

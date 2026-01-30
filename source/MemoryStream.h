@@ -5,14 +5,14 @@
 #include "Utils.h"
 
 #include <memory>
-#include <strstream>
+#include <streambuf>
 
 namespace Pakal
 {
 	class _PAKALExport memory_istream : public std::istream
 	{
 		SharedPtr<std::string> m_data;
-		std::strstreambuf m_buffer;
+		std::stringbuf m_buffer;
 
 		memory_istream(const memory_istream& other) = delete;
 		memory_istream& operator=(const memory_istream& other) = delete;
@@ -38,7 +38,7 @@ namespace Pakal
 		explicit memory_istream(SharedPtr<std::string> data) : 
 			std::istream(&m_buffer), 
 			m_data(data), 
-			m_buffer(std::strstreambuf(m_data->c_str(), m_data->size()))
+			m_buffer(m_data->c_str())
 		{}
 
 	};

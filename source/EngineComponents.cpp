@@ -1,8 +1,8 @@
 #include "Engine.h"
 #include "ComponentManager.h"
 
-#include "Components/AutomataComponent.h"
-#include "Components/ScriptComponent.h"
+#include "components/AutomataComponent.h"
+#include "components/ScriptComponent.h"
 #include "components/CharacterComponent.h"
 #if PAKAL_USE_SCRIPTS == 1
 	#include "components/ScriptComponent_Lua.h"

@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <thread>
+#include <condition_variable>
 
 #include "DoubleBufferedList.h"
 #include "BasicTask.h"
