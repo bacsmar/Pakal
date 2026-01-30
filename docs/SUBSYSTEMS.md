@@ -34,6 +34,8 @@ Modelo:
 - `ComponentManager` registra `IComponentProvider`s (cada System implementa provider) y factories que crean componentes concretos (Ej: `MeshComponent_Irrlicht`).
 - Componentes tienen ciclo de vida mediante `initialize()` y `terminate()` que devuelven `BasicTaskPtr` (sistema de tareas asíncronas).
 
+Para una guía completa sobre cuándo usar diferentes tipos de entidades, patrones de diseño, y comparaciones con Unity/Unreal, consulta [ENTITY_PATTERNS.md](ENTITY_PATTERNS.md).
+
 ## ResourceManager &amp; Persistencia
 - `ResourceManager` permite registrar fuentes (Directory, Zip), localizar y cargar recursos.
 - La persistencia y serialización se manejan vía `Archive` y un proyecto relacionado `pakal_persist` (fork en `bacsmar/pakal_persist`).
