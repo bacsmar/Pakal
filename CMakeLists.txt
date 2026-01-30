@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Pakal)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set output directories
@@ -144,6 +144,8 @@ else()
     if(UNIX AND NOT APPLE)
         target_compile_options(Pakal PRIVATE -fPIC)
     endif()
+    # Define BX_CONFIG_DEBUG for bx/bgfx
+    target_compile_definitions(Pakal PUBLIC BX_CONFIG_DEBUG=0)
 endif()
 
 # Add subdirectories for additional components if they have CMakeLists
@@ -156,6 +158,16 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     add_executable(PakalBasicExample ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_link_libraries(PakalBasicExample Pakal)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
+endif()
+
+# Build ContraGame example if bgfx and Box2D are available
+if(EXISTS ${CMAKE_SOURCE_DIR}/examples/ContraGame/CMakeLists.txt)
+    if(EXISTS ${BGFX_BUILD_DIR}/libbgfxRelease.a AND BOX2D_FOUND)
+        message(STATUS "Building ContraGame example (bgfx + Box2D)")
+        add_subdirectory(${CMAKE_SOURCE_DIR}/examples/ContraGame)
+    else()
+        message(STATUS "Skipping ContraGame example (requires bgfx + Box2D)")
+    endif()
 endif()
 
 # Print configuration summary
