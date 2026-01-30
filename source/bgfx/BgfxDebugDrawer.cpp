@@ -45,7 +45,7 @@ namespace Pakal
 		DrawPolygon(vertices, vertexCount, color);
 	}
 
-	void BgfxDebugDrawer::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
+	void BgfxDebugDrawer::DrawCircle(const b2Vec2& center, float radius, const b2Color& color)
 	{
 		// Draw circle using line segments
 		const int32 segmentCount = 16;
@@ -67,7 +67,7 @@ namespace Pakal
 		}
 	}
 
-	void BgfxDebugDrawer::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
+	void BgfxDebugDrawer::DrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color)
 	{
 		// Draw circle outline
 		DrawCircle(center, radius, color);
@@ -81,32 +81,11 @@ namespace Pakal
 
 	void BgfxDebugDrawer::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 	{
-		// Apply translation and scale
-		float x1 = (p1.x + m_translation_x) * m_scale;
-		float y1 = (p1.y + m_translation_y) * m_scale;
-		float x2 = (p2.x + m_translation_x) * m_scale;
-		float y2 = (p2.y + m_translation_y) * m_scale;
-
-		// Convert Box2D color to bgfx color (ABGR format)
-		uint32_t bgfxColor = 
-			(uint32_t)(color.a * 255.0f) << 24 |
-			(uint32_t)(color.b * 255.0f) << 16 |
-			(uint32_t)(color.g * 255.0f) << 8  |
-			(uint32_t)(color.r * 255.0f);
-
-		// Use bgfx debug draw to draw line
-		bgfx::DebugVertex vertices[2];
-		vertices[0].m_x = x1;
-		vertices[0].m_y = y1;
-		vertices[0].m_z = 0.0f;
-		vertices[0].m_abgr = bgfxColor;
-
-		vertices[1].m_x = x2;
-		vertices[1].m_y = y2;
-		vertices[1].m_z = 0.0f;
-		vertices[1].m_abgr = bgfxColor;
-
-		bgfx::dbgDrawLine(vertices[0], vertices[1], bgfxColor);
+		// TODO: Implement line drawing using a proper bgfx debug draw pipeline.
+		// The previous bgfx::DebugVertex dbgDrawLine API is not available in current bgfx.
+		(void)p1;
+		(void)p2;
+		(void)color;
 	}
 
 	void BgfxDebugDrawer::DrawTransform(const b2Transform& xf)
@@ -125,7 +104,7 @@ namespace Pakal
 		DrawSegment(p1, p2, green);
 	}
 
-	void BgfxDebugDrawer::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
+	void BgfxDebugDrawer::DrawPoint(const b2Vec2& p, float size, const b2Color& color)
 	{
 		// Draw a small cross to represent the point
 		float halfSize = size * 0.5f;
@@ -139,7 +118,7 @@ namespace Pakal
 	}
 
 #if B2_VERSION_MAJOR >= 3
-	void BgfxDebugDrawer::DrawParticles(const b2Vec2* centers, float32 radius, const b2ParticleColor* colors, int32 count)
+	void BgfxDebugDrawer::DrawParticles(const b2Vec2* centers, float radius, const b2ParticleColor* colors, int32 count)
 	{
 		// Draw each particle as a small circle
 		for (int32 i = 0; i < count; ++i)

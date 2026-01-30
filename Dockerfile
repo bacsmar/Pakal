@@ -15,8 +15,11 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-dev \
     mesa-utils \
     liblua5.3-dev \
+    libbox2d-dev \
     xvfb \
     gdb \
+    python3 \
+    python-is-python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy external dependencies (bgfx, etc)
