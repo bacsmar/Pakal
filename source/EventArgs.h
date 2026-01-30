@@ -252,6 +252,7 @@ namespace Pakal
 		unsigned windowId = 0;
 		unsigned size_x = 0;
 		unsigned size_y = 0;
+		void* native_display = nullptr; // X11 Display* on Linux
 		WindowArgs(unsigned window_id, unsigned sizeX, unsigned sizeY) : 
 			windowId(window_id), size_x(sizeX), size_y(sizeY){}
 		WindowArgs():

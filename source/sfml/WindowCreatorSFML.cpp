@@ -1,6 +1,10 @@
 #include "WindowCreatorSFML.h"
 #include "IInputManager.h"
 
+#if BX_PLATFORM_LINUX
+	#include <X11/Xlib.h>
+#endif
+
 using namespace Pakal;
 
 MouseButton map_sfml_to_pakal(sf::Mouse::Button btn)
@@ -18,7 +22,7 @@ MouseButton map_sfml_to_pakal(sf::Mouse::Button btn)
 	return static_cast<MouseButton>(-1);
 }
 
-unsigned WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
+WindowArgs WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {
 	ASSERT(m_window_created == false);
 
@@ -32,14 +36,33 @@ unsigned WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vector2
 
 	m_window_created = true;
 	m_window_handle = reinterpret_cast<void*>(m_window->getSystemHandle());
-	return static_cast<unsigned>(reinterpret_cast<uintptr_t>(m_window_handle));
-
+	
+	WindowArgs args;
+	args.windowId = static_cast<unsigned>(reinterpret_cast<uintptr_t>(m_window_handle));
+	args.size_x = dimensions.x;
+	args.size_y = dimensions.y;
+	
+	#if BX_PLATFORM_LINUX
+		// Get X11 display for bgfx
+		m_x11_display = XOpenDisplay(NULL);
+		args.native_display = m_x11_display;
+	#endif
+	
+	return args;
 }
 
 void WindowCreatorSFML::close_window()
 {
 	m_window->close();
 	SAFE_DEL(m_window);
+	
+	// Note: Not closing X11 Display to avoid segfault during bgfx cleanup
+	// X11 will clean it up when process exits
+	#if BX_PLATFORM_LINUX
+		// XCloseDisplay(static_cast<Display*>(m_x11_display)); // Causes segfault
+		m_x11_display = nullptr;
+	#endif
+	
 	m_window_created = false;
 }
 

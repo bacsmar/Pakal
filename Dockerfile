@@ -13,8 +13,10 @@ RUN apt-get update && apt-get install -y \
     libsfml-dev \
     libx11-dev \
     libgl1-mesa-dev \
+    mesa-utils \
     liblua5.3-dev \
     xvfb \
+    gdb \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy external dependencies (bgfx, etc)

@@ -67,12 +67,18 @@ namespace Pakal
 
 		// Setup bgfx initialization parameters
 		bgfx::Init init;
-		init.type = bgfx::RendererType::Count; // Auto-select best renderer
+		init.type = bgfx::RendererType::OpenGL; // Force OpenGL for Linux
 		init.vendorId = BGFX_PCI_ID_NONE;
 		
-		// Set platform data - native window handle
-		init.platformData.nwh = (void*)(uintptr_t)args.windowId;
-		init.platformData.ndt = nullptr;
+		// Set platform data - for X11 we need both display and window
+		#if BX_PLATFORM_LINUX
+			init.platformData.ndt = args.native_display; // X11 Display*
+			init.platformData.nwh = (void*)(uintptr_t)args.windowId; // X11 Window
+			LOG_INFO("[BgfxGraphicsSystem] Using X11: Display=%p, Window=%u", args.native_display, args.windowId);
+		#else
+			init.platformData.nwh = (void*)(uintptr_t)args.windowId;
+			init.platformData.ndt = nullptr;
+		#endif
 		
 		// Set resolution
 		init.resolution.width = m_width;
@@ -80,6 +86,8 @@ namespace Pakal
 		init.resolution.reset = m_settings.vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
 		m_reset_flags = init.resolution.reset;
 
+		LOG_INFO("[BgfxGraphicsSystem] Calling bgfx::init()...");
+		
 		// Initialize bgfx
 		if (!bgfx::init(init))
 		{

@@ -31,7 +31,7 @@ namespace Pakal
 
 		struct _PAKALExport Settings
 		{
-			bool uses_thread = true;
+			bool uses_thread = false; // Engine::run() is the main loop
 			unsigned max_fps = 1000;
 
 			PhysicsSystem::Settings physic_system_settings;

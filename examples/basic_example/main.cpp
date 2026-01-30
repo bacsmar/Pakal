@@ -6,7 +6,10 @@
 
 #include <Engine.h>
 #include <IPakalApplication.h>
+#include <OSManager.h>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 using namespace Pakal;
 
@@ -21,6 +24,12 @@ public:
 	void start(Engine& engine) override
 	{
 		std::cout << "Application started!" << std::endl;
+
+		// Terminate after a short delay to allow systems to finish initializing
+		std::thread([&engine]() {
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			engine.os_manager()->event_app_finished();
+		}).detach();
 	}
 
 	void end(Engine& engine) override
@@ -41,6 +50,7 @@ int main(int argc, char* argv[])
 		
 		// Create engine
 		std::cout << "creating engine!" << std::endl;
+		// Note: Engine and physics use threads by default (uses_thread = true)
 		Engine engine(settings);
 		
 		// Create and run application
@@ -48,8 +58,6 @@ int main(int argc, char* argv[])
 		BasicApplication app;
 		std::cout << "running engine!" << std::endl;
 		engine.run(&app);
-		
-		std::cout << "Engine finished successfully!" << std::endl;
 	}
 	catch (const std::exception& e)
 	{

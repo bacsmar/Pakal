@@ -33,8 +33,7 @@ void OSManager::terminate()
 
 TaskPtr<WindowArgs> OSManager::setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned bitsPerPixel)
 {
-	WindowArgs args;	
-	args.windowId = m_window_impl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel) ;
+	WindowArgs args = m_window_impl->setup_window(windowId, dimensions, fullscreen, bitsPerPixel);
 	if (args.windowId)
 	{
 		args.size_x = dimensions.x;
