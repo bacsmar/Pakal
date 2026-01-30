@@ -158,6 +158,16 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
+# Build ContraGame example if bgfx and Box2D are available
+if(EXISTS ${CMAKE_SOURCE_DIR}/examples/ContraGame/CMakeLists.txt)
+    if(EXISTS ${BGFX_BUILD_DIR}/libbgfxRelease.a AND BOX2D_FOUND)
+        message(STATUS "Building ContraGame example (bgfx + Box2D)")
+        add_subdirectory(${CMAKE_SOURCE_DIR}/examples/ContraGame)
+    else()
+        message(STATUS "Skipping ContraGame example (requires bgfx + Box2D)")
+    endif()
+endif()
+
 # Print configuration summary
 message(STATUS "========== Pakal Engine Configuration ==========")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
