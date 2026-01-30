@@ -46,3 +46,52 @@ doc->Show();
 ```
 
 Notas: los ejemplos combinan pseudocódigo y llamadas reales. Ajustes menores pueden ser necesarios según la versión concreta de cada componente en el repo.
+
+5) Crear entidad especializada
+
+```c++
+// Definir entidad personalizada
+class PlayerEntity : public Entity
+{
+    float m_health;
+    Vector3 m_spawnPoint;
+    
+public:
+    using Entity::Entity;  // Heredar constructor
+    
+    BasicTaskPtr initialize() override {
+        m_health = 100.0f;
+        m_spawnPoint = Vector3(0, 0, 0);
+        
+        // Inicializar componentes si es necesario
+        return TaskUtils::create_completed_task();
+    }
+    
+    BasicTaskPtr terminate() override {
+        return TaskUtils::create_completed_task();
+    }
+    
+    void take_damage(float amount) {
+        m_health -= amount;
+        if (m_health <= 0) {
+            respawn();
+        }
+    }
+    
+    void respawn() {
+        m_health = 100.0f;
+        // Lógica de respawn
+    }
+};
+
+// Registrar factory (en tu provider)
+entityManager->add_entity_factory(
+    new TFactory<Entity, PlayerEntity>("PlayerEntity")
+);
+
+// Crear instancia
+PlayerEntity* player = entityManager->create_entity<PlayerEntity>();
+player->take_damage(25.0f);
+```
+
+Ver `docs/ENTITY_PATTERNS.md` para más patrones y guías sobre cuándo usar entidades especializadas vs genéricas.
