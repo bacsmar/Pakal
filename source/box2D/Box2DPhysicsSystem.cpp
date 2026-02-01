@@ -59,7 +59,7 @@ inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 
 void Box2DPhysicsSystem::set_gravity(const tmath::vector3df& gravity)
 {
-	execute_block([=]()
+	execute_block([this, gravity]()
 	{
 		m_world->SetGravity({ gravity.x,  gravity.y});
 	});

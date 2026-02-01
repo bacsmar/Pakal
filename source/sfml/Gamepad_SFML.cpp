@@ -22,7 +22,7 @@ bool Pakal::Gamepad_SFML::get_button_state(unsigned button)
 
 void Pakal::Gamepad_SFML::map_button(unsigned virtualButton, unsigned realButton)
 {
-	m_buttons[virtualButton] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, realButton); };;
+	m_buttons[virtualButton] = [this, realButton]()->bool { return sf::Joystick::isButtonPressed(m_device_id, realButton); };;
 }
 
 Pakal::Gamepad_SFML::Gamepad_SFML()
@@ -30,18 +30,18 @@ Pakal::Gamepad_SFML::Gamepad_SFML()
 	// default mapping
 	auto lambda = []() { return false; };
 	m_buttons.resize(static_cast<unsigned>(GamepadComponent::Buttons::Button_count), lambda);
-	m_buttons[GamepadComponent::Buttons::Button_A] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 0); };
-	m_buttons[GamepadComponent::Buttons::Button_B] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 1); };
-	m_buttons[GamepadComponent::Buttons::Button_X] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 2); };
-	m_buttons[GamepadComponent::Buttons::Button_Y] = [=]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 3); };
+	m_buttons[GamepadComponent::Buttons::Button_A] = [this]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 0); };
+	m_buttons[GamepadComponent::Buttons::Button_B] = [this]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 1); };
+	m_buttons[GamepadComponent::Buttons::Button_X] = [this]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 2); };
+	m_buttons[GamepadComponent::Buttons::Button_Y] = [this]()->bool { return sf::Joystick::isButtonPressed(m_device_id, 3); };
 
 	//auto ypos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Pov_X);
 	//auto zpos = sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Pov_Y);
 
-	m_buttons[GamepadComponent::Buttons::Button_LEFT] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) < -2; };
-	m_buttons[GamepadComponent::Buttons::Button_RIGHT] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) > 2; };
-	m_buttons[GamepadComponent::Buttons::Button_UP] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Y) < -2; };
-	m_buttons[GamepadComponent::Buttons::Button_DOWN] = [=]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Y) > 2; };
+	m_buttons[GamepadComponent::Buttons::Button_LEFT] = [this]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) < -2; };
+	m_buttons[GamepadComponent::Buttons::Button_RIGHT] = [this]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::X) > 2; };
+	m_buttons[GamepadComponent::Buttons::Button_UP] = [this]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Y) < -2; };
+	m_buttons[GamepadComponent::Buttons::Button_DOWN] = [this]()->bool { return sf::Joystick::getAxisPosition(m_device_id, sf::Joystick::Y) > 2; };
 
 	/*m_buttons[GamepadComponent::Buttons::Button_] = 5;
 	m_buttons[GamepadComponent::Buttons::Button_Y] = 6;

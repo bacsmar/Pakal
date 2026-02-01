@@ -4,6 +4,7 @@
 #include "PhysicsSystem.h"
 #include "GameStateManager.h"
 #include "IPakalApplication.h"
+#include "InputManager_Polling.h"
 
 #include "ComponentManager.h"
 #include "EntityManager.h"
@@ -73,6 +74,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*os_manager()->get_input_manager());
 
 	register_default_components();
+	register_default_entities();
 	
 	add_system(m_physics_system);
 	add_system(m_graphics_system);
@@ -91,6 +93,10 @@ void Engine::run(IPakalApplication* application)
 	//Initialize managers
 	resource_manager()->initialize();
 	input_manager()->initialize();
+	
+	// Initialize InputManager_Polling wrapper for convenient key polling
+	InputManager_Polling::initialize(input_manager());
+	
 	m_component_manager->initialize();
 	m_entity_manager->initialize();
 	m_game_state_manager->initialize();
@@ -131,8 +137,16 @@ void Engine::run(IPakalApplication* application)
 
 	if (get_state() != SystemState::Terminated)
 	{
+		LOG_INFO("[Engine] Entering main game loop");
+		static int loop_count = 0;
+		
 		while (get_state() != SystemState::Terminated)
 		{
+			if (loop_count++ == 0)
+			{
+				LOG_INFO("[Engine] First iteration of game loop");
+			}
+			
 			//Update the caption
 			m_graphics_system->set_window_caption(get_systems_fps().c_str());
 
@@ -142,19 +156,36 @@ void Engine::run(IPakalApplication* application)
 				// Check Engine state before updating each system - allows quick exit on termination
 				if (get_state() == SystemState::Terminated)
 				{
+					LOG_INFO("[Engine] Loop terminating, state=Terminated");
 					break;
 				}
 				
 				if (s->get_state() != SystemState::Terminated)
 				{
+					if (loop_count == 1)
+					{
+						LOG_INFO("[Engine] Updating system, state=%d", (int)s->get_state());
+					}
 					s->update(dt);
+					if (loop_count == 1)
+					{
+						LOG_INFO("[Engine] System update completed");
+					}
 				}
 			}
 
 			//process window events
 			if (get_state() != SystemState::Paused)
 			{
+				if (loop_count == 1)
+				{
+					LOG_INFO("[Engine] Processing window events...");
+				}
 				os_manager()->process_window_events();
+				if (loop_count == 1)
+				{
+					LOG_INFO("[Engine] Window events processed, state=%d", (int)get_state());
+				}
 			}
 			else
 			{
@@ -193,13 +224,24 @@ void Engine::run(IPakalApplication* application)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_update(unsigned long dtMilliSeconds)
 {
+	static int update_count = 0;
+	if (update_count++ == 0)
+	{
+		LOG_INFO("[Engine] on_update() called for first time, dt=%llu ms", dtMilliSeconds);
+	}
+	
 	m_game_state_manager->update(dtMilliSeconds);
+	
+	if (update_count == 1)
+	{
+		LOG_INFO("[Engine] on_update() completed, state=%d", (int)get_state());
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	m_listener_terminate = os_manager()->event_app_finished.add_listener([=]() {this->terminate(); });
+	m_listener_terminate = os_manager()->event_app_finished.add_listener([this]() {this->terminate(); });
 
 	m_application->start(*this);	
 }

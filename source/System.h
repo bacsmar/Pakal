@@ -22,6 +22,7 @@ namespace Pakal
 		FPSCounter				m_fps_counter;
 		std::atomic_bool		m_dispatcher_ready;
 		Pakal::Clock			m_fps_limiter_clock;
+		int						m_limit_fps_call_count = 0;
 
 	protected:
 

@@ -57,28 +57,15 @@ namespace Pakal
 
 	void System::limit_fps()
 	{
-		auto frame_time_ms = m_fps_limiter_clock.restart().asMilliseconds();
-		long sleepTime_us = (m_desired_frame_time_ms - frame_time_ms) * 1000;  // Convert to microseconds
-		if( sleepTime_us > 0)
-		{
-			// Sleep in tiny chunks to allow quick termination response
-			// Use microseconds for better interrupt responsiveness
-			const long chunk_us = 100;  // 100 microsecond chunks for fast termination response
-			while (sleepTime_us > 0 && m_state == SystemState::Running)
-			{
-				// Process any pending tasks (e.g., terminate) while waiting
-				m_dispatcher.dispatch_all_tasks();
-				if (m_state != SystemState::Running)
-				{
-					break;
-				}
-				long sleep_chunk = sleepTime_us < chunk_us ? sleepTime_us : chunk_us;
-				std::this_thread::sleep_for(std::chrono::microseconds(sleep_chunk));
-				sleepTime_us -= sleep_chunk;
-			}
+		long frame_time_ms = m_fps_limiter_clock.restart().asMilliseconds();
+		long sleepTime = (long)m_desired_frame_time_ms - (long)frame_time_ms;
+		
+		if(sleepTime > 0){	
+			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 		}
+			
 		m_fps_limiter_clock.restart();
-	}	
+	}
 
 	System::~System()
 	{

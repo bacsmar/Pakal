@@ -37,7 +37,7 @@ namespace Pakal
 
 	void BasicTask::wait(bool blocking)
 	{
-		EventScheduler::instance().wait_this_thread([=](){ return is_completed(); }, blocking);
+		EventScheduler::instance().wait_this_thread([this](){ return is_completed(); }, blocking);
 	}
 
 	BasicTaskPtr BasicTask::continue_with(const std::function<void()>& callBack, std::thread::id callBackThread)

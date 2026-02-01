@@ -17,7 +17,7 @@ SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 {	
 	m_scale = _loader.scale;
-	return m_system->execute_block([=]()	// copy the smartpointer, just to keep our data alive.
+	return m_system->execute_block([this, _loader]()	// copy the smartpointer, just to keep our data alive.
 	{
 		auto& loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
 		if (loader->bodies.size() < 1)
@@ -98,7 +98,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 
 BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 {	
-	return m_system->execute_block([=]()
+	return m_system->execute_block([this]()
 	{
 		m_active_body = nullptr;
 		m_fixtures.clear();
@@ -119,7 +119,7 @@ tmath::vector3df SpritebodyComponent_Box2D::get_position()
 BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & position)
 {
 	ASSERT_MSG(m_active_body, "[body not yet initialized]"); 
-	return m_system->execute_block([=]()
+	return m_system->execute_block([this, position]()
 	{
 		m_active_body->SetTransform(b2Vec2(position.x,position.y),m_active_body->GetAngle());
 	});
@@ -128,7 +128,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & po
 BasicTaskPtr SpritebodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
 {
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	return m_system->execute_block([=]()
+	return m_system->execute_block([this, angle]()
 	{
 		m_active_body->SetTransform(m_active_body->GetPosition(),tmg::d2r(angle.x));
 	});
@@ -187,7 +187,7 @@ void SpritebodyComponent_Box2D::set_type(BodyType type)
 	//auto b2Type = type == DynamicBody ? b2_dynamicBody : (type == KinematicBody ? b2_kinematicBody : b2_staticBody);
 	auto b2Type = type == DynamicBody ? b2_dynamicBody : b2_staticBody;
 
-	m_system->execute_block([=]()
+	m_system->execute_block([this, b2Type]()
 	{
 		m_active_body->SetType(b2Type);
 	});	

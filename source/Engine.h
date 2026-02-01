@@ -31,9 +31,8 @@ namespace Pakal
 
 		struct _PAKALExport Settings
 		{
-			bool uses_thread = false; // Engine::run() is the main loop
-			unsigned max_fps = 1000;
-
+			bool uses_thread = true; // Engine runs in its own thread
+			unsigned max_fps = 1000;  // High FPS for game logic in separate thread
 			PhysicsSystem::Settings physic_system_settings;
 			GraphicsSystem::Settings graphic_system_settings;
 			OSManager::Settings os_manager_settings;
@@ -85,8 +84,7 @@ namespace Pakal
 		void on_terminate() override;
 		void on_pause() override;
 		void on_resume() override;
-		void register_default_components() const;
-		std::string get_systems_fps();
+		void register_default_components() const;	void register_default_entities() const;		std::string get_systems_fps();
 		static void init_timer_system();	// timer.cpp
 		static void stop_timer_system();	// timer.cpp
 
