@@ -1,5 +1,8 @@
 #include "Engine.h"
 #include "ComponentManager.h"
+#include "EntityManager.h"
+#include "GenericEntity.h"
+#include "Factory.h"
 
 #include "components/AutomataComponent.h"
 #include "components/ScriptComponent.h"
@@ -33,4 +36,19 @@ void Engine::register_default_components() const
 	});
 #endif
 
+}
+
+void Engine::register_default_entities() const
+{
+	LOG_INFO("[Engine] Registering default entities");
+	
+	// Capture entity manager to pass to GenericEntity constructor
+	auto* entity_mgr = m_entity_manager;
+	auto* generic_entity_factory = CreateFactory<Entity>("Pakal::GenericEntity", [entity_mgr]() -> Entity* {
+		return new GenericEntity(entity_mgr);
+	});
+	
+	m_entity_manager->add_entity_factory(generic_entity_factory);
+	
+	LOG_INFO("[Engine] GenericEntity factory registered");
 }

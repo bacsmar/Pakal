@@ -62,6 +62,6 @@ namespace Pakal
 	TEntity* EntityManager::create_entity(const std::string& descriptor)
 	{
 		Entity* entity = create_entity(TypeInfo::get<TEntity>().get_name(),descriptor);
-		return static_cast<Entity*>(entity);
+		return static_cast<TEntity*>(entity);
 	}
 }

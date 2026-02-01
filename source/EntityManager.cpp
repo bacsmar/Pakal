@@ -1,6 +1,7 @@
 #include "EntityManager.h"
 #include "Utils.h"
 #include "Entity.h"
+#include "GenericEntity.h"
 #include "EntityDescriptor.h"
 #include "persist/XmlReader.h"
 #include "ResourceManager.h"
@@ -117,6 +118,14 @@ Entity* EntityManager::create_entity(const std::string& name, const std::string&
 	{
 		Entity* entity = factory->create();
 		entity->set_descriptor(descriptor);
+		
+		// Set ComponentManager on GenericEntity if applicable
+		GenericEntity* genericEntity = dynamic_cast<GenericEntity*>(entity);
+		if (genericEntity && m_componentManager)
+		{
+			genericEntity->set_component_manager(m_componentManager);
+		}
+		
 		return entity;
 	}
 	

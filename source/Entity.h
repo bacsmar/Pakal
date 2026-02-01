@@ -11,6 +11,7 @@ namespace Pakal
 
 	class _PAKALExport Entity
 	{
+		DECLARE_RTTI(Entity);
 		std::string m_descriptor;
 
 	protected:		
