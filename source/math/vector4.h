@@ -42,16 +42,16 @@ namespace Pakal
 			T x, y, z, w;
 
 			// constructors
-			vectorn<T,4>() : x(static_cast<T>(0.0)),
+			vectorn() : x(static_cast<T>(0.0)),
 			                 y(static_cast<T>(0.0)),
 			                 z(static_cast<T>(0.0)),
 			                 w(static_cast<T>(0.0)) { }
 
-			vectorn<T,4>(T vx, T vy, T vz, T vw) : x(vx), y(vy), z(vz), w(vw) { }
+			vectorn(T vx, T vy, T vz, T vw) : x(vx), y(vy), z(vz), w(vw) { }
 
-			vectorn<T,4>(const T* v) : x(v[0]), y(v[1]), z(v[2]), w(v[3]) { }
+			vectorn(const T* v) : x(v[0]), y(v[1]), z(v[2]), w(v[3]) { }
 
-			vectorn<T,4>(const vectorn<T,4>& v) : x(v.x), y(v.y), z(v.z), w(v.w) { }
+			vectorn(const vectorn<T,4>& v) : x(v.x), y(v.y), z(v.z), w(v.w) { }
 
 			// assignment operations
 			inline const vectorn<T,4>& operator+=(const vectorn<T,4>& v)
@@ -112,18 +112,18 @@ namespace Pakal
 			// unary operations
 			inline const vectorn<T,4> operator -() const
 			{
-				return vectorn<T,4>(-x,-y,-z,-w);
+				return vectorn(-x,-y,-z,-w);
 			}
 
 			// binary operations
 			inline friend const vectorn<T,4> operator+(const vectorn<T,4>& v1, const vectorn<T,4>& v2)
 			{
-				return vectorn<T,4>(v1.x + v2.x,v1.y + v2.y,v1.z + v2.z,v1.w + v2.w);
+				return vectorn(v1.x + v2.x,v1.y + v2.y,v1.z + v2.z,v1.w + v2.w);
 			}
 
 			inline friend const vectorn<T,4> operator-(const vectorn<T,4>& v1, const vectorn<T,4>& v2)
 			{
-				return vectorn<T,4>(v1.x - v2.x,v1.y - v2.y,v1.z - v2.z,v1.w - v2.w);
+				return vectorn(v1.x - v2.x,v1.y - v2.y,v1.z - v2.z,v1.w - v2.w);
 			}
 
 			inline friend const T operator*(const vectorn<T,4>& v1, const vectorn<T,4>& v2)
@@ -133,7 +133,7 @@ namespace Pakal
 
 			inline const vectorn<T,4> operator*(const T& num) const
 			{
-				return vectorn<T,4>(x * num,y * num,z * num,w * num);
+				return vectorn(x * num,y * num,z * num,w * num);
 			}
 
 			friend inline const vectorn<T,4> operator *(const T& s, const vectorn<T,4>& v)
@@ -144,7 +144,7 @@ namespace Pakal
 			inline const vectorn<T,4> operator/(const T& num) const
 			{
 				const T r = (T)1.0 / num;
-				return vectorn<T,4>(x * r,y * r,z * r,w * r);
+				return vectorn(x * r,y * r,z * r,w * r);
 			}
 
 			size_t size() const

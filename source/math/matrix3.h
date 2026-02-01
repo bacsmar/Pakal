@@ -44,7 +44,7 @@ namespace Pakal {
 		T yx, yy, yz;
 		T zx, zy, zz;
 		// constructors
-		matrix<T,3,3>()	:	xx(static_cast<T>(0.0)),
+		matrix()	:	xx(static_cast<T>(0.0)),
 										xy(static_cast<T>(0.0)),
 										xz(static_cast<T>(0.0)),
 										yx(static_cast<T>(0.0)),
@@ -54,19 +54,19 @@ namespace Pakal {
 										zy(static_cast<T>(0.0)),
 										zz(static_cast<T>(0.0)) {
 		}
-		matrix<T,3,3>(	T a0, T a1, T a2,
+		matrix(	T a0, T a1, T a2,
 								T a3,	T a4, T a5,
 								T a6, T a7, T a8)
 							:	xx(a0), xy(a1), xz(a2),
 								yx(a3), yy(a4), yz(a5),
 								zx(a6), zy(a7), zz(a8) {
 		}
-		matrix<T,3,3>(const T* m) {
+		matrix(const T* m) {
 			xx = m[0];	xy = m[1];	xz = m[2];
 			yx = m[4];	yy = m[5];	yz = m[6];
 			zx = m[8];	zy = m[9];	zz = m[10];
 		}
-		matrix<T,3,3>(const matrix<T,3,3>& m) {
+		matrix(const matrix<T,3,3>& m) {
 			xx = m.xx; xy = m.xy; xz = m.xz;
 			yx = m.yx; yy = m.yy; yz = m.yz;
 			zx = m.zx; zy = m.zy; zz = m.zz;
@@ -114,23 +114,23 @@ namespace Pakal {
 		}
 		// unary operations
 		inline const matrix<T,3,3> operator - () const {
-			return matrix<T,3,3>(-xx, -xy, -xz,
+			return matrix(-xx, -xy, -xz,
 												-yx, -yy, -yz,
 												-zx, -zy, -zz);
 		}
 		// binary operations
 		inline friend matrix<T,3,3> operator+(const matrix<T,3,3>& m1,const matrix<T,3,3>& m2) {
-			return matrix<T,3,3>(m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz,
+			return matrix(m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz,
 												m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz,
 												m1.zx + m2.zx, m1.zy + m2.zy, m1.zz + m2.zz);
 		}
 		inline friend matrix<T,3,3> operator-(const matrix<T,3,3>& m1,const matrix<T,3,3>& m2) {
-			return matrix<T,3,3>(m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz,
+			return matrix(m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz,
 												m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz,
 												m1.zx - m2.zx, m1.zy - m2.zy, m1.zz - m2.zz);
 		}
 		inline const matrix<T,3,3> operator*(const T& num) const {
-			return matrix<T,3,3>(xx * num, xy * num, xz * num,
+			return matrix(xx * num, xy * num, xz * num,
 												yx * num, yy * num, yz * num,
 												zx * num, zy * num, zz * num);
 		}
@@ -138,7 +138,7 @@ namespace Pakal {
 			return m * s;
 		}
 		inline friend matrix<T,3,3> operator*(const matrix<T,3,3>& m1, const matrix<T,3,3>& m2 )  {
-			return matrix<T,3,3>(m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
+			return matrix(m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
 												m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy,
 												m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz,
 												m1.yx * m2.xx + m1.yy * m2.yx + m1.yz * m2.zx,
@@ -156,7 +156,7 @@ namespace Pakal {
 		}
 		inline const matrix<T,3,3> operator/(const T& num) const {
 			float val = (static_cast<T>(1.0)/num);
-			return matrix<T,3,3>(xx * val, xy * val, xz * val,
+			return matrix(xx * val, xy * val, xz * val,
 												yx * val, yy * val, yz * val,
 												zx * val, zy * val, zz * val);
 		}

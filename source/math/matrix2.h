@@ -41,21 +41,21 @@ namespace Pakal {
 			T xx, xy;
 			T yx, yy;
 			// emtpy constructors
-			matrix<T,2,2>() :	
+			matrix() :	
 				xx(static_cast<T>(0.0)),
 				xy(static_cast<T>(0.0)), 
 				yx(static_cast<T>(0.0)), 
 				yy(static_cast<T>(0.0)) {
 			}
-			matrix<T,2,2>(T a0, T a1, T a2,	T a3) :	
+			matrix(T a0, T a1, T a2,	T a3) :	
 				xx(a0), xy(a1),
 				yx(a2), yy(a3) {
 			}
-			matrix<T,2,2>(const T* m) {
+			matrix(const T* m) {
 				xx = m[0];	xy = m[1];
 				yx = m[2];	yy = m[3];
 			}
-			matrix<T,2,2>(const matrix<T,2,2>& m) {
+			matrix(const matrix<T,2,2>& m) {
 				xx = m.xx; xy = m.xy;
 				yx = m.yx; yy = m.yy;
 			}
@@ -96,20 +96,20 @@ namespace Pakal {
 			}
 			// unary operations
 			inline const matrix<T,2,2> operator - () const {
-				return matrix<T,2,2>(	-xx, -xy,
+				return matrix(	-xx, -xy,
 															-yx, -yy);
 			}
 			// binary operations
 			inline friend matrix<T,2,2> operator+(const matrix<T,2,2>& m1,const matrix<T,2,2>& m2) {
-				return matrix<T,2,2>(	m1.xx + m2.xx, m1.xy + m2.xy,
+				return matrix(	m1.xx + m2.xx, m1.xy + m2.xy,
 															m1.yx + m2.yx, m1.yy + m2.yy);
 			}
 			inline friend matrix<T,2,2> operator-(const matrix<T,2,2>& m1,const matrix<T,2,2>& m2) {
-				return matrix<T,2,2>(	m1.xx - m2.xx, m1.xy - m2.xy,
+				return matrix(	m1.xx - m2.xx, m1.xy - m2.xy,
 															m1.yx - m2.yx, m1.yy - m2.yy);
 			}
 			inline const matrix<T,2,2> operator*(const T& num) const {
-				return matrix<T,2,2>(	xx * num, xy * num,
+				return matrix(	xx * num, xy * num,
 															yx * num, yy * num);
 			}
 			friend inline const matrix<T,2,2> operator*( const T &s, const matrix<T,2,2>& m ) {
@@ -117,11 +117,11 @@ namespace Pakal {
 			}
 			inline const matrix<T,2,2> operator/(const T& num) const {
 				float val = (static_cast<T>(1.0)/num);
-				return matrix<T,2,2>(	xx * val, xy * val,
+				return matrix(	xx * val, xy * val,
 															yx * val, yy * val);
 			}
 			 inline friend matrix<T,2,2> operator*(const matrix<T,2,2>& m1, const matrix<T,2,2>& m2 )  {
-				return matrix<T,2,2>(	m1.xx * m2.xx + m1.xy * m2.yx,
+				return matrix(	m1.xx * m2.xx + m1.xy * m2.yx,
 															m1.xx * m2.xy + m1.xy * m2.yy, 
 															m1.yx * m2.xx + m1.yy * m2.yx,
 															m1.yx * m2.xy + m1.yy * m2.yy);

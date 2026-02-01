@@ -39,15 +39,15 @@ namespace Pakal
 			T x, y, z;
 
 			// constructors
-			vectorn<T,3>() : x(static_cast<T>(0.0)),
+			vectorn() : x(static_cast<T>(0.0)),
 			                 y(static_cast<T>(0.0)),
 			                 z(static_cast<T>(0.0)) { }
 
-			vectorn<T,3>(T vx, T vy, T vz) : x(vx), y(vy), z(vz) { }
+			vectorn(T vx, T vy, T vz) : x(vx), y(vy), z(vz) { }
 
-			vectorn<T,3>(const T* v) : x(v[0]), y(v[1]), z(v[2]) { }
+			vectorn(const T* v) : x(v[0]), y(v[1]), z(v[2]) { }
 
-			vectorn<T,3>(const vectorn<T,3>& v) : x(v.x), y(v.y), z(v.z) { }
+			vectorn(const vectorn<T,3>& v) : x(v.x), y(v.y), z(v.z) { }
 
 			// assignment operations
 			inline const vectorn<T,3>& operator+=(const vectorn<T,3>& v)

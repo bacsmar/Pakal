@@ -38,19 +38,19 @@ namespace Pakal
 			T cmp[M][N];
 
 			// constructors
-			matrix<T,N,M>()
+			matrix()
 			{
 				null();
 			}
 
-			matrix<T,N,M>(const T* mat)
+			matrix(const T* mat)
 			{
 				for (int m = 0; m < M; ++m)
 					for (int n = 0; n < N; ++n)
 						cmp[m][n] = mat[n + N * m];
 			}
 
-			matrix<T,N,M>(const matrix<T,N,M>& mat)
+			matrix(const matrix<T,N,M>& mat)
 			{
 				for (int m = 0; m < M; ++m)
 					for (int n = 0; n < N; ++n)
