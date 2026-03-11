@@ -112,8 +112,8 @@ namespace Pakal
 		auto* sprite = platform->create_component<SpriteComponent_Bgfx>();
 		sprite->set_position(x, y);
 		sprite->set_scale(width, height);
-		sprite->set_color(0.5f, 0.3f, 0.2f, 1.0f); // Brown color
-		sprite->create_solid_color(0xFFFFFFFF, 1, 1); // White texture
+		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
+		sprite->set_texture("Assets/sprites/platform.png");
 		
 		// Add and configure physics component for static platform
 		auto* physics = platform->create_component<SpritebodyComponent_Box2D>();
@@ -136,8 +136,8 @@ namespace Pakal
 		auto* sprite = m_player->create_component<SpriteComponent_Bgfx>();
 		sprite->set_position(0.0f, 0.0f);
 		sprite->set_scale(1.0f, 2.0f);
-		sprite->set_color(0.0f, 0.5f, 1.0f, 1.0f); // Blue color for player
-		sprite->create_solid_color(0xFFFFFFFF, 1, 1);
+		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
+		sprite->set_texture("Assets/sprites/player_idle.png");
 		sprite->set_layer(10); // Higher layer for player
 		
 		// Add health component
@@ -188,8 +188,8 @@ namespace Pakal
 			auto* sprite = enemy->create_component<SpriteComponent_Bgfx>();
 			sprite->set_position(xPos, yPos);
 			sprite->set_scale(1.0f, 2.0f);
-			sprite->set_color(1.0f, 0.0f, 0.0f, 1.0f); // Red color for enemies
-			sprite->create_solid_color(0xFFFFFFFF, 1, 1);
+			sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
+			sprite->set_texture("Assets/sprites/enemy.jpg");
 			sprite->set_layer(10);
 			
 			// Add health component

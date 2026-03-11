@@ -1,8 +1,10 @@
 #include "Engine.h"
 #include "GameModuleLoader.h"
 #include "LogMgr.h"
+#include "ResourceManager.h"
 
 #include <iostream>
+#include <filesystem>
 
 int main(int argc, char** argv)
 {
@@ -15,6 +17,24 @@ int main(int argc, char** argv)
 #endif
 
 	const char* module_path = argc > 1 ? argv[1] : default_module_path;
+
+	namespace fs = std::filesystem;
+	fs::path root_path = fs::current_path();
+	fs::path module_candidate(module_path);
+	if (module_candidate.has_parent_path())
+	{
+		root_path = fs::absolute(module_candidate.parent_path());
+	}
+	else if (argv[0])
+	{
+		fs::path exe_candidate(argv[0]);
+		if (exe_candidate.has_parent_path())
+		{
+			root_path = fs::absolute(exe_candidate.parent_path());
+		}
+	}
+
+	ResourceMgr.set_root_path(root_path.string());
 
 	std::cout << "============================" << std::endl;
 	std::cout << " Pakal Player" << std::endl;

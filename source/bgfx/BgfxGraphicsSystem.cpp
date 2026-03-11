@@ -19,6 +19,7 @@
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+#include <debugdraw/debugdraw.h>
 #include <bx/file.h>
 #include <bx/readerwriter.h>
 #include <string>
@@ -171,6 +172,9 @@ namespace Pakal
 		LOG_INFO("[BgfxGraphicsSystem] bgfx initialized successfully");
 		LOG_INFO("[BgfxGraphicsSystem] Renderer: %s", bgfx::getRendererName(bgfx::getRendererType()));
 
+		ddInit();
+		LOG_INFO("[BgfxGraphicsSystem] debugdraw initialized");
+
 		// Create sprite shader program
 		create_sprite_shader();
 
@@ -223,41 +227,38 @@ namespace Pakal
 		}
 
 		// Shutdown bgfx
+		ddShutdown();
+		LOG_INFO("[BgfxGraphicsSystem] debugdraw shutdown complete");
+
 		bgfx::shutdown();
 		LOG_INFO("[BgfxGraphicsSystem] bgfx shutdown complete");
 	}
 
 	void BgfxGraphicsSystem::on_update_graphics(long long dt)
 	{
-			static int update_count = 0;
-			if (update_count++ == 0)
-			{
-				LOG_INFO("[BgfxGraphicsSystem] on_update_graphics() called for first time");
-			}
-		
-			// Debug text overlay (visible even without sprite rendering)
-			m_debug_text_timer += static_cast<float>(dt) / 1000.0f;
-			if (m_debug_text_timer >= 0.5f)
-			{
-				m_debug_text_timer = 0.0f;
-				m_debug_text_visible = !m_debug_text_visible;
-			}
-
-			bgfx::dbgTextClear();
-			bgfx::dbgTextPrintf(1, 1, 0x0f, "CONTRA GAME (BGFX)");
-			bgfx::dbgTextPrintf(1, 3, 0x0f, "Renderer: %s", bgfx::getRendererName(bgfx::getRendererType()));
-			if (m_debug_text_visible)
-			{
-				bgfx::dbgTextPrintf(1, 5, 0x0f, "PRESS ANY KEY TO START");
-			}
-
-		// Set view and projection matrices for main view (2D orthographic for now)
+		// Clear every frame
+		bgfx::setViewClear(
+			m_main_view_id,
+			BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+			0x303030ff,
+			1.0f,
+			0
+		);
 		bgfx::setViewRect(m_main_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
 
 		// Apply camera matrices if we have an active camera
 		if (m_active_camera)
 		{
 			m_active_camera->apply_camera(m_main_view_id);
+		}
+		else
+		{
+			static bool camera_warned = false;
+			if (!camera_warned)
+			{
+				LOG_WARNING("[BgfxGraphicsSystem] No active camera set");
+				camera_warned = true;
+			}
 		}
 
 		// Render all registered sprites
@@ -273,14 +274,6 @@ namespace Pakal
 			{
 				debugDrawer->do_debug_draw();
 			}
-		}
-
-		// Log every 60 frames to verify rendering continues
-		static int total_frames = 0;
-		total_frames++;
-		if (total_frames % 60 == 0)
-		{
-			LOG_INFO("[BgfxGraphicsSystem] Frame %d - calling bgfx::frame()", total_frames);
 		}
 
 		// Advance to next frame
@@ -356,45 +349,9 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::render_sprites()
 	{
-		static int call_count = 0;
-		static bool first_call_logged = false;
-		
-		if (!first_call_logged)
-		{
-			LOG_INFO("[BgfxGraphicsSystem] render_sprites() called for first time, sprites: %zu", m_sprites.size());
-			first_call_logged = true;
-		}
-		
 		if (m_sprites.empty())
 		{
-			static bool logged = false;
-			if (!logged)
-			{
-				LOG_WARNING("[BgfxGraphicsSystem] No sprites registered for rendering");
-				logged = true;
-			}
 			return;
-		}
-
-		static int frame_count = 0;
-		if (frame_count++ % 60 == 0)
-		{
-			LOG_INFO("[BgfxGraphicsSystem] Rendering %zu sprites (frame %d)", m_sprites.size(), frame_count);
-		}
-
-		// Apply camera if available
-		if (m_active_camera)
-		{
-			m_active_camera->apply_camera(m_main_view_id);
-		}
-		else
-		{
-			static bool camera_warned = false;
-			if (!camera_warned)
-			{
-				LOG_WARNING("[BgfxGraphicsSystem] No active camera set");
-				camera_warned = true;
-			}
 		}
 
 		// Render all sprites
@@ -409,16 +366,10 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::create_sprite_shader()
 	{
-		LOG_INFO("[BgfxGraphicsSystem] Creating sprite shader from binaries");
-
 		const char* renderer_dir = get_shader_renderer_dir(bgfx::getRendererType());
-		// Use particle shaders - simple and perfect for 2D sprites (Position + TexCoord0 + Color0)
-		//const char* vs_name = "vs_particle";
-		//const char* fs_name = "fs_particle";
-		const char* vs_name = "vs_cubes";
-		const char* fs_name = "fs_cubes";
-
-		LOG_INFO("[BgfxGraphicsSystem] Renderer directory: %s", renderer_dir);
+		// Prefer custom RGBA sprite shaders; keep fallbacks for robustness.
+		const char* vs_names[] = { "vs_sprite", "vs_particle", "vs_cubes" };
+		const char* fs_names[] = { "fs_sprite", "fs_particle", "fs_cubes" };
 
 		const char* roots[] = {
 			"Assets/shaders",
@@ -428,65 +379,39 @@ namespace Pakal
 			"../bin/Assets/shaders",
 			"../bin/shaders"
 		};
-		for (const char* root : roots)
+		// Try candidate shader names in priority order
+		constexpr int NUM_SHADER_VARIANTS = 3;
+		for (int vi = 0; vi < NUM_SHADER_VARIANTS && !bgfx::isValid(m_sprite_program); ++vi)
 		{
-			std::string vs_path = std::string(root) + "/" + renderer_dir + "/" + vs_name + ".bin";
-			std::string fs_path = std::string(root) + "/" + renderer_dir + "/" + fs_name + ".bin";
+			const char* vs_name = vs_names[vi];
+			const char* fs_name = fs_names[vi];
 
-			LOG_INFO("[BgfxGraphicsSystem] Trying VS: %s", vs_path.c_str());
-			LOG_INFO("[BgfxGraphicsSystem] Trying FS: %s", fs_path.c_str());
-
-			const bgfx::Memory* vs_mem = load_shader_memory(vs_path.c_str());
-			const bgfx::Memory* fs_mem = load_shader_memory(fs_path.c_str());
-
-			if (vs_mem)
+			for (const char* root : roots)
 			{
-				LOG_INFO("[BgfxGraphicsSystem] VS loaded, size: %d bytes", vs_mem->size);
-			}
-			else
-			{
-				LOG_WARNING("[BgfxGraphicsSystem] VS failed to load from %s", vs_path.c_str());
-			}
+				std::string vs_path = std::string(root) + "/" + renderer_dir + "/" + vs_name + ".bin";
+				std::string fs_path = std::string(root) + "/" + renderer_dir + "/" + fs_name + ".bin";
 
-			if (fs_mem)
-			{
-				LOG_INFO("[BgfxGraphicsSystem] FS loaded, size: %d bytes", fs_mem->size);
-			}
-			else
-			{
-				LOG_WARNING("[BgfxGraphicsSystem] FS failed to load from %s", fs_path.c_str());
-			}
+				const bgfx::Memory* vs_mem = load_shader_memory(vs_path.c_str());
+				const bgfx::Memory* fs_mem = load_shader_memory(fs_path.c_str());
 
-			if (vs_mem && fs_mem)
-			{
-				bgfx::ShaderHandle vsh = bgfx::createShader(vs_mem);
-				bgfx::ShaderHandle fsh = bgfx::createShader(fs_mem);
-				
-				if (bgfx::isValid(vsh))
+				if (vs_mem && fs_mem)
 				{
-					LOG_INFO("[BgfxGraphicsSystem] Vertex shader created successfully");
-					bgfx::setName(vsh, vs_name);
-				}
-				else
-				{
-					LOG_ERROR("[BgfxGraphicsSystem] Failed to create vertex shader from memory");
-				}
+					bgfx::ShaderHandle vsh = bgfx::createShader(vs_mem);
+					bgfx::ShaderHandle fsh = bgfx::createShader(fs_mem);
 
-				if (bgfx::isValid(fsh))
-				{
-					LOG_INFO("[BgfxGraphicsSystem] Fragment shader created successfully");
-					bgfx::setName(fsh, fs_name);
-				}
-				else
-				{
-					LOG_ERROR("[BgfxGraphicsSystem] Failed to create fragment shader from memory");
-				}
-
-				if (bgfx::isValid(vsh) && bgfx::isValid(fsh))
-				{
-					m_sprite_program = bgfx::createProgram(vsh, fsh, true);
-					LOG_INFO("[BgfxGraphicsSystem] Program handle created: %d", m_sprite_program.idx);
-					break;
+					if (bgfx::isValid(vsh) && bgfx::isValid(fsh))
+					{
+						bgfx::setName(vsh, vs_name);
+						bgfx::setName(fsh, fs_name);
+						m_sprite_program = bgfx::createProgram(vsh, fsh, true);
+						LOG_INFO("[BgfxGraphicsSystem] Sprite shader selected: %s/%s (%s)", vs_name, fs_name, renderer_dir);
+						break;
+					}
+					else
+					{
+						if (bgfx::isValid(vsh)) bgfx::destroy(vsh);
+						if (bgfx::isValid(fsh)) bgfx::destroy(fsh);
+					}
 				}
 			}
 		}

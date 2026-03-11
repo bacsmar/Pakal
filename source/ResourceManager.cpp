@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <fstream>
+#include <filesystem>
 
 namespace Pakal
 {
@@ -20,6 +21,10 @@ namespace Pakal
 		ASSERT(m_sources.empty());
 		ASSERT(m_factories.empty());
 		ASSERT(m_memory_streams.empty());
+		if (m_root_path.empty())
+		{
+			m_root_path = ".";
+		}
 	}
 
 	void ResourceManager::terminate()
@@ -27,6 +32,39 @@ namespace Pakal
 		m_sources.clear();
 		m_factories.clear();
 		m_memory_streams.clear();
+	}
+
+	void ResourceManager::set_root_path(const std::string& root_path)
+	{
+		m_root_path = root_path.empty() ? "." : root_path;
+		LOG_INFO("[ResourceManager] root path set to: %s", m_root_path.c_str());
+	}
+
+	std::string ResourceManager::resolve_file_path(const std::string& resource_path) const
+	{
+		namespace fs = std::filesystem;
+
+		if (resource_path.empty())
+		{
+			return resource_path;
+		}
+
+		fs::path requested(resource_path);
+		if (requested.is_absolute() && fs::exists(requested))
+		{
+			return requested.string();
+		}
+
+		if (!m_root_path.empty())
+		{
+			fs::path rooted = fs::path(m_root_path) / requested;
+			if (fs::exists(rooted))
+			{
+				return rooted.string();
+			}
+		}
+
+		return requested.string();
 	}
 
 	void ResourceManager::remove_source(ISource* source) 
@@ -43,6 +81,8 @@ namespace Pakal
 
 	SharedPtr<std::istream> ResourceManager::open_read_resource(const Path& resourcePath, bool inMemory)
 	{
+		namespace fs = std::filesystem;
+
 		//try to open it from cache
 		if (inMemory)
 		{
@@ -66,19 +106,41 @@ namespace Pakal
 
 		SharedPtr<std::istream> stream;
 
+		auto try_open_file = [](const fs::path& candidate) -> SharedPtr<std::istream>
+		{
+			auto localStream = std::make_shared<std::ifstream>(candidate.string().c_str(), std::ios_base::in | std::ios_base::binary);
+			if (localStream->is_open())
+			{
+				return std::static_pointer_cast<std::istream>(localStream);
+			}
+			return nullptr;
+		};
+
 		//try to open it from current dir
-		auto localStream = std::make_shared<std::ifstream>(resourcePath.c_str(),std::ios_base::in | std::ios_base::binary);
-		if (localStream->is_open())
-		{			
-			stream =  std::static_pointer_cast<std::istream>(localStream);
+		const std::string requested_path_str = resourcePath.c_str();
+		fs::path requested_path(requested_path_str);
+		if (requested_path.is_absolute())
+		{
+			stream = try_open_file(requested_path);
 		}
-		else //try to open it from sources
+
+		if (!stream && !m_root_path.empty())
+		{
+			stream = try_open_file(fs::path(m_root_path) / requested_path);
+		}
+
+		if (!stream)
+		{
+			stream = try_open_file(requested_path);
+		}
+
+		if (!stream) //try to open it from sources
 		{
 			m_sources_mutex.lock();
 				std::vector<SharedPtr<ISource>> tempSources = m_sources;
 			m_sources_mutex.unlock();
 
-			for (auto& source : m_sources)
+			for (auto& source : tempSources)
 				if ( (stream = source->open_resource(resourcePath)) )
 					break;
 		}

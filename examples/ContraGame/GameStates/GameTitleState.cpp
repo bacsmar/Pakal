@@ -22,6 +22,7 @@ namespace Pakal
 	GameTitleState::GameTitleState() : BaseGameState("Title"),
 		m_engine(nullptr),
 		m_background(nullptr),
+		m_overlay(nullptr),
 		m_prompt(nullptr),
 		m_camera(nullptr),
 		m_blinkTimer(0.0f),
@@ -42,6 +43,7 @@ namespace Pakal
 
 		setup_camera();
 		create_background();
+		create_overlay();
 		create_prompt();
 
 		LOG_INFO("[GameTitleState] Press any key to start");
@@ -51,6 +53,7 @@ namespace Pakal
 	{
 		LOG_INFO("[GameTitleState] Terminating title screen");
 		m_background = nullptr;
+		m_overlay = nullptr;
 		m_prompt = nullptr;
 		m_camera = nullptr;
 	}
@@ -115,8 +118,8 @@ namespace Pakal
 		if (camera)
 		{
 			LOG_INFO("[GameTitleState] Camera component created successfully");
-			camera->set_orthographic(800.0f, 600.0f);
-			camera->set_viewport(0, 0, 800, 600);
+			camera->set_orthographic(32.0f, 18.0f);
+			camera->set_viewport(0, 0, 1280, 720);
 			camera->set_position(0.0f, 0.0f);
 			camera->set_zoom(1.0f);
 		}
@@ -142,15 +145,37 @@ namespace Pakal
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Background sprite component created successfully");
-		sprite->create_solid_color(0xFFFFFFFF, 1, 1);
+		sprite->set_texture("Assets/sprites/background.png");
 		sprite->set_position(0.0f, 0.0f);
-		sprite->set_color(0.05f, 0.05f, 0.12f, 1.0f);
-		sprite->set_scale(50.0f, 30.0f);
+		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
+		sprite->set_scale(32.0f, 18.0f);
 			sprite->set_layer(0);
 		}
 		else
 		{
 			LOG_ERROR("[GameTitleState] Failed to create background sprite component!");
+		}
+	}
+
+	void GameTitleState::create_overlay()
+	{
+		LOG_INFO("[GameTitleState] Creating dark overlay...");
+		auto* entityMgr = m_engine->entity_manager();
+		m_overlay = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_overlay"));
+		if (!m_overlay)
+		{
+			LOG_ERROR("[GameTitleState] Failed to create overlay entity!");
+			return;
+		}
+
+		auto* sprite = m_overlay->create_component<SpriteComponent_Bgfx>();
+		if (sprite)
+		{
+			sprite->create_solid_color(0xFFFFFFFF, 1, 1);
+			sprite->set_position(0.0f, 0.0f);
+			sprite->set_scale(32.0f, 18.0f);
+			sprite->set_color(0.05f, 0.08f, 0.12f, 0.55f);
+			sprite->set_layer(2);
 		}
 	}
 
@@ -171,9 +196,9 @@ namespace Pakal
 		{
 			LOG_INFO("[GameTitleState] Prompt sprite component created successfully");
 		sprite->create_solid_color(0xFFFFFFFF, 1, 1);
-		sprite->set_position(0.0f, -2.0f);
-		sprite->set_color(0.9f, 0.9f, 0.2f, 1.0f);
-		sprite->set_scale(14.0f, 2.0f);
+		sprite->set_position(0.0f, -6.0f);
+		sprite->set_color(0.95f, 0.85f, 0.20f, 1.0f);
+		sprite->set_scale(10.0f, 0.8f);
 			sprite->set_layer(1);
 		}
 		else

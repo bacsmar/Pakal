@@ -180,18 +180,14 @@ namespace Pakal
 		bx::mtxOrtho(m_proj,
 			-halfWidth, halfWidth,
 			-halfHeight, halfHeight,
-			m_nearPlane, m_farPlane,
+			-100.0f, 100.0f,
 			0.0f,  // offset
 			bgfx::getCaps()->homogeneousDepth
 		);
-		
-		// Create view matrix
-		// Camera looks at (x, y, 0) from position (x, y, 10)
-		bx::Vec3 eye = { m_position.x, m_position.y, 10.0f };
-		bx::Vec3 at = { m_position.x, m_position.y, 0.0f };
-		bx::Vec3 up = { 0.0f, 1.0f, 0.0f };
-		
-		bx::mtxLookAt(m_view, eye, at, up);
+
+		// 2D camera view matrix: translate world by inverse camera position.
+		// This avoids handedness/depth ambiguity from 3D lookAt in a 2D pipeline.
+		bx::mtxTranslate(m_view, -m_position.x, -m_position.y, 0.0f);
 		
 		m_matricesDirty = false;
 	}

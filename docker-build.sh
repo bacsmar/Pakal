@@ -6,6 +6,7 @@ set -e
 # Usage: ./docker-build.sh [build|shell|rebuild|clean]
 
 COMMAND=${1:-build}
+TARGET_PROFILE=${2:-runtime}
 DOCKER_IMAGE="pakal-engine"
 DOCKER_TAG="latest"
 BUILD_DIR="$(pwd)/docker-build"
@@ -13,6 +14,17 @@ SOURCE_DIR="$(pwd)/source"
 EXAMPLES_DIR="$(pwd)/examples"
 HOST_UID="$(id -u)"
 HOST_GID="$(id -g)"
+
+BUILD_TARGETS="--target PakalPlayer --target ContraGameModule"
+if [ "$TARGET_PROFILE" = "all" ]; then
+  BUILD_TARGETS=""
+elif [ "$TARGET_PROFILE" = "module" ]; then
+  BUILD_TARGETS="--target ContraGameModule"
+elif [ "$TARGET_PROFILE" = "player" ]; then
+  BUILD_TARGETS="--target PakalPlayer"
+elif [ "$TARGET_PROFILE" = "runtime" ]; then
+  BUILD_TARGETS="--target PakalPlayer --target ContraGameModule"
+fi
 
 # Try docker compose (new) first, fallback to docker-compose (old)
 if command -v docker &> /dev/null; then
@@ -44,7 +56,7 @@ case $COMMAND in
       --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
     
     echo "✅ Build complete! Binaries in $BUILD_DIR/bin/"
     ls -lah "$BUILD_DIR"/bin/ 2>/dev/null || echo "   (checking build directory)"
@@ -71,7 +83,7 @@ case $COMMAND in
       --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
     
     echo "✅ Rebuild complete!"
     ;;
@@ -94,12 +106,12 @@ case $COMMAND in
   *)
     echo "❌ Unknown command: $COMMAND"
     echo ""
-    echo "Usage: $0 [build|shell|rebuild|clean|run]"
+    echo "Usage: $0 [build|shell|rebuild|clean|run] [runtime|module|player|all]"
     echo ""
     echo "Commands:"
-    echo "  build   - Build (reuses .o files, very fast)"
+    echo "  build   - Build selected targets (default: runtime = PakalPlayer + ContraGameModule)"
     echo "  shell   - Open bash in container"
-    echo "  rebuild - Full clean rebuild"
+    echo "  rebuild - Full clean rebuild (same target profile options as build)"
     echo "  clean   - Remove build artifacts"
     echo "  run     - Run PakalBasicExample"
     exit 1

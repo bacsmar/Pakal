@@ -27,12 +27,14 @@ namespace Pakal
 
 	private:
 		void create_background();
+		void create_overlay();
 		void create_prompt();
 		void setup_camera();
 		bool is_start_pressed() const;
 
 		Engine* m_engine;
 		GenericEntity* m_background;
+		GenericEntity* m_overlay;
 		GenericEntity* m_prompt;
 		GenericEntity* m_camera;
 		float m_blinkTimer;

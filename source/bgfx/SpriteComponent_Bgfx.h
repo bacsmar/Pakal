@@ -92,7 +92,7 @@ namespace Pakal
 		struct SpriteVertex
 		{
 			float x, y, z;
-			float u, v;
+			float u, v, w, q;
 			uint32_t abgr;
 			
 			static void init();

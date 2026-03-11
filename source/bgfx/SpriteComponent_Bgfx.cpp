@@ -11,9 +11,14 @@
 #include "SpriteComponent_Bgfx.h"
 #include "BgfxGraphicsSystem.h"
 #include "LogMgr.h"
+#include "ResourceManager.h"
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
+#include <bx/allocator.h>
+#include <bimg/decode.h>
 #include <cmath>
+#include <fstream>
+#include <vector>
 
 namespace Pakal
 {
@@ -32,7 +37,7 @@ namespace Pakal
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 			.end();
 	}
@@ -93,10 +98,11 @@ namespace Pakal
 		}
 		
 		// Create index buffer (6 indices for 2 triangles)
-		// This is shared by all sprites and doesn't change
-		uint16_t indices[] = { 0, 1, 2, 2, 3, 0 };
+		// Use bgfx::copy() to ensure bgfx owns the memory (makeRef only stores a pointer to
+		// the local array, which would be destroyed when the constructor returns).
+		static const uint16_t indices[] = { 0, 1, 2, 2, 3, 0 };
 		m_indexBuffer = bgfx::createIndexBuffer(
-			bgfx::makeRef(indices, sizeof(indices))
+			bgfx::copy(indices, sizeof(indices))
 		);
 		m_buffersCreated = true;
 
@@ -162,25 +168,89 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::load_texture(const std::string& path)
 	{
-		// For now, we'll use a placeholder white texture
-		// In a full implementation, this would load from file using bimg
-		LOG_WARNING("[SpriteComponent_Bgfx] Texture loading not yet implemented, using white placeholder");
-		
-		// Create a 1x1 white texture as placeholder
-		const bgfx::Memory* mem = bgfx::alloc(4); // RGBA
-		mem->data[0] = mem->data[1] = mem->data[2] = mem->data[3] = 0xFF;
-		
+		const std::string resolved_path = ResourceMgr.resolve_file_path(path);
+
+		auto set_placeholder_texture = [this]()
+		{
+			const bgfx::Memory* mem = bgfx::alloc(4);
+			mem->data[0] = mem->data[1] = mem->data[2] = mem->data[3] = 0xFF;
+
+			if (bgfx::isValid(m_texture))
+			{
+				bgfx::destroy(m_texture);
+			}
+
+			m_texture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
+				BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
+			m_textureLoaded = bgfx::isValid(m_texture);
+			m_textureWidth = 1;
+			m_textureHeight = 1;
+			update_texture_coords();
+		};
+
+		std::ifstream input(resolved_path, std::ios::binary | std::ios::ate);
+		if (!input.is_open())
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Unable to open texture '%s' (resolved '%s', root '%s'), using placeholder",
+				path.c_str(), resolved_path.c_str(), ResourceMgr.get_root_path().c_str());
+			set_placeholder_texture();
+			return;
+		}
+
+		std::streamsize file_size = input.tellg();
+		if (file_size <= 0)
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Texture '%s' is empty/unreadable, using placeholder", path.c_str());
+			set_placeholder_texture();
+			return;
+		}
+
+		input.seekg(0, std::ios::beg);
+		std::vector<uint8_t> file_data(static_cast<size_t>(file_size));
+		if (!input.read(reinterpret_cast<char*>(file_data.data()), file_size))
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Failed to read texture '%s', using placeholder", path.c_str());
+			set_placeholder_texture();
+			return;
+		}
+
+		bx::DefaultAllocator allocator;
+		bimg::ImageContainer* image = bimg::imageParse(&allocator, file_data.data(), static_cast<uint32_t>(file_data.size()));
+		if (!image)
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Failed to decode texture '%s', using placeholder", path.c_str());
+			set_placeholder_texture();
+			return;
+		}
+
 		if (bgfx::isValid(m_texture))
 		{
 			bgfx::destroy(m_texture);
 		}
-		
-		m_texture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 
-			BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
-		m_textureLoaded = true;
-		m_textureWidth = 1;
-		m_textureHeight = 1;
-		
+
+		const bgfx::Memory* mem = bgfx::copy(image->m_data, image->m_size);
+		m_texture = bgfx::createTexture2D(
+			static_cast<uint16_t>(image->m_width),
+			static_cast<uint16_t>(image->m_height),
+			image->m_numMips > 1,
+			image->m_numLayers,
+			static_cast<bgfx::TextureFormat::Enum>(image->m_format),
+			BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT,
+			mem);
+
+		m_textureLoaded = bgfx::isValid(m_texture);
+		m_textureWidth = image->m_width;
+		m_textureHeight = image->m_height;
+		bimg::imageFree(image);
+
+		if (!m_textureLoaded)
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] bgfx texture creation failed for '%s', using placeholder", path.c_str());
+			set_placeholder_texture();
+			return;
+		}
+
+		LOG_INFO("[SpriteComponent_Bgfx] Texture loaded: %s (%dx%d)", path.c_str(), m_textureWidth, m_textureHeight);
 		update_texture_coords();
 	}
 	
@@ -417,7 +487,9 @@ namespace Pakal
 		vertices[0].y = bottom;
 		vertices[0].z = 0.0f;
 		vertices[0].u = u0;
-		vertices[0].v = v1;
+		vertices[0].v = v0;
+		vertices[0].w = 0.0f;
+		vertices[0].q = 0.0f;
 		vertices[0].abgr = m_color;
 		
 		// Bottom-right
@@ -425,7 +497,9 @@ namespace Pakal
 		vertices[1].y = bottom;
 		vertices[1].z = 0.0f;
 		vertices[1].u = u1;
-		vertices[1].v = v1;
+		vertices[1].v = v0;
+		vertices[1].w = 0.0f;
+		vertices[1].q = 0.0f;
 		vertices[1].abgr = m_color;
 		
 		// Top-right
@@ -433,7 +507,9 @@ namespace Pakal
 		vertices[2].y = top;
 		vertices[2].z = 0.0f;
 		vertices[2].u = u1;
-		vertices[2].v = v0;
+		vertices[2].v = v1;
+		vertices[2].w = 0.0f;
+		vertices[2].q = 0.0f;
 		vertices[2].abgr = m_color;
 		
 		// Top-left
@@ -441,7 +517,9 @@ namespace Pakal
 		vertices[3].y = top;
 		vertices[3].z = 0.0f;
 		vertices[3].u = u0;
-		vertices[3].v = v0;
+		vertices[3].v = v1;
+		vertices[3].w = 0.0f;
+		vertices[3].q = 0.0f;
 		vertices[3].abgr = m_color;
 		
 		// Destroy old vertex buffer if it exists
@@ -450,9 +528,10 @@ namespace Pakal
 			bgfx::destroy(m_vertexBuffer);
 		}
 		
-		// Create new vertex buffer
+		// Create new vertex buffer (use bgfx::copy so bgfx owns the data,
+		// since vertices[] is a local stack array that will be freed on return)
 		m_vertexBuffer = bgfx::createVertexBuffer(
-			bgfx::makeRef(vertices, sizeof(vertices)),
+			bgfx::copy(vertices, sizeof(vertices)),
 			SpriteVertex::ms_layout
 		);
 		
@@ -461,14 +540,8 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::render(bgfx::ViewId viewId, const float* viewProj)
 	{
-		static int render_count = 0;
-		render_count++;
-		
 		if (!m_visible || !m_textureLoaded)
 		{
-			if (render_count <= 2) {
-				LOG_ERROR("[SpriteComponent_Bgfx] render() skipped: visible=%d textureLoaded=%d", m_visible, m_textureLoaded);
-			}
 			return;
 		}
 		
@@ -478,48 +551,41 @@ namespace Pakal
 			update_vertex_buffer();
 		}
 		
-		if (render_count <= 2) {
-			LOG_INFO("[SpriteComponent_Bgfx] render() - pos(%.1f,%.1f) scale(%.1f,%.1f) color:0x%08X layer:%d, program:%d, tex:%d", 
-				m_position.x, m_position.y, m_scale.x, m_scale.y, m_color, m_layer, m_program.idx, m_texture.idx);
+		// Bail early if any handle is invalid
+		if (!bgfx::isValid(m_vertexBuffer) || !bgfx::isValid(m_indexBuffer) || !bgfx::isValid(m_program))
+		{
+			LOG_ERROR("[SpriteComponent_Bgfx] INVALID handle: vb=%d ib=%d prog=%d",
+				bgfx::isValid(m_vertexBuffer) ? 1 : 0,
+				bgfx::isValid(m_indexBuffer) ? 1 : 0,
+				bgfx::isValid(m_program) ? 1 : 0);
+			return;
 		}
-		
-		// Create model matrix (transform)
-		float model[16];
-		bx::mtxIdentity(model);
-		
+
 		// Apply transformations: scale, rotation, translation
 		float transform[16];
 		bx::mtxSRT(transform,
-			m_scale.x, m_scale.y, 1.0f,     // scale
-			0.0f, 0.0f, m_rotation,           // rotation
-			m_position.x, m_position.y, (float)m_layer * 0.01f  // translation
+			m_scale.x, m_scale.y, 1.0f,
+			0.0f, 0.0f, m_rotation,
+			m_position.x, m_position.y, (float)m_layer * 0.01f
 		);
-		
-		bx::memCopy(model, transform, sizeof(model));
-		
-		// Set model matrix
-		bgfx::setTransform(model);
-		
-		// Set vertex and index buffers
+		bgfx::setTransform(transform);
+
 		bgfx::setVertexBuffer(0, m_vertexBuffer);
 		bgfx::setIndexBuffer(m_indexBuffer);
-		
-		// Set texture (color comes from vertex buffer Color0 attribute)
-		if (bgfx::isValid(s_texColorUniform))
+
+		if (bgfx::isValid(s_texColorUniform) && bgfx::isValid(m_texture))
 		{
 			bgfx::setTexture(0, s_texColorUniform, m_texture);
 		}
-		
-		// Set render state (alpha blending)
-		uint64_t state = BGFX_STATE_WRITE_RGB
-			| BGFX_STATE_WRITE_A
-			| BGFX_STATE_BLEND_ALPHA;
+		else
+		{
+			LOG_ERROR("[SpriteComponent_Bgfx] texture/uniform invalid: uniform=%d tex=%d",
+				bgfx::isValid(s_texColorUniform) ? 1 : 0, bgfx::isValid(m_texture) ? 1 : 0);
+		}
+
+		uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
 		bgfx::setState(state);
-		
-		// Submit draw call (without program for now - will need to be set up later)
+
 		bgfx::submit(viewId, m_program);
-		
-		// For now, we'll just log a warning that shaders need to be set up
-		// This will be completed when we integrate with the graphics system
 	}
 }

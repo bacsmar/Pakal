@@ -13,6 +13,7 @@
 
 #include <map>
 #include <vector>
+#include <string>
 
 
 namespace Pakal
@@ -27,6 +28,7 @@ namespace Pakal
 		std::vector<SharedPtr<ISource>> m_sources;
 		std::map<Path,WeakPtr<memory_istream>> m_memory_streams;
 		std::map<std::string, std::function<ISource*()>> m_factories;
+		std::string m_root_path;
 
 		std::mutex m_memory_streams_mutex,m_sources_mutex;
 
@@ -37,6 +39,10 @@ namespace Pakal
 		void initialize() override;
 
 		void terminate() override;
+
+		void set_root_path(const std::string& root_path);
+		const std::string& get_root_path() const { return m_root_path; }
+		std::string resolve_file_path(const std::string& resource_path) const;
 
 		template <class TSource> 
 		void register_source(const std::function<TSource*()>& factory)

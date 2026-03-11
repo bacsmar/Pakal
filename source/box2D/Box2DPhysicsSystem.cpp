@@ -6,6 +6,10 @@
 #include "SpritePhysicsComponent_Box2D.h"
 #include "LogMgr.h"
 
+#if PAKAL_USE_BGFX == 1
+	#include "bgfx/BgfxDebugDrawer.h"
+#endif
+
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
 #endif
@@ -82,9 +86,15 @@ void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 {	
 #if PAKAL_USE_IRRLICHT
 	m_debug_draw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
+#elif PAKAL_USE_BGFX == 1
+	(void)renderInfo;
+	m_debug_draw = new BgfxDebugDrawer(nullptr);
 #endif
-	m_world->SetDebugDraw(m_debug_draw);
-	m_debug_draw->SetFlags(b2Draw::e_shapeBit);
+	if (m_world && m_debug_draw)
+	{
+		m_world->SetDebugDraw(m_debug_draw);
+		m_debug_draw->SetFlags(b2Draw::e_shapeBit | b2Draw::e_jointBit);
+	}
 }
 
 void Box2DPhysicsSystem::init_world()

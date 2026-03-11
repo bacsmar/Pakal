@@ -58,11 +58,25 @@ add_custom_command(TARGET ContraGameModule POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl
     COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv
+    COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:ContraGameModule>/shaders/glsl
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/spirv
     COMMAND ${CMAKE_COMMAND} -E make_directory
         ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl
     COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv
+    COMMAND ${CMAKE_COMMAND} -E make_directory
         ${PAKAL_RUNTIME_DIR}/shaders/glsl
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${PAKAL_RUNTIME_DIR}/shaders/spirv
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
         $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
@@ -70,11 +84,23 @@ add_custom_command(TARGET ContraGameModule POST_BUILD
         ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
         $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
         $<TARGET_FILE_DIR:ContraGameModule>/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
         $<TARGET_FILE_DIR:ContraGameModule>/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
         ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/
@@ -82,12 +108,114 @@ add_custom_command(TARGET ContraGameModule POST_BUILD
         ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
         ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
         ${PAKAL_RUNTIME_DIR}/shaders/glsl/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
         ${PAKAL_RUNTIME_DIR}/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_particle.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGameModule>/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_cubes.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_cubes.bin
+        ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_particle.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/vs_cubes.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/spirv/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/spirv/fs_cubes.bin
+        ${PAKAL_RUNTIME_DIR}/shaders/spirv/
 )
+
+# Compile custom sprite shaders (RGBA sampling) with bgfx shaderc
+set(SPRITE_SHADERC ${CMAKE_SOURCE_DIR}/external/bgfx/.build/linux64_gcc/bin/shadercRelease)
+set(SPRITE_SHADER_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SPRITE_SHADER_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/bgfx/src)
+
+if(EXISTS ${SPRITE_SHADERC})
+    add_custom_command(TARGET ContraGameModule POST_BUILD
+        COMMAND ${SPRITE_SHADERC}
+            -f ${SPRITE_SHADER_SRC_DIR}/vs_sprite.sc
+            -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/vs_sprite.bin
+            --type vertex --platform linux --profile spirv
+            --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
+            -i ${SPRITE_SHADER_INCLUDE_DIR}
+        COMMAND ${SPRITE_SHADERC}
+            -f ${SPRITE_SHADER_SRC_DIR}/fs_sprite.sc
+            -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/fs_sprite.bin
+            --type fragment --platform linux --profile spirv
+            --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
+            -i ${SPRITE_SHADER_INCLUDE_DIR}
+        COMMAND ${SPRITE_SHADERC}
+            -f ${SPRITE_SHADER_SRC_DIR}/vs_sprite.sc
+            -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/vs_sprite.bin
+            --type vertex --platform linux --profile 120
+            --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
+            -i ${SPRITE_SHADER_INCLUDE_DIR}
+        COMMAND ${SPRITE_SHADERC}
+            -f ${SPRITE_SHADER_SRC_DIR}/fs_sprite.sc
+            -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/fs_sprite.bin
+            --type fragment --platform linux --profile 120
+            --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
+            -i ${SPRITE_SHADER_INCLUDE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/vs_sprite.bin
+            $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${PAKAL_RUNTIME_DIR}/Assets/shaders/spirv/fs_sprite.bin
+            $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/spirv/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/vs_sprite.bin
+            $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/fs_sprite.bin
+            $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl/
+    )
+else()
+    message(WARNING "sprite shaderc not found at ${SPRITE_SHADERC}; using fallback shaders")
+endif()
 
 # Copy module near runtime host executable
 add_custom_command(TARGET ContraGameModule POST_BUILD

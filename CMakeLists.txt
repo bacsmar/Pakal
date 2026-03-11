@@ -19,6 +19,7 @@ include_directories(${CMAKE_SOURCE_DIR}/source)
 include_directories(${CMAKE_SOURCE_DIR}/external/bx/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/bgfx/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/bimg/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/bgfx/examples/common)
 
 # Add source files
 file(GLOB_RECURSE PAKAL_SOURCES 
@@ -46,6 +47,11 @@ endif()
 # Create the main library
 add_library(Pakal STATIC ${PAKAL_SOURCES})
 
+# bgfx debugdraw implementation (used by Box2D debug rendering with bgfx)
+target_sources(Pakal PRIVATE
+    ${CMAKE_SOURCE_DIR}/external/bgfx/examples/common/debugdraw/debugdraw.cpp
+)
+
 # Set include paths for the library
 target_include_directories(Pakal PUBLIC
     ${CMAKE_BINARY_DIR}
@@ -53,6 +59,7 @@ target_include_directories(Pakal PUBLIC
     ${CMAKE_SOURCE_DIR}/external/bx/include
     ${CMAKE_SOURCE_DIR}/external/bgfx/include
     ${CMAKE_SOURCE_DIR}/external/bimg/include
+    ${CMAKE_SOURCE_DIR}/external/bgfx/examples/common
 )
 
 # Find and link required packages - SFML with fallback
@@ -78,6 +85,7 @@ set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/linux64_gcc/bin)
 set(BGFX_LIBS
     ${BGFX_BUILD_DIR}/libbgfxRelease.a
     ${BGFX_BUILD_DIR}/libbxRelease.a
+    ${BGFX_BUILD_DIR}/libbimg_decodeRelease.a
     ${BGFX_BUILD_DIR}/libbimgRelease.a
 )
 
