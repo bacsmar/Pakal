@@ -5,10 +5,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "GamePlayState.h"
+#include "GameTitleState.h"
 #include "GenericEntity.h"
 #include "ComponentManager.h"
 #include "components/SpritePhysicsComponent.h"
 #include "Engine.h"
+#include "GameStateManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
 #include "LogMgr.h"
@@ -23,6 +25,7 @@
 #include "bgfx/SpriteComponent_Bgfx.h"
 #include "bgfx/CameraComponent_Bgfx.h"
 #include "box2D/SpritePhysicsComponent_Box2D.h"
+#include "InputManager_Polling.h"
 
 namespace Pakal
 {
@@ -30,6 +33,12 @@ namespace Pakal
 		m_engine(nullptr),
 		m_player(nullptr),
 		m_camera(nullptr),
+		m_currentLevel(1),
+		m_maxLevels(2),
+		m_levelTransitionTimer(0.0f),
+		m_levelCompleted(false),
+		m_returningToMenu(false),
+		m_playerGoalX(40.0f),
 		m_score(0),
 		m_lives(3),
 		m_enemiesKilled(0),
@@ -47,12 +56,15 @@ namespace Pakal
 	{
 		LOG_INFO("[GamePlayState] Initializing gameplay state");
 		m_engine = engine;
-		
-		// Create game world
-		create_level();
-		create_player();
-		create_enemies();
-		setup_camera();
+
+		m_currentLevel = 1;
+		m_levelTransitionTimer = 0.0f;
+		m_levelCompleted = false;
+		m_returningToMenu = false;
+		m_gameWon = false;
+		m_gameLost = false;
+
+		load_level(m_currentLevel);
 		
 		LOG_INFO("[GamePlayState] Gameplay state initialized");
 	}
@@ -60,9 +72,8 @@ namespace Pakal
 	void GamePlayState::on_terminate(Engine* engine)
 	{
 		LOG_INFO("[GamePlayState] Terminating gameplay state");
-		
-		// Note: Entity cleanup is handled by EntityManager during engine shutdown
-		// No need to manually destroy entities - they will be cleaned up automatically
+
+		cleanup_level_entities();
 		m_player = nullptr;
 		m_camera = nullptr;
 		m_enemies.clear();
@@ -81,25 +92,152 @@ namespace Pakal
 	void GamePlayState::on_update(unsigned long dtMilliseconds)
 	{
 		float deltaTime = dtMilliseconds / 1000.0f;
+
+		if (is_back_to_menu_pressed())
+		{
+			auto* manager = get_manager();
+			if (manager)
+			{
+				LOG_INFO("[GamePlayState] Returning to title menu");
+				manager->transition_to_state(new GameTitleState(), true);
+				return;
+			}
+		}
 		
 		// Update game logic
-		update_game_logic();
+		update_game_logic(deltaTime);
 		
 		// Check win/lose conditions
 		check_win_lose_conditions();
+
+		if (m_levelCompleted)
+		{
+			m_levelTransitionTimer += deltaTime;
+			if (m_levelTransitionTimer >= 1.0f)
+			{
+				if (m_currentLevel < m_maxLevels)
+				{
+					++m_currentLevel;
+					LOG_INFO("[GamePlayState] Loading level %d", m_currentLevel);
+					load_level(m_currentLevel);
+				}
+				else
+				{
+					LOG_INFO("[GamePlayState] All levels completed! Returning to title.");
+					auto* manager = get_manager();
+					if (manager)
+					{
+						manager->transition_to_state(new GameTitleState(), true);
+					}
+				}
+			}
+		}
+
+		if (m_gameLost)
+		{
+			auto* manager = get_manager();
+			if (manager)
+			{
+				LOG_INFO("[GamePlayState] Game over. Returning to title.");
+				manager->transition_to_state(new GameTitleState(), true);
+			}
+		}
+	}
+
+	void GamePlayState::load_level(int levelNumber)
+	{
+		cleanup_level_entities();
+
+		m_enemies.clear();
+		m_player = nullptr;
+		m_camera = nullptr;
+		m_levelCompleted = false;
+		m_levelTransitionTimer = 0.0f;
+		m_gameWon = false;
+		m_gameLost = false;
+
+		const LevelConfig config = get_level_config(levelNumber);
+		m_totalEnemies = config.enemyCount;
+		m_enemiesKilled = 0;
+		m_playerGoalX = config.goalX;
+
+		create_level();
+		create_player();
+		create_enemies();
+		setup_camera();
+
+		if (m_player)
+		{
+			auto* physics = m_player->get_component<SpritebodyComponent_Box2D>();
+			if (physics)
+			{
+				physics->set_position(tmath::vector3df(config.startX, 0.0f, 0.0f));
+			}
+			auto* sprite = m_player->get_component<SpriteComponent_Bgfx>();
+			if (sprite)
+			{
+				sprite->set_position(config.startX, 0.0f);
+			}
+		}
+
+		LOG_INFO("[GamePlayState] Level %d ready (goalX=%.2f, enemies=%d)", config.levelNumber, config.goalX, config.enemyCount);
+	}
+
+	void GamePlayState::cleanup_level_entities()
+	{
+		for (GenericEntity* entity : m_levelEntities)
+		{
+			delete entity;
+		}
+		m_levelEntities.clear();
+	}
+
+	void GamePlayState::register_level_entity(GenericEntity* entity)
+	{
+		if (entity)
+		{
+			m_levelEntities.push_back(entity);
+		}
+	}
+
+	GamePlayState::LevelConfig GamePlayState::get_level_config(int levelNumber) const
+	{
+		if (levelNumber <= 1)
+		{
+			return { 1, 0.0f, 34.0f, 4 };
+		}
+
+		return { 2, 2.0f, 56.0f, 7 };
+	}
+
+	bool GamePlayState::is_back_to_menu_pressed() const
+	{
+		auto& input = InputManager_Polling::instance();
+		return input.poll_key_down(Key::Escape);
 	}
 	
 	void GamePlayState::create_level()
 	{
-		LOG_INFO("[GamePlayState] Creating level");
-		
-		// Create ground platform
-		create_platform(0.0f, -5.0f, 50.0f, 1.0f);
-		
-		// Create elevated platforms
-		create_platform(5.0f, 0.0f, 5.0f, 0.5f);
-		create_platform(15.0f, 2.0f, 5.0f, 0.5f);
-		create_platform(25.0f, 4.0f, 5.0f, 0.5f);
+		LOG_INFO("[GamePlayState] Creating level geometry for level %d", m_currentLevel);
+
+		if (m_currentLevel == 1)
+		{
+			create_platform(16.0f, -5.0f, 42.0f, 1.0f);
+			create_platform(8.0f, -1.0f, 6.0f, 0.6f);
+			create_platform(17.0f, 1.5f, 5.5f, 0.6f);
+			create_platform(26.0f, 3.0f, 4.5f, 0.6f);
+			create_platform(33.0f, 0.5f, 3.5f, 0.6f);
+		}
+		else
+		{
+			create_platform(30.0f, -5.0f, 65.0f, 1.0f);
+			create_platform(12.0f, -1.0f, 5.0f, 0.6f);
+			create_platform(20.0f, 1.5f, 5.0f, 0.6f);
+			create_platform(29.0f, 3.2f, 5.0f, 0.6f);
+			create_platform(38.0f, 1.0f, 5.0f, 0.6f);
+			create_platform(47.0f, 3.0f, 5.0f, 0.6f);
+			create_platform(55.0f, 0.0f, 4.0f, 0.6f);
+		}
 	}
 	
 	void GamePlayState::create_platform(float x, float y, float width, float height)
@@ -107,6 +245,7 @@ namespace Pakal
 		auto* entityMgr = m_engine->entity_manager();
 		auto* platform = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "platform"));
 		if (!platform) return;
+		register_level_entity(platform);
 		
 		// Add and configure sprite component
 		auto* sprite = platform->create_component<SpriteComponent_Bgfx>();
@@ -131,6 +270,7 @@ namespace Pakal
 		auto* entityMgr = m_engine->entity_manager();
 		m_player = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "player"));
 		if (!m_player) return;
+		register_level_entity(m_player);
 		
 		// Add sprite component
 		auto* sprite = m_player->create_component<SpriteComponent_Bgfx>();
@@ -179,10 +319,12 @@ namespace Pakal
 		{
 			auto* enemy = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "enemy"));
 			if (!enemy) continue;
+			register_level_entity(enemy);
 			
 			// Position enemies at different locations
-			float xPos = 10.0f + i * 5.0f;
-			float yPos = 0.0f;
+			float spacing = (m_currentLevel == 1) ? 5.0f : 6.5f;
+			float xPos = 10.0f + i * spacing;
+			float yPos = (i % 2 == 0) ? 0.0f : 1.0f;
 			
 			// Add sprite component
 			auto* sprite = enemy->create_component<SpriteComponent_Bgfx>();
@@ -231,11 +373,12 @@ namespace Pakal
 		auto* entityMgr = m_engine->entity_manager();
 		m_camera = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "camera"));
 		if (!m_camera) return;
+		register_level_entity(m_camera);
 		
 		// Add camera component
 		auto* camera = m_camera->create_component<CameraComponent_Bgfx>();
-		camera->set_orthographic(800.0f, 600.0f);
-		camera->set_viewport(0, 0, 800, 600);
+		camera->set_orthographic(32.0f, 18.0f);
+		camera->set_viewport(0, 0, 1280, 720);
 		camera->set_position(0.0f, 0.0f);
 		camera->set_zoom(1.0f);
 		
@@ -246,10 +389,11 @@ namespace Pakal
 		}
 		
 		// Set level bounds
-		camera->set_bounds(-25.0f, -10.0f, 35.0f, 10.0f);
+		const float maxX = (m_currentLevel == 1) ? 40.0f : 62.0f;
+		camera->set_bounds(-2.0f, -10.0f, maxX, 10.0f);
 	}
 	
-	void GamePlayState::update_game_logic()
+	void GamePlayState::update_game_logic(float deltaTime)
 	{
 		// Update player controller
 		if (m_player)
@@ -257,13 +401,13 @@ namespace Pakal
 			auto* controller = m_player->get_component<PlayerController>();
 			if (controller)
 			{
-				controller->update(0.016f); // Assuming 60 FPS
+				controller->update(deltaTime);
 			}
 			
 			auto* weapon = m_player->get_component<Weapon>();
 			if (weapon)
 			{
-				weapon->update(0.016f);
+				weapon->update(deltaTime);
 			}
 		}
 		
@@ -276,13 +420,13 @@ namespace Pakal
 			auto* ai = enemy->get_component<EnemyAI>();
 			if (ai)
 			{
-				ai->update(0.016f);
+				ai->update(deltaTime);
 			}
 			
 			auto* weapon = enemy->get_component<Weapon>();
 			if (weapon)
 			{
-				weapon->update(0.016f);
+				weapon->update(deltaTime);
 			}
 		}
 		
@@ -292,13 +436,18 @@ namespace Pakal
 			auto* camera = m_camera->get_component<CameraComponent_Bgfx>();
 			if (camera)
 			{
-				camera->update(0.016f);
+				camera->update(deltaTime);
 			}
 		}
 	}
 	
 	void GamePlayState::check_win_lose_conditions()
 	{
+		if (!m_player || m_levelCompleted)
+		{
+			return;
+		}
+
 		// Check if player is dead
 		if (m_player)
 		{
@@ -313,26 +462,26 @@ namespace Pakal
 				}
 			}
 		}
-		
-		// Count alive enemies
-		int aliveEnemies = 0;
-		for (GenericEntity* enemy : m_enemies)
+
+		// Fail condition: player falls out of map
+		auto* physics = m_player->get_component<SpritebodyComponent_Box2D>();
+		if (physics)
 		{
-			if (enemy)
+			auto playerPos = physics->get_position();
+			if (playerPos.y < -15.0f)
 			{
-				auto* health = enemy->get_component<Health>();
-				if (health && health->is_alive())
-				{
-					aliveEnemies++;
-				}
+				m_gameLost = true;
+				LOG_INFO("[GamePlayState] Game Over - Player fell out of the level");
+				return;
 			}
-		}
-		
-		// Check if all enemies are dead
-		if (aliveEnemies == 0 && !m_gameWon)
-		{
-			m_gameWon = true;
-			LOG_INFO("[GamePlayState] Victory - All enemies defeated!");
+
+			// Level completion: reach right-side objective
+			if (playerPos.x >= m_playerGoalX)
+			{
+				m_levelCompleted = true;
+				m_gameWon = (m_currentLevel >= m_maxLevels);
+				LOG_INFO("[GamePlayState] Level %d complete!", m_currentLevel);
+			}
 		}
 	}
 }
