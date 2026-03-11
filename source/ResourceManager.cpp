@@ -1,5 +1,5 @@
 #include "ResourceManager.h"
-
+#include "DirectorySourceImpl.h"
 #include "SingletonHolder.h"
 
 
@@ -25,6 +25,9 @@ namespace Pakal
 		{
 			m_root_path = ".";
 		}
+		// Register default stdlib-based source factories.
+		// These have no external dependencies and are always available.
+		register_source<DirectorySource>([]() -> DirectorySource* { return new DirectorySourceImpl(); });
 	}
 
 	void ResourceManager::terminate()

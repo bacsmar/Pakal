@@ -292,7 +292,7 @@ namespace Pakal
 		}
 
 		if (data.has("texture")) {
-			std::string texturePath = data["texture"].as_string();
+			const std::string texturePath = data["texture"].as_string();
 			component->set_texture(texturePath);
 		}
 

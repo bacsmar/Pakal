@@ -53,6 +53,11 @@ namespace Pakal
 			return;
 		}
 
+		// Mount this module's Assets directory so the ResourceManager
+		// resolves Assets/... paths regardless of working directory.
+		const std::string assetsDir = ResourceMgr.get_root_path() + "/Assets";
+		ResourceMgr.add_source<Pakal::DirectorySource>(assetsDir.c_str(), true);
+
 		componentMgr->register_factory(CreateComponentFactory<Health, Health>());
 		componentMgr->register_factory(CreateComponentFactory<Weapon, Weapon>());
 		componentMgr->register_factory(CreateComponentFactory<PlayerController, PlayerController>());
