@@ -16,6 +16,7 @@
 
 #include "SpriteComponent_Bgfx.h"
 #include "CameraComponent_Bgfx.h"
+#include "CameraComponent3D_Bgfx.h"
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
@@ -300,6 +301,7 @@ namespace Pakal
 		LOG_INFO("[BgfxGraphicsSystem] Registering bgfx component factories");
 		factories.emplace_back(CreateComponentFactory<SpriteComponent_Bgfx, SpriteComponent_Bgfx>(this));
 		factories.emplace_back(CreateComponentFactory<CameraComponent_Bgfx, CameraComponent_Bgfx>(this));
+		factories.emplace_back(CreateComponentFactory<CameraComponent3D_Bgfx, CameraComponent3D_Bgfx>(this));
 	}
 
 	void BgfxGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)
@@ -342,7 +344,7 @@ namespace Pakal
 		}
 	}
 
-	void BgfxGraphicsSystem::set_active_camera(CameraComponent_Bgfx* camera)
+	void BgfxGraphicsSystem::set_active_camera(ICameraComponent_Bgfx* camera)
 	{
 		m_active_camera = camera;
 	}

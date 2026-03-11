@@ -11,6 +11,7 @@
 #pragma once
 #include "Config.h"
 #include "Component.h"
+#include "ICameraComponent_Bgfx.h"
 #include <bgfx/bgfx.h>
 #include "math/vector2.h"
 #include "math/vector3.h"
@@ -20,7 +21,7 @@ namespace Pakal
 	class Entity;
 	class BgfxGraphicsSystem;
 	
-	class _PAKALExport CameraComponent_Bgfx : public Component
+	class _PAKALExport CameraComponent_Bgfx : public Component, public ICameraComponent_Bgfx
 	{
 		DECLARE_RTTI_WITH_BASE(CameraComponent_Bgfx, Component);
 		
@@ -52,7 +53,7 @@ namespace Pakal
 		void update(float deltaTime);
 		
 		// Apply camera transforms to bgfx view
-		void apply_camera(bgfx::ViewId viewId);
+		void apply_camera(bgfx::ViewId viewId) override;
 		
 		// Utility functions
 		void screen_to_world(float screenX, float screenY, float& worldX, float& worldY) const;

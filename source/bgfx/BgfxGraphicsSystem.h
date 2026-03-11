@@ -10,6 +10,7 @@
 
 #pragma once
 #include "GraphicsSystem.h"
+#include "ICameraComponent_Bgfx.h"
 
 #include <bgfx/bgfx.h>
 #include <vector>
@@ -19,6 +20,7 @@ namespace Pakal
 	class IDebugDrawerClient;
 	class SpriteComponent_Bgfx;
 	class CameraComponent_Bgfx;
+	class CameraComponent3D_Bgfx;
 
 	class _PAKALExport BgfxGraphicsSystem final : public GraphicsSystem
 	{		
@@ -41,7 +43,7 @@ namespace Pakal
 
 		std::vector<IDebugDrawerClient*> m_debug_renderers;
 		std::vector<SpriteComponent_Bgfx*> m_sprites;
-		CameraComponent_Bgfx* m_active_camera = nullptr;
+		ICameraComponent_Bgfx* m_active_camera = nullptr;
 		float m_debug_text_timer = 0.0f;
 		bool m_debug_text_visible = true;
 		bgfx::ProgramHandle m_sprite_program;
@@ -65,7 +67,7 @@ namespace Pakal
 	public:
 		void register_sprite(SpriteComponent_Bgfx* sprite);
 		void unregister_sprite(SpriteComponent_Bgfx* sprite);
-		void set_active_camera(CameraComponent_Bgfx* camera);
+		void set_active_camera(ICameraComponent_Bgfx* camera);
 		bgfx::ProgramHandle get_sprite_program() const { return m_sprite_program; }
 		bgfx::ViewId get_main_view_id() const { return m_main_view_id; }
 	};	
