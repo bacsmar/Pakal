@@ -58,3 +58,5 @@ Thumbs.db
 # Package manager
 node_modules/
 packages/
+
+examples/ContraGame/Assets/free_assets/
