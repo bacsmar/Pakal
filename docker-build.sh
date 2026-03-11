@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Pakal Docker Build Script
 # Usage: ./docker-build.sh [build|shell|rebuild|clean]
 
@@ -9,6 +11,8 @@ DOCKER_TAG="latest"
 BUILD_DIR="$(pwd)/docker-build"
 SOURCE_DIR="$(pwd)/source"
 EXAMPLES_DIR="$(pwd)/examples"
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
 
 # Try docker compose (new) first, fallback to docker-compose (old)
 if command -v docker &> /dev/null; then
@@ -37,9 +41,10 @@ case $COMMAND in
     # Compile with mounted volumes (much faster for rebuilds)
     echo "🔧 Compiling Pakal..."
     docker run --rm \
+      --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j\$(nproc)"
     
     echo "✅ Build complete! Binaries in $BUILD_DIR/bin/"
     ls -lah "$BUILD_DIR"/bin/ 2>/dev/null || echo "   (checking build directory)"
@@ -49,6 +54,7 @@ case $COMMAND in
     echo "🐚 Starting interactive shell in Docker container..."
     mkdir -p "$BUILD_DIR"
     docker run --rm -it \
+      --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG /bin/bash
     ;;
@@ -57,11 +63,15 @@ case $COMMAND in
     echo "🔄 Clean rebuild (removing $BUILD_DIR)..."
     rm -rf "$BUILD_DIR"
     mkdir -p "$BUILD_DIR"
+
+    echo "📦 Building Docker image..."
+    docker build -t $DOCKER_IMAGE:$DOCKER_TAG . || exit 1
     
     docker run --rm \
+      --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && make -j\$(nproc)"
     
     echo "✅ Rebuild complete!"
     ;;
@@ -75,6 +85,7 @@ case $COMMAND in
   run)
     echo "🚀 Running PakalBasicExample in Docker..."
     docker run --rm -e DISPLAY=:99 \
+      --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
       bash -c "Xvfb :99 -screen 0 1024x768x24 & sleep 1 && /workspace/build/bin/PakalBasicExample"

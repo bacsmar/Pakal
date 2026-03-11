@@ -1,7 +1,10 @@
 #include "WindowCreatorSFML.h"
 #include "IInputManager.h"
+#include "LogMgr.h"
 
-#if BX_PLATFORM_LINUX
+#include <cstdlib>
+
+#if defined(PAKAL_LINUX_PLATFORM)
 	#include <X11/Xlib.h>
 #endif
 
@@ -42,10 +45,19 @@ WindowArgs WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vecto
 	args.size_x = dimensions.x;
 	args.size_y = dimensions.y;
 	
-	#if BX_PLATFORM_LINUX
+	#if defined(PAKAL_LINUX_PLATFORM)
 		// Get X11 display for bgfx
 		m_x11_display = XOpenDisplay(NULL);
 		args.native_display = m_x11_display;
+		if (!m_x11_display)
+		{
+			const char* display_env = std::getenv("DISPLAY");
+			LOG_WARNING("[WindowCreatorSFML] XOpenDisplay failed. DISPLAY=%s", display_env ? display_env : "<null>");
+		}
+		else
+		{
+			LOG_INFO("[WindowCreatorSFML] X11 display acquired: %p", m_x11_display);
+		}
 	#endif
 	
 	return args;
@@ -58,7 +70,7 @@ void WindowCreatorSFML::close_window()
 	
 	// Note: Not closing X11 Display to avoid segfault during bgfx cleanup
 	// X11 will clean it up when process exits
-	#if BX_PLATFORM_LINUX
+	#if defined(PAKAL_LINUX_PLATFORM)
 		// XCloseDisplay(static_cast<Display*>(m_x11_display)); // Causes segfault
 		m_x11_display = nullptr;
 	#endif

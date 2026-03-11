@@ -4,14 +4,22 @@
 // Purpose: Entry point for Contra game example
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "ContraGame.h"
 #include "Engine.h"
+#include "GameModuleLoader.h"
 #include "LogMgr.h"
 #include <iostream>
 
 int main(int argc, char** argv)
 {
 	using namespace Pakal;
+	
+#if defined(PAKAL_WIN32_PLATFORM)
+	const char* default_module_path = "ContraGameModule.dll";
+#else
+	const char* default_module_path = "./libContraGameModule.so";
+#endif
+
+	const char* module_path = argc > 1 ? argv[1] : default_module_path;
 	
 	std::cout << "====================================" << std::endl;
 	std::cout << " Pakal Engine - Contra Game Example" << std::endl;
@@ -40,10 +48,16 @@ int main(int argc, char** argv)
 		// Create engine
 		Engine engine(settings);
 		
-		// Create and run game
-		ContraGame game;
-		LOG_INFO("[ContraGame] Running game");
-		engine.run(&game);
+		GameModuleLoader module;
+		if (!module.load(module_path))
+		{
+			LOG_ERROR("[ContraGame] Failed to load game module from '%s'", module_path);
+			return 1;
+		}
+
+		LOG_INFO("[ContraGame] Loaded module: %s", module.module_name());
+		module.register_game_factories(&engine);
+		engine.run(module.application());
 		
 		LOG_INFO("[ContraGame] Game exited normally");
 	}

@@ -11,6 +11,8 @@
 
 # Build directories
 build/
+build-*/
+build-module-mvp/
 Build/
 bin/
 Bin/

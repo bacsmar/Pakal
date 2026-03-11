@@ -22,6 +22,8 @@
 #include <bx/file.h>
 #include <bx/readerwriter.h>
 #include <string>
+#include <cstdlib>
+#include <cstring>
 
 namespace
 {
@@ -56,6 +58,22 @@ namespace
 		case bgfx::RendererType::Count:
 		default:                             return "glsl";
 		}
+	}
+
+	bgfx::RendererType::Enum parse_renderer_from_env(const char* value)
+	{
+		if (!value)
+		{
+			return bgfx::RendererType::Count;
+		}
+
+		if (0 == std::strcmp(value, "opengl")) return bgfx::RendererType::OpenGL;
+		if (0 == std::strcmp(value, "opengles")) return bgfx::RendererType::OpenGLES;
+		if (0 == std::strcmp(value, "vulkan")) return bgfx::RendererType::Vulkan;
+		if (0 == std::strcmp(value, "noop")) return bgfx::RendererType::Noop;
+		if (0 == std::strcmp(value, "auto")) return bgfx::RendererType::Count;
+
+		return bgfx::RendererType::Count;
 	}
 }
 
@@ -110,12 +128,24 @@ namespace Pakal
 
 		// Setup bgfx initialization parameters
 		bgfx::Init init;
-		init.type = bgfx::RendererType::OpenGL; // Force OpenGL for Linux
+		const char* renderer_env = std::getenv("PAKAL_BGFX_RENDERER");
+		init.type = parse_renderer_from_env(renderer_env);
 		init.vendorId = BGFX_PCI_ID_NONE;
+
+		if (init.type == bgfx::RendererType::Count)
+		{
+			LOG_INFO("[BgfxGraphicsSystem] Renderer selection: auto");
+		}
+		else
+		{
+			LOG_INFO("[BgfxGraphicsSystem] Renderer selection from env '%s': %s",
+				renderer_env ? renderer_env : "<null>",
+				bgfx::getRendererName(init.type));
+		}
 		
 		// Set platform data - for X11 we need both display and window
 		#if BX_PLATFORM_LINUX
-			init.platformData.ndt = args.native_display; // X11 Display*
+			init.platformData.ndt = args.native_display; // X11 Display* (may be null in non-X11 sessions)
 			init.platformData.nwh = (void*)(uintptr_t)args.windowId; // X11 Window
 			LOG_INFO("[BgfxGraphicsSystem] Using X11: Display=%p, Window=%u", args.native_display, args.windowId);
 		#else

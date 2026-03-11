@@ -160,6 +160,17 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
+# Build generic runtime host for game modules
+if(EXISTS ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
+    add_executable(PakalPlayer ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
+    target_link_libraries(PakalPlayer Pakal)
+    target_include_directories(PakalPlayer PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    if(UNIX AND NOT APPLE)
+        target_link_options(PakalPlayer PRIVATE -Wl,-E)
+    endif()
+    set_target_properties(PakalPlayer PROPERTIES ENABLE_EXPORTS ON)
+endif()
+
 # Build ContraGame example if bgfx and Box2D are available
 if(EXISTS ${CMAKE_SOURCE_DIR}/examples/ContraGame/CMakeLists.txt)
     if(EXISTS ${BGFX_BUILD_DIR}/libbgfxRelease.a AND BOX2D_FOUND)
