@@ -3,10 +3,11 @@
 set -e
 
 # Pakal Docker Build Script
-# Usage: ./docker-build.sh [build|shell|rebuild|clean]
+# Usage: ./docker-build.sh [build|shell|rebuild|clean] [runtime|module|player|all] [debug|relwithdebinfo|release|minsizerel]
 
 COMMAND=${1:-build}
 TARGET_PROFILE=${2:-runtime}
+BUILD_TYPE_INPUT=${3:-relwithdebinfo}
 DOCKER_IMAGE="pakal-engine"
 DOCKER_TAG="latest"
 BUILD_DIR="$(pwd)/docker-build"
@@ -14,6 +15,26 @@ SOURCE_DIR="$(pwd)/source"
 EXAMPLES_DIR="$(pwd)/examples"
 HOST_UID="$(id -u)"
 HOST_GID="$(id -g)"
+
+case "${BUILD_TYPE_INPUT,,}" in
+  debug)
+    CMAKE_BUILD_TYPE="Debug"
+    ;;
+  relwithdebinfo)
+    CMAKE_BUILD_TYPE="RelWithDebInfo"
+    ;;
+  release)
+    CMAKE_BUILD_TYPE="Release"
+    ;;
+  minsizerel)
+    CMAKE_BUILD_TYPE="MinSizeRel"
+    ;;
+  *)
+    echo "❌ Unknown build type: $BUILD_TYPE_INPUT"
+    echo "   Valid options: debug, relwithdebinfo, release, minsizerel"
+    exit 1
+    ;;
+esac
 
 BUILD_TARGETS="--target PakalPlayer --target ContraGameModule"
 if [ "$TARGET_PROFILE" = "all" ]; then
@@ -56,7 +77,7 @@ case $COMMAND in
       --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
     
     echo "✅ Build complete! Binaries in $BUILD_DIR/bin/"
     ls -lah "$BUILD_DIR"/bin/ 2>/dev/null || echo "   (checking build directory)"
@@ -83,7 +104,7 @@ case $COMMAND in
       --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
       $DOCKER_IMAGE:$DOCKER_TAG \
-      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
+      bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
     
     echo "✅ Rebuild complete!"
     ;;
@@ -106,7 +127,7 @@ case $COMMAND in
   *)
     echo "❌ Unknown command: $COMMAND"
     echo ""
-    echo "Usage: $0 [build|shell|rebuild|clean|run] [runtime|module|player|all]"
+    echo "Usage: $0 [build|shell|rebuild|clean|run] [runtime|module|player|all] [debug|relwithdebinfo|release|minsizerel]"
     echo ""
     echo "Commands:"
     echo "  build   - Build selected targets (default: runtime = PakalPlayer + ContraGameModule)"
@@ -114,6 +135,9 @@ case $COMMAND in
     echo "  rebuild - Full clean rebuild (same target profile options as build)"
     echo "  clean   - Remove build artifacts"
     echo "  run     - Run PakalBasicExample"
+    echo ""
+    echo "Build types:"
+    echo "  debug (recommended for asserts), relwithdebinfo (default), release, minsizerel"
     exit 1
     ;;
 esac

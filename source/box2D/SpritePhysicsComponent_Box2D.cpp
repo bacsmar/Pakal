@@ -24,7 +24,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 		auto& loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
 		if (!loader || loader->bodies.empty())
 		{
-			ASSERT_MSG(loader, "[SpritebodyComponent] SpriteSheetPhysics loader is null");
+			ASSERT_MSG(loader != nullptr, "[SpritebodyComponent] SpriteSheetPhysics loader is null");
 			return;
 		}
 		// bodies
@@ -96,6 +96,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 		if (!m_bodies.empty())
 		{
 			m_active_body = m_bodies.begin()->second;
+			m_active_body->SetFixedRotation(_loader.fixed_rotation);
 		}
 		else
 		{
@@ -190,6 +191,7 @@ bool SpritebodyComponent_Box2D::fixed_rotation() const
 	return m_active_body->IsFixedRotation();
 }
 
+// must be used after initialization, otherwise it will have no effect until the next initialization
 void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
 {
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");
@@ -197,14 +199,13 @@ void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
 }
 
 void SpritebodyComponent_Box2D::set_type(BodyType type)
-{
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-
+{	
 	//auto b2Type = type == DynamicBody ? b2_dynamicBody : (type == KinematicBody ? b2_kinematicBody : b2_staticBody);
 	auto b2Type = type == DynamicBody ? b2_dynamicBody : b2_staticBody;
 
 	m_system->execute_block([this, b2Type]()
 	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->SetType(b2Type);
 	});	
 }

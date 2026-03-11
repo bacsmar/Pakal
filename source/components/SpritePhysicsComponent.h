@@ -24,6 +24,7 @@ namespace Pakal
 			SpriteSheetPhysicsPtr sprite_physics;
 			tmath::vector3df position;
 			float scale = 1.f;
+			bool fixed_rotation = false;
 
 			Settings() = default;
 			explicit Settings(const SpriteSheetPhysicsPtr& physics) : sprite_physics(physics) {}

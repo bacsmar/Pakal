@@ -135,9 +135,17 @@ endif()
 
 # Compiler flags for optimization
 if(MSVC)
-    target_compile_options(Pakal PRIVATE /O2 /W4)
+    target_compile_options(Pakal PRIVATE /W4)
+    target_compile_options(Pakal PRIVATE
+        $<$<CONFIG:Debug>:/Od /Zi>
+        $<$<CONFIG:RelWithDebInfo>:/O2 /Zi>
+        $<$<CONFIG:Release>:/O2>
+        $<$<CONFIG:MinSizeRel>:/O1>)
+    target_compile_definitions(Pakal PUBLIC
+        $<$<CONFIG:Debug>:_DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 else()
-    target_compile_options(Pakal PRIVATE -O2 -Wall -Wextra 
+    target_compile_options(Pakal PRIVATE -Wall -Wextra 
         -Wno-address 
         -Wno-nonnull-compare
         -Wno-unused-parameter
@@ -149,11 +157,20 @@ else()
         -Wno-delete-incomplete
         -Wno-missing-field-initializers
         -Wno-unused-variable)
+    target_compile_options(Pakal PRIVATE
+        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:MinSizeRel>:-Os>)
     if(UNIX AND NOT APPLE)
         target_compile_options(Pakal PRIVATE -fPIC)
     endif()
-    # Define BX_CONFIG_DEBUG for bx/bgfx
-    target_compile_definitions(Pakal PUBLIC BX_CONFIG_DEBUG=0)
+    # Define debug/release macros and BX debug flag per config
+    target_compile_definitions(Pakal PUBLIC
+        $<$<CONFIG:Debug>:_DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:NDEBUG>
+        $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
+        $<$<NOT:$<CONFIG:Debug>>:BX_CONFIG_DEBUG=0>)
 endif()
 
 # Add subdirectories for additional components if they have CMakeLists
