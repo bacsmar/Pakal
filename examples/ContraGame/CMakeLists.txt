@@ -1,4 +1,14 @@
 # ContraGame CMakeLists.txt
+# PURPOSE: Build ContraGame as a dynamic module (.so) for PakalPlayer
+# ContraGame does NOT produce an executable - it's a plugin loaded by PakalPlayer core
+#
+# Architecture:
+#   Pakal Core (source/) → PakalPlayer executable (loads any .so module)
+#   ContraGame (examples/ContraGame/) → libContraGameModule.so (plugin only, no main)
+#
+# Usage:
+#   PakalPlayer libContraGameModule.so
+
 project(ContraGame)
 
 # Collect all source files
@@ -12,8 +22,12 @@ list(APPEND CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/Components/Projectile.h"
 )
 
+# Define entry points
 set(CONTRA_HOST_MAIN ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 set(CONTRA_MODULE_ENTRY ${CMAKE_CURRENT_SOURCE_DIR}/ContraGameModule.cpp)
+
+# Module sources: Exclude standalone host main (only needed for self-contained executable)
+# ContraGame is compiled ONLY as a dynamic module, not as a standalone executable
 set(CONTRA_MODULE_SOURCES ${CONTRA_SOURCES})
 list(REMOVE_ITEM CONTRA_MODULE_SOURCES ${CONTRA_HOST_MAIN})
 
@@ -28,6 +42,7 @@ if(WIN32)
         Pakal
     )
 else()
+    # For dynamic loading, allow undefined symbols since they'll be resolved by PakalPlayer
     target_link_options(ContraGameModule PRIVATE -Wl,--allow-shlib-undefined)
 endif()
 

@@ -27,6 +27,8 @@ file(GLOB_RECURSE PAKAL_SOURCES
     "${CMAKE_SOURCE_DIR}/source/*.h"
     "${CMAKE_SOURCE_DIR}/source/components/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/components/*.h"
+    "${CMAKE_SOURCE_DIR}/source/resources/*.cpp"
+    "${CMAKE_SOURCE_DIR}/source/resources/*.h"
 )
 
 # Exclude platform-specific files
@@ -187,7 +189,10 @@ endif()
 
 # Build generic runtime host for game modules
 if(EXISTS ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
-    add_executable(PakalPlayer ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
+    add_executable(PakalPlayer
+        ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp
+        ${CMAKE_SOURCE_DIR}/source/resources/SceneLoader.cpp
+    )
     target_link_libraries(PakalPlayer Pakal)
     target_include_directories(PakalPlayer PRIVATE ${CMAKE_SOURCE_DIR}/source)
     if(UNIX AND NOT APPLE)
