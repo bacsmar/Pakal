@@ -18,7 +18,9 @@ namespace
 #if defined(PAKAL_WIN32_PLATFORM)
 		return reinterpret_cast<void*>(LoadLibraryA(module_path));
 #else
-		return dlopen(module_path, RTLD_NOW);
+		// Use RTLD_LAZY to delay symbol resolution, and RTLD_GLOBAL to make symbols available to other modules
+		// This allows dynamic modules to use symbols from statically-linked Pakal in PakalPlayer
+		return dlopen(module_path, RTLD_LAZY | RTLD_GLOBAL);
 #endif
 	}
 

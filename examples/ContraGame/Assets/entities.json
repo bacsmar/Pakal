@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "player": {
+      "type": "Pakal::GenericEntity",
+      "position": {
+        "x": 5.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "components": [
+        {
+          "type": "SpritePhysicsComponent",
+          "position": {
+            "x": 5.0,
+            "y": 10.0,
+            "z": 0.0
+          },
+          "scale": 1.0,
+          "body_type": "dynamic",
+          "fixed_rotation": true,
+          "gravity_scale": 1.0
+        },
+        {
+          "type": "SpriteComponent2D",
+          "texture": "examples/ContraGame/Assets/sprites/player_idle.png",
+          "position": {
+            "x": 5.0,
+            "y": 10.0
+          },
+          "scale": 1.0,
+          "layer": 10
+        }
+      ]
+    },
+    "enemy_01": {
+      "type": "Pakal::GenericEntity",
+      "position": {
+        "x": 20.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "components": [
+        {
+          "type": "SpritePhysicsComponent",
+          "position": {
+            "x": 20.0,
+            "y": 10.0,
+            "z": 0.0
+          },
+          "scale": 1.0,
+          "body_type": "dynamic",
+          "fixed_rotation": false,
+          "gravity_scale": 1.0
+        }
+      ]
+    },
+    "platform_01": {
+      "type": "Pakal::GenericEntity",
+      "position": {
+        "x": 12.5,
+        "y": 0.5,
+        "z": 0.0
+      },
+      "components": [
+        {
+          "type": "SpritePhysicsComponent",
+          "position": {
+            "x": 12.5,
+            "y": 0.5,
+            "z": 0.0
+          },
+          "scale": 1.0,
+          "body_type": "static",
+          "fixed_rotation": true,
+          "gravity_scale": 0.0
+        },
+        {
+          "type": "SpriteComponent2D",
+          "texture": "examples/ContraGame/Assets/sprites/platform.png",
+          "position": {
+            "x": 12.5,
+            "y": 0.5
+          },
+          "scale": 1.0,
+          "layer": 5
+        }
+      ]
+    },
+    "camera": {
+      "type": "Pakal::GenericEntity",
+      "position": {
+        "x": 10.0,
+        "y": 5.0,
+        "z": 0.0
+      },
+      "components": [
+        {
+          "type": "CameraComponent2D"
+        }
+      ]
+    }
+  }
+}
