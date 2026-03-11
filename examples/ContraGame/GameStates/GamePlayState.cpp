@@ -289,8 +289,8 @@ namespace Pakal
 		SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(width * 0.5f, height * 0.5f, false, true));
 		physics_settings.position = tmath::vector3df(x, y, 0.0f);
 		physics_settings.scale = 1.0f;
+		physics_settings.body_type = SpritePhysicsComponent::StaticBody;
 		physics->initialize(physics_settings);
-		physics->set_type(SpritePhysicsComponent::StaticBody);
 	}
 	
 	void GamePlayState::create_player()
@@ -330,10 +330,9 @@ namespace Pakal
 		SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(0.5f, 1.0f, true, true));
 		physics_settings.position = tmath::vector3df(0.0f, 0.0f, 0.0f);
 		physics_settings.scale = 1.0f;		
+		physics_settings.body_type = SpritePhysicsComponent::DynamicBody;
 		physics_settings.fixed_rotation = true; // Prevent player from rotating
 		physics->initialize(physics_settings);
-		physics->set_type(SpritePhysicsComponent::DynamicBody);
-		//physics->set_fixed_rotation(true); // Prevent player from rotating
 		
 		// Initialize controller after all components are added
 		controller->initialize();
@@ -386,10 +385,9 @@ namespace Pakal
 			SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(0.5f, 1.0f, true, true));
 			physics_settings.position = tmath::vector3df(xPos, yPos, 0.0f);
 			physics_settings.scale = 1.0f;
+			physics_settings.body_type = SpritePhysicsComponent::DynamicBody;
 			physics_settings.fixed_rotation = true; // Prevent enemy from rotating
 			physics->initialize(physics_settings);
-			physics->set_type(SpritePhysicsComponent::DynamicBody);
-			//physics->set_fixed_rotation(true); // Prevent enemy from rotating
 			
 			// Initialize AI after all components are added
 			ai->initialize();

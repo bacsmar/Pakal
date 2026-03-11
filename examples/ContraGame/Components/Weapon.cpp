@@ -89,9 +89,9 @@ namespace Pakal
 						SpritePhysicsComponent::Settings physics_settings(create_projectile_body_physics());
 						physics_settings.position = position;
 						physics_settings.scale = 0.5f;  // Small projectile
+						physics_settings.body_type = SpritePhysicsComponent::DynamicBody;
+						physics_settings.fixed_rotation = true;
 						projectilePhysics->initialize(physics_settings);
-						projectilePhysics->set_type(SpritePhysicsComponent::DynamicBody);
-						projectilePhysics->set_fixed_rotation(true);
 					}
 					
 					// Set up projectile sprite

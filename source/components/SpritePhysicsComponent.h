@@ -4,6 +4,7 @@
 #include "TaskFwd.h"
 #include "PhysicComponent.h"
 #include "SpritePhysics.h"
+#include <optional>
 
 namespace Pakal
 {
@@ -24,7 +25,12 @@ namespace Pakal
 			SpriteSheetPhysicsPtr sprite_physics;
 			tmath::vector3df position;
 			float scale = 1.f;
-			bool fixed_rotation = false;
+			std::optional<BodyType> body_type;
+			std::optional<bool> fixed_rotation;
+			std::optional<float> gravity_scale;
+			std::optional<tmath::vector2df> lineal_velocity;
+			std::optional<tmath::vector2df> initial_impulse;
+			std::optional<tmath::vector2df> initial_force;
 
 			Settings() = default;
 			explicit Settings(const SpriteSheetPhysicsPtr& physics) : sprite_physics(physics) {}

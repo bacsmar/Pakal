@@ -43,6 +43,22 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 			body->GetUserData().pointer = reinterpret_cast<uintptr_t>(this);
 
 			body->SetTransform(b2Vec2(_loader.position.x, _loader.position.y), body->GetAngle());
+			if (_loader.fixed_rotation.has_value())
+			{
+				body->SetFixedRotation(_loader.fixed_rotation.value());
+			}
+			if (_loader.body_type.has_value())
+			{
+				body->SetType(_loader.body_type.value() == DynamicBody ? b2_dynamicBody : b2_staticBody);
+			}
+			if (_loader.gravity_scale.has_value())
+			{
+				body->SetGravityScale(_loader.gravity_scale.value());
+			}
+			if (_loader.lineal_velocity.has_value())
+			{
+				body->SetLinearVelocity({ _loader.lineal_velocity->x, _loader.lineal_velocity->y });
+			}
 
 			m_bodies[spriteBody->name] = body;
 
@@ -96,7 +112,14 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 		if (!m_bodies.empty())
 		{
 			m_active_body = m_bodies.begin()->second;
-			m_active_body->SetFixedRotation(_loader.fixed_rotation);
+			if (_loader.initial_impulse.has_value())
+			{
+				m_active_body->ApplyLinearImpulse({ _loader.initial_impulse->x, _loader.initial_impulse->y }, m_active_body->GetWorldCenter(), true);
+			}
+			if (_loader.initial_force.has_value())
+			{
+				m_active_body->ApplyForceToCenter({ _loader.initial_force->x, _loader.initial_force->y }, true);
+			}
 		}
 		else
 		{
@@ -162,14 +185,20 @@ float SpritebodyComponent_Box2D::get_scale()
 
 void SpritebodyComponent_Box2D::apply_impulse(const tmath::vector2df& force)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	m_active_body->ApplyLinearImpulse({force.x, force.y}, m_active_body->GetWorldCenter(), true);
+	m_system->execute_block([this, force]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		m_active_body->ApplyLinearImpulse({ force.x, force.y }, m_active_body->GetWorldCenter(), true);
+	});
 }
 
 void SpritebodyComponent_Box2D::apply_force(const tmath::vector2df& force)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	m_active_body->ApplyForceToCenter({ force.x, force.y }, true);
+	m_system->execute_block([this, force]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		m_active_body->ApplyForceToCenter({ force.x, force.y }, true);
+	});
 }
 
 tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
@@ -181,8 +210,11 @@ tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
 
 void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velocity)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
+	m_system->execute_block([this, velocity]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
+	});
 }
 
 bool SpritebodyComponent_Box2D::fixed_rotation() const
@@ -194,8 +226,11 @@ bool SpritebodyComponent_Box2D::fixed_rotation() const
 // must be used after initialization, otherwise it will have no effect until the next initialization
 void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	m_active_body->SetFixedRotation(val);
+	m_system->execute_block([this, val]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		m_active_body->SetFixedRotation(val);
+	});
 }
 
 void SpritebodyComponent_Box2D::set_type(BodyType type)
@@ -212,9 +247,11 @@ void SpritebodyComponent_Box2D::set_type(BodyType type)
 
 void SpritebodyComponent_Box2D::set_gravity_scale(float gravityScale)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	
-	m_active_body->SetGravityScale(gravityScale);
+	m_system->execute_block([this, gravityScale]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		m_active_body->SetGravityScale(gravityScale);
+	});
 }
 
 SpritePhysicsComponent::BodyPart SpritebodyComponent_Box2D::get_bodyPart(unsigned index)
