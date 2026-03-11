@@ -38,5 +38,26 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets)
     )
 endif()
 
+# Copy minimal bgfx shader binaries for sprite rendering
+set(BGFX_SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/external/bgfx/examples/runtime/shaders)
+add_custom_command(TARGET ContraGame POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:ContraGame>/Assets/shaders/glsl
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:ContraGame>/shaders/glsl
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGame>/Assets/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGame>/Assets/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/vs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGame>/shaders/glsl/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${BGFX_SHADER_SRC_DIR}/glsl/fs_cubes.bin
+        $<TARGET_FILE_DIR:ContraGame>/shaders/glsl/
+)
+
 # Installation
 install(TARGETS ContraGame DESTINATION bin)

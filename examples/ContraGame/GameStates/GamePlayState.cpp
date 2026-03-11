@@ -5,6 +5,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "GamePlayState.h"
+#include "GenericEntity.h"
+#include "ComponentManager.h"
+#include "components/SpritePhysicsComponent.h"
 #include "Engine.h"
 #include "EntityManager.h"
 #include "Entity.h"
@@ -19,6 +22,7 @@
 // Engine components  
 #include "bgfx/SpriteComponent_Bgfx.h"
 #include "bgfx/CameraComponent_Bgfx.h"
+#include "box2D/SpritePhysicsComponent_Box2D.h"
 
 namespace Pakal
 {
@@ -57,26 +61,10 @@ namespace Pakal
 	{
 		LOG_INFO("[GamePlayState] Terminating gameplay state");
 		
-		// Clean up entities
-		if (m_player)
-		{
-			engine->entity_manager()->destroy_entity(m_player);
-			m_player = nullptr;
-		}
-		
-		if (m_camera)
-		{
-			engine->entity_manager()->destroy_entity(m_camera);
-			m_camera = nullptr;
-		}
-		
-		for (Entity* enemy : m_enemies)
-		{
-			if (enemy)
-			{
-				engine->entity_manager()->destroy_entity(enemy);
-			}
-		}
+		// Note: Entity cleanup is handled by EntityManager during engine shutdown
+		// No need to manually destroy entities - they will be cleaned up automatically
+		m_player = nullptr;
+		m_camera = nullptr;
 		m_enemies.clear();
 	}
 	
@@ -117,19 +105,23 @@ namespace Pakal
 	void GamePlayState::create_platform(float x, float y, float width, float height)
 	{
 		auto* entityMgr = m_engine->entity_manager();
+		auto* platform = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "platform"));
+		if (!platform) return;
 		
-		Entity* platform = entityMgr->create_entity();
-		
-		// Add sprite component for visual
-		auto* sprite = platform->add_component<SpriteComponent_Bgfx>();
+		// Add and configure sprite component
+		auto* sprite = platform->create_component<SpriteComponent_Bgfx>();
 		sprite->set_position(x, y);
 		sprite->set_scale(width, height);
 		sprite->set_color(0.5f, 0.3f, 0.2f, 1.0f); // Brown color
 		sprite->create_solid_color(0xFFFFFFFF, 1, 1); // White texture
 		
-		// TODO: Add physics component when fully integrated
-		// auto* physics = platform->add_component<SpritebodyComponent_Box2D>();
-		// ... configure physics ...
+		// Add and configure physics component for static platform
+		auto* physics = platform->create_component<SpritebodyComponent_Box2D>();
+		SpritePhysicsComponent::Settings physics_settings;
+		physics_settings.position = tmath::vector3df(x, y, 0.0f);
+		physics_settings.scale = width;
+		physics->initialize(physics_settings);
+		physics->set_type(SpritePhysicsComponent::StaticBody);
 	}
 	
 	void GamePlayState::create_player()
@@ -137,10 +129,11 @@ namespace Pakal
 		LOG_INFO("[GamePlayState] Creating player");
 		
 		auto* entityMgr = m_engine->entity_manager();
-		m_player = entityMgr->create_entity();
+		m_player = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "player"));
+		if (!m_player) return;
 		
 		// Add sprite component
-		auto* sprite = m_player->add_component<SpriteComponent_Bgfx>();
+		auto* sprite = m_player->create_component<SpriteComponent_Bgfx>();
 		sprite->set_position(0.0f, 0.0f);
 		sprite->set_scale(1.0f, 2.0f);
 		sprite->set_color(0.0f, 0.5f, 1.0f, 1.0f); // Blue color for player
@@ -148,24 +141,31 @@ namespace Pakal
 		sprite->set_layer(10); // Higher layer for player
 		
 		// Add health component
-		auto* health = m_player->add_component<Health>();
+		auto* health = m_player->create_component<Health>();
 		health->set_max_health(100.0f);
 		
 		// Add weapon component
-		auto* weapon = m_player->add_component<Weapon>();
+		auto* weapon = m_player->create_component<Weapon>();
 		weapon->set_fire_rate(0.2f);
 		weapon->set_projectile_speed(15.0f);
 		weapon->set_entity_manager(entityMgr);
 		
 		// Add player controller
-		auto* controller = m_player->add_component<PlayerController>();
+		auto* controller = m_player->create_component<PlayerController>();
 		controller->set_move_speed(5.0f);
 		controller->set_jump_force(10.0f);
-		controller->initialize();
 		
-		// TODO: Add physics component when fully integrated
-		// auto* physics = m_player->add_component<SpritebodyComponent_Box2D>();
-		// ... configure physics ...
+		// Add physics component for dynamic player body
+		auto* physics = m_player->create_component<SpritebodyComponent_Box2D>();
+		SpritePhysicsComponent::Settings physics_settings;
+		physics_settings.position = tmath::vector3df(0.0f, 0.0f, 0.0f);
+		physics_settings.scale = 1.0f;
+		physics->initialize(physics_settings);
+		physics->set_type(SpritePhysicsComponent::DynamicBody);
+		physics->set_fixed_rotation(true); // Prevent player from rotating
+		
+		// Initialize controller after all components are added
+		controller->initialize();
 	}
 	
 	void GamePlayState::create_enemies()
@@ -177,14 +177,15 @@ namespace Pakal
 		// Create several enemies
 		for (int i = 0; i < m_totalEnemies; i++)
 		{
-			Entity* enemy = entityMgr->create_entity();
+			auto* enemy = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "enemy"));
+			if (!enemy) continue;
 			
 			// Position enemies at different locations
 			float xPos = 10.0f + i * 5.0f;
 			float yPos = 0.0f;
 			
 			// Add sprite component
-			auto* sprite = enemy->add_component<SpriteComponent_Bgfx>();
+			auto* sprite = enemy->create_component<SpriteComponent_Bgfx>();
 			sprite->set_position(xPos, yPos);
 			sprite->set_scale(1.0f, 2.0f);
 			sprite->set_color(1.0f, 0.0f, 0.0f, 1.0f); // Red color for enemies
@@ -192,20 +193,31 @@ namespace Pakal
 			sprite->set_layer(10);
 			
 			// Add health component
-			auto* health = enemy->add_component<Health>();
+			auto* health = enemy->create_component<Health>();
 			health->set_max_health(50.0f);
 			
 			// Add weapon component
-			auto* weapon = enemy->add_component<Weapon>();
+			auto* weapon = enemy->create_component<Weapon>();
 			weapon->set_fire_rate(1.0f);
 			weapon->set_entity_manager(entityMgr);
 			
 			// Add AI component
-			auto* ai = enemy->add_component<EnemyAI>();
+			auto* ai = enemy->create_component<EnemyAI>();
 			ai->set_patrol_range(5.0f);
 			ai->set_chase_range(10.0f);
 			ai->set_attack_range(8.0f);
 			ai->set_player_entity(m_player);
+			
+			// Add physics component for dynamic enemy body
+			auto* physics = enemy->create_component<SpritebodyComponent_Box2D>();
+			SpritePhysicsComponent::Settings physics_settings;
+			physics_settings.position = tmath::vector3df(xPos, yPos, 0.0f);
+			physics_settings.scale = 1.0f;
+			physics->initialize(physics_settings);
+			physics->set_type(SpritePhysicsComponent::DynamicBody);
+			physics->set_fixed_rotation(true); // Prevent enemy from rotating
+			
+			// Initialize AI after all components are added
 			ai->initialize();
 			
 			m_enemies.push_back(enemy);
@@ -217,10 +229,11 @@ namespace Pakal
 		LOG_INFO("[GamePlayState] Setting up camera");
 		
 		auto* entityMgr = m_engine->entity_manager();
-		m_camera = entityMgr->create_entity();
+		m_camera = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "camera"));
+		if (!m_camera) return;
 		
 		// Add camera component
-		auto* camera = m_camera->add_component<CameraComponent_Bgfx>();
+		auto* camera = m_camera->create_component<CameraComponent_Bgfx>();
 		camera->set_orthographic(800.0f, 600.0f);
 		camera->set_viewport(0, 0, 800, 600);
 		camera->set_position(0.0f, 0.0f);
@@ -255,7 +268,7 @@ namespace Pakal
 		}
 		
 		// Update enemies
-		for (Entity* enemy : m_enemies)
+		for (GenericEntity* enemy : m_enemies)
 		{
 			if (!enemy)
 				continue;
@@ -303,7 +316,7 @@ namespace Pakal
 		
 		// Count alive enemies
 		int aliveEnemies = 0;
-		for (Entity* enemy : m_enemies)
+		for (GenericEntity* enemy : m_enemies)
 		{
 			if (enemy)
 			{

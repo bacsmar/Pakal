@@ -18,13 +18,14 @@
 namespace Pakal
 {
 	class Entity;
+	class BgfxGraphicsSystem;
 	
 	class _PAKALExport CameraComponent_Bgfx : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(CameraComponent_Bgfx, Component);
 		
 	public:
-		CameraComponent_Bgfx();
+		explicit CameraComponent_Bgfx(BgfxGraphicsSystem* graphicsSystem = nullptr);
 		virtual ~CameraComponent_Bgfx();
 		
 		// Camera setup
@@ -97,5 +98,8 @@ namespace Pakal
 		
 		// Flags
 		bool m_matricesDirty;
+		
+		// Graphics system reference
+		BgfxGraphicsSystem* m_graphics_system;
 	};
 }

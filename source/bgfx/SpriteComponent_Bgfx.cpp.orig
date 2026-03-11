@@ -23,7 +23,6 @@ namespace Pakal
 		uint32_t s_spriteInstanceCount = 0;
 	}
 
-
 	// Static vertex layout initialization
 	bgfx::VertexLayout SpriteComponent_Bgfx::SpriteVertex::ms_layout;
 	
@@ -76,14 +75,8 @@ namespace Pakal
 			{
 				s_texColorUniform = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 			}
-		}
-		
-		// Initialize texture region to full texture
-		m_texRegion[0] = 0;
-		m_texRegion[1] = 0;
-		m_texRegion[2] = 0;
-		m_texRegion[3] = 0;
-		
+
+	
 		// Initialize vertex layout (static, only once)
 		static bool layoutInitialized = false;
 		if (!layoutInitialized)
@@ -130,11 +123,7 @@ namespace Pakal
 					bgfx::destroy(s_texColorUniform);
 					s_texColorUniform = BGFX_INVALID_HANDLE;
 				}
-			}
-		}
 
-		if (bgfx::isValid(m_texture))
-		{
 			bgfx::destroy(m_texture);
 		}
 		
@@ -274,6 +263,8 @@ namespace Pakal
 		uint8_t bi = (uint8_t)(b * 255.0f);
 		uint8_t ai = (uint8_t)(a * 255.0f);
 		m_color = (ai << 24) | (bi << 16) | (gi << 8) | ri;
+		LOG_INFO("[SpriteComponent_Bgfx] set_color(%.2f,%.2f,%.2f,%.2f) -> ABGR:0x%08X ri:%d gi:%d bi:%d ai:%d", 
+			r, g, b, a, m_color, ri, gi, bi, ai);
 		m_vertexBufferDirty = true;
 	}
 	
@@ -461,13 +452,18 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::render(bgfx::ViewId viewId, const float* viewProj)
 	{
-		static int render_count = 0;
-		render_count++;
-		
+		static int render_calls = 0;
+		if (render_calls++ < 10)
+		{
+			LOG_INFO("[SpriteComponent_Bgfx] render() - pos(%.1f,%.1f) scale(%.1f,%.1f) color:0x%08X layer:%d visible:%d", 
+				m_position.x, m_position.y, m_scale.x, m_scale.y, m_color, m_layer, m_visible);
+		}
+
 		if (!m_visible || !m_textureLoaded)
 		{
-			if (render_count <= 2) {
-				LOG_ERROR("[SpriteComponent_Bgfx] render() skipped: visible=%d textureLoaded=%d", m_visible, m_textureLoaded);
+			if (render_calls <= 10)
+			{
+				LOG_WARNING("[SpriteComponent_Bgfx] Not rendering - visible:%d textureLoaded:%d", m_visible, m_textureLoaded);
 			}
 			return;
 		}
@@ -476,11 +472,6 @@ namespace Pakal
 		if (m_vertexBufferDirty)
 		{
 			update_vertex_buffer();
-		}
-		
-		if (render_count <= 2) {
-			LOG_INFO("[SpriteComponent_Bgfx] render() - pos(%.1f,%.1f) scale(%.1f,%.1f) color:0x%08X layer:%d, program:%d, tex:%d", 
-				m_position.x, m_position.y, m_scale.x, m_scale.y, m_color, m_layer, m_program.idx, m_texture.idx);
 		}
 		
 		// Create model matrix (transform)
@@ -504,6 +495,21 @@ namespace Pakal
 		bgfx::setVertexBuffer(0, m_vertexBuffer);
 		bgfx::setIndexBuffer(m_indexBuffer);
 		
+		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+		if (m_graphics_system)
+		{
+			program = m_graphics_system->get_sprite_program();
+		}
+		else
+		{
+			program = m_program;
+		}
+
+		if (!bgfx::isValid(program))
+		{
+			return;
+		}
+
 		// Set texture (color comes from vertex buffer Color0 attribute)
 		if (bgfx::isValid(s_texColorUniform))
 		{
@@ -516,10 +522,7 @@ namespace Pakal
 			| BGFX_STATE_BLEND_ALPHA;
 		bgfx::setState(state);
 		
-		// Submit draw call (without program for now - will need to be set up later)
-		bgfx::submit(viewId, m_program);
-		
-		// For now, we'll just log a warning that shaders need to be set up
-		// This will be completed when we integrate with the graphics system
+		// Submit draw call with depth based on layer
+		bgfx::submit(viewId, program, (uint32_t)(m_layer & 0xFFFF));
 	}
 }

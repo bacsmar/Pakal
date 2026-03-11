@@ -7,6 +7,7 @@
 #pragma once
 #include "Component.h"
 #include "math/vector2.h"
+#include "InputManager_Polling.h"
 
 namespace Pakal
 {
@@ -55,6 +56,12 @@ namespace Pakal
 		bool m_isGrounded;
 		bool m_isJumping;
 		bool m_facingRight;
+		
+		// Input state (cached from InputManager_Polling)
+		bool m_inputMoveLeft;
+		bool m_inputMoveRight;
+		bool m_inputJump;
+		bool m_inputFire;
 		
 		// Animation
 		enum AnimState { IDLE, RUN, JUMP, SHOOT };

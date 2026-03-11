@@ -12,6 +12,7 @@
 
 // Game states
 #include "GameStates/GamePlayState.h"
+#include "GameStates/GameTitleState.h"
 
 // Game components
 #include "Components/Health.h"
@@ -47,17 +48,10 @@ namespace Pakal
 	{
 		LOG_INFO("[ContraGame] Registering game components");
 		
-		auto* componentMgr = engine.component_manager();
-		
-		// Register rendering components
-		componentMgr->register_component<SpriteComponent_Bgfx>("SpriteComponent_Bgfx");
-		componentMgr->register_component<CameraComponent_Bgfx>("CameraComponent_Bgfx");
-		
-		// Register game components
-		componentMgr->register_component<Health>("Health");
-		componentMgr->register_component<Weapon>("Weapon");
-		componentMgr->register_component<PlayerController>("PlayerController");
-		componentMgr->register_component<EnemyAI>("EnemyAI");
+		// Component registration happens automatically when components are created
+		// via ComponentManager::create_component<T>()
+		// Custom components (Health, Weapon, PlayerController, EnemyAI) will be
+		// instantiated directly in GamePlayState methods
 	}
 	
 	void ContraGame::setup_game_states(Engine& engine)
@@ -66,8 +60,8 @@ namespace Pakal
 		
 		auto* stateMgr = engine.game_state_manager();
 		
-		// Create and push gameplay state
-		auto* gameplayState = new GamePlayState();
-		stateMgr->push_state(gameplayState, true); // true = auto-delete on pop
+		// Create and push title state
+		auto* titleState = new GameTitleState();
+		stateMgr->push_state(titleState, true); // true = auto-delete on pop
 	}
 }

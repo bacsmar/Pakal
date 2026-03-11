@@ -43,6 +43,14 @@ namespace Pakal
 		bool can_see_player();
 		void shoot_at_player();
 		
+		// Advanced behaviors (for future implementation)
+		#ifdef ADVANCED_ENEMY_AI
+		void check_and_jump_obstacles();
+		void perform_diagonal_patrol();
+		void manage_ammo();
+		void coordinate_with_group();
+		#endif
+		
 		AIState m_state;
 		
 		// Components

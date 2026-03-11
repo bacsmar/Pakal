@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "CameraComponent_Bgfx.h"
+#include "BgfxGraphicsSystem.h"
 #include "Entity.h"
 #include "LogMgr.h"
 #include <bgfx/bgfx.h>
@@ -17,7 +18,7 @@
 
 namespace Pakal
 {
-	CameraComponent_Bgfx::CameraComponent_Bgfx() :
+	CameraComponent_Bgfx::CameraComponent_Bgfx(BgfxGraphicsSystem* graphicsSystem) :
 		m_position(0.0f, 0.0f),
 		m_zoom(1.0f),
 		m_orthoWidth(800.0f),
@@ -28,7 +29,8 @@ namespace Pakal
 		m_followSmooth(0.1f),
 		m_targetPosition(0.0f, 0.0f),
 		m_hasBounds(false),
-		m_matricesDirty(true)
+		m_matricesDirty(true),
+		m_graphics_system(graphicsSystem)
 	{
 		// Initialize viewport
 		m_viewport[0] = 0;
@@ -42,10 +44,21 @@ namespace Pakal
 		// Initialize matrices
 		bx::mtxIdentity(m_view);
 		bx::mtxIdentity(m_proj);
+		
+		// Register with graphics system
+		if (m_graphics_system)
+		{
+			m_graphics_system->set_active_camera(this);
+		}
 	}
 	
 	CameraComponent_Bgfx::~CameraComponent_Bgfx()
 	{
+		// Unregister from graphics system
+		if (m_graphics_system)
+		{
+			m_graphics_system->set_active_camera(nullptr);
+		}
 	}
 	
 	void CameraComponent_Bgfx::set_orthographic(float width, float height, float near, float far)

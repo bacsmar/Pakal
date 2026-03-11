@@ -9,6 +9,8 @@
 #include "Weapon.h"
 #include "Entity.h"
 #include "LogMgr.h"
+#include "bgfx/SpriteComponent_Bgfx.h"
+#include "box2D/SpritePhysicsComponent_Box2D.h"
 #include <cmath>
 
 namespace Pakal
@@ -37,15 +39,22 @@ namespace Pakal
 			return;
 		
 		// Get component references
-		// TODO: Uncomment when components are linked
-		// m_physics = parent->get_component<SpritebodyComponent_Box2D>();
-		// m_sprite = parent->get_component<SpriteComponent_Bgfx>();
+		m_physics = parent->get_component<SpritebodyComponent_Box2D>();
+		m_sprite = parent->get_component<SpriteComponent_Bgfx>();
 		m_weapon = parent->get_component<Weapon>();
 		m_health = parent->get_component<Health>();
 		
+		if (!m_physics || !m_sprite)
+		{
+			LOG_WARNING("EnemyAI: Missing physics or sprite component");
+		}
+		
 		// Set patrol start position
-		// TODO: Get from physics component
-		// m_patrolStart = m_physics->get_position();
+		if (m_physics)
+		{
+			auto pos = m_physics->get_position();
+			m_patrolStart = tmath::vectorn<float, 2>(pos.x, pos.y);
+		}
 	}
 	
 	void EnemyAI::update(float deltaTime)
@@ -82,6 +91,9 @@ namespace Pakal
 	
 	void EnemyAI::update_patrol(float deltaTime)
 	{
+		if (!m_physics)
+			return;
+		
 		// Check if player is in range
 		if (can_see_player())
 		{
@@ -89,19 +101,50 @@ namespace Pakal
 			return;
 		}
 		
-		// Simple patrol logic
-		// TODO: Implement when physics component is available
-		// Move back and forth within patrol range
+		// Simple patrol logic: move back and forth within patrol range
+		auto currentPos = m_physics->get_position();
+		float distanceFromStart = currentPos.x - m_patrolStart.x;
+		
+		// Change direction if we've reached patrol range limits
+		if (distanceFromStart > m_patrolRange)
+		{
+			m_patrolRight = false;
+		}
+		else if (distanceFromStart < -m_patrolRange)
+		{
+			m_patrolRight = true;
+		}
+		
+		// Move in current patrol direction
+		float patrolSpeed = 2.0f; // Slower than chase speed
+		auto currentVel = m_physics->get_lineal_velocity();
+		float xVel = m_patrolRight ? patrolSpeed : -patrolSpeed;
+		m_physics->set_lineal_velocity(tmath::vector2df(xVel, currentVel.y));
+		
+		// TODO: Advanced patrol behaviors (when ADVANCED_ENEMY_AI is defined)
+		#ifdef ADVANCED_ENEMY_AI
+		check_and_jump_obstacles();
+		perform_diagonal_patrol();
+		#endif
 	}
 	
 	void EnemyAI::update_chase(float deltaTime)
 	{
-		if (!m_player)
+		if (!m_player || !m_physics)
 			return;
 		
-		// Check distance to player
-		// TODO: Calculate actual distance using physics positions
-		float distanceToPlayer = 10.0f; // Placeholder
+		// Get player's physics component to calculate distance
+		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		if (!playerPhysics)
+			return;
+		
+		// Calculate distance to player
+		auto enemyPos = m_physics->get_position();
+		auto playerPos = playerPhysics->get_position();
+		
+		float dx = playerPos.x - enemyPos.x;
+		float dy = playerPos.y - enemyPos.y;
+		float distanceToPlayer = std::sqrt(dx * dx + dy * dy);
 		
 		if (distanceToPlayer > m_chaseRange)
 		{
@@ -110,35 +153,62 @@ namespace Pakal
 			return;
 		}
 		
-		if (distanceToPlayer <= m_attackRange)
+		if (distanceToPlayer <= m_attackRange && can_see_player())
 		{
-			// Player is in attack range
+			// Player is in attack range and visible
 			m_state = ATTACK;
 			return;
 		}
 		
 		// Move towards player
-		// TODO: Implement when physics component is available
+		float chaseSpeed = 4.0f; // Faster than patrol
+		auto currentVel = m_physics->get_lineal_velocity();
+		float xVel = (dx > 0) ? chaseSpeed : -chaseSpeed;
+		m_physics->set_lineal_velocity(tmath::vector2df(xVel, currentVel.y));
+		
+		// TODO: Advanced chase behaviors (when ADVANCED_ENEMY_AI is defined)
+		#ifdef ADVANCED_ENEMY_AI
+		check_and_jump_obstacles();
+		coordinate_with_group();
+		#endif
 	}
 	
 	void EnemyAI::update_attack(float deltaTime)
 	{
-		if (!m_player)
+		if (!m_player || !m_physics)
 			return;
 		
-		// Check distance to player
-		// TODO: Calculate actual distance using physics positions
-		float distanceToPlayer = 8.0f; // Placeholder
+		// Get player's physics component
+		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		if (!playerPhysics)
+			return;
 		
-		if (distanceToPlayer > m_attackRange)
+		// Calculate distance to player
+		auto enemyPos = m_physics->get_position();
+		auto playerPos = playerPhysics->get_position();
+		
+		float dx = playerPos.x - enemyPos.x;
+		float dy = playerPos.y - enemyPos.y;
+		float distanceToPlayer = std::sqrt(dx * dx + dy * dy);
+		
+		if (distanceToPlayer > m_attackRange || !can_see_player())
 		{
-			// Player moved out of range
+			// Player moved out of range or out of sight
 			m_state = CHASE;
 			return;
 		}
 		
+		// Stop moving when attacking
+		auto currentVel = m_physics->get_lineal_velocity();
+		m_physics->set_lineal_velocity(tmath::vector2df(0.0f, currentVel.y));
+		
 		// Shoot at player
 		shoot_at_player();
+		
+		// TODO: Advanced attack behaviors (when ADVANCED_ENEMY_AI is defined)
+		#ifdef ADVANCED_ENEMY_AI
+		manage_ammo();
+		#endif
 	}
 	
 	bool EnemyAI::can_see_player()
@@ -146,25 +216,90 @@ namespace Pakal
 		if (!m_player || !m_physics)
 			return false;
 		
-		// TODO: Implement line-of-sight check
-		// For now, just check distance
-		// Calculate distance between enemy and player
-		// Return true if within chase range
+		// Get player's physics component
+		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		if (!playerPhysics)
+			return false;
 		
-		return false; // Placeholder
+		// Calculate distance between enemy and player
+		auto enemyPos = m_physics->get_position();
+		auto playerPos = playerPhysics->get_position();
+		
+		float dx = playerPos.x - enemyPos.x;
+		float dy = playerPos.y - enemyPos.y;
+		float distance = std::sqrt(dx * dx + dy * dy);
+		
+		// Simple line-of-sight: if within chase range, can see player
+		// TODO: Use Box2D raycasting for proper line-of-sight checking (detect obstacles)
+		if (distance <= m_chaseRange)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 	
 	void EnemyAI::shoot_at_player()
 	{
-		if (!m_weapon || !m_player || m_fireTimer > 0.0f)
+		if (!m_weapon || !m_player || m_fireTimer > 0.0f || !m_physics)
+			return;
+		
+		// Get player's physics component
+		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		if (!playerPhysics)
 			return;
 		
 		// Calculate direction to player
-		// TODO: Get actual positions from physics components
-		tmath::vectorn<float, 2> direction(1.0f, 0.0f); // Placeholder
+		auto enemyPos = m_physics->get_position();
+		auto playerPos = playerPhysics->get_position();
+		
+		float dx = playerPos.x - enemyPos.x;
+		float dy = playerPos.y - enemyPos.y;
+		float length = std::sqrt(dx * dx + dy * dy);
+		
+		// Normalize direction vector
+		if (length > 0.001f)
+		{
+			dx /= length;
+			dy /= length;
+		}
+		
+		tmath::vectorn<float, 2> direction(dx, dy);
 		
 		// Fire weapon
 		m_weapon->fire(direction);
 		m_fireTimer = m_fireRate;
 	}
+	
+	// Advanced behaviors (placeholders for future implementation)
+	#ifdef ADVANCED_ENEMY_AI
+	void EnemyAI::check_and_jump_obstacles()
+	{
+		// TODO: Use Box2D raycasting to detect obstacles ahead
+		// If obstacle detected, apply upward impulse to jump over it
+		// Example: m_physics->apply_impulse(0.0f, 8.0f);
+	}
+	
+	void EnemyAI::perform_diagonal_patrol()
+	{
+		// TODO: Add vertical movement to patrol (diagonal patterns)
+		// Useful for flying enemies or climbing enemies
+		// Example: alternate between moving up/down while patrolling
+	}
+	
+	void EnemyAI::manage_ammo()
+	{
+		// TODO: Track ammunition count
+		// If low on ammo, switch to retreat behavior or melee attack
+		// Could add reload mechanic with vulnerable state
+	}
+	
+	void EnemyAI::coordinate_with_group()
+	{
+		// TODO: Communication with nearby enemies
+		// Share player position, coordinate flanking maneuvers
+		// Form defensive positions or attack patterns
+		// Requires enemy group management system
+	}
+	#endif
 }

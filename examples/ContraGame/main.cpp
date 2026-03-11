@@ -22,13 +22,17 @@ int main(int argc, char** argv)
 		// Create engine settings
 		Engine::Settings settings;
 		
+		// FPS limits
+		settings.max_fps = 60;  // Engine main loop at 60 FPS
+		settings.graphic_system_settings.max_fps = 60;  // Graphics at 60 FPS
+		
 		// Graphics: use bgfx
 		settings.graphic_system_settings.resolution = {1280, 720};
 		settings.graphic_system_settings.vsync = true;
 		settings.graphic_system_settings.full_screen = false;
 		
 		// Physics: use Box2D for 2D
-		settings.physic_system_settings.gravity = {0.0f, -20.0f}; // Platformer gravity
+		settings.physic_system_settings.gravity = tmath::vector3df(0.0f, -20.0f, 0.0f); // Platformer gravity
 		settings.physic_system_settings.max_fps = 60;
 		
 		LOG_INFO("[ContraGame] Creating engine with resolution 1280x720");

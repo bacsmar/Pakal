@@ -31,11 +31,11 @@ namespace Pakal
 		if (m_currentHealth < 0.0f)
 			m_currentHealth = 0.0f;
 		
-		on_damage_taken.execute(damage);
+		on_damage_taken.notify(damage);
 		
 		if (m_currentHealth <= 0.0f)
 		{
-			on_death.execute();
+			on_death.notify();
 		}
 	}
 	

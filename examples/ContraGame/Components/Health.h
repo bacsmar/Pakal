@@ -29,7 +29,7 @@ namespace Pakal
 		
 		// Events
 		Event<float> on_damage_taken;
-		Event<> on_death;
+		Event<void> on_death;
 		
 	private:
 		float m_maxHealth;

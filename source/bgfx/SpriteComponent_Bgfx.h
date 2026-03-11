@@ -18,12 +18,14 @@
 
 namespace Pakal
 {
+	class BgfxGraphicsSystem;
+
 	class _PAKALExport SpriteComponent_Bgfx : public Component
 	{
 		DECLARE_RTTI_WITH_BASE(SpriteComponent_Bgfx, Component);
 		
 	public:
-		explicit SpriteComponent_Bgfx();
+		explicit SpriteComponent_Bgfx(BgfxGraphicsSystem* graphicsSystem = nullptr);
 		virtual ~SpriteComponent_Bgfx();
 		
 		// Texture management
@@ -74,6 +76,7 @@ namespace Pakal
 		void update(float deltaTime);
 		
 		// Rendering (called by graphics system)
+		void set_program(bgfx::ProgramHandle program) { m_program = program; m_programLoaded = true; }
 		void render(bgfx::ViewId viewId, const float* viewProj);
 		
 		// Create solid color sprite
@@ -142,5 +145,8 @@ namespace Pakal
 		
 		// Flags
 		bool m_vertexBufferDirty;
+		
+		// Graphics system reference
+		BgfxGraphicsSystem* m_graphics_system;
 	};
 }
