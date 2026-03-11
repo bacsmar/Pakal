@@ -30,6 +30,19 @@ namespace Pakal
 		
 		// Expose base class template version
 		using Entity::get_component;
+
+		template <class T>
+		T* get_component() const
+		{
+			for (auto* component : m_components)
+			{
+				if (auto* typed = dynamic_cast<T*>(component))
+				{
+					return typed;
+				}
+			}
+			return nullptr;
+		}
 		
 		virtual Component* get_component(const std::string& component_id_string) const override;
 

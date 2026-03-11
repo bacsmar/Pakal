@@ -8,6 +8,7 @@
 #include "Health.h"
 #include "Weapon.h"
 #include "Entity.h"
+#include "GenericEntity.h"
 #include "LogMgr.h"
 #include "components/SpriteComponent2D.h"
 #include "components/SpritePhysicsComponent.h"
@@ -37,12 +38,16 @@ namespace Pakal
 		Entity* parent = get_parent_entity();
 		if (!parent)
 			return;
+
+		auto* genericParent = dynamic_cast<GenericEntity*>(parent);
+		if (!genericParent)
+			return;
 		
 		// Get component references
-		m_physics = parent->get_component<SpritePhysicsComponent>();
-		m_sprite = parent->get_component<SpriteComponent2D>();
-		m_weapon = parent->get_component<Weapon>();
-		m_health = parent->get_component<Health>();
+		m_physics = genericParent->get_component<SpritePhysicsComponent>();
+		m_sprite = genericParent->get_component<SpriteComponent2D>();
+		m_weapon = genericParent->get_component<Weapon>();
+		m_health = genericParent->get_component<Health>();
 		
 		if (!m_physics || !m_sprite)
 		{

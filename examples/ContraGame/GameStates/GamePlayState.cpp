@@ -304,8 +304,14 @@ namespace Pakal
 		if (!m_player || m_levelCompleted) return;
 
 		// Check if player reached goal
-		auto playerPos = m_player->get_component<SpritePhysicsComponent>()->get_position();
-		auto goalPos = m_goal->get_component<SpritePhysicsComponent>()->get_position();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* goalPhysics = m_goal ? m_goal->get_component<SpritePhysicsComponent>() : nullptr;
+		if (!playerPhysics || !goalPhysics) {
+			return;
+		}
+
+		auto playerPos = playerPhysics->get_position();
+		auto goalPos = goalPhysics->get_position();
 
 		if (std::abs(playerPos.x - goalPos.x) < 2.0f && std::abs(playerPos.y - goalPos.y) < 2.0f) {
 			m_levelCompleted = true;
@@ -318,7 +324,12 @@ namespace Pakal
 		if (!m_player) return;
 
 		// Check if player fell off the level
-		auto playerPos = m_player->get_component<SpritePhysicsComponent>()->get_position();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		if (!playerPhysics) {
+			return;
+		}
+
+		auto playerPos = playerPhysics->get_position();
 		if (playerPos.y < -5.0f) {
 			m_gameLost = true;
 			LOG_INFO("[GamePlayState] Player fell! Game over.");

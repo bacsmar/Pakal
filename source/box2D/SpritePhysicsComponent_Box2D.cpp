@@ -11,6 +11,34 @@
 
 using namespace Pakal;
 
+void SpritebodyComponent_Box2D::refresh_snapshot_from_body()
+{
+	std::lock_guard<std::mutex> lock(m_snapshot_mutex);
+	if (!m_active_body)
+	{
+		m_snapshot.initialized = false;
+		return;
+	}
+
+	auto position = m_active_body->GetPosition();
+	auto velocity = m_active_body->GetLinearVelocity();
+	auto angle = m_active_body->GetAngle();
+
+	m_snapshot.position = tmath::vector3df(position.x, position.y, 0.0f);
+	m_snapshot.angle = tmath::vector3df(0.0f, 0.0f, tmg::r2d(angle));
+	m_snapshot.lineal_velocity = tmath::vector2df(velocity.x, velocity.y);
+	m_snapshot.initialized = true;
+}
+
+void SpritebodyComponent_Box2D::reset_snapshot()
+{
+	std::lock_guard<std::mutex> lock(m_snapshot_mutex);
+	m_snapshot.position = tmath::vector3df(0.0f, 0.0f, 0.0f);
+	m_snapshot.angle = tmath::vector3df(0.0f, 0.0f, 0.0f);
+	m_snapshot.lineal_velocity = tmath::vector2df(0.0f, 0.0f);
+	m_snapshot.initialized = false;
+}
+
 SpritebodyComponent_Box2D::~SpritebodyComponent_Box2D()
 {
 	m_system = nullptr;
@@ -120,10 +148,12 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 			{
 				m_active_body->ApplyForceToCenter({ _loader.initial_force->x, _loader.initial_force->y }, true);
 			}
+			refresh_snapshot_from_body();
 		}
 		else
 		{
 			LOG_ERROR("[SpritebodyComponent] no active body created after initialization");
+			reset_snapshot();
 		}
 	});
 }
@@ -139,14 +169,14 @@ BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 			m_system->destroy_body(body.second);
 		}
 		m_bodies.clear();
+		reset_snapshot();
 	});
 }
 
 tmath::vector3df SpritebodyComponent_Box2D::get_position()
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	auto& v = m_active_body->GetPosition();
-	return tmath::vector3df(v.x,v.y,0.0f);
+	std::lock_guard<std::mutex> lock(m_snapshot_mutex);
+	return m_snapshot.position;
 }
 
 BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & position)
@@ -154,7 +184,9 @@ BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & po
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return m_system->execute_block([this, position]()
 	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->SetTransform(b2Vec2(position.x,position.y),m_active_body->GetAngle());
+		refresh_snapshot_from_body();
 	});
 }
 
@@ -163,14 +195,16 @@ BasicTaskPtr SpritebodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return m_system->execute_block([this, angle]()
 	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->SetTransform(m_active_body->GetPosition(),tmg::d2r(angle.x));
+		refresh_snapshot_from_body();
 	});
 }
 
 tmath::vector3df SpritebodyComponent_Box2D::get_angle()
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	return tmath::vector3df(0,0,tmg::r2d(m_active_body->GetAngle()));	
+	std::lock_guard<std::mutex> lock(m_snapshot_mutex);
+	return m_snapshot.angle;
 }
 
 void SpritebodyComponent_Box2D::set_scale(float scale)
@@ -189,6 +223,7 @@ void SpritebodyComponent_Box2D::apply_impulse(const tmath::vector2df& force)
 	{
 		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->ApplyLinearImpulse({ force.x, force.y }, m_active_body->GetWorldCenter(), true);
+		refresh_snapshot_from_body();
 	});
 }
 
@@ -198,14 +233,14 @@ void SpritebodyComponent_Box2D::apply_force(const tmath::vector2df& force)
 	{
 		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->ApplyForceToCenter({ force.x, force.y }, true);
+		refresh_snapshot_from_body();
 	});
 }
 
 tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]");
-	auto velocity = m_active_body->GetLinearVelocity();
-	return {velocity.x, velocity.y};
+	std::lock_guard<std::mutex> lock(m_snapshot_mutex);
+	return m_snapshot.lineal_velocity;
 }
 
 void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velocity)
@@ -214,6 +249,7 @@ void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velo
 	{
 		ASSERT_MSG(m_active_body, "[body not yet initialized]");
 		m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
+		refresh_snapshot_from_body();
 	});
 }
 

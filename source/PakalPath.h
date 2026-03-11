@@ -33,7 +33,9 @@ namespace Pakal
 		Path(const std::string& str) : m_path(str)
 		{
 			std::replace(m_path.begin(), m_path.end(), '\\', '/');
+			#ifdef _WIN32
 			std::transform(m_path.begin(), m_path.end(), m_path.begin(), ::tolower);
+			#endif
 		}
 		Path(const char* str) : Path( std::string(str)) {}
 		Path(const Path& other) : m_path { other.m_path } {}
