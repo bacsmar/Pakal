@@ -9,8 +9,8 @@
 #include "Weapon.h"
 #include "Entity.h"
 #include "LogMgr.h"
-#include "bgfx/SpriteComponent_Bgfx.h"
-#include "box2D/SpritePhysicsComponent_Box2D.h"
+#include "components/SpriteComponent2D.h"
+#include "components/SpritePhysicsComponent.h"
 #include "InputManager_Polling.h"
 
 namespace Pakal
@@ -40,8 +40,8 @@ namespace Pakal
 			return;
 		
 		// Get component references
-		m_physics = parent->get_component<SpritebodyComponent_Box2D>();
-		m_sprite = parent->get_component<SpriteComponent_Bgfx>();
+		m_physics = parent->get_component<SpritePhysicsComponent>();
+		m_sprite = parent->get_component<SpriteComponent2D>();
 		m_weapon = parent->get_component<Weapon>();
 		m_health = parent->get_component<Health>();
 		
@@ -161,7 +161,7 @@ namespace Pakal
 			return;
 		
 		// Update sprite flip based on facing direction
-		// Note: SpriteComponent_Bgfx may not have set_flip method; check actual API
+		// Note: SpriteComponent2D may not have set_flip method; check actual API
 		// m_sprite->set_flip_horizontal(!m_facingRight);
 		
 		// Update animation state based on movement

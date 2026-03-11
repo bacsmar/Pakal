@@ -14,6 +14,7 @@
 #include "EntityManager.h"
 #include "Entity.h"
 #include "LogMgr.h"
+#include <algorithm> // Add this for std::find
 
 // Game components
 #include "../Components/Health.h"
@@ -22,13 +23,42 @@
 #include "../Components/EnemyAI.h"
 
 // Engine components  
-#include "bgfx/SpriteComponent_Bgfx.h"
-#include "bgfx/CameraComponent_Bgfx.h"
-#include "box2D/SpritePhysicsComponent_Box2D.h"
+#include "components/SpriteComponent2D.h"
+#include "components/CameraComponent2D.h"
 #include "InputManager_Polling.h"
 
 namespace Pakal
 {
+	namespace
+	{
+		SpriteSheetPhysicsPtr create_box_body_physics(float halfWidth, float halfHeight, bool dynamicBody, bool fixedRotation)
+		{
+			auto sheet = std::make_shared<SpriteSheetPhysics>();
+			auto* body = new SpritePhysics();
+			body->name = "default";
+			body->dynamic = dynamicBody;
+			body->fixed_rotation = fixedRotation;
+
+			SpritePhysics::Fixture fixture;
+			fixture.type = "POLYGON";
+			fixture.scale = 1.0f;
+			fixture.density = 1.0f;
+			fixture.friction = 0.3f;
+			fixture.restitution = 0.0f;
+
+			SpritePhysics::Polygon polygon;
+			polygon.m_vertices.emplace_back(-halfWidth, -halfHeight);
+			polygon.m_vertices.emplace_back(halfWidth, -halfHeight);
+			polygon.m_vertices.emplace_back(halfWidth, halfHeight);
+			polygon.m_vertices.emplace_back(-halfWidth, halfHeight);
+			fixture.m_polygons.emplace_back(std::move(polygon));
+
+			body->m_fixtures.emplace_back(std::move(fixture));
+			sheet->bodies.emplace_back(body);
+			return sheet;
+		}
+	}
+
 	GamePlayState::GamePlayState() : BaseGameState("GamePlay"),
 		m_engine(nullptr),
 		m_player(nullptr),
@@ -168,12 +198,12 @@ namespace Pakal
 
 		if (m_player)
 		{
-			auto* physics = m_player->get_component<SpritebodyComponent_Box2D>();
+			auto* physics = m_player->get_component<SpritePhysicsComponent>();
 			if (physics)
 			{
 				physics->set_position(tmath::vector3df(config.startX, 0.0f, 0.0f));
 			}
-			auto* sprite = m_player->get_component<SpriteComponent_Bgfx>();
+			auto* sprite = m_player->get_component<SpriteComponent2D>();
 			if (sprite)
 			{
 				sprite->set_position(config.startX, 0.0f);
@@ -248,17 +278,17 @@ namespace Pakal
 		register_level_entity(platform);
 		
 		// Add and configure sprite component
-		auto* sprite = platform->create_component<SpriteComponent_Bgfx>();
+		auto* sprite = platform->create_component<SpriteComponent2D>();
 		sprite->set_position(x, y);
 		sprite->set_scale(width, height);
 		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
 		sprite->set_texture("Assets/sprites/platform.png");
 		
 		// Add and configure physics component for static platform
-		auto* physics = platform->create_component<SpritebodyComponent_Box2D>();
-		SpritePhysicsComponent::Settings physics_settings;
+		auto* physics = platform->create_component<SpritePhysicsComponent>();
+		SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(width * 0.5f, height * 0.5f, false, true));
 		physics_settings.position = tmath::vector3df(x, y, 0.0f);
-		physics_settings.scale = width;
+		physics_settings.scale = 1.0f;
 		physics->initialize(physics_settings);
 		physics->set_type(SpritePhysicsComponent::StaticBody);
 	}
@@ -273,7 +303,7 @@ namespace Pakal
 		register_level_entity(m_player);
 		
 		// Add sprite component
-		auto* sprite = m_player->create_component<SpriteComponent_Bgfx>();
+		auto* sprite = m_player->create_component<SpriteComponent2D>();
 		sprite->set_position(0.0f, 0.0f);
 		sprite->set_scale(1.0f, 2.0f);
 		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -296,8 +326,8 @@ namespace Pakal
 		controller->set_jump_force(10.0f);
 		
 		// Add physics component for dynamic player body
-		auto* physics = m_player->create_component<SpritebodyComponent_Box2D>();
-		SpritePhysicsComponent::Settings physics_settings;
+		auto* physics = m_player->create_component<SpritePhysicsComponent>();
+		SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(0.5f, 1.0f, true, true));
 		physics_settings.position = tmath::vector3df(0.0f, 0.0f, 0.0f);
 		physics_settings.scale = 1.0f;
 		physics->initialize(physics_settings);
@@ -327,7 +357,7 @@ namespace Pakal
 			float yPos = (i % 2 == 0) ? 0.0f : 1.0f;
 			
 			// Add sprite component
-			auto* sprite = enemy->create_component<SpriteComponent_Bgfx>();
+			auto* sprite = enemy->create_component<SpriteComponent2D>();
 			sprite->set_position(xPos, yPos);
 			sprite->set_scale(1.0f, 2.0f);
 			sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -351,8 +381,8 @@ namespace Pakal
 			ai->set_player_entity(m_player);
 			
 			// Add physics component for dynamic enemy body
-			auto* physics = enemy->create_component<SpritebodyComponent_Box2D>();
-			SpritePhysicsComponent::Settings physics_settings;
+			auto* physics = enemy->create_component<SpritePhysicsComponent>();
+			SpritePhysicsComponent::Settings physics_settings(create_box_body_physics(0.5f, 1.0f, true, true));
 			physics_settings.position = tmath::vector3df(xPos, yPos, 0.0f);
 			physics_settings.scale = 1.0f;
 			physics->initialize(physics_settings);
@@ -376,7 +406,7 @@ namespace Pakal
 		register_level_entity(m_camera);
 		
 		// Add camera component
-		auto* camera = m_camera->create_component<CameraComponent_Bgfx>();
+		auto* camera = m_camera->create_component<CameraComponent2D>();
 		camera->set_orthographic(32.0f, 18.0f);
 		camera->set_viewport(0, 0, 1280, 720);
 		camera->set_position(0.0f, 0.0f);
@@ -393,6 +423,7 @@ namespace Pakal
 		camera->set_bounds(-2.0f, -10.0f, maxX, 10.0f);
 	}
 	
+//////////. ..
 	void GamePlayState::update_game_logic(float deltaTime)
 	{
 		// Update player controller
@@ -411,12 +442,40 @@ namespace Pakal
 			}
 		}
 		
-		// Update enemies
-		for (GenericEntity* enemy : m_enemies)
+		// Update enemies and handle dead enemies
+		std::vector<GenericEntity*>::iterator it = m_enemies.begin();
+		while (it != m_enemies.end())
 		{
+			GenericEntity* enemy = *it;
 			if (!enemy)
+			{
+				it = m_enemies.erase(it);
 				continue;
+			}
 			
+			// Check if enemy is dead
+			auto* health = enemy->get_component<Health>();
+			if (health && !health->is_alive())
+			{
+				// Remove dead enemy from level entities
+				auto levelIt = std::find(m_levelEntities.begin(), m_levelEntities.end(), enemy);
+				if (levelIt != m_levelEntities.end())
+				{
+					m_levelEntities.erase(levelIt);
+				}
+				
+				// Remove from enemies list
+				it = m_enemies.erase(it);
+				
+				// Increment kill count
+				m_enemiesKilled++;
+				
+				// Delete the enemy entity
+				delete enemy;
+				continue;
+			}
+			
+			// Update enemy components if alive
 			auto* ai = enemy->get_component<EnemyAI>();
 			if (ai)
 			{
@@ -428,12 +487,14 @@ namespace Pakal
 			{
 				weapon->update(deltaTime);
 			}
+			
+			++it;
 		}
 		
 		// Update camera
 		if (m_camera)
 		{
-			auto* camera = m_camera->get_component<CameraComponent_Bgfx>();
+			auto* camera = m_camera->get_component<CameraComponent2D>();
 			if (camera)
 			{
 				camera->update(deltaTime);
@@ -464,7 +525,7 @@ namespace Pakal
 		}
 
 		// Fail condition: player falls out of map
-		auto* physics = m_player->get_component<SpritebodyComponent_Box2D>();
+		auto* physics = m_player->get_component<SpritePhysicsComponent>();
 		if (physics)
 		{
 			auto playerPos = physics->get_position();
@@ -475,12 +536,21 @@ namespace Pakal
 				return;
 			}
 
-			// Level completion: reach right-side objective
+			// Level completion: reach right-side objective AND kill all enemies
 			if (playerPos.x >= m_playerGoalX)
 			{
-				m_levelCompleted = true;
-				m_gameWon = (m_currentLevel >= m_maxLevels);
-				LOG_INFO("[GamePlayState] Level %d complete!", m_currentLevel);
+				// Check if all enemies are defeated
+				if (m_enemiesKilled >= m_totalEnemies)
+				{
+					m_levelCompleted = true;
+					m_gameWon = (m_currentLevel >= m_maxLevels);
+					LOG_INFO("[GamePlayState] Level %d complete! All enemies defeated.", m_currentLevel);
+				}
+				else
+				{
+					// Player reached goal but hasn't defeated all enemies yet
+					LOG_INFO("[GamePlayState] Reached goal but need to defeat all enemies first.");
+				}
 			}
 		}
 	}

@@ -21,9 +21,12 @@ namespace Pakal
 
 		struct Settings
 		{
-			SpriteSheetPhysicsPtr sprite_physics = std::make_shared<SpriteSheetPhysics>();
+			SpriteSheetPhysicsPtr sprite_physics;
 			tmath::vector3df position;
 			float scale = 1.f;
+
+			Settings() = default;
+			explicit Settings(const SpriteSheetPhysicsPtr& physics) : sprite_physics(physics) {}
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& loader) = 0;

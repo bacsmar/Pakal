@@ -10,19 +10,22 @@
 
 #pragma once
 #include "Config.h"
-#include "Component.h"
+#include <ostream>
+#include <type_traits>
+#include <cmath>
 #include <bgfx/bgfx.h>
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include <string>
+#include "components/SpriteComponent2D.h"
 
 namespace Pakal
 {
 	class BgfxGraphicsSystem;
 
-	class _PAKALExport SpriteComponent_Bgfx : public Component
+	class _PAKALExport SpriteComponent_Bgfx : public SpriteComponent2D	
 	{
-		DECLARE_RTTI_WITH_BASE(SpriteComponent_Bgfx, Component);
+		DECLARE_RTTI_WITH_BASE(SpriteComponent_Bgfx, SpriteComponent2D);
 		
 	public:
 		explicit SpriteComponent_Bgfx(BgfxGraphicsSystem* graphicsSystem = nullptr);
@@ -35,7 +38,7 @@ namespace Pakal
 		// Transform
 		void set_position(const tmath::vectorn<float, 2>& pos);
 		void set_position(float x, float y);
-		tmath::vectorn<float, 2> get_position() const { return m_position; }
+		//tmath::vectorn<float, 2> get_position() const { return m_position; }
 		
 		void set_rotation(float angle); // In radians
 		float get_rotation() const { return m_rotation; }
@@ -43,7 +46,7 @@ namespace Pakal
 		void set_scale(const tmath::vectorn<float, 2>& scale);
 		void set_scale(float x, float y);
 		void set_scale(float uniform) { set_scale(uniform, uniform); }
-		tmath::vectorn<float, 2> get_scale() const { return m_scale; }
+		//tmath::vectorn<float, 2> get_scale() const { return m_scale; }
 		
 		void set_origin(float x, float y); // Pivot point (0,0 = top-left, 0.5,0.5 = center)
 		tmath::vectorn<float, 2> get_origin() const { return m_origin; }

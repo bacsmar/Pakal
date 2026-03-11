@@ -7,6 +7,7 @@
 #include "ContraGame.h"
 #include "Engine.h"
 #include "ComponentManager.h"
+#include "ComponentFactory.h"
 #include "GameStateManager.h"
 #include "LogMgr.h"
 
@@ -19,10 +20,7 @@
 #include "Components/Weapon.h"
 #include "Components/PlayerController.h"
 #include "Components/EnemyAI.h"
-
-// Engine components
-#include "bgfx/SpriteComponent_Bgfx.h"
-#include "bgfx/CameraComponent_Bgfx.h"
+#include "Components/Projectile.h"
 
 namespace Pakal
 {
@@ -47,11 +45,19 @@ namespace Pakal
 	void ContraGame::register_components(Engine& engine)
 	{
 		LOG_INFO("[ContraGame] Registering game components");
-		
-		// Component registration happens automatically when components are created
-		// via ComponentManager::create_component<T>()
-		// Custom components (Health, Weapon, PlayerController, EnemyAI) will be
-		// instantiated directly in GamePlayState methods
+
+		auto* componentMgr = engine.component_manager();
+		if (!componentMgr)
+		{
+			LOG_ERROR("[ContraGame] ComponentManager is null; cannot register game components");
+			return;
+		}
+
+		componentMgr->register_factory(CreateComponentFactory<Health, Health>());
+		componentMgr->register_factory(CreateComponentFactory<Weapon, Weapon>());
+		componentMgr->register_factory(CreateComponentFactory<PlayerController, PlayerController>());
+		componentMgr->register_factory(CreateComponentFactory<EnemyAI, EnemyAI>());
+		componentMgr->register_factory(CreateComponentFactory<Projectile, Projectile>());
 	}
 	
 	void ContraGame::setup_game_states(Engine& engine)

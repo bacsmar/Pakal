@@ -10,20 +10,23 @@
 
 #pragma once
 #include "Config.h"
-#include "Component.h"
 #include "ICameraComponent_Bgfx.h"
+#include <ostream>
+#include <type_traits>
+#include <cmath>
 #include <bgfx/bgfx.h>
 #include "math/vector2.h"
 #include "math/vector3.h"
+#include "components/CameraComponent2D.h"
 
 namespace Pakal
 {
 	class Entity;
 	class BgfxGraphicsSystem;
 	
-	class _PAKALExport CameraComponent_Bgfx : public Component, public ICameraComponent_Bgfx
+	class _PAKALExport CameraComponent_Bgfx : public CameraComponent2D, public ICameraComponent_Bgfx
 	{
-		DECLARE_RTTI_WITH_BASE(CameraComponent_Bgfx, Component);
+		DECLARE_RTTI_WITH_BASE(CameraComponent_Bgfx, CameraComponent2D);
 		
 	public:
 		explicit CameraComponent_Bgfx(BgfxGraphicsSystem* graphicsSystem = nullptr);

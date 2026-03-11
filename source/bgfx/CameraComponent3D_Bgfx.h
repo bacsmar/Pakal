@@ -8,18 +8,21 @@
 
 #pragma once
 #include "Config.h"
-#include "Component.h"
 #include "ICameraComponent_Bgfx.h"
+#include <ostream>
+#include <type_traits>
+#include <cmath>
 #include "math/vector3.h"
 #include <bgfx/bgfx.h>
+#include "components/CameraComponent3D.h"
 
 namespace Pakal
 {
 	class BgfxGraphicsSystem;
 
-	class _PAKALExport CameraComponent3D_Bgfx : public Component, public ICameraComponent_Bgfx
+	class _PAKALExport CameraComponent3D_Bgfx : public CameraComponent3D, public ICameraComponent_Bgfx
 	{
-		DECLARE_RTTI_WITH_BASE(CameraComponent3D_Bgfx, Component);
+		DECLARE_RTTI_WITH_BASE(CameraComponent3D_Bgfx, CameraComponent3D);
 
 	public:
 		explicit CameraComponent3D_Bgfx(BgfxGraphicsSystem* graphicsSystem = nullptr);

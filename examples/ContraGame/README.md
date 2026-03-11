@@ -40,8 +40,8 @@ make ContraGame
 - **SFML**: Input handling and audio
 
 ### Rendering Components
-- **SpriteComponent_Bgfx**: 2D sprite rendering with support for animation, scaling, rotation, and color tinting
-- **CameraComponent_Bgfx**: 2D orthographic camera with smooth following and boundary constraints
+- **SpriteComponent2D**: Backend-agnostic 2D sprite wrapper for animation, scaling, rotation, and color tinting
+- **CameraComponent2D**: Backend-agnostic 2D orthographic camera with smooth following and boundary constraints
 
 ### Game Components
 - **PlayerController**: Handles player input, movement, and actions
@@ -235,6 +235,7 @@ This section is the implementation handoff to continue and finish the current Co
 - Do not remove existing title state and level transition flow.
 - Keep compatibility with current bgfx+Box2D architecture.
 - Prefer minimal, testable increments (build after each phase).
+- try to NOT modify pakal engine.
 
 ### Validation Checklist (must pass)
 

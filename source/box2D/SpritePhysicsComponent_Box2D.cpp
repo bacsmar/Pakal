@@ -5,6 +5,8 @@
 #include "components/SpritePhysics.h"
 
 #include "LogMgr.h"
+#include <algorithm>
+#include <cmath>
 
 
 using namespace Pakal;
@@ -20,9 +22,9 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 	return m_system->execute_block([this, _loader]()	// copy the smartpointer, just to keep our data alive.
 	{
 		auto& loader = _loader.sprite_physics;		// we are only interested (for now) in the sprite_physics
-		if (loader->bodies.size() < 1)
+		if (!loader || loader->bodies.empty())
 		{
-			LOG_ERROR("[SpritebodyComponent] there are no bodies in the loader");
+			ASSERT_MSG(loader, "[SpritebodyComponent] SpriteSheetPhysics loader is null");
 			return;
 		}
 		// bodies
@@ -84,7 +86,6 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 						b2PolygonShape shape;
 						shape.Set(&vertices[0], vertices.size());
 						fixtureDef.shape = &shape;
-						body->CreateFixture(&fixtureDef);
 						auto fixturePtr = body->CreateFixture(&fixtureDef);
 						fixturePtr->GetUserData().pointer = static_cast<uintptr_t>(fixtureIndex++);
 						m_fixtures.emplace_back(fixturePtr);
@@ -92,7 +93,14 @@ BasicTaskPtr SpritebodyComponent_Box2D::initialize(const Settings& _loader)
 				}								
 			}
 		}
-		m_active_body = m_bodies.begin()->second;
+		if (!m_bodies.empty())
+		{
+			m_active_body = m_bodies.begin()->second;
+		}
+		else
+		{
+			LOG_ERROR("[SpritebodyComponent] no active body created after initialization");
+		}
 	});
 }
 
@@ -112,13 +120,14 @@ BasicTaskPtr SpritebodyComponent_Box2D::terminate()
 
 tmath::vector3df SpritebodyComponent_Box2D::get_position()
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	auto& v = m_active_body->GetPosition();
 	return tmath::vector3df(v.x,v.y,0.0f);
 }
 
 BasicTaskPtr SpritebodyComponent_Box2D::set_position(const tmath::vector3df & position)
 {
-	ASSERT_MSG(m_active_body, "[body not yet initialized]"); 
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return m_system->execute_block([this, position]()
 	{
 		m_active_body->SetTransform(b2Vec2(position.x,position.y),m_active_body->GetAngle());
@@ -136,6 +145,7 @@ BasicTaskPtr SpritebodyComponent_Box2D::set_angle(const tmath::vector3df& angle)
 
 tmath::vector3df SpritebodyComponent_Box2D::get_angle()
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return tmath::vector3df(0,0,tmg::r2d(m_active_body->GetAngle()));	
 }
 
@@ -151,32 +161,38 @@ float SpritebodyComponent_Box2D::get_scale()
 
 void SpritebodyComponent_Box2D::apply_impulse(const tmath::vector2df& force)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	m_active_body->ApplyLinearImpulse({force.x, force.y}, m_active_body->GetWorldCenter(), true);
 }
 
 void SpritebodyComponent_Box2D::apply_force(const tmath::vector2df& force)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	m_active_body->ApplyForceToCenter({ force.x, force.y }, true);
 }
 
 tmath::vector2df SpritebodyComponent_Box2D::get_lineal_velocity() const
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	auto velocity = m_active_body->GetLinearVelocity();
 	return {velocity.x, velocity.y};
 }
 
 void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velocity)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	m_active_body->SetLinearVelocity({ velocity.x,velocity.y });
 }
 
 bool SpritebodyComponent_Box2D::fixed_rotation() const
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	return m_active_body->IsFixedRotation();
 }
 
 void SpritebodyComponent_Box2D::set_fixed_rotation(bool val)
 {
+	ASSERT_MSG(m_active_body, "[body not yet initialized]");
 	m_active_body->SetFixedRotation(val);
 }
 

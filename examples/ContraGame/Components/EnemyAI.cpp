@@ -9,8 +9,8 @@
 #include "Weapon.h"
 #include "Entity.h"
 #include "LogMgr.h"
-#include "bgfx/SpriteComponent_Bgfx.h"
-#include "box2D/SpritePhysicsComponent_Box2D.h"
+#include "components/SpriteComponent2D.h"
+#include "components/SpritePhysicsComponent.h"
 #include <cmath>
 
 namespace Pakal
@@ -39,8 +39,8 @@ namespace Pakal
 			return;
 		
 		// Get component references
-		m_physics = parent->get_component<SpritebodyComponent_Box2D>();
-		m_sprite = parent->get_component<SpriteComponent_Bgfx>();
+		m_physics = parent->get_component<SpritePhysicsComponent>();
+		m_sprite = parent->get_component<SpriteComponent2D>();
 		m_weapon = parent->get_component<Weapon>();
 		m_health = parent->get_component<Health>();
 		
@@ -134,7 +134,7 @@ namespace Pakal
 			return;
 		
 		// Get player's physics component to calculate distance
-		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		
@@ -179,7 +179,7 @@ namespace Pakal
 			return;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		
@@ -217,7 +217,7 @@ namespace Pakal
 			return false;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return false;
 		
@@ -245,7 +245,7 @@ namespace Pakal
 			return;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritebodyComponent_Box2D>();
+		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		

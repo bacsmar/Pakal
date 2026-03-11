@@ -14,8 +14,8 @@
 #include "InputManager_Polling.h"
 #include "EventArgs.h"
 
-#include "bgfx/SpriteComponent_Bgfx.h"
-#include "bgfx/CameraComponent_Bgfx.h"
+#include "components/SpriteComponent2D.h"
+#include "components/CameraComponent2D.h"
 
 namespace Pakal
 {
@@ -82,7 +82,7 @@ namespace Pakal
 
 			if (m_prompt)
 			{
-				auto* sprite = m_prompt->get_component<SpriteComponent_Bgfx>();
+				auto* sprite = m_prompt->get_component<SpriteComponent2D>();
 				if (sprite)
 				{
 					const float alpha = m_promptVisible ? 1.0f : 0.2f;
@@ -113,8 +113,8 @@ namespace Pakal
 			return;
 		}
 
-		LOG_INFO("[GameTitleState] Creating CameraComponent_Bgfx...");
-		auto* camera = m_camera->create_component<CameraComponent_Bgfx>();
+		LOG_INFO("[GameTitleState] Creating CameraComponent2D...");
+		auto* camera = m_camera->create_component<CameraComponent2D>();
 		if (camera)
 		{
 			LOG_INFO("[GameTitleState] Camera component created successfully");
@@ -140,8 +140,8 @@ namespace Pakal
 			return;
 		}
 
-		LOG_INFO("[GameTitleState] Creating background SpriteComponent_Bgfx...");
-		auto* sprite = m_background->create_component<SpriteComponent_Bgfx>();
+		LOG_INFO("[GameTitleState] Creating background SpriteComponent2D...");
+		auto* sprite = m_background->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Background sprite component created successfully");
@@ -168,7 +168,7 @@ namespace Pakal
 			return;
 		}
 
-		auto* sprite = m_overlay->create_component<SpriteComponent_Bgfx>();
+		auto* sprite = m_overlay->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			sprite->create_solid_color(0xFFFFFFFF, 1, 1);
@@ -190,8 +190,8 @@ namespace Pakal
 			return;
 		}
 
-		LOG_INFO("[GameTitleState] Creating prompt SpriteComponent_Bgfx...");
-		auto* sprite = m_prompt->create_component<SpriteComponent_Bgfx>();
+		LOG_INFO("[GameTitleState] Creating prompt SpriteComponent2D...");
+		auto* sprite = m_prompt->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Prompt sprite component created successfully");

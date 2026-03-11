@@ -11,8 +11,8 @@
 
 namespace Pakal
 {
-	class SpritebodyComponent_Box2D;
-	class SpriteComponent_Bgfx;
+	class SpritePhysicsComponent;
+		class SpriteComponent2D;
 	class Weapon;
 	class Health;
 	
@@ -43,8 +43,8 @@ namespace Pakal
 		void check_ground_collision();
 		
 		// Components (obtained in initialize())
-		SpritebodyComponent_Box2D* m_physics;
-		SpriteComponent_Bgfx* m_sprite;
+		SpritePhysicsComponent* m_physics;
+		SpriteComponent2D* m_sprite;
 		Weapon* m_weapon;
 		Health* m_health;
 		

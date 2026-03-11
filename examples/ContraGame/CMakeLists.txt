@@ -6,6 +6,11 @@ file(GLOB_RECURSE CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
 )
+# Explicitly add the new Projectile component
+list(APPEND CONTRA_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Components/Projectile.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Components/Projectile.h"
+)
 
 set(CONTRA_HOST_MAIN ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 set(CONTRA_MODULE_ENTRY ${CMAKE_CURRENT_SOURCE_DIR}/ContraGameModule.cpp)
