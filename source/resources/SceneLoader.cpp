@@ -23,6 +23,16 @@ namespace Pakal
 	{
 	}
 
+	GenericEntity* SceneLoader::resolve_entity(EntityHandle handle) const
+	{
+		if (!m_engine || !m_engine->entity_manager())
+		{
+			return nullptr;
+		}
+
+		return m_engine->entity_manager()->resolve<GenericEntity>(handle);
+	}
+
 	bool SceneLoader::load_scene(const std::string& scenePath)
 	{
 		LOG_INFO("[SceneLoader] Loading scene from file: %s", scenePath.c_str());
@@ -182,8 +192,8 @@ namespace Pakal
 		}
 
 		// Transfer loaded entities to our list
-		for (auto entity : assetLoader.get_loaded_entities()) {
-			m_loadedEntities.push_back(entity);
+		for (const auto& handle : assetLoader.get_loaded_entity_handles()) {
+			m_loadedEntities.push_back(handle);
 		}
 
 		LOG_INFO("[SceneLoader] Loaded %zu entities for scene", m_loadedEntities.size());
@@ -202,26 +212,42 @@ namespace Pakal
 		return SceneLoader::SpawnPoint{"", tmath::vector3df(0, 0, 0)};
 	}
 
-	GenericEntity* SceneLoader::get_entity(const std::string& descriptor)
+	EntityHandle SceneLoader::get_entity_handle(const std::string& descriptor) const
 	{
-		for (auto entity : m_loadedEntities) {
+		for (const auto& handle : m_loadedEntities) {
+			auto* entity = resolve_entity(handle);
 			if (entity && entity->get_descriptor() == descriptor) {
-				return entity;
+				return handle;
 			}
 		}
-		return nullptr;
+		return {};
+	}
+
+	GenericEntity* SceneLoader::get_entity(const std::string& descriptor)
+	{
+		return resolve_entity(get_entity_handle(descriptor));
+	}
+
+	const std::vector<GenericEntity*>& SceneLoader::get_loaded_entities() const
+	{
+		m_loadedEntityCache.clear();
+		m_loadedEntityCache.reserve(m_loadedEntities.size());
+
+		for (const auto& handle : m_loadedEntities)
+		{
+			if (auto* entity = resolve_entity(handle))
+			{
+				m_loadedEntityCache.push_back(entity);
+			}
+		}
+
+		return m_loadedEntityCache;
 	}
 
 	bool SceneLoader::validate_required_entities(const std::vector<std::string>& required_entities) const
 	{
 		for (const auto& requiredName : required_entities) {
-			bool found = false;
-			for (const auto& entity : m_loadedEntities) {
-				if (entity && entity->get_descriptor() == requiredName) {
-					found = true;
-					break;
-				}
-			}
+			bool found = get_entity_handle(requiredName).is_valid();
 			
 			if (!found) {
 				LOG_ERROR("[SceneLoader] Required entity not found in scene: %s", requiredName.c_str());
@@ -236,6 +262,7 @@ namespace Pakal
 	void SceneLoader::unload_scene()
 	{
 		m_loadedEntities.clear();
+		m_loadedEntityCache.clear();
 		m_metadata.spawn_points.clear();
 		m_metadata.scene_name = "";
 		m_metadata.difficulty = 1;

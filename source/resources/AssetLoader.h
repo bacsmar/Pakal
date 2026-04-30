@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Config.h"
+#include "EntityHandle.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -60,12 +61,18 @@ namespace Pakal
 		 * @param descriptor Entity descriptor from JSON definition
 		 * @return Pointer to loaded entity, or nullptr if not found
 		 */
+		EntityHandle get_entity_handle(const std::string& descriptor) const;
 		GenericEntity* get_entity(const std::string& descriptor);
+
+		/**
+		 * Get all loaded entity handles
+		 */
+		const std::vector<EntityHandle>& get_loaded_entity_handles() const { return m_loadedEntities; }
 
 		/**
 		 * Get all loaded entities
 		 */
-		const std::vector<GenericEntity*>& get_loaded_entities() const { return m_loadedEntities; }
+		const std::vector<GenericEntity*>& get_loaded_entities() const;
 
 		/**
 		 * Clear all loaded entities
@@ -76,9 +83,11 @@ namespace Pakal
 		Engine* m_engine;
 		EntityManager* m_entityManager;
 		ComponentManager* m_componentManager;
-		std::vector<GenericEntity*> m_loadedEntities;
+		std::vector<EntityHandle> m_loadedEntities;
+		mutable std::vector<GenericEntity*> m_loadedEntityCache;
 
 		// Internal parsing and creation methods
+		GenericEntity* resolve_entity(EntityHandle handle) const;
 		bool create_entity_from_json(const std::string& entityName, const JsonValue& entityDef);
 		bool create_component_from_json(GenericEntity* entity, const JsonValue& componentDef);
 

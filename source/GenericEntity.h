@@ -27,6 +27,8 @@ namespace Pakal
 
 		void add_component(Component *c);
 		void remove_component(Component *c);
+		bool destroy_component(Component* c);
+		const std::vector<Component*>& get_components() const { return m_components; }
 		
 		// Expose base class template version
 		using Entity::get_component;
@@ -48,6 +50,7 @@ namespace Pakal
 
 		// Set the component manager (called during entity creation)
 		void set_component_manager(ComponentManager* cm) { m_component_manager = cm; }
+		ComponentManager* get_component_manager() const { return m_component_manager; }
 
 		template <class T>
 		T* create_component()

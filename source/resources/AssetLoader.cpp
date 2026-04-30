@@ -12,9 +12,43 @@
 #include "components/CameraComponent2D.h"
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 namespace Pakal
 {
+	namespace
+	{
+		SpriteSheetPhysicsPtr create_box_physics(float width, float height, const SpritePhysicsComponent::Settings& settings, const JsonValue& data)
+		{
+			auto sheet = std::make_shared<SpriteSheetPhysics>();
+			auto* body = new SpritePhysics();
+			body->name = "body";
+			body->dynamic = !settings.body_type.has_value() || settings.body_type.value() == SpritePhysicsComponent::DynamicBody;
+			body->fixed_rotation = settings.fixed_rotation.value_or(false);
+			body->gravity_scale = settings.gravity_scale.value_or(1.0f);
+
+			SpritePhysics::Fixture fixture;
+			fixture.type = "POLYGON";
+			fixture.density = data.has("density") ? data["density"].as_float(1.0f) : 1.0f;
+			fixture.friction = data.has("friction") ? data["friction"].as_float(0.0f) : 0.0f;
+			fixture.restitution = data.has("restitution") ? data["restitution"].as_float(0.0f) : 0.0f;
+			fixture.is_sensor = data.has("is_sensor") ? data["is_sensor"].as_bool(false) : false;
+
+			const float halfWidth = width * 0.5f;
+			const float halfHeight = height * 0.5f;
+			SpritePhysics::Polygon polygon;
+			polygon.m_vertices.emplace_back(-halfWidth, -halfHeight);
+			polygon.m_vertices.emplace_back(halfWidth, -halfHeight);
+			polygon.m_vertices.emplace_back(halfWidth, halfHeight);
+			polygon.m_vertices.emplace_back(-halfWidth, halfHeight);
+			fixture.m_polygons.emplace_back(std::move(polygon));
+
+			body->m_fixtures.emplace_back(std::move(fixture));
+			sheet->bodies.emplace_back(body);
+			return sheet;
+		}
+	}
+
 	AssetLoader::AssetLoader(Engine* engine)
 		: m_engine(engine),
 		  m_entityManager(nullptr),
@@ -94,19 +128,53 @@ namespace Pakal
 		return loadedCount;
 	}
 
+	GenericEntity* AssetLoader::resolve_entity(EntityHandle handle) const
+	{
+		if (!m_entityManager)
+		{
+			return nullptr;
+		}
+
+		return m_entityManager->resolve<GenericEntity>(handle);
+	}
+
+
+		EntityHandle AssetLoader::get_entity_handle(const std::string& descriptor) const
+		{
+			for (const auto& handle : m_loadedEntities) {
+				auto* entity = resolve_entity(handle);
+				if (entity && entity->get_descriptor() == descriptor) {
+					return handle;
+				}
+			}
+			return {};
+		}
+
 	GenericEntity* AssetLoader::get_entity(const std::string& descriptor)
 	{
-		for (auto entity : m_loadedEntities) {
-			if (entity && entity->get_descriptor() == descriptor) {
-				return entity;
-			}
+			return resolve_entity(get_entity_handle(descriptor));
 		}
-		return nullptr;
+
+		const std::vector<GenericEntity*>& AssetLoader::get_loaded_entities() const
+		{
+			m_loadedEntityCache.clear();
+			m_loadedEntityCache.reserve(m_loadedEntities.size());
+
+			for (const auto& handle : m_loadedEntities)
+			{
+				if (auto* entity = resolve_entity(handle))
+				{
+					m_loadedEntityCache.push_back(entity);
+				}
+			}
+
+			return m_loadedEntityCache;
 	}
 
 	void AssetLoader::clear()
 	{
 		m_loadedEntities.clear();
+			m_loadedEntityCache.clear();
 	}
 
 	bool AssetLoader::create_entity_from_json(const std::string& entityName, const JsonValue& entityDef)
@@ -144,7 +212,7 @@ namespace Pakal
 			}
 		}
 
-		m_loadedEntities.push_back(entity);
+		m_loadedEntities.push_back(entity->get_handle());
 		return true;
 	}
 
@@ -231,14 +299,14 @@ namespace Pakal
 			settings.gravity_scale = data["gravity_scale"].as_float(1.0f);
 		}
 
-		// Initialize with empty physics for now (caller will populate)
-		// This ensures the component exists and can be referenced
-		if (!settings.sprite_physics) {
-			auto sheet = std::make_shared<SpriteSheetPhysics>();
-			settings.sprite_physics = sheet;
-		}
+		float width = data.has("width") ? data["width"].as_float(1.0f) : 1.0f;
+		float height = data.has("height") ? data["height"].as_float(1.0f) : 1.0f;
+		settings.sprite_physics = create_box_physics(width, height, settings, data);
 
-		component->initialize(settings);
+		auto initializeTask = component->initialize(settings);
+		if (initializeTask) {
+			initializeTask->wait();
+		}
 		return true;
 	}
 
@@ -345,9 +413,65 @@ namespace Pakal
 			return false;
 		}
 
-		// Set camera properties if specified
-		if (data.has("viewport_width")) {
-			// Settings would be applied here if component allows it
+		// Set orthographic projection
+		float orthoWidth = 1280.0f;
+		float orthoHeight = 720.0f;
+		float nearPlane = 0.1f;
+		float farPlane = 100.0f;
+
+		if (data.has("orthographic")) {
+			const JsonValue& orthoObj = data["orthographic"];
+			if (orthoObj.is_object()) {
+				orthoWidth = orthoObj["width"].as_float(1280.0f);
+				orthoHeight = orthoObj["height"].as_float(720.0f);
+				nearPlane = orthoObj["near"].as_float(0.1f);
+				farPlane = orthoObj["far"].as_float(100.0f);
+			}
+		}
+		component->set_orthographic(orthoWidth, orthoHeight, nearPlane, farPlane);
+
+		// Set viewport
+		int viewportX = 0;
+		int viewportY = 0;
+		int viewportWidth = 1280;
+		int viewportHeight = 720;
+
+		if (data.has("viewport")) {
+			const JsonValue& viewportObj = data["viewport"];
+			if (viewportObj.is_object()) {
+				viewportX = viewportObj["x"].as_int(0);
+				viewportY = viewportObj["y"].as_int(0);
+				viewportWidth = viewportObj["width"].as_int(1280);
+				viewportHeight = viewportObj["height"].as_int(720);
+			}
+		}
+		component->set_viewport(viewportX, viewportY, viewportWidth, viewportHeight);
+
+		// Set initial position
+		if (data.has("position")) {
+			const JsonValue& posObj = data["position"];
+			if (posObj.is_object()) {
+				float x = posObj["x"].as_float(0.0f);
+				float y = posObj["y"].as_float(0.0f);
+				component->set_position(x, y);
+			}
+		}
+
+		// Set zoom level
+		if (data.has("zoom")) {
+			component->set_zoom(data["zoom"].as_float(1.0f));
+		}
+
+		// Set camera bounds if specified
+		if (data.has("bounds")) {
+			const JsonValue& boundsObj = data["bounds"];
+			if (boundsObj.is_object()) {
+				float minX = boundsObj["minX"].as_float(0.0f);
+				float minY = boundsObj["minY"].as_float(0.0f);
+				float maxX = boundsObj["maxX"].as_float(0.0f);
+				float maxY = boundsObj["maxY"].as_float(0.0f);
+				component->set_bounds(minX, minY, maxX, maxY);
+			}
 		}
 
 		return true;

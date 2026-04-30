@@ -120,44 +120,60 @@ namespace Pakal
 	
 	SpriteComponent_Bgfx::~SpriteComponent_Bgfx()
 	{
-		// Unregister from graphics system
+		auto releaseResources = [this]()
+		{
+			if (m_graphics_system)
+			{
+				m_graphics_system->unregister_sprite(this);
+			}
+
+			if (s_spriteInstanceCount > 0)
+			{
+				--s_spriteInstanceCount;
+				if (s_spriteInstanceCount == 0)
+				{
+					if (bgfx::isValid(s_texColorUniform))
+					{
+						bgfx::destroy(s_texColorUniform);
+						s_texColorUniform = BGFX_INVALID_HANDLE;
+					}
+				}
+			}
+
+			if (bgfx::isValid(m_texture))
+			{
+				bgfx::destroy(m_texture);
+			}
+
+			if (bgfx::isValid(m_vertexBuffer))
+			{
+				bgfx::destroy(m_vertexBuffer);
+			}
+
+			if (bgfx::isValid(m_indexBuffer))
+			{
+				bgfx::destroy(m_indexBuffer);
+			}
+
+			m_program = BGFX_INVALID_HANDLE;
+			m_programLoaded = false;
+		};
+
 		if (m_graphics_system)
 		{
-			m_graphics_system->unregister_sprite(this);
-		}
-
-		if (s_spriteInstanceCount > 0)
-		{
-			--s_spriteInstanceCount;
-			if (s_spriteInstanceCount == 0)
+			auto state = m_graphics_system->get_state();
+			if (state == SystemState::Running || state == SystemState::Paused)
 			{
-				if (bgfx::isValid(s_texColorUniform))
+				auto task = m_graphics_system->execute_block(releaseResources);
+				if (task)
 				{
-					bgfx::destroy(s_texColorUniform);
-					s_texColorUniform = BGFX_INVALID_HANDLE;
+					task->wait();
 				}
+				return;
 			}
 		}
 
-		if (bgfx::isValid(m_texture))
-		{
-			bgfx::destroy(m_texture);
-		}
-		
-		if (bgfx::isValid(m_vertexBuffer))
-		{
-			bgfx::destroy(m_vertexBuffer);
-		}
-		
-		if (bgfx::isValid(m_indexBuffer))
-		{
-			bgfx::destroy(m_indexBuffer);
-		}
-		
-		if (bgfx::isValid(m_program))
-		{
-			bgfx::destroy(m_program);
-		}
+		releaseResources();
 	}
 	
 	void SpriteComponent_Bgfx::set_texture(const std::string& texturePath)

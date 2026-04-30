@@ -5,14 +5,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "CombatFaction.h"
 #include "Component.h"
 #include "math/vector2.h"
 
 namespace Pakal
 {
 	class EntityManager;
-		class SpritePhysicsComponent;
-		class SpriteComponent2D;
+	class SpritePhysicsComponent;
+	class SpriteComponent2D;
 	
 	class _PAKALExport Projectile : public Component
 	{
@@ -27,11 +28,11 @@ namespace Pakal
 		
 		void set_velocity(const tmath::vectorn<float, 2>& velocity) { m_velocity = velocity; }
 		void set_damage(float damage) { m_damage = damage; }
-		void set_faction(int faction) { m_faction = faction; }
+		void set_faction(CombatFaction faction) { m_faction = faction; }
 		void set_lifetime(float lifetime) { m_lifetime = lifetime; }
 		
 		float get_damage() const { return m_damage; }
-		int get_faction() const { return m_faction; }
+		CombatFaction get_faction() const { return m_faction; }
 		bool is_alive() const { return m_lifetime > 0.0f; }
 		
 		// Collision handling
@@ -44,7 +45,7 @@ namespace Pakal
 		
 		tmath::vectorn<float, 2> m_velocity;
 		float m_damage;
-		int m_faction;  // 0 = player, 1 = enemy
+		CombatFaction m_faction;
 		float m_lifetime;
 		
 		// Components (obtained in initialize())

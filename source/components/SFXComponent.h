@@ -15,6 +15,7 @@ namespace Pakal
 
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;
+		void prepare_dispose() override { terminate(); }
 		
 		inline bool add(unsigned id, const std::string& resourcePath) { return add(id, Path(resourcePath)); }
 		virtual bool add(unsigned id, const Path& resourcePath) = 0;

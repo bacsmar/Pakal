@@ -1,7 +1,7 @@
 #pragma once
 #include "Config.h"
 #include "PakalMath.h"
-#include "TaskFwd.h"
+#include "BasicTask.h"
 #include "PhysicComponent.h"
 #include "SpritePhysics.h"
 #include <optional>
@@ -38,6 +38,14 @@ namespace Pakal
 
 		virtual BasicTaskPtr initialize(const Settings& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
+		void prepare_dispose() override
+		{
+			auto terminateTask = terminate();
+			if (terminateTask)
+			{
+				terminateTask->wait();
+			}
+		}
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
 		virtual tmath::vector3df get_position() = 0;

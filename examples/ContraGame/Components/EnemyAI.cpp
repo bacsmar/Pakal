@@ -8,6 +8,7 @@
 #include "Health.h"
 #include "Weapon.h"
 #include "Entity.h"
+#include "EntityManager.h"
 #include "GenericEntity.h"
 #include "LogMgr.h"
 #include "components/SpriteComponent2D.h"
@@ -18,7 +19,7 @@ namespace Pakal
 {
 	EnemyAI::EnemyAI() :
 		m_state(PATROL),
-		m_player(nullptr),
+		m_playerHandle(),
 		m_physics(nullptr),
 		m_sprite(nullptr),
 		m_weapon(nullptr),
@@ -31,6 +32,33 @@ namespace Pakal
 		m_patrolStart(0.0f, 0.0f),
 		m_patrolRight(true)
 	{
+	}
+
+	void EnemyAI::set_player_entity(Entity* player)
+	{
+		set_player_entity(player ? player->get_handle() : EntityHandle{});
+	}
+
+	void EnemyAI::set_player_entity(EntityHandle player)
+	{
+		m_playerHandle = player;
+	}
+
+	Entity* EnemyAI::resolve_player_entity() const
+	{
+		auto* parent = get_parent_entity();
+		if (!parent)
+		{
+			return nullptr;
+		}
+
+		auto* entityManager = parent->entity_manager();
+		if (!entityManager)
+		{
+			return nullptr;
+		}
+
+		return entityManager->resolve(m_playerHandle);
 	}
 	
 	void EnemyAI::initialize()
@@ -135,11 +163,12 @@ namespace Pakal
 	
 	void EnemyAI::update_chase(float deltaTime)
 	{
-		if (!m_player || !m_physics)
+		auto* player = resolve_player_entity();
+		if (!player || !m_physics)
 			return;
 		
 		// Get player's physics component to calculate distance
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		
@@ -180,11 +209,12 @@ namespace Pakal
 	
 	void EnemyAI::update_attack(float deltaTime)
 	{
-		if (!m_player || !m_physics)
+		auto* player = resolve_player_entity();
+		if (!player || !m_physics)
 			return;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		
@@ -218,11 +248,12 @@ namespace Pakal
 	
 	bool EnemyAI::can_see_player()
 	{
-		if (!m_player || !m_physics)
+		auto* player = resolve_player_entity();
+		if (!player || !m_physics)
 			return false;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return false;
 		
@@ -246,11 +277,12 @@ namespace Pakal
 	
 	void EnemyAI::shoot_at_player()
 	{
-		if (!m_weapon || !m_player || m_fireTimer > 0.0f || !m_physics)
+		auto* player = resolve_player_entity();
+		if (!m_weapon || !player || m_fireTimer > 0.0f || !m_physics)
 			return;
 		
 		// Get player's physics component
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
 			return;
 		

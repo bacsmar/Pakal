@@ -6,6 +6,7 @@
 
 #pragma once
 #include "BaseGameState.h"
+#include "EntityHandle.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -35,21 +36,23 @@ namespace Pakal
 		void cleanup_level_entities();
 		void setup_loaded_scene();
 		void setup_entity_components();
+		void update_level_components(float deltaTime);
 		bool is_back_to_menu_pressed() const;
 
 		// Game logic
 		void update_game_logic(float deltaTime);
 		void check_win_lose_conditions();
-		void register_level_entity(GenericEntity* entity);
+		void register_level_entity(EntityHandle handle);
+		GenericEntity* resolve_entity(EntityHandle handle) const;
 		
 		Engine* m_engine;
 		std::unique_ptr<SceneLoader> m_sceneLoader;
 		
-		GenericEntity* m_player;
-		GenericEntity* m_goal;
-		GenericEntity* m_camera;
-		std::vector<GenericEntity*> m_levelEntities;
-		std::vector<GenericEntity*> m_enemies;
+		EntityHandle m_player;
+		EntityHandle m_goal;
+		EntityHandle m_camera;
+		std::vector<EntityHandle> m_levelEntities;
+		std::vector<EntityHandle> m_enemies;
 		
 		int m_currentLevel;
 		int m_maxLevels;

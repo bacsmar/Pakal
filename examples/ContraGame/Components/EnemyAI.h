@@ -6,6 +6,7 @@
 
 #pragma once
 #include "Component.h"
+#include "EntityHandle.h"
 #include "math/vector2.h"
 
 namespace Pakal
@@ -33,9 +34,11 @@ namespace Pakal
 		void set_chase_range(float range) { m_chaseRange = range; }
 		void set_attack_range(float range) { m_attackRange = range; }
 		void set_fire_rate(float rate) { m_fireRate = rate; }
-		void set_player_entity(Entity* player) { m_player = player; }
+		void set_player_entity(EntityHandle player);
+		void set_player_entity(Entity* player);
 		
 	private:
+		Entity* resolve_player_entity() const;
 		void update_patrol(float deltaTime);
 		void update_chase(float deltaTime);
 		void update_attack(float deltaTime);
@@ -54,7 +57,7 @@ namespace Pakal
 		AIState m_state;
 		
 		// Components
-		Entity* m_player;
+		EntityHandle m_playerHandle;
 		SpritePhysicsComponent* m_physics;
 		SpriteComponent2D* m_sprite;
 		Weapon* m_weapon;

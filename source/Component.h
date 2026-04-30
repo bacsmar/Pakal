@@ -15,17 +15,24 @@
 namespace Pakal
 {	
 	class Entity;
+	class ComponentManager;
 
 	class _PAKALExport Component
 	{
 		DECLARE_RTTI(Component)
 		Entity* m_parent = nullptr;
+		bool m_pendingDispose = false;
 
 	public:		
 		virtual ~Component(){}	
+		virtual void prepare_dispose() {}
 		// TODO: necesita un mutex en el get y set
 		inline void set_parent_entity(Entity* entity) { m_parent = entity; };
 		inline Entity* get_parent_entity() const { return m_parent; };
+		void request_dispose();
+		bool is_pending_dispose() const { return m_pendingDispose; }
+
+		friend class ComponentManager;
 
 	};
 }

@@ -26,11 +26,12 @@ A side-scrolling run & gun game demonstrating Pakal Engine with bgfx + Box2D.
 Requires `PAKAL_USE_BGFX=1` and `PAKAL_USE_BOX2D=1` in `source/Config.h`
 
 ```bash
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make ContraGame
-./bin/ContraGame
+./docker-build.sh build runtime debug
+cd docker-build/bin
+./PakalPlayer
 ```
+
+ContraGame is built as a loadable module (`libContraGameModule.so`). `PakalPlayer` is the executable host and loads the module from the same directory by default.
 
 ## Architecture
 
@@ -158,94 +159,36 @@ This is a minimal example focused on demonstrating the engine's capabilities:
 
 ---
 
-## Handoff Instructions for Local Coding Agent
+## Current Implementation Status
 
-This section is the implementation handoff to continue and finish the current ContraGame demo.
+ContraGame is no longer a compile-only stub. The current demo includes:
 
-### Current Working Baseline (DO NOT BREAK)
+- Title screen with transition into gameplay
+- Two scene-driven levels with cleanup between transitions
+- Player movement, jumping, and shooting
+- Enemy patrol/chase/attack behavior
+- Real projectile entities with sprite, physics, lifetime, faction, and collision damage
+- Deferred entity disposal for projectiles, dead enemies, title entities, and level entities
+- Camera configuration from scene JSON, including per-level zoom
 
-- bgfx renderer initializes correctly on Linux with Vulkan.
-- Sprites now render correctly (custom `vs_sprite/fs_sprite` path is active with fallback shaders).
-- Title menu works (`GameTitleState`) and transitions into gameplay.
-- Gameplay has 2-level progression (MVP) with level transitions and return to title.
-- Build command works:
+### Remaining Polish
 
-```bash
-./docker-build.sh build runtime
-```
+- Tune movement, jumping, projectile speed, and enemy fire rate after hands-on playtesting.
+- Replace simple ground detection with a Box2D raycast or foot sensor.
+- Replace distance-only enemy sight checks with raycast-based line of sight.
+- Add hit/death feedback, score/lives UI, sound effects, and music.
+- Decide whether level completion should require enemy clear in addition to reaching the goal.
 
-### High-Priority Gaps to Finish the Game
+### Validation Checklist
 
-1. **Projectile System is still stubbed**
-    - `Weapon::fire()` only logs and does not create projectiles.
-    - Implement real projectile entities (`sprite + physics + lifetime + owner/faction`).
-
-2. **Damage Loop is incomplete**
-    - Projectiles must apply damage to `Health` on collision.
-    - Player bullets should damage enemies only.
-    - Enemy bullets should damage player only.
-
-3. **Enemy death handling is incomplete**
-    - Dead enemies should become inactive/removed from update loops.
-    - Level completion should be based on intended design:
-      - Current MVP: reach goal X.
-      - Suggested final demo: goal X + minimum enemy clear (or all enemies).
-
-4. **Entity lifecycle needs cleanup policy**
-    - Avoid leaks: when projectiles/enemies are removed, ensure components and entities are deleted consistently.
-    - Keep cleanup localized to `GamePlayState` level ownership model.
-
-### Recommended Implementation Order
-
-#### Phase 1 — Real Projectiles
-- Add a simple `Projectile` component (speed, direction, damage, faction, ttl).
-- Spawn projectile entity in `Weapon::fire()` using `EntityManager`.
-- Add sprite + physics body creation in one helper to keep behavior consistent.
-
-#### Phase 2 — Collision + Damage
-- Detect collision via physics callbacks or polling contact state.
-- On hit:
-  - Find `Health` on target entity.
-  - Call `take_damage()`.
-  - Destroy projectile entity.
-
-#### Phase 3 — Win/Lose Rules
-- Update `GamePlayState::check_win_lose_conditions()`:
-  - Lose when player health <= 0 or fall out of world.
-  - Win level when objective met (goal X + optional enemy clear).
-  - Keep level transition delay small (0.8–1.2s).
-
-#### Phase 4 — Feel/Polish (MVP)
-- Tune movement/jump/fire-rate values.
-- Add visible feedback on hit/death (color flash or quick fade).
-- Keep logs useful but not noisy.
-
-### Files to Prioritize
-
-- `examples/ContraGame/Components/Weapon.h`
-- `examples/ContraGame/Components/Weapon.cpp`
-- `examples/ContraGame/Components/Health.h`
-- `examples/ContraGame/Components/Health.cpp`
-- `examples/ContraGame/GameStates/GamePlayState.h`
-- `examples/ContraGame/GameStates/GamePlayState.cpp`
-
-### Critical Constraints
-
-- Do not regress sprite rendering pipeline.
-- Do not remove existing title state and level transition flow.
-- Keep compatibility with current bgfx+Box2D architecture.
-- Prefer minimal, testable increments (build after each phase).
-- try to NOT modify pakal engine.
-
-### Validation Checklist (must pass)
-
-1. Build succeeds: `./docker-build.sh build runtime`
+1. Build succeeds: `./docker-build.sh build runtime debug`
 2. Title screen appears and transitions to gameplay.
 3. Player can move, jump, and fire visible projectiles.
-4. Enemy and player can both take damage and die.
-5. Level 1 transitions to level 2.
-6. Completing level 2 returns to title.
-7. No immediate crashes when entering/exiting gameplay.
+4. Player projectiles damage enemies only.
+5. Enemy projectiles damage the player only.
+6. Level 1 transitions to level 2.
+7. Completing level 2 returns to title.
+8. Re-entering gameplay does not keep old level entities alive.
 
 ## License
 

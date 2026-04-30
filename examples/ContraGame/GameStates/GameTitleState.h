@@ -6,11 +6,11 @@
 
 #pragma once
 #include "BaseGameState.h"
+#include "EntityHandle.h"
 
 namespace Pakal
 {
 	class Engine;
-	class GenericEntity;
 
 	class GameTitleState : public BaseGameState
 	{
@@ -33,10 +33,10 @@ namespace Pakal
 		bool is_start_pressed() const;
 
 		Engine* m_engine;
-		GenericEntity* m_background;
-		GenericEntity* m_overlay;
-		GenericEntity* m_prompt;
-		GenericEntity* m_camera;
+		EntityHandle m_background;
+		EntityHandle m_overlay;
+		EntityHandle m_prompt;
+		EntityHandle m_camera;
 		float m_blinkTimer;
 		bool m_promptVisible;
 	};

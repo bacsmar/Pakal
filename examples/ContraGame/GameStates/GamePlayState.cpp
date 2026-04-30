@@ -20,21 +20,23 @@
 #include "../Components/Weapon.h"
 #include "../Components/PlayerController.h"
 #include "../Components/EnemyAI.h"
+#include "../Components/Projectile.h"
 
 // Engine components  
 #include "components/SpriteComponent2D.h"
 #include "components/CameraComponent2D.h"
 #include "InputManager_Polling.h"
 #include "components/SpritePhysicsComponent.h"
+#include <unordered_set>
 
 namespace Pakal
 {
 
 	GamePlayState::GamePlayState() : BaseGameState("GamePlay"),
 		m_engine(nullptr),
-		m_player(nullptr),
-		m_goal(nullptr),
-		m_camera(nullptr),
+		m_player(),
+		m_goal(),
+		m_camera(),
 		m_currentLevel(1),
 		m_maxLevels(2),
 		m_levelTransitionTimer(0.0f),
@@ -99,6 +101,7 @@ namespace Pakal
 		if (!m_engine) return;
 
 		float deltaTime = dtMilliseconds / 1000.0f;
+		update_level_components(deltaTime);
 		update_game_logic(deltaTime);
 		check_win_lose_conditions();
 
@@ -145,9 +148,9 @@ namespace Pakal
 		cleanup_level_entities();
 
 		m_enemies.clear();
-		m_player = nullptr;
-		m_goal = nullptr;
-		m_camera = nullptr;
+		m_player = {};
+		m_goal = {};
+		m_camera = {};
 		m_levelCompleted = false;
 		m_levelTransitionTimer = 0.0f;
 		m_gameWon = false;
@@ -176,9 +179,9 @@ namespace Pakal
 		}
 
 		// Get required entities
-		m_player = m_sceneLoader->get_entity("player");
-		m_goal = m_sceneLoader->get_entity("goal");
-		m_camera = m_sceneLoader->get_entity("camera");
+		m_player = m_sceneLoader->get_entity_handle("player");
+		m_goal = m_sceneLoader->get_entity_handle("goal");
+		m_camera = m_sceneLoader->get_entity_handle("camera");
 
 		if (!m_player || !m_goal || !m_camera) {
 			LOG_ERROR("[GamePlayState] Failed to retrieve required entities from scene");
@@ -186,16 +189,21 @@ namespace Pakal
 		}
 
 		// Register all loaded entities as level entities
-		for (auto entity : m_sceneLoader->get_loaded_entities()) {
-			register_level_entity(entity);
+		for (const auto& handle : m_sceneLoader->get_loaded_entity_handles()) {
+			register_level_entity(handle);
 		}
 
 		// Collect enemies from loaded entities (entities starting with "enemy_")
 		m_totalEnemies = 0;
-		for (const auto& loadedEntity : m_sceneLoader->get_loaded_entities()) {
+		for (const auto& loadedEntityHandle : m_sceneLoader->get_loaded_entity_handles()) {
+			auto* loadedEntity = resolve_entity(loadedEntityHandle);
+			if (!loadedEntity) {
+				continue;
+			}
+
 			std::string descriptor = loadedEntity->get_descriptor();
 			if (descriptor.find("enemy") != std::string::npos) {
-				m_enemies.push_back(loadedEntity);
+				m_enemies.push_back(loadedEntityHandle);
 				m_totalEnemies++;
 			}
 		}
@@ -205,9 +213,19 @@ namespace Pakal
 		// Setup entity-specific game components
 		setup_entity_components();
 
-		// Configure camera to follow player
-		auto* cameraComp = m_camera->get_component<CameraComponent2D>();
+		// Configure camera with proper viewport and zoom
+		auto* cameraEntityResolved = resolve_entity(m_camera);
+		auto* cameraComp = cameraEntityResolved ? cameraEntityResolved->get_component<CameraComponent2D>() : nullptr;
 		if (cameraComp && m_player) {
+			// // Set orthographic projection to match current window resolution
+			// // This ensures sprites render at proper scale
+			// cameraComp->set_orthographic(1280.0f, 720.0f, 0.1f, 100.0f);
+			
+			// // Set a reasonable zoom level to see the level properly
+			// // Lower zoom = objects appear larger
+			// cameraComp->set_zoom(0.8f);
+			
+			// Configure camera to follow the player
 			cameraComp->follow_target(m_player, 0.1f);
 		}
 	}
@@ -219,21 +237,26 @@ namespace Pakal
 		auto* entityMgr = m_engine->entity_manager();
 
 		// Setup player components
-		if (m_player) {
-			if (!m_player->get_component<Health>()) {
-				auto* health = m_player->create_component<Health>();
+		auto* playerEntity = resolve_entity(m_player);
+		if (playerEntity) {
+			if (!playerEntity->get_component<Health>()) {
+				auto* health = playerEntity->create_component<Health>();
 				health->set_max_health(100.0f);
 			}
 
-			if (!m_player->get_component<Weapon>()) {
-				auto* weapon = m_player->create_component<Weapon>();
+			if (!playerEntity->get_component<Weapon>()) {
+				auto* weapon = playerEntity->create_component<Weapon>();
 				weapon->set_fire_rate(0.2f);
 				weapon->set_projectile_speed(15.0f);
 				weapon->set_entity_manager(entityMgr);
+				weapon->set_faction(CombatFaction::Player);
+				weapon->set_projectile_created_callback([this](EntityHandle projectile) {
+					register_level_entity(projectile);
+				});
 			}
 
-			if (!m_player->get_component<PlayerController>()) {
-				auto* controller = m_player->create_component<PlayerController>();
+			if (!playerEntity->get_component<PlayerController>()) {
+				auto* controller = playerEntity->create_component<PlayerController>();
 				controller->set_move_speed(5.0f);
 				controller->set_jump_force(10.0f);
 				controller->initialize();
@@ -241,7 +264,8 @@ namespace Pakal
 		}
 
 		// Setup enemy components
-		for (auto enemy : m_enemies) {
+		for (auto enemyHandle : m_enemies) {
+			auto* enemy = resolve_entity(enemyHandle);
 			if (!enemy) continue;
 
 			if (!enemy->get_component<Health>()) {
@@ -253,6 +277,10 @@ namespace Pakal
 				auto* weapon = enemy->create_component<Weapon>();
 				weapon->set_fire_rate(1.0f);
 				weapon->set_entity_manager(entityMgr);
+				weapon->set_faction(CombatFaction::Enemy);
+				weapon->set_projectile_created_callback([this](EntityHandle projectile) {
+					register_level_entity(projectile);
+				});
 			}
 
 			if (!enemy->get_component<EnemyAI>()) {
@@ -268,16 +296,72 @@ namespace Pakal
 		LOG_INFO("[GamePlayState] Entity components setup complete");
 	}
 
+	void GamePlayState::update_level_components(float deltaTime)
+	{
+		const auto levelEntities = m_levelEntities;
+		for (const auto& handle : levelEntities) {
+			auto* entity = resolve_entity(handle);
+			if (!entity || entity->is_pending_dispose()) {
+				continue;
+			}
+
+			if (auto* weapon = entity->get_component<Weapon>()) {
+				weapon->update(deltaTime);
+			}
+			if (auto* controller = entity->get_component<PlayerController>()) {
+				controller->update(deltaTime);
+			}
+			if (auto* enemyAI = entity->get_component<EnemyAI>()) {
+				enemyAI->update(deltaTime);
+			}
+			if (auto* projectile = entity->get_component<Projectile>()) {
+				projectile->update(deltaTime);
+			}
+
+			const auto& descriptor = entity->get_descriptor();
+			if (descriptor.find("enemy") != std::string::npos) {
+				if (auto* health = entity->get_component<Health>()) {
+					if (!health->is_alive()) {
+						entity->request_dispose();
+					}
+				}
+			}
+		}
+	}
+
 	void GamePlayState::cleanup_level_entities()
 	{
 		LOG_INFO("[GamePlayState] Cleaning up level entities");
-		
-		// Clear entity lists
+
+		std::unordered_set<uint64_t> uniqueEntities;
+		for (const auto& handle : m_levelEntities) {
+			if (handle.is_valid()) {
+				uniqueEntities.insert(handle.id);
+			}
+		}
+
+		size_t destroyedCount = 0;
+		for (const auto& handle : m_levelEntities) {
+			if (!handle.is_valid() || uniqueEntities.find(handle.id) == uniqueEntities.end()) {
+				continue;
+			}
+			if (m_engine && m_engine->entity_manager()) {
+				m_engine->entity_manager()->request_dispose(handle);
+			}
+			uniqueEntities.erase(handle.id);
+		}
+
+		if (m_engine && m_engine->entity_manager()) {
+			destroyedCount = m_engine->entity_manager()->process_pending_disposals();
+		}
+
+		LOG_INFO("[GamePlayState] Destroyed %zu entities", destroyedCount);
+
 		m_levelEntities.clear();
 		m_enemies.clear();
-		m_player = nullptr;
-		m_goal = nullptr;
-		m_camera = nullptr;
+		m_player = {};
+		m_goal = {};
+		m_camera = {};
 
 		// Unload scene from SceneLoader
 		if (m_sceneLoader) {
@@ -285,11 +369,27 @@ namespace Pakal
 		}
 	}
 
-	void GamePlayState::register_level_entity(GenericEntity* entity)
+	void GamePlayState::register_level_entity(EntityHandle handle)
 	{
-		if (entity && std::find(m_levelEntities.begin(), m_levelEntities.end(), entity) == m_levelEntities.end()) {
-			m_levelEntities.push_back(entity);
+		if (!handle.is_valid()) {
+			return;
 		}
+
+		auto exists = std::find_if(m_levelEntities.begin(), m_levelEntities.end(), [handle](const EntityHandle& current) {
+			return current.id == handle.id;
+		});
+		if (exists == m_levelEntities.end()) {
+			m_levelEntities.push_back(handle);
+		}
+	}
+
+	GenericEntity* GamePlayState::resolve_entity(EntityHandle handle) const
+	{
+		if (!m_engine || !m_engine->entity_manager()) {
+			return nullptr;
+		}
+
+		return m_engine->entity_manager()->resolve<GenericEntity>(handle);
 	}
 
 	bool GamePlayState::is_back_to_menu_pressed() const
@@ -301,11 +401,13 @@ namespace Pakal
 	
 	void GamePlayState::update_game_logic(float deltaTime)
 	{
-		if (!m_player || m_levelCompleted) return;
+		auto* playerEntity = resolve_entity(m_player);
+		auto* goalEntity = resolve_entity(m_goal);
+		if (!playerEntity || m_levelCompleted) return;
 
 		// Check if player reached goal
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
-		auto* goalPhysics = m_goal ? m_goal->get_component<SpritePhysicsComponent>() : nullptr;
+		auto* playerPhysics = playerEntity->get_component<SpritePhysicsComponent>();
+		auto* goalPhysics = goalEntity ? goalEntity->get_component<SpritePhysicsComponent>() : nullptr;
 		if (!playerPhysics || !goalPhysics) {
 			return;
 		}
@@ -321,10 +423,11 @@ namespace Pakal
 
 	void GamePlayState::check_win_lose_conditions()
 	{
-		if (!m_player) return;
+		auto* playerEntity = resolve_entity(m_player);
+		if (!playerEntity) return;
 
 		// Check if player fell off the level
-		auto* playerPhysics = m_player->get_component<SpritePhysicsComponent>();
+		auto* playerPhysics = playerEntity->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics) {
 			return;
 		}
@@ -336,9 +439,17 @@ namespace Pakal
 			return;
 		}
 
+		auto* playerHealth = playerEntity->get_component<Health>();
+		if (playerHealth && !playerHealth->is_alive()) {
+			m_gameLost = true;
+			LOG_INFO("[GamePlayState] Player died! Game over.");
+			return;
+		}
+
 		// Update enemy kill count
 		int aliveEnemies = 0;
-		for (auto enemy : m_enemies) {
+		for (auto enemyHandle : m_enemies) {
+			auto* enemy = resolve_entity(enemyHandle);
 			if (enemy && enemy->get_component<Health>()) {
 				auto* health = enemy->get_component<Health>();
 				if (health && health->is_alive()) {

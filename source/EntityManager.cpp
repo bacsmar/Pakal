@@ -33,6 +33,7 @@ void EntityManager::initialize()
 
 void EntityManager::terminate()
 {
+	dispose_all_entities();
 	clear_descriptors();
 
 	for (auto& pair : m_descriptorFactories)
@@ -118,6 +119,7 @@ Entity* EntityManager::create_entity(const std::string& name, const std::string&
 	{
 		Entity* entity = factory->create();
 		entity->set_descriptor(descriptor);
+		register_live_entity(entity);
 		
 		// Set ComponentManager on GenericEntity if applicable
 		GenericEntity* genericEntity = dynamic_cast<GenericEntity*>(entity);
@@ -130,6 +132,119 @@ Entity* EntityManager::create_entity(const std::string& name, const std::string&
 	}
 	
 	return nullptr;
+}
+
+void EntityManager::register_live_entity(Entity* entity)
+{
+	if (!entity)
+	{
+		return;
+	}
+
+	const uint64_t entityId = m_nextEntityId++;
+	uint32_t generation = 1;
+	auto generationIt = m_generations.find(entityId);
+	if (generationIt != m_generations.end())
+	{
+		generation = generationIt->second;
+	}
+	m_generations[entityId] = generation;
+	entity->m_handle = { entityId, generation };
+	m_entitiesById[entityId] = entity;
+	m_liveEntities.insert(entity);
+}
+
+void EntityManager::request_dispose(Entity* entity)
+{
+	if (!entity || entity->m_pendingDispose)
+	{
+		return;
+	}
+
+	entity->m_pendingDispose = true;
+	m_pendingDispose.insert(entity);
+}
+
+void EntityManager::request_dispose(EntityHandle handle)
+{
+	request_dispose(resolve(handle));
+}
+
+Entity* EntityManager::resolve(EntityHandle handle) const
+{
+	if (!handle.is_valid())
+	{
+		return nullptr;
+	}
+
+	auto generationIt = m_generations.find(handle.id);
+	if (generationIt == m_generations.end() || generationIt->second != handle.generation)
+	{
+		return nullptr;
+	}
+
+	auto entityIt = m_entitiesById.find(handle.id);
+	if (entityIt == m_entitiesById.end())
+	{
+		return nullptr;
+	}
+
+	return entityIt->second;
+}
+
+size_t EntityManager::process_pending_disposals()
+{
+	m_componentManager->process_pending_disposals();
+
+	if (m_pendingDispose.empty())
+	{
+		return 0;
+	}
+
+	std::vector<Entity*> pending(m_pendingDispose.begin(), m_pendingDispose.end());
+	m_pendingDispose.clear();
+
+	size_t disposedCount = 0;
+	for (auto* entity : pending)
+	{
+		if (!entity)
+		{
+			continue;
+		}
+
+		auto* genericEntity = dynamic_cast<GenericEntity*>(entity);
+		if (genericEntity)
+		{
+			const auto components = genericEntity->get_components();
+			for (auto* component : components)
+			{
+				component->prepare_dispose();
+			}
+		}
+
+		m_liveEntities.erase(entity);
+		m_entitiesById.erase(entity->m_handle.id);
+		auto generationIt = m_generations.find(entity->m_handle.id);
+		if (generationIt != m_generations.end())
+		{
+			generationIt->second++;
+		}
+		delete entity;
+		disposedCount++;
+	}
+
+	return disposedCount;
+}
+
+size_t EntityManager::dispose_all_entities()
+{
+	std::vector<Entity*> liveEntities(m_liveEntities.begin(), m_liveEntities.end());
+	for (auto* entity : liveEntities)
+	{
+		request_dispose(entity);
+	}
+
+	return process_pending_disposals();
 }
 
 void* EntityManager::create_object(const std::string& className)

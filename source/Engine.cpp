@@ -199,6 +199,8 @@ void Engine::run(IPakalApplication* application)
 		}
 	}
 
+	m_game_state_manager->terminate();
+
 
 	//terminate systems
 	std::vector<BasicTaskPtr> terminationTasks;
@@ -217,7 +219,6 @@ void Engine::run(IPakalApplication* application)
 	m_sound_manager->terminate();
 	m_entity_manager->terminate();
 	m_component_manager->terminate();
-	m_game_state_manager->terminate();
 	input_manager()->terminate();
 	resource_manager()->terminate();
 }
@@ -231,6 +232,7 @@ void Engine::on_update(unsigned long dtMilliSeconds)
 	}
 	
 	m_game_state_manager->update(dtMilliSeconds);
+	m_entity_manager->process_pending_disposals();
 	
 	if (update_count == 1)
 	{

@@ -18,6 +18,7 @@ namespace Pakal
 		virtual void set_texture(const std::string& texturePath) = 0;
 		virtual void create_solid_color(uint32_t color, int width, int height) = 0;
 		virtual void set_position(float x, float y) = 0;
+		virtual void set_rotation(float radians) = 0;
 		virtual void set_scale(float x, float y) = 0;
 		virtual void set_color(float r, float g, float b, float a = 1.0f) = 0;
 		virtual void set_layer(int layer) = 0;

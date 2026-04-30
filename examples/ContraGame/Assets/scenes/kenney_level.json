@@ -393,18 +393,7 @@
         "type": "Pakal::GenericEntity",
         "components": [
           {
-            "type": "CameraComponent2D",
-            "position": {
-              "x": 10.0,
-              "y": 5.0,
-              "z": 0.0
-            }, "orthographic": {
-              "width": 1280,
-              "height": 720,
-              "near": -1.0,
-                "far": 1.0
-            },
-            "zoom": 2.0
+            "type": "CameraComponent2D"
           }
         ]
       }

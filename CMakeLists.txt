@@ -187,6 +187,12 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
+if(EXISTS ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
+    add_executable(PakalFeatureLab ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
+    target_link_libraries(PakalFeatureLab Pakal)
+    target_include_directories(PakalFeatureLab PRIVATE ${CMAKE_SOURCE_DIR}/source)
+endif()
+
 # Build generic runtime host for game modules
 if(EXISTS ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
     add_executable(PakalPlayer

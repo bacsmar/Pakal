@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "EntityManager.h"
 #include "persist/Archive.h"
 
 
@@ -9,6 +10,16 @@ Entity::Entity(EntityManager* m) : m_entityManager(m)
 
 Entity::~Entity()
 {}
+
+void Entity::request_dispose()
+{
+	if (m_pendingDispose || !m_entityManager)
+	{
+		return;
+	}
+
+	m_entityManager->request_dispose(this);
+}
 
 void Entity::set_descriptor(const std::string& descriptor)
 {

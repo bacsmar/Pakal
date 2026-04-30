@@ -11,7 +11,9 @@
 #include "CameraComponent_Bgfx.h"
 #include "BgfxGraphicsSystem.h"
 #include "Entity.h"
+#include "EntityManager.h"
 #include "LogMgr.h"
+#include "components/SpritePhysicsComponent.h"
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cmath>
@@ -25,7 +27,7 @@ namespace Pakal
 		m_orthoHeight(600.0f),
 		m_nearPlane(0.1f),
 		m_farPlane(100.0f),
-		m_followTarget(nullptr),
+		m_followTarget(),
 		m_followSmooth(0.1f),
 		m_targetPosition(0.0f, 0.0f),
 		m_hasBounds(false),
@@ -96,12 +98,47 @@ namespace Pakal
 		m_zoom = zoom;
 		if (m_zoom < 0.1f) m_zoom = 0.1f; // Clamp minimum zoom
 		m_matricesDirty = true;
+		LOG_INFO("[CameraComponent_Bgfx] Zoom set to: %f", m_zoom);
 	}
 	
 	void CameraComponent_Bgfx::follow_target(Entity* target, float smoothness)
 	{
+		follow_target(target ? target->get_handle() : EntityHandle{}, smoothness);
+
+		if (target)
+		{
+			if (auto* physics = target->get_component<SpritePhysicsComponent>())
+			{
+				auto position = physics->get_position();
+				m_targetPosition = { position.x, position.y };
+			}
+		}
+	}
+
+	void CameraComponent_Bgfx::follow_target(EntityHandle target, float smoothness)
+	{
 		m_followTarget = target;
 		m_followSmooth = smoothness;
+
+		if (!target)
+		{
+			return;
+		}
+
+		Entity* resolvedTarget = nullptr;
+		if (auto* parent = get_parent_entity())
+		{
+			if (auto* entityManager = parent->entity_manager())
+			{
+				resolvedTarget = entityManager->resolve(target);
+			}
+		}
+
+		if (auto* physics = resolvedTarget ? resolvedTarget->get_component<SpritePhysicsComponent>() : nullptr)
+		{
+			auto position = physics->get_position();
+			m_targetPosition = { position.x, position.y };
+		}
 	}
 	
 	void CameraComponent_Bgfx::set_bounds(float minX, float minY, float maxX, float maxY)
@@ -138,9 +175,26 @@ namespace Pakal
 	
 	void CameraComponent_Bgfx::follow_update(float deltaTime)
 	{
-		// Get target position from a physics component or transform
-		// For now, we'll just use a simple lerp approach
-		// In a full implementation, we'd query the target entity's position
+		Entity* target = nullptr;
+		if (auto* parent = get_parent_entity())
+		{
+			if (auto* entityManager = parent->entity_manager())
+			{
+				target = entityManager->resolve(m_followTarget);
+			}
+		}
+
+		if (!target)
+		{
+			m_followTarget = {};
+			return;
+		}
+
+		if (auto* physics = target->get_component<SpritePhysicsComponent>())
+		{
+			auto position = physics->get_position();
+			m_targetPosition = { position.x, position.y };
+		}
 		
 		// Smooth follow using lerp
 		float lerpFactor = m_followSmooth * deltaTime * 10.0f; // Scale by 10 for reasonable speed

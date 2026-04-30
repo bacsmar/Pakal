@@ -1,157 +1,62 @@
 # ContraGame Implementation Status
 
-## ✅ Completed
-- **Asset Prompts Document**: [docs/ASSET_PROMPTS.md](docs/ASSET_PROMPTS.md) - Ready for leonardoAI with 15+ detailed prompts
-- **InputManager_Polling**: Fully implemented and integrated into Engine
-- **PlayerController**: Complete with input handling, Box2D physics integration, animation state machine
-- **EnemyAI**: Complete with patrol/chase/attack behaviors and distance calculations
-- **Math Library C++20**: All template constructor syntax fixed
-- **Pakal Library**: Compiles successfully (libPakal.a + PakalBasicExample executable)
+## Current Baseline
 
-## ⚠️ Known Issues in ContraGame
+ContraGame now builds as `libContraGameModule.so` and runs through the generic `PakalPlayer` host. The current build command is:
 
-### 1. Health Component Event Template (Health.h:32)
-```cpp
-// Current (ERROR):
-Event<> death_event;
-
-// Should be:
-Event<void> death_event;  // or Event<HealthEventArgs> if you need event data
-```
-
-### 2. Component Registration (ContraGame.cpp:53-60)
-ComponentManager doesn't have `register_component<T>()` method. Options:
-- Remove this code if ComponentManager creates components dynamically via create_component<T>()
-- Or implement custom factory registration if needed
-
-### 3. Box2D Component Initialization (GamePlayState.cpp)
-These methods don't exist in SpritebodyComponent_Box2D:
-- `set_size(width, height)`
-- `set_fixture_density(float)`
-- `set_fixture_friction(float)`
-- `set_fixture_restitution(float)`
-- `create()`
-
-**Investigation needed**: Read [source/box2D/SpritePhysicsComponent_Box2D.cpp](source/box2D/SpritePhysicsComponent_Box2D.cpp) to find correct initialization pattern. Likely uses Settings object or different API.
-
-### 4. set_lineal_velocity Signature Issues
-**Current (wrong)**:
-```cpp
-m_physics->set_lineal_velocity(xVel, currentVel.y);  // EnemyAI.cpp multiple locations
-m_physics->set_lineal_velocity(xVel, 0.0f);          // PlayerController.cpp
-```
-
-**Should be**:
-```cpp
-m_physics->set_lineal_velocity(tmath::vector2df(xVel, currentVel.y));
-m_physics->set_lineal_velocity(tmath::vector2df(xVel, 0.0f));
-```
-
-**Files to fix**:
-- [examples/ContraGame/Components/PlayerController.cpp](examples/ContraGame/Components/PlayerController.cpp) - handle_movement()
-- [examples/ContraGame/Components/EnemyAI.cpp](examples/ContraGame/Components/EnemyAI.cpp) - update_patrol(), update_chase(), update_attack()
-
-### 5. GenericEntity RTTI
-Error: `'getRTTI' is not a member of 'Pakal::GenericEntity'`
-
-May need to add RTTI declaration to GenericEntity class definition or use different approach for entity type identification.
-
-### 6. Missed add_component call (GamePlayState.cpp:281)
-Still using old pattern:
-```cpp
-m_camera->add_component<CameraComponent_Bgfx>();  // ERROR
-
-// Should be:
-auto* camera_comp = m_engine->component_manager()->create_component<CameraComponent_Bgfx>();
-m_camera->add_component(camera_comp);
-```
-
-## 🔍 Next Steps
-
-### Priority 1: Research Box2D Component API
-Read [source/box2D/SpritePhysicsComponent_Box2D.h](source/box2D/SpritePhysicsComponent_Box2D.h) and [source/box2D/SpritePhysicsComponent_Box2D.cpp](source/box2D/SpritePhysicsComponent_Box2D.cpp) to understand:
-- How to set body dimensions
-- How to configure fixture properties
-- Correct initialization flow
-
-### Priority 2: Fix Vector Parameter Calls
-Update all `set_lineal_velocity()` calls to use `vector2df` parameter.
-
-### Priority 3: Fix Event Template
-Add type parameter to Event<> in Health.h.
-
-### Priority 4: Verify Component Registration
-Determine if `register_component` is needed or can be removed.
-
-### Priority 5: Test Execution
-After compilation succeeds:
 ```bash
-./docker-build.sh build
-./run-in-docker.sh  # or equivalent to run ContraGame
+./docker-build.sh build runtime debug
 ```
 
-Expected: 1280x720 window, white placeholder sprites (assets not yet generated), functional input/physics.
+Runtime from the build output directory:
 
-## 📝 Asset Generation Ready
-
-[docs/ASSET_PROMPTS.md](docs/ASSET_PROMPTS.md) contains all specifications needed for leonardoAI:
-- Player animations (idle, run, jump, shoot)
-- Enemy sprites (3-pose spritesheet)
-- Props (bullet, platform tile, background)
-- Audio (5 SFX + music track)
-
-Technical specs include dimensions, color palettes, frame counts, file formats, and visual style references.
-
-## 🏗️ Architecture Notes
-
-### Component Creation Pattern (Correct)
-```cpp
-// 1. Create component via ComponentManager
-auto* sprite = m_engine->component_manager()->create_component<SpriteComponent_Bgfx>();
-
-// 2. Add to entity
-entity->add_component(sprite);
-
-// 3. Initialize component (if needed)
-sprite->initialize();
+```bash
+cd docker-build/bin
+./PakalPlayer
 ```
 
-### Entity Creation Pattern (Correct)
-```cpp
-// Use template form with GenericEntity
-Entity* player = entityMgr->create_entity<GenericEntity>("player");
-```
+## Completed
 
-### Physics Component Pattern (UNKNOWN - needs research)
-```cpp
-// Current attempt (WRONG):
-physics->set_size(width, height);
-physics->set_fixture_density(1.0f);
-physics->create();
+- bgfx sprite rendering is active through the backend-agnostic `SpriteComponent2D` path.
+- Box2D sprite physics initialization uses `SpritePhysicsComponent::Settings`.
+- `GameTitleState` creates and disposes title entities through `EntityHandle`.
+- `GamePlayState` loads two JSON scenes, tracks scene entities by handle, and cleans them up between level transitions.
+- Camera zoom, viewport, position, and bounds can be loaded from scene JSON.
+- Camera follow targets use `EntityHandle`, so level transitions do not retain stale entity pointers.
+- `EntityManager` owns live entities, resolves `EntityHandle`, and processes deferred disposal.
+- `Component::prepare_dispose()` lets physics/audio components tear down their own subsystem resources.
+- `AssetLoader` and `SceneLoader` store handles internally and expose handle-first APIs.
+- Player, enemy, weapon, and projectile components are updated each gameplay frame.
+- `Weapon::fire()` creates projectile entities with physics, sprite, damage, lifetime, and faction.
+- Projectiles subscribe to physics collision events and damage only valid opposing factions.
+- Dead enemies are requested for disposal; player death and falling out of world trigger game over.
 
-// Likely correct (TO BE VERIFIED):
-// Option A: Settings object
-SpritePhysicsComponent::Settings settings;
-settings.width = width;
-settings.height = height;
-settings.density = 1.0f;
-physics->initialize(settings);
+## Remaining MVP Polish
 
-// Option B: Different methods
-physics->set_dimensions(tmath::vector2df(width, height));
-physics->set_density(1.0f);
-// No explicit create() call needed
-```
+- Runtime needs one more hands-on pass for feel: movement, jump force, enemy fire rate, and projectile speed.
+- Level completion is still goal-based. Enemy-clear completion can be added if the demo should require combat mastery.
+- Ground detection is still a simple velocity heuristic rather than a Box2D raycast/contact-foot sensor.
+- Enemy line of sight is distance-only and does not raycast through level geometry.
+- There is no hit flash, death animation, score UI, lives UI, or sound pass yet.
+- Projectiles are created/destroyed directly; object pooling is still a future performance improvement.
 
-## 📊 Completion Estimate
+## Validation Checklist
 
-- Asset Documentation: **100%** ✅
-- Input System: **100%** ✅
-- Player Logic: **100%** ✅
-- Enemy AI: **100%** ✅
-- GamePlayState Structure: **100%** ✅
-- API Compatibility: **60%** ⚠️
-- Compilation: **75%** (Pakal ✅, ContraGame ❌)
-- Testing: **0%** ⏸️
+- Build succeeds with `./docker-build.sh build runtime debug`.
+- Title screen appears and transitions into gameplay.
+- Player can move, jump, and fire visible projectiles.
+- Enemy projectiles can damage the player; player projectiles can damage enemies.
+- Dead enemies stop updating and are cleaned up by deferred disposal.
+- Level 1 transitions to level 2; completing level 2 returns to title.
+- Entering/exiting gameplay repeatedly does not leak old level entities or crash.
 
-**Estimated work remaining**: 2-4 hours to research correct APIs and apply fixes across ~6 files.
+## Completion Estimate
+
+- Engine/lifecycle architecture: 100%
+- Scene loading and camera config: 100%
+- Core gameplay loop: 90%
+- Projectile and damage loop: 85%
+- Visual/audio polish: 35%
+- Documentation accuracy: 90%
+
+Remaining work is mostly tuning, feedback, and a runtime playtest pass rather than API compatibility or compilation repair.

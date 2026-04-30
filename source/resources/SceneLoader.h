@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include "EntityHandle.h"
 #include "SimpleJsonParser.h"
 #include "PakalMath.h"
 
@@ -93,12 +94,18 @@ namespace Pakal
 		 * @param descriptor Entity descriptor name from scene JSON
 		 * @return Pointer to entity, or nullptr if not found
 		 */
+		EntityHandle get_entity_handle(const std::string& descriptor) const;
 		GenericEntity* get_entity(const std::string& descriptor);
+
+		/**
+		 * Get all loaded entity handles
+		 */
+		const std::vector<EntityHandle>& get_loaded_entity_handles() const { return m_loadedEntities; }
 
 		/**
 		 * Get all loaded entities
 		 */
-		const std::vector<GenericEntity*>& get_loaded_entities() const { return m_loadedEntities; }
+		const std::vector<GenericEntity*>& get_loaded_entities() const;
 
 		/**
 		 * Validate that required entities exist in the scene
@@ -115,9 +122,11 @@ namespace Pakal
 
 	private:
 		Engine* m_engine;
-		std::vector<GenericEntity*> m_loadedEntities;
+		std::vector<EntityHandle> m_loadedEntities;
+		mutable std::vector<GenericEntity*> m_loadedEntityCache;
 		SceneMetadata m_metadata;
 
+		GenericEntity* resolve_entity(EntityHandle handle) const;
 		bool parse_scene_json(const JsonValue& root);
 		bool parse_metadata(const JsonValue& sceneObj);
 		bool parse_spawn_points(const JsonValue& spawnPointsObj);

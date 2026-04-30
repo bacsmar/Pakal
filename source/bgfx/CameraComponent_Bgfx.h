@@ -10,6 +10,7 @@
 
 #pragma once
 #include "Config.h"
+#include "EntityHandle.h"
 #include "ICameraComponent_Bgfx.h"
 #include <ostream>
 #include <type_traits>
@@ -45,8 +46,9 @@ namespace Pakal
 		float get_zoom() const { return m_zoom; }
 		
 		// Camera follow (for following player)
+		void follow_target(EntityHandle target, float smoothness = 0.1f);
 		void follow_target(Entity* target, float smoothness = 0.1f);
-		void clear_follow_target() { m_followTarget = nullptr; }
+		void clear_follow_target() { m_followTarget = {}; }
 		
 		void set_bounds(float minX, float minY, float maxX, float maxY);
 		void clear_bounds();
@@ -89,7 +91,7 @@ namespace Pakal
 		float m_farPlane;
 		
 		// Follow target
-		Entity* m_followTarget;
+		EntityHandle m_followTarget;
 		float m_followSmooth;
 		tmath::vectorn<float, 2> m_targetPosition;
 		

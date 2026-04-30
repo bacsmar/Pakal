@@ -11,7 +11,6 @@
 #include "Components/Projectile.h"
 #include "components/SpritePhysicsComponent.h"
 #include "components/SpriteComponent2D.h"
-#include "Health.h"
 #include "GenericEntity.h"
 
 namespace Pakal
@@ -47,7 +46,8 @@ namespace Pakal
 		m_projectileSpeed(15.0f),
 		m_damage(10.0f),
 		m_fireTimer(0.0f),
-		m_entityManager(nullptr)
+		m_entityManager(nullptr),
+		m_faction(CombatFaction::Player)
 	{
 	}
 	
@@ -69,7 +69,6 @@ namespace Pakal
 		if (!parent)
 			return;
 		
-		// Create projectile entity
 		if (m_entityManager)
 		{
 			// Get parent entity position for projectile spawn
@@ -79,7 +78,7 @@ namespace Pakal
 				auto position = physics->get_position();
 				
 				// Create projectile entity
-				auto* projectileEntity = dynamic_cast<GenericEntity*>(m_entityManager->create_entity("Pakal::GenericEntity", "projectile"));
+				auto* projectileEntity = static_cast<GenericEntity*>(m_entityManager->create_entity("Pakal::GenericEntity", "projectile"));
 				if (projectileEntity)
 				{
 					// Set up projectile physics
@@ -91,7 +90,11 @@ namespace Pakal
 						physics_settings.scale = 0.5f;  // Small projectile
 						physics_settings.body_type = SpritePhysicsComponent::DynamicBody;
 						physics_settings.fixed_rotation = true;
-						projectilePhysics->initialize(physics_settings);
+						auto initializeTask = projectilePhysics->initialize(physics_settings);
+						if (initializeTask)
+						{
+							initializeTask->wait();
+						}
 					}
 					
 					// Set up projectile sprite
@@ -110,47 +113,24 @@ namespace Pakal
 					auto* projectileComponent = projectileEntity->create_component<Projectile>();
 					if (projectileComponent)
 					{
-						// Set projectile properties
 						projectileComponent->set_velocity(direction * m_projectileSpeed);
 						projectileComponent->set_damage(m_damage);
+						projectileComponent->set_faction(m_faction);
 						projectileComponent->set_lifetime(5.0f);
-						
-						// Determine faction (0 = player, 1 = enemy)
-						int faction = 0; // Default to player faction
-						Entity* parentEntity = get_parent_entity();
-						if (parentEntity)
-						{
-							// Check if the parent is an enemy by looking at its components or name
-							// This is a simplified approach - in a real game, you'd have better faction identification
-							auto* parentHealth = parentEntity->get_component<Health>();
-							if (parentHealth && parentHealth->get_max_health() == 100.0f) // Player health
-							{
-								faction = 0; // Player projectile
-							}
-							else
-							{
-								faction = 1; // Enemy projectile
-							}
-						}
-						projectileComponent->set_faction(faction);
-						
-						// Initialize the projectile
 						projectileComponent->initialize();
 					}
+
+					if (m_projectileCreated)
+					{
+						m_projectileCreated(projectileEntity->get_handle());
+					}
 					
-					LOG_INFO("[Weapon] Firing projectile in direction (%.2f, %.2f)", direction.x, direction.y);
+					LOG_INFO("[Weapon] Firing projectile in direction (%.2f, %.2f), faction=%d", direction.x, direction.y, static_cast<int>(m_faction));
 				}
 			}
 		}
 		
 		// Reset fire timer
 		m_fireTimer = m_fireRate;
-	}
-	
-	void Weapon::spawn_projectile(const tmath::vectorn<float, 2>& position, const tmath::vectorn<float, 2>& direction)
-	{
-		// This method is now implemented in fire() above
-		// Keeping this for possible future use or compatibility
-		LOG_INFO("[Weapon] Spawning projectile at (%.2f, %.2f)", position.x, position.y);
 	}
 }

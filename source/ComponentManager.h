@@ -9,6 +9,8 @@
 #pragma once
 #include "Config.h"
 
+#include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <string>
 
@@ -25,7 +27,7 @@ namespace Pakal
 	{
 	public:
 		void initialize() override {};
-		void terminate() override {};
+		void terminate() override;
 
 		void register_factory(IComponentFactory* factory, bool replacePreviousFactory = false);
 
@@ -38,6 +40,8 @@ namespace Pakal
 		void register_provider(IComponentProvider &provider);
 
 		Component* create_component(const std::string& componentName);
+		void request_dispose(Component* component);
+		size_t process_pending_disposals();
 
 		template <class T>
 		T* create_component()
@@ -52,5 +56,6 @@ namespace Pakal
 		ComponentManager(){}
 	private:
 		std::unordered_map<std::string, IComponentFactory*> m_factories;
+		std::unordered_set<Component*> m_pendingDispose;
 	};
 }

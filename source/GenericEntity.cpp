@@ -29,6 +29,20 @@ namespace Pakal
 		m_components.erase(find(m_components.begin(),m_components.end(),c));
 	}
 
+	bool GenericEntity::destroy_component(Component* c)
+	{
+		auto it = find(m_components.begin(), m_components.end(), c);
+		if (it == m_components.end())
+		{
+			return false;
+		}
+
+		(*it)->set_parent_entity(nullptr);
+		delete *it;
+		m_components.erase(it);
+		return true;
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	BasicTaskPtr GenericEntity::initialize()
 	{

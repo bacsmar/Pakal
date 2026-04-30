@@ -24,6 +24,7 @@ namespace Pakal
 		virtual bool initialize(const Path& resourcePath, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual bool initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual void terminate() = 0;
+		void prepare_dispose() override { terminate(); }
 
 		virtual void play() = 0;
 		virtual void pause() = 0;

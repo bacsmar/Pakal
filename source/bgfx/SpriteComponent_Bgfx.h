@@ -40,7 +40,7 @@ namespace Pakal
 		void set_position(float x, float y);
 		//tmath::vectorn<float, 2> get_position() const { return m_position; }
 		
-		void set_rotation(float angle); // In radians
+		void set_rotation(float angle) override; // In radians
 		float get_rotation() const { return m_rotation; }
 		
 		void set_scale(const tmath::vectorn<float, 2>& scale);

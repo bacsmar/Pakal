@@ -1,26 +1,27 @@
 # Basic Example
 
-This is a minimal example demonstrating how to initialize and run the Pakal Engine.
+This is the minimal executable example for Pakal Engine startup and shutdown.
 
 ## Building
 
 From the project root:
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
+./docker-build.sh build all debug
 ```
 
 ## Running
 
 ```bash
-./bin/PakalBasicExample
+cd docker-build/bin
+./PakalBasicExample
 ```
 
 ## What it does
 
-- Initializes the Pakal Engine with default settings
-- Creates an 800x600 window
-- Runs the main loop
-- Cleans up and terminates
+- Initializes the Pakal Engine with default settings.
+- Runs the main loop briefly.
+- Emits the app-finished event.
+- Cleans up and terminates.
+
+For camera, sprite transform, and audio diagnostics, use `PakalFeatureLab` from `examples/engine_feature_lab`.

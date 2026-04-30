@@ -10,6 +10,7 @@
 #include "GameStateManager.h"
 #include "EntityManager.h"
 #include "GenericEntity.h"
+#include "EntityHandle.h"
 #include "LogMgr.h"
 #include "InputManager_Polling.h"
 #include "EventArgs.h"
@@ -21,10 +22,10 @@ namespace Pakal
 {
 	GameTitleState::GameTitleState() : BaseGameState("Title"),
 		m_engine(nullptr),
-		m_background(nullptr),
-		m_overlay(nullptr),
-		m_prompt(nullptr),
-		m_camera(nullptr),
+		m_background(),
+		m_overlay(),
+		m_prompt(),
+		m_camera(),
 		m_blinkTimer(0.0f),
 		m_promptVisible(true)
 	{
@@ -52,10 +53,19 @@ namespace Pakal
 	void GameTitleState::on_terminate(Engine* engine)
 	{
 		LOG_INFO("[GameTitleState] Terminating title screen");
-		m_background = nullptr;
-		m_overlay = nullptr;
-		m_prompt = nullptr;
-		m_camera = nullptr;
+		if (m_engine && m_engine->entity_manager()) {
+			if (m_background) m_engine->entity_manager()->request_dispose(m_background);
+			if (m_overlay) m_engine->entity_manager()->request_dispose(m_overlay);
+			if (m_prompt) m_engine->entity_manager()->request_dispose(m_prompt);
+			if (m_camera) m_engine->entity_manager()->request_dispose(m_camera);
+		}
+		if (m_engine && m_engine->entity_manager()) {
+			m_engine->entity_manager()->process_pending_disposals();
+		}
+		m_background = {};
+		m_overlay = {};
+		m_prompt = {};
+		m_camera = {};
 	}
 
 	void GameTitleState::on_activate(Engine* engine)
@@ -80,9 +90,10 @@ namespace Pakal
 			m_blinkTimer = 0.0f;
 			m_promptVisible = !m_promptVisible;
 
-			if (m_prompt)
+			auto* promptEntity = m_engine->entity_manager()->resolve<GenericEntity>(m_prompt);
+			if (promptEntity)
 			{
-				auto* sprite = m_prompt->get_component<SpriteComponent2D>();
+				auto* sprite = promptEntity->get_component<SpriteComponent2D>();
 				if (sprite)
 				{
 					const float alpha = m_promptVisible ? 1.0f : 0.2f;
@@ -106,15 +117,16 @@ namespace Pakal
 	{
 		LOG_INFO("[GameTitleState] Setting up camera...");
 		auto* entityMgr = m_engine->entity_manager();
-		m_camera = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_camera"));
-		if (!m_camera)
+		auto* cameraEntity = static_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_camera"));
+		if (!cameraEntity)
 		{
 			LOG_ERROR("[GameTitleState] Failed to create camera entity!");
 			return;
 		}
+		m_camera = cameraEntity->get_handle();
 
 		LOG_INFO("[GameTitleState] Creating CameraComponent2D...");
-		auto* camera = m_camera->create_component<CameraComponent2D>();
+		auto* camera = cameraEntity->create_component<CameraComponent2D>();
 		if (camera)
 		{
 			LOG_INFO("[GameTitleState] Camera component created successfully");
@@ -133,15 +145,16 @@ namespace Pakal
 	{
 		LOG_INFO("[GameTitleState] Creating background...");
 		auto* entityMgr = m_engine->entity_manager();
-		m_background = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_background"));
-		if (!m_background)
+		auto* backgroundEntity = static_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_background"));
+		if (!backgroundEntity)
 		{
 			LOG_ERROR("[GameTitleState] Failed to create background entity!");
 			return;
 		}
+		m_background = backgroundEntity->get_handle();
 
 		LOG_INFO("[GameTitleState] Creating background SpriteComponent2D...");
-		auto* sprite = m_background->create_component<SpriteComponent2D>();
+		auto* sprite = backgroundEntity->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Background sprite component created successfully");
@@ -161,14 +174,15 @@ namespace Pakal
 	{
 		LOG_INFO("[GameTitleState] Creating dark overlay...");
 		auto* entityMgr = m_engine->entity_manager();
-		m_overlay = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_overlay"));
-		if (!m_overlay)
+		auto* overlayEntity = static_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_overlay"));
+		if (!overlayEntity)
 		{
 			LOG_ERROR("[GameTitleState] Failed to create overlay entity!");
 			return;
 		}
+		m_overlay = overlayEntity->get_handle();
 
-		auto* sprite = m_overlay->create_component<SpriteComponent2D>();
+		auto* sprite = overlayEntity->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			sprite->create_solid_color(0xFFFFFFFF, 1, 1);
@@ -183,15 +197,16 @@ namespace Pakal
 	{
 		LOG_INFO("[GameTitleState] Creating prompt...");
 		auto* entityMgr = m_engine->entity_manager();
-		m_prompt = dynamic_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_prompt"));
-		if (!m_prompt)
+		auto* promptEntity = static_cast<GenericEntity*>(entityMgr->create_entity("Pakal::GenericEntity", "title_prompt"));
+		if (!promptEntity)
 		{
 			LOG_ERROR("[GameTitleState] Failed to create prompt entity!");
 			return;
 		}
+		m_prompt = promptEntity->get_handle();
 
 		LOG_INFO("[GameTitleState] Creating prompt SpriteComponent2D...");
-		auto* sprite = m_prompt->create_component<SpriteComponent2D>();
+		auto* sprite = promptEntity->create_component<SpriteComponent2D>();
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Prompt sprite component created successfully");
@@ -219,4 +234,5 @@ namespace Pakal
 			input.poll_key_down(Key::Left) ||
 			input.poll_key_down(Key::Right);
 	}
+
 }
