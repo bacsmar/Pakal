@@ -1,412 +1,71 @@
 {
   "scene": {
-    "name": "Kenney Platformer Level",
+    "name": "Level 1 - Solid Placeholder Range",
     "difficulty": 1,
-    "expected_enemy_count": 3,
+    "expected_enemy_count": 2,
+    "prefab_catalogs": ["Assets/prefabs/contra.prefabs.json"],
     "spawn_points": {
-      "player_start": {
-        "x": 2.0,
-        "y": 8.0,
-        "z": 0.0
-      },
-      "goal": {
-        "x": 45.0,
-        "y": 8.0,
-        "z": 0.0
-      }
+      "player_start": { "x": 2.0, "y": 4.0, "z": 0.0 },
+      "goal": { "x": 44.0, "y": 3.0, "z": 0.0 }
     },
     "entities": {
       "player": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 2.0,
-              "y": 8.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "dynamic",
-            "fixed_rotation": true,
-            "gravity_scale": 1.0,
-            "width": 0.8,
-            "height": 1.6
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Characters/Default/character_beige_idle.png",
-            "position": {
-              "x": 2.0,
-              "y": 8.0
-            },
-            "scale": 2.0,
-            "layer": 10
-          }
-        ]
+        "prefab": "player",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 2.0, "y": 4.0, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 2.0, "y": 4.0 } } }
+        }
       },
       "goal": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 45.0,
-              "y": 8.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 1.0,
-            "height": 1.0
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/flag_yellow_a.png",
-            "position": {
-              "x": 45.0,
-              "y": 8.0
-            },
-            "scale": 2.0,
-            "color": {
-              "r": 1.0,
-              "g": 1.0,
-              "b": 0.0,
-              "a": 1.0
-            },
-            "layer": 5
-          }
-        ]
+        "prefab": "goal_zone",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 44.0, "y": 3.0, "z": 0.0 }, "height": 3.0 } },
+          "sprite":  { "data": { "position": { "x": 44.0, "y": 3.0 }, "height": 3.0 } }
+        }
       },
       "ground_left": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 10.0,
-              "y": 2.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 16.0,
-            "height": 1.0
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/terrain_grass_block.png",
-            "position": {
-              "x": 10.0,
-              "y": 2.0
-            },
-            "scale": 8.0,
-            "layer": 1
-          }
-        ]
+        "prefab": "ground_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 9.0, "y": 0.5, "z": 0.0 }, "width": 18.0 } },
+          "sprite":  { "data": { "position": { "x": 9.0, "y": 0.5 }, "width": 18.0 } }
+        }
       },
       "ground_right": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 35.0,
-              "y": 2.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 16.0,
-            "height": 1.0
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/terrain_grass_block.png",
-            "position": {
-              "x": 35.0,
-              "y": 2.0
-            },
-            "scale": 8.0,
-            "layer": 1
-          }
-        ]
+        "prefab": "ground_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 34.0, "y": 0.5, "z": 0.0 }, "width": 18.0 } },
+          "sprite":  { "data": { "position": { "x": 34.0, "y": 0.5 }, "width": 18.0 } }
+        }
       },
       "platform_middle": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 22.5,
-              "y": 6.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 8.0,
-            "height": 0.8
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/terrain_stone_block.png",
-            "position": {
-              "x": 22.5,
-              "y": 6.0
-            },
-            "scale": 4.0,
-            "layer": 1
-          }
-        ]
-      },
-      "obstacle_01": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 8.0,
-              "y": 4.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 1.0,
-            "height": 2.0
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/block_red.png",
-            "position": {
-              "x": 8.0,
-              "y": 4.0
-            },
-            "scale": 2.0,
-            "layer": 2
-          }
-        ]
-      },
-      "spike_trap": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 22.5,
-              "y": 5.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "static",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 1.0,
-            "height": 0.5
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/spikes.png",
-            "position": {
-              "x": 22.5,
-              "y": 5.0
-            },
-            "scale": 1.5,
-            "color": {
-              "r": 1.0,
-              "g": 0.2,
-              "b": 0.2,
-              "a": 1.0
-            },
-            "layer": 3
-          }
-        ]
-      },
-      "coin_01": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 15.0,
-              "y": 5.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "dynamic",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 0.4,
-            "height": 0.4
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/coin_gold.png",
-            "position": {
-              "x": 15.0,
-              "y": 5.0
-            },
-            "scale": 1.5,
-            "layer": 5
-          }
-        ]
-      },
-      "coin_02": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 30.0,
-              "y": 8.0,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "dynamic",
-            "fixed_rotation": true,
-            "gravity_scale": 0.0,
-            "width": 0.4,
-            "height": 0.4
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/coin_gold.png",
-            "position": {
-              "x": 30.0,
-              "y": 8.0
-            },
-            "scale": 1.5,
-            "layer": 5
-          }
-        ]
+        "prefab": "platform_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 21.5, "y": 4.0, "z": 0.0 }, "width": 7.0 } },
+          "sprite":  { "data": { "position": { "x": 21.5, "y": 4.0 }, "width": 7.0 } }
+        }
       },
       "enemy_01": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 12.0,
-              "y": 3.5,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "dynamic",
-            "fixed_rotation": false,
-            "gravity_scale": 1.0,
-            "width": 0.8,
-            "height": 0.8
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Enemies/Default/bee_rest.png",
-            "position": {
-              "x": 12.0,
-              "y": 3.5
-            },
-            "scale": 1.5,
-            "layer": 10
-          }
-        ]
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 13.0, "y": 2.2, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 13.0, "y": 2.2 } } }
+        }
       },
       "enemy_02": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpritePhysicsComponent",
-            "position": {
-              "x": 28.0,
-              "y": 3.5,
-              "z": 0.0
-            },
-            "scale": 1.0,
-            "body_type": "dynamic",
-            "fixed_rotation": false,
-            "gravity_scale": 1.0,
-            "width": 0.8,
-            "height": 0.8
-          },
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Enemies/Default/fly_rest.png",
-            "position": {
-              "x": 28.0,
-              "y": 3.5
-            },
-            "scale": 1.5,
-            "layer": 10,
-            "color": {
-              "r": 1.0,
-              "g": 0.5,
-              "b": 0.0,
-              "a": 1.0
-            }
-          }
-        ]
-      },
-      "decorative_tree": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/hill_top.png",
-            "position": {
-              "x": 5.0,
-              "y": 3.0
-            },
-            "scale": 2.0,
-            "layer": 0
-          }
-        ]
-      },
-      "decorative_cloud": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "SpriteComponent2D",
-            "texture": "Assets/free_assets/kenney_new-platformer-pack-1.1/Sprites/Tiles/Default/terrain_grass_cloud.png",
-            "position": {
-              "x": 40.0,
-              "y": 10.0
-            },
-            "scale": 3.0,
-            "layer": 0,
-            "color": {
-              "r": 0.8,
-              "g": 0.9,
-              "b": 1.0,
-              "a": 0.8
-            }
-          }
-        ]
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 29.0, "y": 2.2, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 29.0, "y": 2.2 } } }
+        }
       },
       "camera": {
-        "type": "Pakal::GenericEntity",
-        "components": [
-          {
-            "type": "CameraComponent2D",
-            "position": {
-              "x": 10.0,
-              "y": 5.0,
-              "z": 0.0
-            }, "orthographic": {
-              "width": 1280,
-              "height": 720,
-              "near": -1.0,
-                "far": 1.0
-            },
-            "zoom": 2.0
-          }
-        ]
+        "prefab": "camera_follow",
+        "overrides": {
+          "camera": { "data": {
+            "position": { "x": 2.0, "y": 4.0, "z": 0.0 },
+            "bounds": { "minX": 0.0, "minY": -1.5, "maxX": 46.0, "maxY": 14.0 }
+          }}
+        }
       }
     }
   }

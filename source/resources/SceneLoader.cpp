@@ -6,6 +6,8 @@
 #include "GenericEntity.h"
 #include "LogMgr.h"
 #include "ResourceManager.h"
+#include "resources/prefab/PrefabCatalog.h"
+#include "resources/prefab/PrefabResolver.h"
 #include <fstream>
 #include <sstream>
 
@@ -104,6 +106,9 @@ namespace Pakal
 			}
 		}
 
+		// Load prefab catalogs before entities (optional — scenes without it work unchanged).
+		parse_prefab_catalogs(sceneObj);
+
 		// Parse entities (using AssetLoader logic)
 		if (!sceneObj.has("entities")) {
 			LOG_ERROR("[SceneLoader] Scene missing 'entities' object");
@@ -116,6 +121,44 @@ namespace Pakal
 		}
 
 		return true;
+	}
+
+	void SceneLoader::parse_prefab_catalogs(const JsonValue& sceneObj)
+	{
+		m_prefabCatalog.reset();
+		m_prefabResolver.reset();
+
+		if (!sceneObj.has("prefab_catalogs") || !sceneObj["prefab_catalogs"].is_array())
+			return;
+
+		const JsonValue& catalogPaths = sceneObj["prefab_catalogs"];
+		if (catalogPaths.size() == 0)
+			return;
+
+		m_prefabCatalog = std::make_unique<PrefabCatalog>();
+
+		for (size_t i = 0; i < catalogPaths.size(); ++i)
+		{
+			const std::string path = catalogPaths[i].as_string();
+			if (path.empty()) continue;
+
+			auto stream = ResourceMgr.open_read_resource(path);
+			if (!stream)
+			{
+				LOG_ERROR("[SceneLoader] Failed to open prefab catalog: %s", path.c_str());
+				continue;
+			}
+			std::stringstream buf;
+			buf << stream->rdbuf();
+			if (!m_prefabCatalog->load_from_string(buf.str())) {
+				LOG_WARNING("[SceneLoader] Some prefabs in catalog '%s' failed validation", path.c_str());
+			} else {
+				LOG_INFO("[SceneLoader] Loaded prefab catalog: %s", path.c_str());
+			}
+		}
+
+		if (!m_prefabCatalog->empty())
+			m_prefabResolver = std::make_unique<PrefabResolver>(m_prefabCatalog.get());
 	}
 
 	bool SceneLoader::parse_metadata(const JsonValue& sceneObj)
@@ -180,7 +223,11 @@ namespace Pakal
 
 		// Use AssetLoader to load all entities
 		AssetLoader assetLoader(m_engine);
-		
+
+		// Pass resolver if prefab catalogs were loaded for this scene.
+		if (m_prefabResolver)
+			assetLoader.set_prefab_resolver(m_prefabResolver.get());
+
 		// Create a temporary JSON wrapper for AssetLoader
 		std::string entitiesJson = SimpleJsonParser::stringify(entitiesObj);
 		std::string fullJson = "{\"entities\":" + entitiesJson + "}";
@@ -267,5 +314,7 @@ namespace Pakal
 		m_metadata.scene_name = "";
 		m_metadata.difficulty = 1;
 		m_metadata.expected_enemy_count = 0;
+		m_prefabCatalog.reset();
+		m_prefabResolver.reset();
 	}
 }

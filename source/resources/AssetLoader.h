@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include "SimpleJsonParser.h"
+#include "resources/prefab/PrefabResolver.h"
 
 namespace Pakal
 {
@@ -79,15 +80,26 @@ namespace Pakal
 		 */
 		void clear();
 
+		/**
+		 * Set an optional prefab resolver for this loader.
+		 * When set, entities with a 'prefab' key are expanded before component creation.
+		 * Entities without 'prefab' continue to use the inline 'components' path unchanged.
+		 */
+		void set_prefab_resolver(const PrefabResolver* resolver) { m_prefabResolver = resolver; }
+
 	private:
 		Engine* m_engine;
 		EntityManager* m_entityManager;
 		ComponentManager* m_componentManager;
+		const PrefabResolver* m_prefabResolver = nullptr;
 		std::vector<EntityHandle> m_loadedEntities;
 		mutable std::vector<GenericEntity*> m_loadedEntityCache;
 
 		// Internal parsing and creation methods
 		GenericEntity* resolve_entity(EntityHandle handle) const;
+		// Expand a prefab-backed entity into the concrete inline shape.
+		// Returns the entityDef unchanged if it has no 'prefab' key.
+		JsonValue expand_entity(const std::string& name, const JsonValue& entityDef) const;
 		bool create_entity_from_json(const std::string& entityName, const JsonValue& entityDef);
 		bool create_component_from_json(GenericEntity* entity, const JsonValue& componentDef);
 

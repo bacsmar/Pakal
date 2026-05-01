@@ -44,7 +44,7 @@ elif [ "$TARGET_PROFILE" = "module" ]; then
 elif [ "$TARGET_PROFILE" = "player" ]; then
   BUILD_TARGETS="--target PakalPlayer"
 elif [ "$TARGET_PROFILE" = "runtime" ]; then
-  BUILD_TARGETS="--target PakalPlayer --target ContraGameModule"
+  BUILD_TARGETS="--target PakalPlayer --target ContraGameModule --target PrefabResolverTests"
 fi
 
 # Try docker compose (new) first, fallback to docker-compose (old)
@@ -73,9 +73,14 @@ case $COMMAND in
     
     # Compile with mounted volumes (much faster for rebuilds)
     echo "🔧 Compiling Pakal..."
+    TESTS_VOLUME=""
+    if [ -d "$(pwd)/tests" ]; then
+      TESTS_VOLUME="-v $(pwd)/tests:/workspace/tests"
+    fi
     docker run --rm \
       --user "$HOST_UID:$HOST_GID" \
       -v "$BUILD_DIR:/workspace/build" \
+      $TESTS_VOLUME \
       $DOCKER_IMAGE:$DOCKER_TAG \
       bash -c "cd /workspace/build && cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .. && cmake --build . $BUILD_TARGETS -j\$(nproc)"
     

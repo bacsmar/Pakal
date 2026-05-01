@@ -7,6 +7,8 @@
 #include "EntityHandle.h"
 #include "SimpleJsonParser.h"
 #include "PakalMath.h"
+#include "resources/prefab/PrefabCatalog.h"
+#include "resources/prefab/PrefabResolver.h"
 
 namespace Pakal
 {
@@ -125,11 +127,14 @@ namespace Pakal
 		std::vector<EntityHandle> m_loadedEntities;
 		mutable std::vector<GenericEntity*> m_loadedEntityCache;
 		SceneMetadata m_metadata;
+		std::unique_ptr<PrefabCatalog>  m_prefabCatalog;
+		std::unique_ptr<PrefabResolver> m_prefabResolver;
 
 		GenericEntity* resolve_entity(EntityHandle handle) const;
 		bool parse_scene_json(const JsonValue& root);
 		bool parse_metadata(const JsonValue& sceneObj);
 		bool parse_spawn_points(const JsonValue& spawnPointsObj);
+		void parse_prefab_catalogs(const JsonValue& sceneObj);
 		bool parse_entities(const JsonValue& entitiesObj);
 	};
 }

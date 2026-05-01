@@ -6,6 +6,7 @@
 #include "LogMgr.h"
 #include "ResourceManager.h"
 #include "PakalMath.h"
+#include "resources/prefab/PrefabCatalog.h"
 #include "components/SpritePhysicsComponent.h"
 #include "components/SpriteComponent.h"
 #include "components/SpriteComponent2D.h"
@@ -202,9 +203,78 @@ namespace Pakal
 			m_loadedEntityCache.clear();
 	}
 
-	bool AssetLoader::create_entity_from_json(const std::string& entityName, const JsonValue& entityDef)
+	JsonValue AssetLoader::expand_entity(const std::string& name, const JsonValue& entityDef) const
+	{
+		if (!entityDef.has("prefab"))
+			return entityDef; // inline path — return as-is
+
+		if (!m_prefabResolver)
+		{
+			LOG_ERROR("[AssetLoader] Entity '%s' has 'prefab' but no resolver is set", name.c_str());
+			return {};
+		}
+
+		const std::string prefabId = entityDef["prefab"].as_string();
+		const JsonValue& overrides = entityDef.has("overrides") ? entityDef["overrides"] : JsonValue{};
+		const JsonValue resolved = m_prefabResolver->resolve(prefabId, overrides);
+		if (resolved.is_null())
+		{
+			LOG_ERROR("[AssetLoader] Failed to resolve prefab '%s' for entity '%s'",
+					  prefabId.c_str(), name.c_str());
+			return {};
+		}
+
+		// Convert prefab shape { entity_type, components:[{id,type,data}] }
+		// to the inline shape { type, components:[{type, ...data fields...}] }
+		// that the existing component creators expect.
+		JsonValue concrete;
+		concrete.set_object();
+
+		const std::string entityType = resolved.has("entity_type")
+			? resolved["entity_type"].as_string("Pakal::GenericEntity")
+			: "Pakal::GenericEntity";
+		concrete.insert("type", JsonValue(entityType));
+
+		JsonValue flatComps;
+		flatComps.set_array();
+
+		// If the scene entity has a top-level "position" shorthand, inject it into
+		// every component that already carries a "position" field in its data.
+		// Convention: fields present in data take precedence; shorthand fills gaps only.
+		const bool hasTopLevelPos = entityDef.has("position") && entityDef["position"].is_object();
+
+		const JsonValue& comps = resolved["components"];
+		for (size_t i = 0; i < comps.size(); ++i)
+		{
+			const JsonValue& comp = comps[i];
+			JsonValue flat;
+			flat.set_object();
+			flat.insert("type", comp["type"]);
+			// Promote all data fields to the component root level.
+			if (comp.has("data") && comp["data"].is_object())
+			{
+				for (const auto& key : comp["data"].keys())
+					flat.insert(key, comp["data"][key]);
+			}
+			// Apply top-level position shorthand if the component had a position
+			// in its data and the scene entity provides a top-level position.
+			if (hasTopLevelPos && !flat.has("position"))
+				flat.insert("position", entityDef["position"]);
+			flatComps.push_back(flat);
+		}
+
+		concrete.insert("components", flatComps);
+		return concrete;
+	}
+
+	bool AssetLoader::create_entity_from_json(const std::string& entityName, const JsonValue& entityDefRaw)
 	{
 		if (!m_entityManager) return false;
+
+		// Expand prefab if present; inline entities pass through unchanged.
+		const JsonValue expanded = expand_entity(entityName, entityDefRaw);
+		if (expanded.is_null()) return false;
+		const JsonValue& entityDef = expanded;
 
 		// Get entity type (default to GenericEntity)
 		std::string entityType = "Pakal::GenericEntity";

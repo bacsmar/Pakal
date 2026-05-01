@@ -217,6 +217,16 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/ContraGame/CMakeLists.txt)
     endif()
 endif()
 
+# Prefab resolver unit tests (no engine startup required)
+if(EXISTS ${CMAKE_SOURCE_DIR}/tests/PrefabResolverTests.cpp)
+    enable_testing()
+    add_executable(PrefabResolverTests ${CMAKE_SOURCE_DIR}/tests/PrefabResolverTests.cpp)
+    target_link_libraries(PrefabResolverTests Pakal)
+    target_include_directories(PrefabResolverTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    add_test(NAME PrefabResolverTests COMMAND PrefabResolverTests)
+    message(STATUS "Building PrefabResolverTests")
+endif()
+
 # Print configuration summary
 message(STATUS "========== Pakal Engine Configuration ==========")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")

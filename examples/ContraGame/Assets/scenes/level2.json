@@ -1,370 +1,370 @@
 {
-    "scene": {
-        "name": "Level 2 - Fortress Attack",
-        "difficulty": 2,
-        "expected_enemy_count": 7,
-        "spawn_points": {
-            "player_start": {
-                "x": 3.0,
-                "y": 12.0,
-                "z": 0.0
-            },
-            "goal": {
-                "x": 45.0,
-                "y": 8.0,
-                "z": 0.0
-            }
-        },
-        "entities": {
-            "player": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 3.0,
-                            "y": 12.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": true,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/player_idle.png",
-                        "position": {
-                            "x": 3.0,
-                            "y": 12.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "goal": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 45.0,
-                            "y": 8.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "static",
-                        "fixed_rotation": true,
-                        "gravity_scale": 0.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/player_idle.png",
-                        "position": {
-                            "x": 45.0,
-                            "y": 8.0
-                        },
-                        "scale": 1.0,
-                        "color": {
-                            "r": 0.0,
-                            "g": 1.0,
-                            "b": 0.0,
-                            "a": 1.0
-                        },
-                        "layer": 5
-                    }
-                ]
-            },
-            "enemy_01": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 12.0,
-                            "y": 12.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 12.0,
-                            "y": 12.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_02": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 18.0,
-                            "y": 13.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 18.0,
-                            "y": 13.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_03": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 24.0,
-                            "y": 12.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 24.0,
-                            "y": 12.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_04": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 30.0,
-                            "y": 13.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 30.0,
-                            "y": 13.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_05": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 36.0,
-                            "y": 12.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 36.0,
-                            "y": 12.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_06": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 42.0,
-                            "y": 13.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 42.0,
-                            "y": 13.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "enemy_07": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 44.0,
-                            "y": 12.0,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "dynamic",
-                        "fixed_rotation": false,
-                        "gravity_scale": 1.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/enemy.jpg",
-                        "position": {
-                            "x": 44.0,
-                            "y": 12.0
-                        },
-                        "scale": 1.0,
-                        "layer": 10
-                    }
-                ]
-            },
-            "platform_01": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 10.0,
-                            "y": 0.5,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "static",
-                        "fixed_rotation": true,
-                        "gravity_scale": 0.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/platform.png",
-                        "position": {
-                            "x": 10.0,
-                            "y": 0.5
-                        },
-                        "scale": 1.0,
-                        "layer": 5
-                    }
-                ]
-            },
-            "platform_02": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 25.0,
-                            "y": 0.5,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "static",
-                        "fixed_rotation": true,
-                        "gravity_scale": 0.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/platform.png",
-                        "position": {
-                            "x": 25.0,
-                            "y": 0.5
-                        },
-                        "scale": 1.0,
-                        "layer": 5
-                    }
-                ]
-            },
-            "platform_03": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "SpritePhysicsComponent",
-                        "position": {
-                            "x": 40.0,
-                            "y": 0.5,
-                            "z": 0.0
-                        },
-                        "scale": 1.0,
-                        "body_type": "static",
-                        "fixed_rotation": true,
-                        "gravity_scale": 0.0
-                    },
-                    {
-                        "type": "SpriteComponent2D",
-                        "texture": "Assets/sprites/platform.png",
-                        "position": {
-                            "x": 40.0,
-                            "y": 0.5
-                        },
-                        "scale": 1.0,
-                        "layer": 5
-                    }
-                ]
-            },
-            "camera": {
-                "type": "Pakal::GenericEntity",
-                "components": [
-                    {
-                        "type": "CameraComponent2D",
-                        "orthographic": {
-                            "width": 1280,
-                            "height": 720
-                        },
-                        "zoom": 1.0,
-                        "bounds": {
-                            "minX": 0,
-                            "minY": 0,
-                            "maxX": 50,
-                            "maxY": 20
-                        }
-                    }
-                ]
-            }
+  "scene": {
+    "name": "Level 2 - Solid Placeholder Gauntlet",
+    "difficulty": 2,
+    "expected_enemy_count": 4,
+    "prefab_catalogs": ["Assets/prefabs/contra.prefabs.json"],
+    "spawn_points": {
+      "player_start": { "x": 2.0, "y": 4.0, "z": 0.0 },
+      "goal": { "x": 52.0, "y": 4.2, "z": 0.0 }
+    },
+    "entities": {
+      "player": {
+        "prefab": "player",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 2.0, "y": 4.0, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 2.0, "y": 4.0 } } }
         }
+      },
+      "goal": {
+        "prefab": "goal_zone",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 52.0, "y": 4.2, "z": 0.0 }, "height": 3.2 } },
+          "sprite":  { "data": { "position": { "x": 52.0, "y": 4.2 }, "height": 3.2 } }
+        }
+      },
+      "ground_01": {
+        "prefab": "ground_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 8.0, "y": 0.5, "z": 0.0 }, "width": 16.0 } },
+          "sprite":  { "data": { "position": { "x": 8.0, "y": 0.5 }, "width": 16.0 } }
+        }
+      },
+      "ground_02": {
+        "prefab": "ground_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 30.0, "y": 0.5, "z": 0.0 }, "width": 18.0 } },
+          "sprite":  { "data": { "position": { "x": 30.0, "y": 0.5 }, "width": 18.0 } }
+        }
+      },
+      "ground_03": {
+        "prefab": "ground_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 50.0, "y": 0.5, "z": 0.0 }, "width": 12.0 } },
+          "sprite":  { "data": { "position": { "x": 50.0, "y": 0.5 }, "width": 12.0 } }
+        }
+      },
+      "platform_01": {
+        "prefab": "platform_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 17.0, "y": 4.0, "z": 0.0 }, "width": 5.0 } },
+          "sprite":  { "data": { "position": { "x": 17.0, "y": 4.0 }, "width": 5.0 } }
+        }
+      },
+      "platform_02": {
+        "prefab": "platform_block",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 39.0, "y": 5.0, "z": 0.0 }, "width": 7.0 } },
+          "sprite":  { "data": { "position": { "x": 39.0, "y": 5.0 }, "width": 7.0 } }
+        }
+      },
+      "enemy_01": {
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 11.0, "y": 2.2, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 11.0, "y": 2.2 } } }
+        }
+      },
+      "enemy_02": {
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 24.0, "y": 2.2, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 24.0, "y": 2.2 } } }
+        }
+      },
+      "enemy_03": {
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 35.0, "y": 2.2, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 35.0, "y": 2.2 } } }
+        }
+      },
+      "enemy_04": {
+        "prefab": "enemy_basic",
+        "overrides": {
+          "physics": { "data": { "position": { "x": 43.0, "y": 6.6, "z": 0.0 } } },
+          "sprite":  { "data": { "position": { "x": 43.0, "y": 6.6 } } }
+        }
+      },
+      "camera": {
+        "prefab": "camera_follow",
+        "overrides": {
+          "camera": { "data": {
+            "position": { "x": 2.0, "y": 4.0, "z": 0.0 },
+            "bounds": { "minX": 0.0, "minY": -1.5, "maxX": 56.0, "maxY": 14.0 }
+          }}
+        }
+      }
     }
+  }
+}
+    "entities": {
+      "player": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 2.0, "y": 4.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.8,
+            "height": 1.6
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.18, "g": 0.55, "b": 1.0, "a": 1.0 },
+            "position": { "x": 2.0, "y": 4.0 },
+            "width": 0.8,
+            "height": 1.6,
+            "layer": 10
+          }
+        ]
+      },
+      "goal": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 52.0, "y": 4.2, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 1.0,
+            "height": 3.2,
+            "is_sensor": true
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.16, "g": 0.85, "b": 0.36, "a": 1.0 },
+            "position": { "x": 52.0, "y": 4.2 },
+            "width": 1.0,
+            "height": 3.2,
+            "layer": 4
+          }
+        ]
+      },
+      "ground_01": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 8.0, "y": 0.5, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 16.0,
+            "height": 1.0
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.27, "g": 0.34, "b": 0.40, "a": 1.0 },
+            "position": { "x": 8.0, "y": 0.5 },
+            "width": 16.0,
+            "height": 1.0,
+            "layer": 1
+          }
+        ]
+      },
+      "ground_02": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 30.0, "y": 0.5, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 18.0,
+            "height": 1.0
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.27, "g": 0.34, "b": 0.40, "a": 1.0 },
+            "position": { "x": 30.0, "y": 0.5 },
+            "width": 18.0,
+            "height": 1.0,
+            "layer": 1
+          }
+        ]
+      },
+      "ground_03": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 50.0, "y": 0.5, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 12.0,
+            "height": 1.0
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.27, "g": 0.34, "b": 0.40, "a": 1.0 },
+            "position": { "x": 50.0, "y": 0.5 },
+            "width": 12.0,
+            "height": 1.0,
+            "layer": 1
+          }
+        ]
+      },
+      "platform_01": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 17.0, "y": 4.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 5.0,
+            "height": 0.6
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.58, "g": 0.45, "b": 0.30, "a": 1.0 },
+            "position": { "x": 17.0, "y": 4.0 },
+            "width": 5.0,
+            "height": 0.6,
+            "layer": 2
+          }
+        ]
+      },
+      "platform_02": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 39.0, "y": 5.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "static",
+            "fixed_rotation": true,
+            "gravity_scale": 0.0,
+            "width": 7.0,
+            "height": 0.6
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.58, "g": 0.45, "b": 0.30, "a": 1.0 },
+            "position": { "x": 39.0, "y": 5.0 },
+            "width": 7.0,
+            "height": 0.6,
+            "layer": 2
+          }
+        ]
+      },
+      "enemy_01": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 11.0, "y": 2.2, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.95, "g": 0.24, "b": 0.24, "a": 1.0 },
+            "position": { "x": 11.0, "y": 2.2 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10
+          }
+        ]
+      },
+      "enemy_02": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 24.0, "y": 2.2, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.95, "g": 0.24, "b": 0.24, "a": 1.0 },
+            "position": { "x": 24.0, "y": 2.2 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10
+          }
+        ]
+      },
+      "enemy_03": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 35.0, "y": 2.2, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.95, "g": 0.24, "b": 0.24, "a": 1.0 },
+            "position": { "x": 35.0, "y": 2.2 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10
+          }
+        ]
+      },
+      "enemy_04": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "SpritePhysicsComponent",
+            "position": { "x": 43.0, "y": 6.6, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          },
+          {
+            "type": "SpriteComponent2D",
+            "solid_color": { "r": 0.95, "g": 0.24, "b": 0.24, "a": 1.0 },
+            "position": { "x": 43.0, "y": 6.6 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10
+          }
+        ]
+      },
+      "camera": {
+        "type": "Pakal::GenericEntity",
+        "components": [
+          {
+            "type": "CameraComponent2D",
+            "position": { "x": 2.0, "y": 4.0, "z": 0.0 },
+            "orthographic": { "width": 24.0, "height": 13.5, "near": -100.0, "far": 100.0 },
+            "zoom": 1.0,
+            "bounds": { "minX": 0.0, "minY": -1.5, "maxX": 56.0, "maxY": 14.0 }
+          }
+        ]
+      }
+    }
+  }
 }
