@@ -265,8 +265,9 @@ namespace Pakal
 			}
 		}
 
-		// Render all registered sprites
-		render_sprites();
+		// Update and render all registered sprites
+		const float dt_seconds = static_cast<float>(dt) * 0.001f;
+		render_sprites(dt_seconds);
 
 		// Touch view to ensure it's rendered
 		bgfx::touch(m_main_view_id);
@@ -360,18 +361,18 @@ namespace Pakal
 		}
 	}
 
-	void BgfxGraphicsSystem::render_sprites()
+	void BgfxGraphicsSystem::render_sprites(float dt_seconds)
 	{
 		if (m_sprites.empty())
 		{
 			return;
 		}
 
-		// Render all sprites
 		for (auto* sprite : m_sprites)
 		{
 			if (sprite)
 			{
+				sprite->update(dt_seconds);
 				sprite->render(m_main_view_id, nullptr);
 			}
 		}

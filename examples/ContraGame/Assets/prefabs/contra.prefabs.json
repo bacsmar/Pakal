@@ -20,11 +20,19 @@
           "id": "sprite",
           "type": "SpriteComponent2D",
           "data": {
-            "solid_color": { "r": 0.18, "g": 0.55, "b": 1.0, "a": 1.0 },
+            "texture": "Assets/run_n_gun/Player/SpriteSheet_player.png",
             "position": { "x": 0.0, "y": 0.0 },
             "width": 0.8,
             "height": 1.6,
-            "layer": 10
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 45,
+              "frame_height": 45,
+              "fps": 10.0,
+              "start_frame": 0,
+              "end_frame": 5,
+              "loop": true
+            }
           }
         }
       ]
@@ -49,11 +57,19 @@
           "id": "sprite",
           "type": "SpriteComponent2D",
           "data": {
-            "solid_color": { "r": 0.95, "g": 0.24, "b": 0.24, "a": 1.0 },
+            "texture": "Assets/run_n_gun/Enemies/ARMob.png",
             "position": { "x": 0.0, "y": 0.0 },
             "width": 0.9,
             "height": 1.2,
-            "layer": 10
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 32,
+              "frame_height": 38,
+              "fps": 8.0,
+              "start_frame": 0,
+              "end_frame": 7,
+              "loop": true
+            }
           }
         }
       ]

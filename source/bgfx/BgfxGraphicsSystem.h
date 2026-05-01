@@ -61,7 +61,7 @@ namespace Pakal
 	private:
 		void setup_window_callbacks();
 		void on_window_resized(const WindowArgs& args);
-		void render_sprites();
+		void render_sprites(float dt_seconds);
 		void create_sprite_shader();
 	
 	public:

@@ -480,7 +480,7 @@ namespace Pakal
 				component->set_scale(sx, sy);
 			}
 		}
-		else if (hasSolidColor && (data.has("width") || data.has("height"))) {
+		else if (data.has("width") || data.has("height")) {
 			const float width = data.has("width") ? data["width"].as_float(1.0f) : 1.0f;
 			const float height = data.has("height") ? data["height"].as_float(1.0f) : width;
 			component->set_scale(width, height);
@@ -504,6 +504,25 @@ namespace Pakal
 		if (data.has("layer")) {
 			int layer = data["layer"].as_int(0);
 			component->set_layer(layer);
+		}
+
+		if (data.has("sprite_sheet")) {
+			const JsonValue& ss = data["sprite_sheet"];
+			const int fw = ss.has("frame_width")  ? ss["frame_width"].as_int(0)  : 0;
+			const int fh = ss.has("frame_height") ? ss["frame_height"].as_int(0) : 0;
+			if (fw > 0 && fh > 0) {
+				component->set_frame_size(fw, fh);
+			}
+			if (ss.has("fps")) {
+				component->set_animation_fps(ss["fps"].as_float(12.0f));
+			}
+			if (ss.has("start_frame") && ss.has("end_frame")) {
+				const bool loop = ss.has("loop") ? ss["loop"].as_bool(true) : true;
+				component->play_animation(ss["start_frame"].as_int(0), ss["end_frame"].as_int(0), loop);
+			}
+			else if (ss.has("frame")) {
+				component->set_frame(ss["frame"].as_int(0));
+			}
 		}
 
 		return true;
