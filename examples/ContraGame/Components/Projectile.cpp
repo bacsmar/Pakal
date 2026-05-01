@@ -43,6 +43,7 @@ namespace Pakal
 		m_damage(10.0f),
 		m_faction(CombatFaction::Player),
 		m_lifetime(5.0f),
+		m_expired(false),
 		m_physics(nullptr),
 		m_sprite(nullptr)
 	{
@@ -59,6 +60,9 @@ namespace Pakal
 		m_sprite = parent->get_component<SpriteComponent2D>();
 		if (m_physics)
 		{
+			m_physics->set_gravity_scale(0.0f);
+			m_physics->set_lineal_velocity(m_velocity);
+
 			m_physics->event_collide.add_listener([this](const Entity* other)
 			{
 				if (other)
@@ -99,13 +103,18 @@ namespace Pakal
 	
 	void Projectile::update_physics(float deltaTime)
 	{
+		(void)deltaTime;
+
 		if (!m_physics)
 			return;
 		
-		// Update position based on velocity
-		auto currentPos = m_physics->get_position();
-		auto newPos = currentPos + tmath::vector3df(m_velocity.x, m_velocity.y, 0.0f) * deltaTime;
-		m_physics->set_position(newPos);
+		m_physics->set_lineal_velocity(m_velocity);
+
+		if (m_sprite)
+		{
+			auto currentPos = m_physics->get_position();
+			m_sprite->set_position(currentPos.x, currentPos.y);
+		}
 	}
 	
 	void Projectile::update_lifetime(float deltaTime)
@@ -116,11 +125,8 @@ namespace Pakal
 	void Projectile::on_collision(Projectile* other)
 	{
 		// Projectiles destroy each other on collision
-		m_lifetime = 0.0f;
-		if (auto* parent = get_parent_entity())
-		{
-			parent->request_dispose();
-		}
+		(void)other;
+		m_expired = true;
 	}
 	
 	void Projectile::on_collision(Entity* other)
@@ -132,11 +138,7 @@ namespace Pakal
 
 		if (other->get_component<Projectile>())
 		{
-			m_lifetime = 0.0f;
-			if (auto* parent = get_parent_entity())
-			{
-				parent->request_dispose();
-			}
+			m_expired = true;
 			return;
 		}
 
@@ -147,10 +149,6 @@ namespace Pakal
 			LOG_INFO("[Projectile] Hit %s, dealt %f damage, faction=%d", other->get_descriptor().c_str(), m_damage, static_cast<int>(m_faction));
 		}
 		
-		m_lifetime = 0.0f;
-		if (auto* parent = get_parent_entity())
-		{
-			parent->request_dispose();
-		}
+		m_expired = true;
 	}
 }

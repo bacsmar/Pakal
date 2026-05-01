@@ -50,7 +50,24 @@ namespace Pakal
 		// Register with graphics system
 		if (m_graphics_system)
 		{
-			m_graphics_system->set_active_camera(this);
+			auto setActiveCamera = [graphicsSystem = m_graphics_system, this]()
+			{
+				graphicsSystem->set_active_camera(this);
+			};
+
+			auto state = m_graphics_system->get_state();
+			if (state == SystemState::Running || state == SystemState::Paused)
+			{
+				auto task = m_graphics_system->execute_block(setActiveCamera);
+				if (task)
+				{
+					task->wait();
+				}
+			}
+			else
+			{
+				setActiveCamera();
+			}
 		}
 	}
 	
@@ -59,7 +76,24 @@ namespace Pakal
 		// Unregister from graphics system
 		if (m_graphics_system)
 		{
-			m_graphics_system->set_active_camera(nullptr);
+			auto clearActiveCamera = [graphicsSystem = m_graphics_system, this]()
+			{
+				graphicsSystem->clear_active_camera(this);
+			};
+
+			auto state = m_graphics_system->get_state();
+			if (state == SystemState::Running || state == SystemState::Paused)
+			{
+				auto task = m_graphics_system->execute_block(clearActiveCamera);
+				if (task)
+				{
+					task->wait();
+				}
+			}
+			else
+			{
+				clearActiveCamera();
+			}
 		}
 	}
 	

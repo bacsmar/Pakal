@@ -352,6 +352,14 @@ namespace Pakal
 		m_active_camera = camera;
 	}
 
+	void BgfxGraphicsSystem::clear_active_camera(ICameraComponent_Bgfx* camera)
+	{
+		if (m_active_camera == camera)
+		{
+			m_active_camera = nullptr;
+		}
+	}
+
 	void BgfxGraphicsSystem::render_sprites()
 	{
 		if (m_sprites.empty())

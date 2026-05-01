@@ -33,6 +33,33 @@ cd docker-build/bin
 
 ContraGame is built as a loadable module (`libContraGameModule.so`). `PakalPlayer` is the executable host and loads the module from the same directory by default.
 
+## Editing Levels With Tiled
+
+The runtime still loads Pakal scene JSON from `examples/ContraGame/Assets/scenes/`, but editable Tiled maps are generated in `examples/ContraGame/Assets/tiled/`.
+
+Open the current levels in Tiled:
+
+```bash
+tiled examples/ContraGame/Assets/tiled/level1.tmj
+tiled examples/ContraGame/Assets/tiled/level2.tmj
+```
+
+After editing and saving a `.tmj`, convert it back to the Pakal scene JSON before rebuilding or running:
+
+```bash
+python3 tools/pakal_tiled_scene.py tiled-to-pakal examples/ContraGame/Assets/tiled/level1.tmj examples/ContraGame/Assets/scenes/level1.json
+python3 tools/pakal_tiled_scene.py tiled-to-pakal examples/ContraGame/Assets/tiled/level2.tmj examples/ContraGame/Assets/scenes/level2.json
+```
+
+To regenerate Tiled maps from the runtime JSON:
+
+```bash
+python3 tools/pakal_tiled_scene.py pakal-to-tiled examples/ContraGame/Assets/scenes/level1.json examples/ContraGame/Assets/tiled/level1.tmj
+python3 tools/pakal_tiled_scene.py pakal-to-tiled examples/ContraGame/Assets/scenes/level2.json examples/ContraGame/Assets/tiled/level2.tmj
+```
+
+Keep `player`, `goal`, and `camera` as object names. Enemy object names should include `enemy`, such as `enemy_01`, because the gameplay state uses those names to wire gameplay components.
+
 ## Architecture
 
 ### Engine Systems

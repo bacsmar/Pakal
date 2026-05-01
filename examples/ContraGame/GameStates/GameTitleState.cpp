@@ -18,6 +18,8 @@
 #include "components/SpriteComponent2D.h"
 #include "components/CameraComponent2D.h"
 
+#include <cstdlib>
+
 namespace Pakal
 {
 	GameTitleState::GameTitleState() : BaseGameState("Title"),
@@ -158,10 +160,9 @@ namespace Pakal
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Background sprite component created successfully");
-		sprite->set_texture("Assets/sprites/background.png");
-		sprite->set_position(0.0f, 0.0f);
-		sprite->set_color(1.0f, 1.0f, 1.0f, 1.0f);
-		sprite->set_scale(32.0f, 18.0f);
+			sprite->create_solid_color(0x111827FF, 1, 1);
+			sprite->set_position(0.0f, 0.0f);
+			sprite->set_scale(32.0f, 18.0f);
 			sprite->set_layer(0);
 		}
 		else
@@ -210,10 +211,10 @@ namespace Pakal
 		if (sprite)
 		{
 			LOG_INFO("[GameTitleState] Prompt sprite component created successfully");
-		sprite->create_solid_color(0xFFFFFFFF, 1, 1);
-		sprite->set_position(0.0f, -6.0f);
-		sprite->set_color(0.95f, 0.85f, 0.20f, 1.0f);
-		sprite->set_scale(10.0f, 0.8f);
+			sprite->create_solid_color(0xFFFFFFFF, 1, 1);
+			sprite->set_position(0.0f, -6.0f);
+			sprite->set_color(0.95f, 0.85f, 0.20f, 1.0f);
+			sprite->set_scale(10.0f, 0.8f);
 			sprite->set_layer(1);
 		}
 		else
@@ -224,6 +225,11 @@ namespace Pakal
 
 	bool GameTitleState::is_start_pressed() const
 	{
+		if (std::getenv("PAKAL_CONTRA_AUTOSTART") != nullptr)
+		{
+			return true;
+		}
+
 		auto& input = InputManager_Polling::instance();
 		return input.poll_key_down(Key::Space) ||
 			input.poll_key_down(Key::Return) ||

@@ -8,6 +8,7 @@
 #include "CombatFaction.h"
 #include "Component.h"
 #include "math/vector2.h"
+#include <atomic>
 
 namespace Pakal
 {
@@ -33,7 +34,7 @@ namespace Pakal
 		
 		float get_damage() const { return m_damage; }
 		CombatFaction get_faction() const { return m_faction; }
-		bool is_alive() const { return m_lifetime > 0.0f; }
+		bool is_alive() const { return !m_expired && m_lifetime > 0.0f; }
 		
 		// Collision handling
 		void on_collision(Projectile* other);
@@ -47,6 +48,7 @@ namespace Pakal
 		float m_damage;
 		CombatFaction m_faction;
 		float m_lifetime;
+		std::atomic_bool m_expired;
 		
 		// Components (obtained in initialize())
 		SpritePhysicsComponent* m_physics;

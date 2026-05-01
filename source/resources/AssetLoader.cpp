@@ -10,6 +10,8 @@
 #include "components/SpriteComponent.h"
 #include "components/SpriteComponent2D.h"
 #include "components/CameraComponent2D.h"
+#include <algorithm>
+#include <cstdint>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -18,6 +20,29 @@ namespace Pakal
 {
 	namespace
 	{
+		uint8_t color_channel_to_byte(float value)
+		{
+			const float clamped = std::max(0.0f, std::min(1.0f, value));
+			return static_cast<uint8_t>(clamped * 255.0f);
+		}
+
+		uint32_t parse_rgba_color(const JsonValue& color, uint32_t defaultColor)
+		{
+			if (!color.is_object())
+			{
+				return defaultColor;
+			}
+
+			const auto r = color_channel_to_byte(color["r"].as_float(1.0f));
+			const auto g = color_channel_to_byte(color["g"].as_float(1.0f));
+			const auto b = color_channel_to_byte(color["b"].as_float(1.0f));
+			const auto a = color_channel_to_byte(color["a"].as_float(1.0f));
+			return (static_cast<uint32_t>(r) << 24) |
+				(static_cast<uint32_t>(g) << 16) |
+				(static_cast<uint32_t>(b) << 8) |
+				static_cast<uint32_t>(a);
+		}
+
 		SpriteSheetPhysicsPtr create_box_physics(float width, float height, const SpritePhysicsComponent::Settings& settings, const JsonValue& data)
 		{
 			auto sheet = std::make_shared<SpriteSheetPhysics>();
@@ -359,7 +384,11 @@ namespace Pakal
 			return false;
 		}
 
-		if (data.has("texture")) {
+		const bool hasSolidColor = data.has("solid_color");
+		if (hasSolidColor) {
+			component->create_solid_color(parse_rgba_color(data["solid_color"], 0xFFFFFFFF), 1, 1);
+		}
+		else if (data.has("texture")) {
 			const std::string texturePath = data["texture"].as_string();
 			component->set_texture(texturePath);
 		}
@@ -380,6 +409,15 @@ namespace Pakal
 				float sy = scaleObj.is_object() ? scaleObj["y"].as_float(1.0f) : scaleObj.as_float(1.0f);
 				component->set_scale(sx, sy);
 			}
+		}
+		else if (hasSolidColor && (data.has("width") || data.has("height"))) {
+			const float width = data.has("width") ? data["width"].as_float(1.0f) : 1.0f;
+			const float height = data.has("height") ? data["height"].as_float(1.0f) : width;
+			component->set_scale(width, height);
+		}
+
+		if (data.has("rotation")) {
+			component->set_rotation(data["rotation"].as_float(0.0f));
 		}
 
 		if (data.has("color")) {

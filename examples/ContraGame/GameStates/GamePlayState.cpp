@@ -31,6 +31,21 @@
 
 namespace Pakal
 {
+	namespace
+	{
+		void sync_sprite_to_physics(GenericEntity& entity)
+		{
+			auto* physics = entity.get_component<SpritePhysicsComponent>();
+			auto* sprite = entity.get_component<SpriteComponent2D>();
+			if (!physics || !sprite)
+			{
+				return;
+			}
+
+			auto position = physics->get_position();
+			sprite->set_position(position.x, position.y);
+		}
+	}
 
 	GamePlayState::GamePlayState() : BaseGameState("GamePlay"),
 		m_engine(nullptr),
@@ -316,6 +331,12 @@ namespace Pakal
 			}
 			if (auto* projectile = entity->get_component<Projectile>()) {
 				projectile->update(deltaTime);
+			}
+
+			sync_sprite_to_physics(*entity);
+
+			if (auto* camera = entity->get_component<CameraComponent2D>()) {
+				camera->update(deltaTime);
 			}
 
 			const auto& descriptor = entity->get_descriptor();

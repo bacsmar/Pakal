@@ -12,6 +12,7 @@
 #include "components/SpritePhysicsComponent.h"
 #include "components/SpriteComponent2D.h"
 #include "GenericEntity.h"
+#include <cmath>
 
 namespace Pakal
 {
@@ -63,6 +64,16 @@ namespace Pakal
 	{
 		if (!can_fire())
 			return;
+
+		tmath::vectorn<float, 2> fireDirection = direction;
+		float directionLength = std::sqrt(fireDirection.x * fireDirection.x + fireDirection.y * fireDirection.y);
+		if (directionLength <= 0.001f)
+		{
+			return;
+		}
+
+		fireDirection.x /= directionLength;
+		fireDirection.y /= directionLength;
 		
 		// Get weapon position from parent entity
 		Entity* parent = get_parent_entity();
@@ -76,6 +87,10 @@ namespace Pakal
 			if (physics)
 			{
 				auto position = physics->get_position();
+				tmath::vector3df spawnPosition(
+					position.x + fireDirection.x * 0.75f,
+					position.y + 0.25f + fireDirection.y * 0.25f,
+					position.z);
 				
 				// Create projectile entity
 				auto* projectileEntity = static_cast<GenericEntity*>(m_entityManager->create_entity("Pakal::GenericEntity", "projectile"));
@@ -86,10 +101,12 @@ namespace Pakal
 					if (projectilePhysics)
 					{
 						SpritePhysicsComponent::Settings physics_settings(create_projectile_body_physics());
-						physics_settings.position = position;
+						physics_settings.position = spawnPosition;
 						physics_settings.scale = 0.5f;  // Small projectile
 						physics_settings.body_type = SpritePhysicsComponent::DynamicBody;
 						physics_settings.fixed_rotation = true;
+						physics_settings.gravity_scale = 0.0f;
+						physics_settings.lineal_velocity = fireDirection * m_projectileSpeed;
 						auto initializeTask = projectilePhysics->initialize(physics_settings);
 						if (initializeTask)
 						{
@@ -101,11 +118,9 @@ namespace Pakal
 					auto* projectileSprite = projectileEntity->create_component<SpriteComponent2D>();
 					if (projectileSprite)
 					{
-						projectileSprite->set_position(position.x, position.y);
-						projectileSprite->set_scale(0.5f, 0.5f);
-						projectileSprite->set_color(1.0f, 1.0f, 0.0f, 1.0f); // Yellow projectile
-						// Use solid color instead of texture file
-						projectileSprite->create_solid_color(0xFFFFFF00, 1, 1); // Yellow color
+						projectileSprite->create_solid_color(0xFACC15FF, 1, 1);
+						projectileSprite->set_position(spawnPosition.x, spawnPosition.y);
+						projectileSprite->set_scale(0.35f, 0.18f);
 						projectileSprite->set_layer(5);
 					}
 					
@@ -113,7 +128,7 @@ namespace Pakal
 					auto* projectileComponent = projectileEntity->create_component<Projectile>();
 					if (projectileComponent)
 					{
-						projectileComponent->set_velocity(direction * m_projectileSpeed);
+						projectileComponent->set_velocity(fireDirection * m_projectileSpeed);
 						projectileComponent->set_damage(m_damage);
 						projectileComponent->set_faction(m_faction);
 						projectileComponent->set_lifetime(5.0f);
@@ -125,7 +140,7 @@ namespace Pakal
 						m_projectileCreated(projectileEntity->get_handle());
 					}
 					
-					LOG_INFO("[Weapon] Firing projectile in direction (%.2f, %.2f), faction=%d", direction.x, direction.y, static_cast<int>(m_faction));
+					LOG_INFO("[Weapon] Firing projectile in direction (%.2f, %.2f), faction=%d", fireDirection.x, fireDirection.y, static_cast<int>(m_faction));
 				}
 			}
 		}

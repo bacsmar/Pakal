@@ -68,6 +68,7 @@ namespace Pakal
 		void register_sprite(SpriteComponent_Bgfx* sprite);
 		void unregister_sprite(SpriteComponent_Bgfx* sprite);
 		void set_active_camera(ICameraComponent_Bgfx* camera);
+		void clear_active_camera(ICameraComponent_Bgfx* camera);
 		bgfx::ProgramHandle get_sprite_program() const { return m_sprite_program; }
 		bgfx::ViewId get_main_view_id() const { return m_main_view_id; }
 	};	

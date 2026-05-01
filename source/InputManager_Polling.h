@@ -56,32 +56,32 @@ namespace Pakal
 		/**
 		 * Convenience method: Check if Left arrow key is pressed.
 		 */
-		inline bool is_move_left_pressed() const { return poll_key_down(Key::Left); }
+		inline bool is_move_left_pressed() const { return poll_key_down(Key::Left) || poll_key_down(Key::A); }
 
 		/**
 		 * Convenience method: Check if Right arrow key is pressed.
 		 */
-		inline bool is_move_right_pressed() const { return poll_key_down(Key::Right); }
+		inline bool is_move_right_pressed() const { return poll_key_down(Key::Right) || poll_key_down(Key::D); }
 
 		/**
 		 * Convenience method: Check if Up arrow key is pressed.
 		 */
-		inline bool is_move_up_pressed() const { return poll_key_down(Key::Up); }
+		inline bool is_move_up_pressed() const { return poll_key_down(Key::Up) || poll_key_down(Key::W); }
 
 		/**
 		 * Convenience method: Check if Down arrow key is pressed.
 		 */
-		inline bool is_move_down_pressed() const { return poll_key_down(Key::Down); }
+		inline bool is_move_down_pressed() const { return poll_key_down(Key::Down) || poll_key_down(Key::S); }
 
 		/**
 		 * Convenience method: Check if Space key is pressed (jump/action).
 		 */
-		inline bool is_jump_pressed() const { return poll_key_down(Key::Space); }
+		inline bool is_jump_pressed() const { return poll_key_down(Key::Space) || poll_key_down(Key::Up) || poll_key_down(Key::W); }
 
 		/**
 		 * Convenience method: Check if Z key is pressed (fire weapon).
 		 */
-		inline bool is_fire_pressed() const { return poll_key_down(Key::Z); }
+		inline bool is_fire_pressed() const { return poll_key_down(Key::Z) || poll_key_down(Key::LControl) || poll_key_down(Key::RControl); }
 
 		/**
 		 * Convenience method: Check if X key is pressed (alternate action).
