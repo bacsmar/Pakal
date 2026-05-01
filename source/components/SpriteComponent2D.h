@@ -23,6 +23,7 @@ namespace Pakal
 		virtual void set_color(float r, float g, float b, float a = 1.0f) = 0;
 		virtual void set_layer(int layer) = 0;
 		virtual void set_visible(bool visible) = 0;
+		virtual void set_flip(bool flip_x, bool flip_y) {}
 
 		// Sprite sheet / animation support (default no-ops for implementations that don't support it)
 		virtual void set_frame_size(int frame_width, int frame_height) {}

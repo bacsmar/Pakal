@@ -253,6 +253,17 @@ void SpritebodyComponent_Box2D::set_lineal_velocity(const tmath::vector2df& velo
 	});
 }
 
+void SpritebodyComponent_Box2D::set_horizontal_velocity(float vx)
+{
+	m_system->execute_block([this, vx]()
+	{
+		ASSERT_MSG(m_active_body, "[body not yet initialized]");
+		auto vel = m_active_body->GetLinearVelocity();
+		m_active_body->SetLinearVelocity({ vx, vel.y });
+		refresh_snapshot_from_body();
+	});
+}
+
 bool SpritebodyComponent_Box2D::fixed_rotation() const
 {
 	ASSERT_MSG(m_active_body, "[body not yet initialized]");

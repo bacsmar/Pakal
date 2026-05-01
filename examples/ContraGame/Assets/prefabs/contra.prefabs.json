@@ -11,7 +11,7 @@
             "scale": 1.0,
             "body_type": "dynamic",
             "fixed_rotation": true,
-            "gravity_scale": 1.0,
+            "gravity_scale": 1.2,
             "width": 0.8,
             "height": 1.6
           }

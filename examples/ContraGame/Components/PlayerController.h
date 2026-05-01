@@ -56,15 +56,23 @@ namespace Pakal
 		bool m_isGrounded;
 		bool m_isJumping;
 		bool m_facingRight;
+		float m_lastGroundedY;
+		float m_timeSinceJump;
+		float m_shootAnimTimer;
+		float m_shootAnimDuration;
+		float m_coyoteTimer;
+		float m_coyoteTimeWindow;
 		
 		// Input state (cached from InputManager_Polling)
 		bool m_inputMoveLeft;
 		bool m_inputMoveRight;
 		bool m_inputJump;
 		bool m_inputFire;
+		bool m_prevInputJump;
+		bool m_prevInputFire;
 		
 		// Animation
-		enum AnimState { IDLE, RUN, JUMP, SHOOT };
+		enum AnimState { IDLE, RUN, JUMP_UP, JUMP_FALL, SHOOT };
 		AnimState m_currentAnim;
 	};
 }

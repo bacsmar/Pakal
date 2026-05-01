@@ -51,6 +51,7 @@ namespace Pakal
 		virtual void apply_force(const tmath::vector2df& force) override;
 		virtual tmath::vector2df get_lineal_velocity() const override;
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) override;
+		virtual void set_horizontal_velocity(float vx) override;
 
 		bool fixed_rotation() const;
 
