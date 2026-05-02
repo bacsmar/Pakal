@@ -21,6 +21,7 @@
 #include "../Components/PlayerController.h"
 #include "../Components/EnemyAI.h"
 #include "../Components/Projectile.h"
+#include "../Components/ParallaxController.h"
 
 // Engine components  
 #include "components/SpriteComponent2D.h"
@@ -242,6 +243,15 @@ namespace Pakal
 			
 			// Configure camera to follow the player
 			cameraComp->follow_target(m_player, 0.1f);
+
+			// Wire camera into all ParallaxController components so they can read camera position.
+			for (const auto& handle : m_levelEntities) {
+				if (auto* entity = resolve_entity(handle)) {
+					if (auto* parallax = entity->get_component<ParallaxController>()) {
+						parallax->set_camera(cameraComp);
+					}
+				}
+			}
 		}
 	}
 
@@ -301,10 +311,76 @@ namespace Pakal
 			if (!enemy->get_component<EnemyAI>()) {
 				auto* ai = enemy->create_component<EnemyAI>();
 				ai->set_patrol_range(5.0f);
-				ai->set_chase_range(10.0f);
-				ai->set_attack_range(8.0f);
+				ai->set_chase_range(28.0f);
+				ai->set_attack_range(12.0f);
+
+				// Configure animation ranges per known atlas layout.
+				// Generated enemies are laid out by rows in order:
+				// idle, walk, run, jump, crouch, attack_light, attack_heavy, hurt, block, death.
+				const std::string descriptor = enemy->get_descriptor();
+				if (descriptor.find("toad") != std::string::npos) {
+					ai->set_personality(EnemyAI::Aggressive);
+					ai->set_flank_route_offset(3.2f);
+					// 4 frames per row atlas
+					ai->set_idle_animation(0, 3);
+					ai->set_walk_animation(4, 7);
+					ai->set_run_animation(8, 11);
+					ai->set_attack_animation(20, 23);
+				} else if (descriptor.find("lizard") != std::string::npos) {
+					ai->set_personality(EnemyAI::Aggressive);
+					ai->set_flank_route_offset(2.8f);
+					// 3 frames per row atlas
+					ai->set_idle_animation(0, 2);
+					ai->set_walk_animation(3, 5);
+					ai->set_run_animation(6, 8);
+					ai->set_attack_animation(15, 17);
+				} else if (descriptor.find("tribal") != std::string::npos) {
+					ai->set_personality(EnemyAI::Cautious);
+					// 3 frames per row atlas
+					ai->set_idle_animation(0, 2);
+					ai->set_walk_animation(3, 5);
+					ai->set_run_animation(6, 8);
+					ai->set_attack_animation(15, 17);
+				} else if (descriptor.find("mouse") != std::string::npos) {
+					ai->set_personality(EnemyAI::Sentinel);
+					// 3 frames per row atlas
+					ai->set_idle_animation(0, 2);
+					ai->set_walk_animation(3, 5);
+					ai->set_run_animation(6, 8);
+					ai->set_attack_animation(15, 17);
+				} else if (descriptor.find("enemy") != std::string::npos) {
+					ai->set_personality(EnemyAI::Balanced);
+					// 3 frames per row atlas
+					ai->set_idle_animation(0, 2);
+					ai->set_walk_animation(3, 5);
+					ai->set_run_animation(6, 8);
+					ai->set_attack_animation(15, 17);
+				}
+
 				ai->set_player_entity(m_player);
 				ai->initialize();
+			}
+		}
+
+		// Setup parallax backgrounds: entities whose names start with "bg_" or "decor_"
+		// receive a ParallaxController with layer-appropriate scroll factors.
+		struct { const char* prefix; float factor_x; } parallax_cfg[] = {
+			{ "bg_",    0.2f },
+			{ "decor_", 0.6f }
+		};
+		for (const auto& handle : m_levelEntities) {
+			auto* entity = resolve_entity(handle);
+			if (!entity) continue;
+			const auto& name = entity->get_descriptor();
+			for (const auto& cfg : parallax_cfg) {
+				if (name.rfind(cfg.prefix, 0) == 0) {
+					if (!entity->get_component<ParallaxController>()) {
+						auto* parallax = entity->create_component<ParallaxController>();
+						parallax->set_scroll_factors(cfg.factor_x, 0.0f);
+						parallax->initialize();
+					}
+					break;
+				}
 			}
 		}
 
@@ -331,6 +407,9 @@ namespace Pakal
 			}
 			if (auto* projectile = entity->get_component<Projectile>()) {
 				projectile->update(deltaTime);
+			}
+			if (auto* parallax = entity->get_component<ParallaxController>()) {
+				parallax->update(deltaTime);
 			}
 
 			sync_sprite_to_physics(*entity);

@@ -7,6 +7,7 @@
 #pragma once
 #include "CombatFaction.h"
 #include "Component.h"
+#include "EntityHandle.h"
 #include "math/vector2.h"
 #include <atomic>
 
@@ -31,6 +32,7 @@ namespace Pakal
 		void set_damage(float damage) { m_damage = damage; }
 		void set_faction(CombatFaction faction) { m_faction = faction; }
 		void set_lifetime(float lifetime) { m_lifetime = lifetime; }
+		void set_owner(EntityHandle owner) { m_owner = owner; }
 		
 		float get_damage() const { return m_damage; }
 		CombatFaction get_faction() const { return m_faction; }
@@ -49,6 +51,7 @@ namespace Pakal
 		CombatFaction m_faction;
 		float m_lifetime;
 		std::atomic_bool m_expired;
+		EntityHandle m_owner;
 		
 		// Components (obtained in initialize())
 		SpritePhysicsComponent* m_physics;

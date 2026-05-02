@@ -24,5 +24,6 @@ namespace Pakal
 		virtual void set_bounds(float minX, float minY, float maxX, float maxY) = 0;
 		virtual void clear_bounds() = 0;
 		virtual void update(float deltaTime) = 0;
+		virtual tmath::vectorn<float, 2> get_position() const = 0;
 	};
 }

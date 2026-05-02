@@ -44,6 +44,7 @@ namespace Pakal
 		m_faction(CombatFaction::Player),
 		m_lifetime(5.0f),
 		m_expired(false),
+		m_owner(),
 		m_physics(nullptr),
 		m_sprite(nullptr)
 	{
@@ -132,6 +133,11 @@ namespace Pakal
 	void Projectile::on_collision(Entity* other)
 	{
 		if (!other)
+		{
+			return;
+		}
+
+		if (m_owner.is_valid() && other->get_handle().id == m_owner.id)
 		{
 			return;
 		}

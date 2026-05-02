@@ -74,6 +74,154 @@
         }
       ]
     },
+    "enemy_lizard_generated": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "physics",
+          "type": "SpritePhysicsComponent",
+          "data": {
+            "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/generated/enemy_lizard_battle_sunglasses-1777692230/enemy_lizard_battle_sunglasses_atlas.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 512,
+              "frame_height": 512,
+              "fps": 8.0,
+              "start_frame": 0,
+              "end_frame": 2,
+              "loop": true
+            }
+          }
+        }
+      ]
+    },
+    "enemy_mouse_generated": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "physics",
+          "type": "SpritePhysicsComponent",
+          "data": {
+            "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/generated/enemy_mouse_pilot_sunglasses-1777739418/enemy_mouse_pilot_sunglasses_atlas.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 512,
+              "frame_height": 512,
+              "fps": 8.0,
+              "start_frame": 0,
+              "end_frame": 2,
+              "loop": true
+            }
+          }
+        }
+      ]
+    },
+    "enemy_tribal_generated": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "physics",
+          "type": "SpritePhysicsComponent",
+          "data": {
+            "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/generated/enemy_tribal-1777686190/enemy_tribal_atlas.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 512,
+              "frame_height": 512,
+              "fps": 8.0,
+              "start_frame": 0,
+              "end_frame": 2,
+              "loop": true
+            }
+          }
+        }
+      ]
+    },
+    "enemy_toad_generated": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "physics",
+          "type": "SpritePhysicsComponent",
+          "data": {
+            "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+            "scale": 1.0,
+            "body_type": "dynamic",
+            "fixed_rotation": true,
+            "gravity_scale": 1.0,
+            "width": 0.9,
+            "height": 1.2
+          }
+        },
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/generated/enemy_toad_battle_sunglas-1777691005/enemy_toad_battle_sunglas_atlas.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 0.9,
+            "height": 1.2,
+            "layer": 10,
+            "sprite_sheet": {
+              "frame_width": 512,
+              "frame_height": 512,
+              "fps": 8.0,
+              "start_frame": 0,
+              "end_frame": 3,
+              "loop": true
+            }
+          }
+        }
+      ]
+    },
     "goal_zone": {
       "entity_type": "Pakal::GenericEntity",
       "components": [
@@ -158,6 +306,38 @@
             "width": 1.0,
             "height": 0.6,
             "layer": 2
+          }
+        }
+      ]
+    },
+    "background_sprite": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Background/subway_BG.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 1.0,
+            "height": 1.0,
+            "layer": 0
+          }
+        }
+      ]
+    },
+    "decoration_sprite": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "sprite",
+          "type": "SpriteComponent2D",
+          "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Tileset/Subway_tiles.png",
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 1.0,
+            "height": 1.0,
+            "layer": 3
           }
         }
       ]

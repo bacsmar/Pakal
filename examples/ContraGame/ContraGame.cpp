@@ -21,6 +21,7 @@
 #include "Components/PlayerController.h"
 #include "Components/EnemyAI.h"
 #include "Components/Projectile.h"
+#include "Components/ParallaxController.h"
 
 namespace Pakal
 {
@@ -63,6 +64,7 @@ namespace Pakal
 		componentMgr->register_factory(CreateComponentFactory<PlayerController, PlayerController>());
 		componentMgr->register_factory(CreateComponentFactory<EnemyAI, EnemyAI>());
 		componentMgr->register_factory(CreateComponentFactory<Projectile, Projectile>());
+		componentMgr->register_factory(CreateComponentFactory<ParallaxController, ParallaxController>());
 	}
 	
 	void ContraGame::setup_game_states(Engine& engine)

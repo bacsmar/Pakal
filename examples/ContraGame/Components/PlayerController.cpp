@@ -17,10 +17,9 @@
 
 namespace
 {
-	constexpr float kGroundedVelocityThreshold = 0.18f;
-	constexpr float kGroundedHeightTolerance = 0.15f;
 	constexpr float kJumpUpVelocityThreshold = 0.2f;
 	constexpr float kJumpFallVelocityThreshold = -0.2f;
+	constexpr float kLandDelaySeconds = 0.08f;
 
 	constexpr int kIdleStart = 0;
 	constexpr int kIdleEnd = 3;
@@ -30,6 +29,12 @@ namespace
 	constexpr int kJumpFallFrame = 13;
 	constexpr int kShootStart = 14;
 	constexpr int kShootEnd = 17;
+
+	bool is_ground_descriptor(const std::string& descriptor)
+	{
+		return descriptor.find("ground") != std::string::npos ||
+			descriptor.find("platform") != std::string::npos;
+	}
 }
 
 namespace Pakal
@@ -45,6 +50,7 @@ namespace Pakal
 		m_isJumping(false),
 		m_facingRight(true),
 		m_lastGroundedY(0.0f),
+		m_groundContactCount(0),
 		m_timeSinceJump(999.0f),
 		m_shootAnimTimer(0.0f),
 		m_shootAnimDuration(0.12f),
@@ -84,6 +90,26 @@ namespace Pakal
 		if (m_physics)
 		{
 			m_lastGroundedY = m_physics->get_position().y;
+
+			m_physics->event_collide.add_listener([this](const Entity* other)
+			{
+				if (!other || !is_ground_descriptor(other->get_descriptor()))
+				{
+					return;
+				}
+				++m_groundContactCount;
+			});
+
+			m_physics->event_end_collide.add_listener([this](const Entity* other)
+			{
+				if (!other || !is_ground_descriptor(other->get_descriptor()))
+				{
+					return;
+				}
+
+				int current = m_groundContactCount.load();
+				while (current > 0 && !m_groundContactCount.compare_exchange_weak(current, current - 1)) {}
+			});
 		}
 	}
 	
@@ -192,19 +218,15 @@ namespace Pakal
 			m_isGrounded = false;
 			return;
 		}
-		
-		const auto pos = m_physics->get_position();
-		auto vel = m_physics->get_lineal_velocity();
 
-		const bool closeToGroundHeight = pos.y <= (m_lastGroundedY + kGroundedHeightTolerance);
-		const bool verticalMotionStable = std::fabs(vel.y) <= kGroundedVelocityThreshold;
-		const bool canLandNow = m_timeSinceJump > 0.08f;
+		const bool hasGroundContact = m_groundContactCount.load() > 0;
+		const bool canLandNow = m_timeSinceJump > kLandDelaySeconds;
 
-		if (closeToGroundHeight && verticalMotionStable && canLandNow)
+		if (hasGroundContact && canLandNow)
 		{
 			m_isGrounded = true;
 			m_isJumping = false;
-			m_lastGroundedY = pos.y;
+			m_lastGroundedY = m_physics->get_position().y;
 			m_coyoteTimer = 0.0f;
 		}
 		else

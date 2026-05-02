@@ -120,8 +120,9 @@ namespace Pakal
 					{
 						projectileSprite->create_solid_color(0xFACC15FF, 1, 1);
 						projectileSprite->set_position(spawnPosition.x, spawnPosition.y);
-						projectileSprite->set_scale(0.35f, 0.18f);
-						projectileSprite->set_layer(5);
+						projectileSprite->set_scale(0.48f, 0.24f);
+						projectileSprite->set_layer(8);
+						projectileSprite->set_visible(true);
 					}
 					
 					// Set up projectile component
@@ -131,6 +132,7 @@ namespace Pakal
 						projectileComponent->set_velocity(fireDirection * m_projectileSpeed);
 						projectileComponent->set_damage(m_damage);
 						projectileComponent->set_faction(m_faction);
+						projectileComponent->set_owner(parent->get_handle());
 						projectileComponent->set_lifetime(5.0f);
 						projectileComponent->initialize();
 					}

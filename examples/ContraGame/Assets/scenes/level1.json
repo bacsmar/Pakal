@@ -9,60 +9,108 @@
       "goal": { "x": 44.0, "y": 2.0, "z": 0.0 }
     },
     "entities": {
+      "bg_subway_main": {
+        "prefab": "background_sprite",
+        "overrides": {
+          "sprite": { "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Background/subway_BG.png",
+            "position": { "x": 23.0, "y": 4.9 },
+            "width": 46.0,
+            "height": 8.4,
+            "layer": 0
+          }}
+        }
+      },
+      "bg_subway_wall": {
+        "prefab": "background_sprite",
+        "overrides": {
+          "sprite": { "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Background/wall_subway.png",
+            "position": { "x": 23.0, "y": 3.9 },
+            "width": 46.0,
+            "height": 7.0,
+            "layer": 1
+          }}
+        }
+      },
+      "decor_tiles_left": {
+        "prefab": "decoration_sprite",
+        "overrides": {
+          "sprite": { "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Tileset/Subway_tiles.png",
+            "position": { "x": 10.0, "y": 2.4 },
+            "width": 11.0,
+            "height": 5.6,
+            "layer": 3
+          }}
+        }
+      },
+      "decor_tiles_right": {
+        "prefab": "decoration_sprite",
+        "overrides": {
+          "sprite": { "data": {
+            "texture": "Assets/run_n_gun/Assets_area_1/Tileset/Subway_tiles.png",
+            "position": { "x": 35.5, "y": 2.4 },
+            "width": 11.0,
+            "height": 5.6,
+            "layer": 3
+          }}
+        }
+      },
       "player": {
         "prefab": "player",
         "overrides": {
           "physics": { "data": { "position": { "x": 2.0, "y": 1.8, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 2.0, "y": 1.8 } } }
+          "sprite": { "data": { "position": { "x": 2.0, "y": 1.8 } } }
         }
       },
       "goal": {
         "prefab": "goal_zone",
         "overrides": {
           "physics": { "data": { "position": { "x": 44.0, "y": 2.0, "z": 0.0 }, "height": 3.0 } },
-          "sprite":  { "data": { "position": { "x": 44.0, "y": 2.0 }, "height": 3.0 } }
+          "sprite": { "data": { "position": { "x": 44.0, "y": 2.0 }, "height": 3.0 } }
         }
       },
       "ground_floor": {
         "prefab": "ground_block",
         "overrides": {
           "physics": { "data": { "position": { "x": 23.0, "y": 0.5, "z": 0.0 }, "width": 46.0 } },
-          "sprite":  { "data": { "position": { "x": 23.0, "y": 0.5 }, "width": 46.0 } }
+          "sprite": { "data": { "position": { "x": 23.0, "y": 0.5 }, "width": 46.0 } }
         }
       },
       "platform_low_1": {
         "prefab": "platform_block",
         "overrides": {
           "physics": { "data": { "position": { "x": 10.0, "y": 1.7, "z": 0.0 }, "width": 5.0 } },
-          "sprite":  { "data": { "position": { "x": 10.0, "y": 1.7 }, "width": 5.0 } }
+          "sprite": { "data": { "position": { "x": 10.0, "y": 1.7 }, "width": 5.0 } }
         }
       },
       "platform_mid": {
         "prefab": "platform_block",
         "overrides": {
-          "physics": { "data": { "position": { "x": 22.0, "y": 2.0, "z": 0.0 }, "width": 5.0 } },
-          "sprite":  { "data": { "position": { "x": 22.0, "y": 2.0 }, "width": 5.0 } }
+          "physics": { "data": { "position": { "x": 22.0, "y": 2.1, "z": 0.0 }, "width": 5.0 } },
+          "sprite": { "data": { "position": { "x": 22.0, "y": 2.1 }, "width": 5.0 } }
         }
       },
       "platform_low_2": {
         "prefab": "platform_block",
         "overrides": {
           "physics": { "data": { "position": { "x": 34.0, "y": 1.7, "z": 0.0 }, "width": 5.0 } },
-          "sprite":  { "data": { "position": { "x": 34.0, "y": 1.7 }, "width": 5.0 } }
+          "sprite": { "data": { "position": { "x": 34.0, "y": 1.7 }, "width": 5.0 } }
         }
       },
       "enemy_01": {
-        "prefab": "enemy_basic",
+        "prefab": "enemy_lizard_generated",
         "overrides": {
           "physics": { "data": { "position": { "x": 8.0, "y": 1.6, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 8.0, "y": 1.6 } } }
+          "sprite": { "data": { "position": { "x": 8.0, "y": 1.6 } } }
         }
       },
       "enemy_02": {
-        "prefab": "enemy_basic",
+        "prefab": "enemy_tribal_generated",
         "overrides": {
           "physics": { "data": { "position": { "x": 28.0, "y": 1.6, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 28.0, "y": 1.6 } } }
+          "sprite": { "data": { "position": { "x": 28.0, "y": 1.6 } } }
         }
       },
       "camera": {
@@ -71,75 +119,6 @@
           "camera": { "data": {
             "position": { "x": 2.0, "y": 3.5, "z": 0.0 },
             "bounds": { "minX": 0.0, "minY": -1.0, "maxX": 46.0, "maxY": 10.0 }
-          }}
-        }
-      }
-    }
-  }
-}
-    "difficulty": 1,
-    "expected_enemy_count": 2,
-    "prefab_catalogs": ["Assets/prefabs/contra.prefabs.json"],
-    "spawn_points": {
-      "player_start": { "x": 2.0, "y": 4.0, "z": 0.0 },
-      "goal": { "x": 44.0, "y": 3.0, "z": 0.0 }
-    },
-    "entities": {
-      "player": {
-        "prefab": "player",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 2.0, "y": 4.0, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 2.0, "y": 4.0 } } }
-        }
-      },
-      "goal": {
-        "prefab": "goal_zone",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 44.0, "y": 3.0, "z": 0.0 }, "height": 3.0 } },
-          "sprite":  { "data": { "position": { "x": 44.0, "y": 3.0 }, "height": 3.0 } }
-        }
-      },
-      "ground_left": {
-        "prefab": "ground_block",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 9.0, "y": 0.5, "z": 0.0 }, "width": 18.0 } },
-          "sprite":  { "data": { "position": { "x": 9.0, "y": 0.5 }, "width": 18.0 } }
-        }
-      },
-      "ground_right": {
-        "prefab": "ground_block",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 34.0, "y": 0.5, "z": 0.0 }, "width": 18.0 } },
-          "sprite":  { "data": { "position": { "x": 34.0, "y": 0.5 }, "width": 18.0 } }
-        }
-      },
-      "platform_middle": {
-        "prefab": "platform_block",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 21.5, "y": 4.0, "z": 0.0 }, "width": 7.0 } },
-          "sprite":  { "data": { "position": { "x": 21.5, "y": 4.0 }, "width": 7.0 } }
-        }
-      },
-      "enemy_01": {
-        "prefab": "enemy_basic",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 13.0, "y": 2.2, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 13.0, "y": 2.2 } } }
-        }
-      },
-      "enemy_02": {
-        "prefab": "enemy_basic",
-        "overrides": {
-          "physics": { "data": { "position": { "x": 29.0, "y": 2.2, "z": 0.0 } } },
-          "sprite":  { "data": { "position": { "x": 29.0, "y": 2.2 } } }
-        }
-      },
-      "camera": {
-        "prefab": "camera_follow",
-        "overrides": {
-          "camera": { "data": {
-            "position": { "x": 2.0, "y": 4.0, "z": 0.0 },
-            "bounds": { "minX": 0.0, "minY": -1.5, "maxX": 46.0, "maxY": 14.0 }
           }}
         }
       }

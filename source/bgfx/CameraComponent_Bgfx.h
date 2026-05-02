@@ -40,7 +40,7 @@ namespace Pakal
 		// Camera transform
 		void set_position(float x, float y);
 		void set_position(const tmath::vectorn<float, 2>& pos);
-		tmath::vectorn<float, 2> get_position() const { return m_position; }
+		tmath::vectorn<float, 2> get_position() const override { return m_position; }
 		
 		void set_zoom(float zoom);
 		float get_zoom() const { return m_zoom; }

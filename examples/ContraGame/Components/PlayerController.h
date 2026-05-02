@@ -8,6 +8,7 @@
 #include "Component.h"
 #include "math/vector2.h"
 #include "InputManager_Polling.h"
+#include <atomic>
 
 namespace Pakal
 {
@@ -57,6 +58,7 @@ namespace Pakal
 		bool m_isJumping;
 		bool m_facingRight;
 		float m_lastGroundedY;
+		std::atomic_int m_groundContactCount;
 		float m_timeSinceJump;
 		float m_shootAnimTimer;
 		float m_shootAnimDuration;

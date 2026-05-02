@@ -29,9 +29,120 @@ namespace Pakal
 		m_attackRange(8.0f),
 		m_fireRate(1.0f),
 		m_fireTimer(0.0f),
+		m_personality(Balanced),
+		m_flankRouteOffset(2.5f),
+		m_routeActive(false),
+		m_routeTargetX(0.0f),
+		m_strafeTimer(0.0f),
+		m_strafeRight(true),
+		m_idleStart(0),
+		m_idleEnd(2),
+		m_walkStart(3),
+		m_walkEnd(5),
+		m_runStart(6),
+		m_runEnd(8),
+		m_attackStart(15),
+		m_attackEnd(17),
+		m_currentAnimStart(-1),
+		m_currentAnimEnd(-1),
+		m_currentAnimLoop(true),
+		m_facingRight(true),
 		m_patrolStart(0.0f, 0.0f),
 		m_patrolRight(true)
 	{
+	}
+
+	void EnemyAI::set_idle_animation(int startFrame, int endFrame)
+	{
+		m_idleStart = startFrame;
+		m_idleEnd = endFrame;
+	}
+
+	void EnemyAI::set_walk_animation(int startFrame, int endFrame)
+	{
+		m_walkStart = startFrame;
+		m_walkEnd = endFrame;
+	}
+
+	void EnemyAI::set_run_animation(int startFrame, int endFrame)
+	{
+		m_runStart = startFrame;
+		m_runEnd = endFrame;
+	}
+
+	void EnemyAI::set_attack_animation(int startFrame, int endFrame)
+	{
+		m_attackStart = startFrame;
+		m_attackEnd = endFrame;
+	}
+
+	void EnemyAI::apply_animation(int startFrame, int endFrame, bool loop)
+	{
+		if (!m_sprite)
+			return;
+
+		if (startFrame == m_currentAnimStart && endFrame == m_currentAnimEnd && loop == m_currentAnimLoop)
+			return;
+
+		m_sprite->play_animation(startFrame, endFrame, loop);
+		m_currentAnimStart = startFrame;
+		m_currentAnimEnd = endFrame;
+		m_currentAnimLoop = loop;
+	}
+
+	void EnemyAI::update_facing_from_direction(bool facingRight)
+	{
+		m_facingRight = facingRight;
+		if (m_sprite)
+		{
+			// Atlas art is authored facing right by default.
+			m_sprite->set_flip(!m_facingRight, false);
+		}
+	}
+
+	void EnemyAI::update_facing_from_dx(float dx)
+	{
+		const float deadZone = 0.05f;
+		if (dx > deadZone)
+		{
+			update_facing_from_direction(true);
+		}
+		else if (dx < -deadZone)
+		{
+			update_facing_from_direction(false);
+		}
+	}
+
+	float EnemyAI::choose_chase_target_x(float enemyX, float playerX, float distanceToPlayer)
+	{
+		if (m_personality != Aggressive)
+		{
+			m_routeActive = false;
+			return playerX;
+		}
+
+		const float routeArrivalThreshold = 0.7f;
+		const float routeEngageDistance = m_attackRange + 4.0f;
+
+		if (!m_routeActive && distanceToPlayer > routeEngageDistance)
+		{
+			const float side = (playerX - enemyX >= 0.0f) ? 1.0f : -1.0f;
+			// Aggressive enemies try to cross to the opposite side before closing in.
+			m_routeTargetX = playerX + side * m_flankRouteOffset;
+			m_routeActive = true;
+		}
+
+		if (m_routeActive)
+		{
+			if (std::fabs(m_routeTargetX - enemyX) <= routeArrivalThreshold)
+			{
+				m_routeActive = false;
+				return playerX;
+			}
+			return m_routeTargetX;
+		}
+
+		return playerX;
 	}
 
 	void EnemyAI::set_player_entity(Entity* player)
@@ -88,6 +199,8 @@ namespace Pakal
 			auto pos = m_physics->get_position();
 			m_patrolStart = tmath::vectorn<float, 2>(pos.x, pos.y);
 		}
+
+		update_facing_from_direction(true);
 	}
 	
 	void EnemyAI::update(float deltaTime)
@@ -124,8 +237,11 @@ namespace Pakal
 	
 	void EnemyAI::update_patrol(float deltaTime)
 	{
+		(void)deltaTime;
 		if (!m_physics)
 			return;
+
+		apply_animation(m_walkStart, m_walkEnd, true);
 		
 		// Check if player is in range
 		if (can_see_player())
@@ -150,9 +266,9 @@ namespace Pakal
 		
 		// Move in current patrol direction
 		float patrolSpeed = 2.0f; // Slower than chase speed
-		auto currentVel = m_physics->get_lineal_velocity();
 		float xVel = m_patrolRight ? patrolSpeed : -patrolSpeed;
-		m_physics->set_lineal_velocity(tmath::vector2df(xVel, currentVel.y));
+		update_facing_from_direction(m_patrolRight);
+		m_physics->set_horizontal_velocity(xVel);
 		
 		// TODO: Advanced patrol behaviors (when ADVANCED_ENEMY_AI is defined)
 		#ifdef ADVANCED_ENEMY_AI
@@ -163,14 +279,23 @@ namespace Pakal
 	
 	void EnemyAI::update_chase(float deltaTime)
 	{
+		(void)deltaTime;
 		auto* player = resolve_player_entity();
 		if (!player || !m_physics)
+		{
+			m_state = PATROL;
 			return;
+		}
+
+		apply_animation(m_runStart, m_runEnd, true);
 		
 		// Get player's physics component to calculate distance
 		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
+		{
+			m_state = PATROL;
 			return;
+		}
 		
 		// Calculate distance to player
 		auto enemyPos = m_physics->get_position();
@@ -179,6 +304,7 @@ namespace Pakal
 		float dx = playerPos.x - enemyPos.x;
 		float dy = playerPos.y - enemyPos.y;
 		float distanceToPlayer = std::sqrt(dx * dx + dy * dy);
+		const float effectiveAttackRange = (m_personality == Cautious) ? (m_attackRange * 0.75f) : m_attackRange;
 		
 		if (distanceToPlayer > m_chaseRange)
 		{
@@ -187,18 +313,33 @@ namespace Pakal
 			return;
 		}
 		
-		if (distanceToPlayer <= m_attackRange && can_see_player())
+		if (distanceToPlayer <= effectiveAttackRange && can_see_player())
 		{
 			// Player is in attack range and visible
 			m_state = ATTACK;
 			return;
 		}
 		
-		// Move towards player
-		float chaseSpeed = 4.0f; // Faster than patrol
-		auto currentVel = m_physics->get_lineal_velocity();
-		float xVel = (dx > 0) ? chaseSpeed : -chaseSpeed;
-		m_physics->set_lineal_velocity(tmath::vector2df(xVel, currentVel.y));
+		float chaseTargetX = choose_chase_target_x(enemyPos.x, playerPos.x, distanceToPlayer);
+		float routeDx = chaseTargetX - enemyPos.x;
+		update_facing_from_dx(routeDx);
+
+		// Move towards target according to personality.
+		float chaseSpeed = 4.0f;
+		if (m_personality == Aggressive)
+		{
+			chaseSpeed = 5.0f;
+		}
+		else if (m_personality == Sentinel)
+		{
+			chaseSpeed = 2.8f;
+		}
+
+		float xVel = (routeDx >= 0.0f) ? chaseSpeed : -chaseSpeed;
+		m_physics->set_horizontal_velocity(xVel);
+
+		// Keep pressure while chasing so enemies visibly shoot before point-blank range.
+		shoot_at_player();
 		
 		// TODO: Advanced chase behaviors (when ADVANCED_ENEMY_AI is defined)
 		#ifdef ADVANCED_ENEMY_AI
@@ -211,12 +352,20 @@ namespace Pakal
 	{
 		auto* player = resolve_player_entity();
 		if (!player || !m_physics)
+		{
+			m_state = PATROL;
 			return;
+		}
+
+		apply_animation(m_attackStart, m_attackEnd, true);
 		
 		// Get player's physics component
 		auto* playerPhysics = player->get_component<SpritePhysicsComponent>();
 		if (!playerPhysics)
+		{
+			m_state = PATROL;
 			return;
+		}
 		
 		// Calculate distance to player
 		auto enemyPos = m_physics->get_position();
@@ -225,6 +374,8 @@ namespace Pakal
 		float dx = playerPos.x - enemyPos.x;
 		float dy = playerPos.y - enemyPos.y;
 		float distanceToPlayer = std::sqrt(dx * dx + dy * dy);
+		update_facing_from_dx(dx);
+		const float holdDistance = (m_personality == Cautious) ? (m_attackRange * 0.6f) : 0.0f;
 		
 		if (distanceToPlayer > m_attackRange || !can_see_player())
 		{
@@ -233,9 +384,43 @@ namespace Pakal
 			return;
 		}
 		
-		// Stop moving when attacking
-		auto currentVel = m_physics->get_lineal_velocity();
-		m_physics->set_lineal_velocity(tmath::vector2df(0.0f, currentVel.y));
+		// Keep tactical spacing based on personality.
+		float xVel = 0.0f;
+		if (m_personality == Aggressive)
+		{
+			const float pushDistance = m_attackRange * 0.4f;
+			if (distanceToPlayer > pushDistance)
+			{
+				xVel = (dx >= 0.0f) ? 2.3f : -2.3f;
+			}
+		}
+		else if (m_personality == Cautious)
+		{
+			if (distanceToPlayer < holdDistance)
+			{
+				xVel = (dx >= 0.0f) ? -2.0f : 2.0f;
+			}
+			else
+			{
+				m_strafeTimer -= deltaTime;
+				if (m_strafeTimer <= 0.0f)
+				{
+					m_strafeTimer = 0.8f;
+					m_strafeRight = !m_strafeRight;
+				}
+				xVel = m_strafeRight ? 1.6f : -1.6f;
+			}
+		}
+		else if (m_personality == Sentinel)
+		{
+			const float homeDx = m_patrolStart.x - enemyPos.x;
+			if (std::fabs(homeDx) > 1.5f)
+			{
+				xVel = (homeDx >= 0.0f) ? 1.8f : -1.8f;
+			}
+		}
+
+		m_physics->set_horizontal_velocity(xVel);
 		
 		// Shoot at player
 		shoot_at_player();
@@ -267,7 +452,17 @@ namespace Pakal
 		
 		// Simple line-of-sight: if within chase range, can see player
 		// TODO: Use Box2D raycasting for proper line-of-sight checking (detect obstacles)
-		if (distance <= m_chaseRange)
+		float sightRange = m_chaseRange;
+		if (m_personality == Aggressive)
+		{
+			sightRange *= 1.15f;
+		}
+		else if (m_personality == Sentinel)
+		{
+			sightRange *= 0.85f;
+		}
+
+		if (distance <= sightRange)
 		{
 			return true;
 		}

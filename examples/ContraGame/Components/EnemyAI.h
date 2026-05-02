@@ -23,6 +23,7 @@ namespace Pakal
 		
 	public:
 		enum AIState { PATROL, CHASE, ATTACK, DEAD };
+		enum Personality { Balanced, Aggressive, Cautious, Sentinel };
 		
 		EnemyAI();
 		virtual ~EnemyAI() = default;
@@ -34,11 +35,21 @@ namespace Pakal
 		void set_chase_range(float range) { m_chaseRange = range; }
 		void set_attack_range(float range) { m_attackRange = range; }
 		void set_fire_rate(float rate) { m_fireRate = rate; }
+		void set_personality(Personality personality) { m_personality = personality; }
+		void set_flank_route_offset(float offset) { m_flankRouteOffset = offset; }
 		void set_player_entity(EntityHandle player);
 		void set_player_entity(Entity* player);
+		void set_idle_animation(int startFrame, int endFrame);
+		void set_walk_animation(int startFrame, int endFrame);
+		void set_run_animation(int startFrame, int endFrame);
+		void set_attack_animation(int startFrame, int endFrame);
 		
 	private:
 		Entity* resolve_player_entity() const;
+		void apply_animation(int startFrame, int endFrame, bool loop);
+		void update_facing_from_dx(float dx);
+		void update_facing_from_direction(bool facingRight);
+		float choose_chase_target_x(float enemyX, float playerX, float distanceToPlayer);
 		void update_patrol(float deltaTime);
 		void update_chase(float deltaTime);
 		void update_attack(float deltaTime);
@@ -69,6 +80,26 @@ namespace Pakal
 		float m_attackRange;
 		float m_fireRate;
 		float m_fireTimer;
+		Personality m_personality;
+		float m_flankRouteOffset;
+		bool m_routeActive;
+		float m_routeTargetX;
+		float m_strafeTimer;
+		bool m_strafeRight;
+
+		// Animation ranges (inclusive)
+		int m_idleStart;
+		int m_idleEnd;
+		int m_walkStart;
+		int m_walkEnd;
+		int m_runStart;
+		int m_runEnd;
+		int m_attackStart;
+		int m_attackEnd;
+		int m_currentAnimStart;
+		int m_currentAnimEnd;
+		bool m_currentAnimLoop;
+		bool m_facingRight;
 		
 		// Patrol
 		tmath::vectorn<float, 2> m_patrolStart;
