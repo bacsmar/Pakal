@@ -567,13 +567,9 @@ namespace Pakal
 			update_vertex_buffer();
 		}
 		
-		// Bail early if any handle is invalid
+		// Bail early if any handle is invalid (transient during init)
 		if (!bgfx::isValid(m_vertexBuffer) || !bgfx::isValid(m_indexBuffer) || !bgfx::isValid(m_program))
 		{
-			LOG_ERROR("[SpriteComponent_Bgfx] INVALID handle: vb=%d ib=%d prog=%d",
-				bgfx::isValid(m_vertexBuffer) ? 1 : 0,
-				bgfx::isValid(m_indexBuffer) ? 1 : 0,
-				bgfx::isValid(m_program) ? 1 : 0);
 			return;
 		}
 

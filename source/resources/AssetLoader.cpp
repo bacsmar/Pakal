@@ -11,6 +11,7 @@
 #include "components/SpriteComponent.h"
 #include "components/SpriteComponent2D.h"
 #include "components/CameraComponent2D.h"
+#include "components/SkeletalAnimationComponent.h"
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -333,6 +334,9 @@ namespace Pakal
 		else if (componentType == "SpriteComponent2D") {
 			return create_sprite_2d_component(entity, componentDef);
 		}
+		else if (componentType == "SkeletalAnimationComponent") {
+			return create_skeletal_animation_component(entity, componentDef);
+		}
 		else if (componentType == "CameraComponent2D") {
 			return create_camera_component(entity, componentDef);
 		}
@@ -402,6 +406,66 @@ namespace Pakal
 		if (initializeTask) {
 			initializeTask->wait();
 		}
+		return true;
+	}
+
+	bool AssetLoader::create_skeletal_animation_component(GenericEntity* entity, const JsonValue& data)
+	{
+		LOG_INFO("[AssetLoader] Creating SkeletalAnimationComponent");
+
+		if (!entity) return false;
+
+		auto* component = entity->create_component<SkeletalAnimationComponent>();
+		if (!component) {
+			LOG_ERROR("[AssetLoader] Failed to create SkeletalAnimationComponent");
+			return false;
+		}
+
+		const JsonValue& cfg = data.has("data") ? data["data"] : data;
+
+		if (cfg.has("skeleton")) {
+			component->set_skeleton_asset(cfg["skeleton"].as_string());
+		}
+		else if (cfg.has("skeleton_asset")) {
+			component->set_skeleton_asset(cfg["skeleton_asset"].as_string());
+		}
+		else if (cfg.has("skeleton_file")) {
+			component->set_skeleton_asset(cfg["skeleton_file"].as_string());
+		}
+
+		if (cfg.has("animation")) {
+			component->set_animation(cfg["animation"].as_string());
+		}
+		else if (cfg.has("default_animation")) {
+			component->set_animation(cfg["default_animation"].as_string());
+		}
+		else if (cfg.has("play_on_load")) {
+			component->set_animation(cfg["play_on_load"].as_string());
+		}
+
+		if (cfg.has("skin")) {
+			component->set_skin(cfg["skin"].as_string());
+		}
+
+		if (cfg.has("loop")) {
+			component->set_looping(cfg["loop"].as_bool(true));
+		}
+
+		if (cfg.has("playback_speed")) {
+			component->set_playback_speed(cfg["playback_speed"].as_float(1.0f));
+		}
+
+		if (cfg.has("time")) {
+			component->set_time(cfg["time"].as_float(0.0f));
+		}
+
+		if (cfg.has("render_scale")) {
+			component->set_render_scale(cfg["render_scale"].as_float(1.0f));
+		}
+		else if (cfg.has("scale")) {
+			component->set_render_scale(cfg["scale"].as_float(1.0f));
+		}
+
 		return true;
 	}
 

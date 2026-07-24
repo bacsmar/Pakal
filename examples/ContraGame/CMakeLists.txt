@@ -16,6 +16,11 @@ file(GLOB_RECURSE CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
 )
+
+# Assets may contain third-party source snapshots used only as data/reference.
+# Do not compile anything under Assets/ into the game module.
+list(FILTER CONTRA_SOURCES EXCLUDE REGEX ".*/Assets/.*")
+
 # Explicitly add the new Projectile component
 list(APPEND CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/Components/Projectile.cpp"

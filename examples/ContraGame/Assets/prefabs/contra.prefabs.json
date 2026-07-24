@@ -356,6 +356,48 @@
           }
         }
       ]
+    },
+    "skeletal_test": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "skeletal",
+          "type": "SkeletalAnimationComponent",
+          "data": {
+            "skeleton": "Assets/skeletal/test_character_ske.json",
+            "animation": "idle",
+            "loop": true,
+            "playback_speed": 1.0
+          }
+        }
+      ]
+    },
+    "mecha_1004d": {
+      "entity_type": "Pakal::GenericEntity",
+      "components": [
+        {
+          "id": "anchor",
+          "type": "SpriteComponent2D",
+          "data": {
+            "solid_color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 },
+            "position": { "x": 0.0, "y": 0.0 },
+            "width": 0.01,
+            "height": 0.01,
+            "layer": -100
+          }
+        },
+        {
+          "id": "skeletal",
+          "type": "SkeletalAnimationComponent",
+          "data": {
+            "skeleton": "Assets/DragonBones/Demos/AnimationLayer/mecha_1004d_ske.json",
+            "animation": "idle",
+            "loop": true,
+            "playback_speed": 1.0,
+            "render_scale": 0.2
+          }
+        }
+      ]
     }
   }
 }

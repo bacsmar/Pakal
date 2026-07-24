@@ -28,6 +28,7 @@
 #include "components/CameraComponent2D.h"
 #include "InputManager_Polling.h"
 #include "components/SpritePhysicsComponent.h"
+#include "components/SkeletalAnimationComponent.h"
 #include <unordered_set>
 
 namespace Pakal
@@ -416,6 +417,9 @@ namespace Pakal
 
 			if (auto* camera = entity->get_component<CameraComponent2D>()) {
 				camera->update(deltaTime);
+			}
+			if (auto* skel = entity->get_component<SkeletalAnimationComponent>()) {
+				skel->update(deltaTime);
 			}
 
 			const auto& descriptor = entity->get_descriptor();

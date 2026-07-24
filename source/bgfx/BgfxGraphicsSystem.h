@@ -21,6 +21,7 @@ namespace Pakal
 	class SpriteComponent_Bgfx;
 	class CameraComponent_Bgfx;
 	class CameraComponent3D_Bgfx;
+	class SkeletalAnimationComponent_Bgfx;
 
 	class _PAKALExport BgfxGraphicsSystem final : public GraphicsSystem
 	{		
@@ -43,10 +44,14 @@ namespace Pakal
 
 		std::vector<IDebugDrawerClient*> m_debug_renderers;
 		std::vector<SpriteComponent_Bgfx*> m_sprites;
+		std::vector<SkeletalAnimationComponent_Bgfx*> m_skeletalComponents;
 		ICameraComponent_Bgfx* m_active_camera = nullptr;
 		float m_debug_text_timer = 0.0f;
 		bool m_debug_text_visible = true;
 		bgfx::ProgramHandle m_sprite_program;
+		int m_frame_count = 0;
+		int m_screenshot_frame = -1;
+		std::string m_screenshot_path;
 
 		void on_init_graphics(const WindowArgs& args) override;
 		void on_terminate_graphics() override;
@@ -62,11 +67,14 @@ namespace Pakal
 		void setup_window_callbacks();
 		void on_window_resized(const WindowArgs& args);
 		void render_sprites(float dt_seconds);
+		void render_skeletal(float dt_seconds);
 		void create_sprite_shader();
 	
 	public:
 		void register_sprite(SpriteComponent_Bgfx* sprite);
 		void unregister_sprite(SpriteComponent_Bgfx* sprite);
+		void register_skeletal(SkeletalAnimationComponent_Bgfx* comp);
+		void unregister_skeletal(SkeletalAnimationComponent_Bgfx* comp);
 		void set_active_camera(ICameraComponent_Bgfx* camera);
 		void clear_active_camera(ICameraComponent_Bgfx* camera);
 		bgfx::ProgramHandle get_sprite_program() const { return m_sprite_program; }

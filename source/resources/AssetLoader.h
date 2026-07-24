@@ -107,6 +107,7 @@ namespace Pakal
 		bool create_sprite_physics_component(GenericEntity* entity, const JsonValue& data);
 		bool create_sprite_component(GenericEntity* entity, const JsonValue& data);
 		bool create_sprite_2d_component(GenericEntity* entity, const JsonValue& data);
+		bool create_skeletal_animation_component(GenericEntity* entity, const JsonValue& data);
 		bool create_camera_component(GenericEntity* entity, const JsonValue& data);
 	};
 }

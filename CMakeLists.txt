@@ -29,6 +29,8 @@ file(GLOB_RECURSE PAKAL_SOURCES
     "${CMAKE_SOURCE_DIR}/source/components/*.h"
     "${CMAKE_SOURCE_DIR}/source/resources/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/resources/*.h"
+    "${CMAKE_SOURCE_DIR}/source/skeletal/*.cpp"
+    "${CMAKE_SOURCE_DIR}/source/skeletal/*.h"
 )
 
 # Exclude platform-specific files

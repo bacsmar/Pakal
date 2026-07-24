@@ -17,9 +17,11 @@
 #include "SpriteComponent_Bgfx.h"
 #include "CameraComponent_Bgfx.h"
 #include "CameraComponent3D_Bgfx.h"
+#include "SkeletalAnimationComponent_Bgfx.h"
 #include "components/SpriteComponent2D.h"
 #include "components/CameraComponent2D.h"
 #include "components/CameraComponent3D.h"
+#include "components/SkeletalAnimationComponent.h"
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
@@ -29,9 +31,56 @@
 #include <string>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 
 namespace
 {
+	struct PakalBgfxCallback : bgfx::CallbackI
+	{
+		void fatal(const char*, uint16_t, bgfx::Fatal::Enum, const char*) override {}
+		void traceVargs(const char*, uint16_t, const char*, va_list) override {}
+		void profilerBegin(const char*, uint32_t, const char*, uint16_t) override {}
+		void profilerBeginLiteral(const char*, uint32_t, const char*, uint16_t) override {}
+		void profilerEnd() override {}
+		uint32_t cacheReadSize(uint64_t) override { return 0; }
+		bool cacheRead(uint64_t, void*, uint32_t) override { return false; }
+		void cacheWrite(uint64_t, const void*, uint32_t) override {}
+		void captureBegin(uint32_t, uint32_t, uint32_t, bgfx::TextureFormat::Enum, bool) override {}
+		void captureEnd() override {}
+		void captureFrame(const void*, uint32_t) override {}
+
+		void screenShot(const char* _filePath, uint32_t _width, uint32_t _height,
+			uint32_t _pitch, const void* _data, uint32_t /*_size*/, bool _yflip) override
+		{
+			std::string path = std::string(_filePath) + ".tga";
+			FILE* f = fopen(path.c_str(), "wb");
+			if (!f) return;
+			uint8_t header[18] = {};
+			header[2]  = 2; // uncompressed true-color
+			header[12] = _width & 0xFF;
+			header[13] = (_width >> 8) & 0xFF;
+			header[14] = _height & 0xFF;
+			header[15] = (_height >> 8) & 0xFF;
+			header[16] = 32;   // BGRA 32-bit
+			header[17] = 0x28; // top-down origin
+			fwrite(header, 1, 18, f);
+			const uint8_t* data = static_cast<const uint8_t*>(_data);
+			if (_yflip)
+			{
+				for (int32_t y = int32_t(_height) - 1; y >= 0; --y)
+					fwrite(data + y * _pitch, 1, _width * 4, f);
+			}
+			else
+			{
+				for (uint32_t y = 0; y < _height; ++y)
+					fwrite(data + y * _pitch, 1, _width * 4, f);
+			}
+			fclose(f);
+		}
+	};
+
+	static PakalBgfxCallback s_bgfx_callback;
+
 	const bgfx::Memory* load_shader_memory(const char* path)
 	{
 		bx::FileReader reader;
@@ -135,6 +184,19 @@ namespace Pakal
 		bgfx::Init init;
 		const char* renderer_env = std::getenv("PAKAL_BGFX_RENDERER");
 		init.type = parse_renderer_from_env(renderer_env);
+		init.callback = &s_bgfx_callback;
+
+		// Auto-screenshot support: PAKAL_SCREENSHOT=/path/to/file -> saves at frame 300
+		const char* screenshot_env = std::getenv("PAKAL_SCREENSHOT");
+		if (screenshot_env && screenshot_env[0] != '\0')
+		{
+			m_screenshot_path = screenshot_env;
+			m_screenshot_frame = 300; // ~10s at 30fps
+			const char* frame_env = std::getenv("PAKAL_SCREENSHOT_FRAME");
+			if (frame_env && frame_env[0] != '\0')
+				m_screenshot_frame = std::atoi(frame_env);
+			LOG_INFO("[BgfxGraphicsSystem] Screenshot scheduled at frame %d -> %s", m_screenshot_frame, m_screenshot_path.c_str());
+		}
 		init.vendorId = BGFX_PCI_ID_NONE;
 
 		if (init.type == bgfx::RendererType::Count)
@@ -268,6 +330,7 @@ namespace Pakal
 		// Update and render all registered sprites
 		const float dt_seconds = static_cast<float>(dt) * 0.001f;
 		render_sprites(dt_seconds);
+		render_skeletal(dt_seconds);
 
 		// Touch view to ensure it's rendered
 		bgfx::touch(m_main_view_id);
@@ -280,6 +343,15 @@ namespace Pakal
 				debugDrawer->do_debug_draw();
 			}
 		}
+
+		// Auto-screenshot at configured frame
+		if (m_screenshot_frame > 0 && m_frame_count == m_screenshot_frame)
+		{
+			LOG_INFO("[BgfxGraphicsSystem] Requesting screenshot: %s", m_screenshot_path.c_str());
+			bgfx::requestScreenShot(BGFX_INVALID_HANDLE, m_screenshot_path.c_str());
+			m_screenshot_frame = -1; // one-shot
+		}
+		++m_frame_count;
 
 		// Advance to next frame
 		bgfx::frame();
@@ -306,6 +378,7 @@ namespace Pakal
 		factories.emplace_back(CreateComponentFactory<SpriteComponent2D, SpriteComponent_Bgfx>(this));
 		factories.emplace_back(CreateComponentFactory<CameraComponent2D, CameraComponent_Bgfx>(this));
 		factories.emplace_back(CreateComponentFactory<CameraComponent3D, CameraComponent3D_Bgfx>(this));
+		factories.emplace_back(CreateComponentFactory<SkeletalAnimationComponent, SkeletalAnimationComponent_Bgfx>(this));
 	}
 
 	void BgfxGraphicsSystem::add_debug_drawer(IDebugDrawerClient* debugDrawer)
@@ -348,6 +421,27 @@ namespace Pakal
 		}
 	}
 
+	void BgfxGraphicsSystem::register_skeletal(SkeletalAnimationComponent_Bgfx* comp)
+	{
+		if (comp)
+		{
+			comp->set_program(m_sprite_program);
+			m_skeletalComponents.push_back(comp);
+			LOG_INFO("[BgfxGraphicsSystem] SkeletalAnimationComponent registered, total: %zu",
+			         m_skeletalComponents.size());
+		}
+	}
+
+	void BgfxGraphicsSystem::unregister_skeletal(SkeletalAnimationComponent_Bgfx* comp)
+	{
+		if (comp)
+		{
+			auto it = std::find(m_skeletalComponents.begin(), m_skeletalComponents.end(), comp);
+			if (it != m_skeletalComponents.end())
+				m_skeletalComponents.erase(it);
+		}
+	}
+
 	void BgfxGraphicsSystem::set_active_camera(ICameraComponent_Bgfx* camera)
 	{
 		m_active_camera = camera;
@@ -375,6 +469,16 @@ namespace Pakal
 				sprite->update(dt_seconds);
 				sprite->render(m_main_view_id, nullptr);
 			}
+		}
+	}
+
+	void BgfxGraphicsSystem::render_skeletal(float dt_seconds)
+	{
+		(void)dt_seconds;
+		for (auto* comp : m_skeletalComponents)
+		{
+			if (comp)
+				comp->render(m_main_view_id);
 		}
 	}
 
@@ -433,6 +537,11 @@ namespace Pakal
 		if (bgfx::isValid(m_sprite_program))
 		{
 			LOG_INFO("[BgfxGraphicsSystem] Sprite shader program created successfully");
+			// Propagate program to sprites/skeletals registered before the shader was ready
+			for (auto* sprite : m_sprites)
+				sprite->set_program(m_sprite_program);
+			for (auto* comp : m_skeletalComponents)
+				comp->set_program(m_sprite_program);
 		}
 		else
 		{
