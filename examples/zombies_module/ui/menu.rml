@@ -1,0 +1,50 @@
+<rml>
+<head>
+	<title>Menu</title>
+	<link type="text/rcss" href="base.rcss"/>
+	<link type="text/rcss" href="zombies.rcss"/>
+	<link type="text/rcss" href="menu.rcss"/>
+</head>
+<body id="menu">
+	<div id="menu_back"></div>
+	<div id="wallet">
+		<div class="chip"><span class="label">$</span><span id="money">0</span></div>
+		<div class="chip"><img class="chip_star" src="images/star_on.png"/><span id="stars_total">0</span></div>
+	</div>
+
+	<div id="screen_main" class="screen">
+		<div id="game_title" class="title">ZOMBIES</div>
+		<div id="game_subtitle">a small town, a long night</div>
+		<div id="nav_play" class="button big">PLAY</div>
+		<div id="nav_heroes" class="button big secondary">HEROES</div>
+		<div id="nav_zombiepedia" class="button big secondary">ZOMBIEPEDIA</div>
+		<div id="nav_shop" class="button big secondary">SHOP</div>
+		<div id="nav_options" class="button big secondary">OPTIONS</div>
+	</div>
+
+	<div id="screen_options" class="screen hidden">
+		<div class="screen_header"><div id="nav_back4" class="button back secondary">BACK</div><div class="screen_title title">OPTIONS</div></div>
+		<div id="options_box"></div>
+	</div>
+
+	<div id="screen_missions" class="screen hidden">
+		<div class="screen_header"><div id="nav_back" class="button back secondary">BACK</div><div class="screen_title title">MISSIONS</div></div>
+		<div id="mission_list"><div id="mission_cards"></div></div>
+	</div>
+
+	<div id="screen_heroes" class="screen hidden">
+		<div class="screen_header"><div id="nav_back3" class="button back secondary">BACK</div><div class="screen_title title">HEROES</div>
+			<div id="nav_view_heroes" class="button view secondary">3D VIEW</div></div>
+		<div id="hero_cards"></div>
+	</div>
+
+	<div id="screen_shop" class="screen hidden">
+		<div class="screen_header"><div id="nav_back2" class="button back secondary">BACK</div><div class="screen_title title">SHOP</div>
+			<div id="shop_message"></div></div>
+		<div id="shop_columns">
+			<div class="shop_column"><div class="column_title title">GUNS</div><div id="shop_weapons"></div></div>
+			<div class="shop_column"><div class="column_title title">GEAR</div><div id="shop_other"></div></div>
+		</div>
+	</div>
+</body>
+</rml>

@@ -44,7 +44,7 @@ namespace Pakal
 			T wx, wy, wz, ww;
 
 			// constructors
-			matrix<T,4,4>() : xx(static_cast<T>(0.0)),
+			matrix() : xx(static_cast<T>(0.0)),
 			                  xy(static_cast<T>(0.0)),
 			                  xz(static_cast<T>(0.0)),
 			                  xw(static_cast<T>(0.0)),
@@ -61,7 +61,7 @@ namespace Pakal
 			                  wz(static_cast<T>(0.0)),
 			                  ww(static_cast<T>(0.0)) { }
 
-			matrix<T,4,4>(T a0, T a1, T a2, T a3,
+			matrix(T a0, T a1, T a2, T a3,
 			              T a4, T a5, T a6, T a7,
 			              T a8, T a9, T a10, T a11,
 			              T a12, T a13, T a14, T a15)
@@ -70,7 +70,7 @@ namespace Pakal
 				  zx(a8), zy(a9), zz(a10), zw(a11),
 				  wx(a12), wy(a13), wz(a14), ww(a15) { }
 
-			matrix<T,4,4>(const matrix<T,4,4>& m)
+			matrix(const matrix<T,4,4>& m)
 			{
 				xx = m.xx;
 				xy = m.xy;
@@ -90,7 +90,7 @@ namespace Pakal
 				ww = m.ww;
 			}
 
-			matrix<T,4,4>(const T* m)
+			matrix(const T* m)
 			{
 				xx = m[0];
 				xy = m[1];
@@ -110,7 +110,7 @@ namespace Pakal
 				ww = m[15];
 			}
 
-			matrix<T,4,4>(const matrix<T,3,3>& m)
+			matrix(const matrix<T,3,3>& m)
 			{
 				xx = m.xx;
 				xy = m.xy;
@@ -242,7 +242,7 @@ namespace Pakal
 			// unary operations
 			inline const matrix<T,4,4> operator -() const
 			{
-				return matrix<T,4,4>(-xx,-xy,-xz,-xw,
+				return matrix(-xx,-xy,-xz,-xw,
 				                     -yx,-yy,-yz,-yw,
 				                     -zx,-zy,-zz,-zw,
 				                     -wx,-wy,-wz,-ww);
@@ -251,7 +251,7 @@ namespace Pakal
 			// binary operations
 			inline friend matrix<T,4,4> operator+(const matrix<T,4,4>& m1, const matrix<T,4,4>& m2)
 			{
-				return matrix<T,4,4>(m1.xx + m2.xx,m1.xy + m2.xy,m1.xz + m2.xz,m1.xw + m2.xw,
+				return matrix(m1.xx + m2.xx,m1.xy + m2.xy,m1.xz + m2.xz,m1.xw + m2.xw,
 				                     m1.yx + m2.yx,m1.yy + m2.yy,m1.yz + m2.yz,m1.yw + m2.yw,
 				                     m1.zx + m2.zx,m1.zy + m2.zy,m1.zz + m2.zz,m1.zw + m2.zw,
 				                     m1.wx + m2.wx,m1.wy + m2.wy,m1.wz + m2.wz,m1.ww + m2.ww);
@@ -259,7 +259,7 @@ namespace Pakal
 
 			inline friend matrix<T,4,4> operator-(const matrix<T,4,4>& m1, const matrix<T,4,4>& m2)
 			{
-				return matrix<T,4,4>(m1.xx - m2.xx,m1.xy - m2.xy,m1.xz - m2.xz,m1.xw - m2.xw,
+				return matrix(m1.xx - m2.xx,m1.xy - m2.xy,m1.xz - m2.xz,m1.xw - m2.xw,
 				                     m1.yx - m2.yx,m1.yy - m2.yy,m1.yz - m2.yz,m1.yw - m2.yw,
 				                     m1.zx - m2.zx,m1.zy - m2.zy,m1.zz - m2.zz,m1.zw - m2.zw,
 				                     m1.wx - m2.wx,m1.wy - m2.wy,m1.wz - m2.wz,m1.ww - m2.ww);
@@ -267,7 +267,7 @@ namespace Pakal
 
 			inline const matrix<T,4,4> operator*(const T& num) const
 			{
-				return matrix<T,4,4>(xx * num,xy * num,xz * num,xw * num,
+				return matrix(xx * num,xy * num,xz * num,xw * num,
 				                     yx * num,yy * num,yz * num,yw * num,
 				                     zx * num,zy * num,zz * num,zw * num,
 				                     wx * num,wy * num,wz * num,ww * num);
@@ -280,7 +280,7 @@ namespace Pakal
 
 			friend inline matrix<T,4,4> operator*(const matrix<T,4,4>& m1, const matrix<T,4,4>& m2)
 			{
-				return matrix<T,4,4>(m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx,
+				return matrix(m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx,
 				                     m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy + m1.xw * m2.wy,
 				                     m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz + m1.xw * m2.wz,
 				                     m1.xx * m2.xw + m1.xy * m2.yw + m1.xz * m2.zw + m1.xw * m2.ww,
@@ -312,7 +312,7 @@ namespace Pakal
 			inline const matrix<T,4,4> operator/(const T& num) const
 			{
 				T val = 1.0 / num;
-				return matrix<T,4,4>(xx * val,xy * val,xz * val,xw * val,
+				return matrix(xx * val,xy * val,xz * val,xw * val,
 				                     yx * val,yy * val,yz * val,yw * val,
 				                     zx * val,zy * val,zz * val,zw * val,
 				                     wx * val,wy * val,wz * val,ww * val);

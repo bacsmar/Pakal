@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "BasicTask.h"
 #include "PakalMath.h"
 #include "Sprite.h"
@@ -8,9 +8,9 @@
 
 namespace Pakal
 {
-	class _PAKALExport SpriteComponent : public Component
+	class _PAKALExport SpriteComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(SpriteComponent, Component);
+		DECLARE_RTTI_WITH_BASE(SpriteComponent, AsyncComponent);
 	public:
 		struct Settings
 		{

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2011 The ZombieWar Engine Open Source Project
+// Copyright (C) 2011 The PakalEngine Open Source Project
 // File: LogMgr.h
 // Original Author: Salvador Noel Romo Garcia.
 //

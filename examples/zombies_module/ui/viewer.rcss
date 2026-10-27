@@ -1,0 +1,66 @@
+/* The character viewer and the zombie encyclopedia: panels at the sides, the model in the middle (sizes in dp) */
+#viewer .screen_header { position: absolute; left: 0; top: 0; width: 100%; }
+#viewer .screen_title { text-align: center; font-effect: shadow(2dp 2dp #000000c0); }
+
+.v_panel {
+	position: absolute;
+	top: 84dp;
+	width: 320dp;
+	padding: 16dp;
+	box-sizing: border-box;
+	background-color: #1e1e22e0;
+	border: 2dp #3a3a40;
+	border-radius: 14dp;
+	text-align: left;
+	pointer-events: auto;
+}
+#v_info { left: 20dp; }
+#v_controls { right: 20dp; }
+
+#v_portrait { display: block; width: 120dp; height: 120dp; margin: 0 auto 4dp auto; }
+#v_portrait.hidden { display: none; }
+#v_name { font-size: 40dp; color: #ffcf40; }
+#v_text { font-size: 17dp; color: #c8c8c8; margin-top: 6dp; }
+#v_text .v_status { color: #7dff7d; margin-top: 8dp; }
+#v_text .v_status.locked { color: #6fc8ff; }
+#v_choose { width: 100%; margin: 14dp 0 0 0; }
+
+/* an enemy's numbers as bars against the strongest of all */
+.v_stat { margin-top: 10dp; }
+.v_stat_name { font-size: 15dp; color: #b8b8b8; }
+.v_stat_value { float: right; font-size: 15dp; color: #f2f2f2; }
+.v_bar { height: 10dp; margin-top: 4dp; background-color: #ffffff20; border-radius: 5dp; }
+.v_fill { height: 100%; background-color: #ffcf40; border-radius: 5dp; }
+.v_fill.health { background-color: #4cd964; }
+.v_fill.speed { background-color: #6fc8ff; }
+.v_fill.damage { background-color: #ff6b5a; }
+.v_attack { font-size: 16dp; color: #f2f2f2; margin-top: 14dp; }
+.v_attack .title { color: #ffcf40; font-size: 20dp; }
+
+.v_label { font-family: Bangers; font-size: 20dp; color: #b8b8b8; margin-top: 6dp; }
+.v_picker { height: 44dp; margin-top: 4dp; }
+.button.v_arrow { float: left; width: 44dp; height: 44dp; line-height: 44dp; font-size: 26dp; margin: 0; text-align: center; }
+.button.v_big_arrow, #v_nav { text-align: center; }
+.v_value {
+	float: left; width: 196dp; height: 44dp; line-height: 44dp;
+	text-align: center; font-size: 17dp; white-space: nowrap; overflow: hidden;
+}
+.v_note { font-size: 14dp; color: #9a9a9a; margin-top: 4dp; height: 18dp; }
+.v_note.good { color: #7dff7d; }
+.v_note.bad { color: #ff6b5a; }
+#v_reach_box.hidden { display: none; }
+
+.v_toggles { margin-top: 12dp; display: flow-root; }
+.button.v_toggle {
+	float: left; width: 136dp; height: 38dp; line-height: 38dp;
+	font-size: 18dp; margin: 0 6dp 8dp 0; text-align: center;
+}
+.button.v_toggle.on { background-color: #ffcf40; color: #1b1b1e; }
+.button.v_toggle.hidden { display: none; }
+
+#v_nav { position: absolute; bottom: 24dp; left: 0; width: 100%; height: 64dp; text-align: center; }
+.button.v_big_arrow { display: inline-block; width: 72dp; height: 64dp; line-height: 64dp; font-size: 40dp; margin: 0 18dp; vertical-align: top; }
+#v_count { display: inline-block; width: 140dp; height: 64dp; line-height: 64dp; font-size: 34dp; color: #f2f2f2; vertical-align: top; font-effect: shadow(2dp 2dp #000000c0); }
+
+#v_keys { position: absolute; bottom: 4dp; left: 0; width: 100%; text-align: center; font-size: 13dp; color: #ffffff90; }
+body.touch #v_keys { display: none; }

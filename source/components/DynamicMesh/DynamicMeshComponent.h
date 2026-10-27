@@ -1,6 +1,6 @@
 #pragma once
 #include "Config.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "TaskFwd.h"
 #include "DynamicMesh.h"
 #include "persist/Archive.h"
@@ -10,9 +10,9 @@
 namespace Pakal
 {
 
-	class _PAKALExport DynamicMeshComponent : public Component
+	class _PAKALExport DynamicMeshComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(DynamicMeshComponent,Component)
+		DECLARE_RTTI_WITH_BASE(DynamicMeshComponent,AsyncComponent)
 	public:
 
 		struct Settings

@@ -36,16 +36,16 @@ namespace Pakal
 			T x, y, z, w;
 
 			// constructors
-			quaternion<T>() : x(static_cast<T>(0.0)),
+			quaternion() : x(static_cast<T>(0.0)),
 			                  y(static_cast<T>(0.0)),
 			                  z(static_cast<T>(0.0)),
 			                  w(static_cast<T>(1.0)) { }
 
-			quaternion<T>(T qx, T qy, T qz, T qw) : x(qx), y(qy), z(qz), w(qw) { }
+			quaternion(T qx, T qy, T qz, T qw) : x(qx), y(qy), z(qz), w(qw) { }
 
-			quaternion<T>(const T* q) : x(q[0]), y(q[1]), z(q[2]), w(q[3]) { }
+			quaternion(const T* q) : x(q[0]), y(q[1]), z(q[2]), w(q[3]) { }
 
-			quaternion<T>(const quaternion<T>& q) : x(q.x), y(q.y), z(q.z), w(q.w) { }
+			quaternion(const quaternion<T>& q) : x(q.x), y(q.y), z(q.z), w(q.w) { }
 
 			// assignment operations
 			inline const quaternion<T> operator+=(const quaternion<T>& q)
@@ -96,33 +96,33 @@ namespace Pakal
 			// unary operations
 			inline const quaternion<T> operator -() const
 			{
-				return quaternion<T>(-x,-y,-z,-w);
+				return quaternion(-x,-y,-z,-w);
 			}
 
 			// binary operations
 			inline friend const quaternion<T> operator+(const quaternion<T>& q1, const quaternion<T>& q2)
 			{
-				return quaternion<T>(q1.x + q2.x,q1.y + q2.y,q1.z + q2.z,q1.w + q2.w);
+				return quaternion(q1.x + q2.x,q1.y + q2.y,q1.z + q2.z,q1.w + q2.w);
 			}
 
 			inline friend const quaternion<T> operator-(const quaternion<T>& q1, const quaternion<T>& q2)
 			{
-				return quaternion<T>(q1.x - q2.x,q1.y - q2.y,q1.z - q2.z,q1.w - q2.w);
+				return quaternion(q1.x - q2.x,q1.y - q2.y,q1.z - q2.z,q1.w - q2.w);
 			}
 
 			inline quaternion<T> operator*(const T& qs) const
 			{
-				return quaternion<T>(x * qs,y * qs,z * qs,w * qs);
+				return quaternion(x * qs,y * qs,z * qs,w * qs);
 			}
 
 			friend inline quaternion<T> operator*(const T& pS, const quaternion<T>& q)
 			{
-				return quaternion<T>(q.x * pS,q.y * pS,q.z * pS,q.w * pS);
+				return quaternion(q.x * pS,q.y * pS,q.z * pS,q.w * pS);
 			}
 
 			inline friend const quaternion<T> operator *(const quaternion<T>& q1, const quaternion<T>& q2)
 			{
-				return quaternion<T>(q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
+				return quaternion(q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
 				                     q1.w * q2.y + q1.y * q2.w + q1.z * q2.x - q1.x * q2.z,
 				                     q1.w * q2.z + q1.z * q2.w + q1.x * q2.y - q1.y * q2.x,
 				                     q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z);

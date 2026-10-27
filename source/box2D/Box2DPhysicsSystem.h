@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PhysicsSystem.h"
-#include <Box2D.h>
+#include <box2d/box2d.h>
 
 #include "IDebugDrawer.h"
 #include <mutex>
@@ -15,7 +15,7 @@ namespace Pakal
 	class ContactListener;
 	class ContactFilter;
 	class DestructionListener;
-	class Component;
+	class AsyncComponent;
 	//////////////////////////////////////////////////////////////////////////	
 
 	class _PAKALExport Box2DPhysicsSystem final : public PhysicsSystem, IDebugDrawerClient

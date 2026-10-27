@@ -4,13 +4,13 @@
 // Original Author: Salvador Noel Romo Garcia.
 // Creation Date: 01-11-2012
 // last modification: 13 jun 2015
-// Purpose: Component Interface.
+// Purpose: AsyncComponent Interface.
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "config.h"
 
-#ifdef PAKAL_USE_IRRLICHT
+#if PAKAL_USE_IRRLICHT == 1
 	#include "irrlicht/IrrRendererInfo.h"
 	typedef Pakal::IrrRendererInfo BaseRenderInfo;
 #else

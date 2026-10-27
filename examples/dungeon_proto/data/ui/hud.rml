@@ -1,0 +1,61 @@
+<rml>
+<head>
+	<title>Dungeon</title>
+	<link type="text/rcss" href="../../ui/base.rcss"/>
+	<link type="text/rcss" href="../../ui/zombies.rcss"/>
+	<link type="text/rcss" href="hud.rcss"/>
+</head>
+<!-- The dungeon's HUD (DungeonLevelState fills it): the orbs, experience, the abilities, the inventory, the result -->
+<body id="dungeon">
+	<div id="d_top">
+		<div id="d_level" class="title">LEVEL 1</div>
+		<div id="d_gold">0 GOLD</div>
+		<div id="d_monsters"></div>
+	</div>
+	<div id="d_message" class="title hidden"></div>
+
+	<div id="d_bottom">
+		<div id="d_health" class="d_orb">
+			<div id="d_health_fill" class="d_orb_fill"></div>
+			<div id="d_health_text" class="d_orb_text"></div>
+		</div>
+		<div id="d_xp"><div id="d_xp_fill"></div></div>
+		<div id="d_belt">
+			<div id="d_abilities">
+				<div id="d_ab0" class="d_ability"><div id="d_cd0" class="d_cd"></div><div class="d_key">LMB 1</div><div id="d_ab_name0" class="d_ab_name"></div></div>
+				<div id="d_ab1" class="d_ability"><div id="d_cd1" class="d_cd"></div><div class="d_key">Q 2</div><div id="d_ab_name1" class="d_ab_name"></div></div>
+				<div id="d_ab2" class="d_ability"><div id="d_cd2" class="d_cd"></div><div class="d_key">E 3</div><div id="d_ab_name2" class="d_ab_name"></div></div>
+				<div id="d_ab3" class="d_ability"><div id="d_cd3" class="d_cd"></div><div class="d_key">F 4</div><div id="d_ab_name3" class="d_ab_name"></div></div>
+			</div>
+		</div>
+		<div id="d_mana" class="d_orb">
+			<div id="d_mana_fill" class="d_orb_fill"></div>
+			<div id="d_mana_text" class="d_orb_text"></div>
+		</div>
+	</div>
+
+	<div id="d_inventory" class="hidden">
+		<div class="d_heading title">WORN</div>
+		<div id="d_worn"></div>
+		<div class="d_heading title">BAG</div>
+		<div id="d_bag"></div>
+		<div class="d_hint">click an item: wear it, or take it off</div>
+		<div id="d_close" class="button">CLOSE</div>
+	</div>
+
+	<div id="d_result" class="hidden">
+		<div id="d_result_title" class="title">DUNGEON CLEARED</div>
+		<div id="b_again" class="button">NEXT DUNGEON</div>
+	</div>
+	<div id="d_bag_button" class="title">BAG</div>
+	<div id="d_pause_button" class="title">II</div>
+	<div id="d_pause" class="hidden">
+		<div id="d_pause_title" class="title">PAUSED</div>
+		<div id="p_note"></div>
+		<div id="p_resume" class="button">RESUME</div>
+		<div id="p_new" class="button">NEW DUNGEON</div>
+		<div id="p_menu" class="button secondary">MENU</div>
+	</div>
+	<div id="d_keys">WASD walk   mouse aim, click strike   Q whirlwind   E fireball   F heal   I inventory   P pause   R new dungeon (online: the menu)</div>
+</body>
+</rml>

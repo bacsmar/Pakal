@@ -2,16 +2,16 @@
 #include "Config.h"
 
 #include "TaskFwd.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 
 #include "PakalMath.h"
 
 namespace Pakal
 {
 
-	class _PAKALExport MeshComponent : public Component
+	class _PAKALExport MeshComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(MeshComponent, Component);
+		DECLARE_RTTI_WITH_BASE(MeshComponent, AsyncComponent);
 	public:				
 
 		struct Settings

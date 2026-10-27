@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Component.h"
+#include "AsyncComponent.h"
 #include <BasicTask.h>
 #include <PakalMath.h>
 #include "persist/Archive.h"
 
 namespace Pakal
 {
-	class _PAKALExport TerrainComponent : public Component
+	class _PAKALExport TerrainComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(TerrainComponent, Component);
+		DECLARE_RTTI_WITH_BASE(TerrainComponent, AsyncComponent);
 	public:
 		virtual ~TerrainComponent(){}
 

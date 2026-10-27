@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Config.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "PakalPath.h"
 #include "SoundManager.h"
 #include "TaskFwd.h"
@@ -17,13 +17,14 @@ namespace Pakal
 		Invalid
 	};
 
-	class _PAKALExport MusicComponent : public Component
+	class _PAKALExport MusicComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(MusicComponent, Component);
+		DECLARE_RTTI_WITH_BASE(MusicComponent, AsyncComponent);
 	public:
 		virtual bool initialize(const Path& resourcePath, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual bool initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings = SoundSettings()) = 0;
 		virtual void terminate() = 0;
+		void prepare_dispose() override { terminate(); }
 
 		virtual void play() = 0;
 		virtual void pause() = 0;

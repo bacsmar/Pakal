@@ -4,9 +4,9 @@
 
 namespace Pakal
 {
-	class _PAKALExport GridComponent : public Component
+	class _PAKALExport GridComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(GridComponent, Component);
+		DECLARE_RTTI_WITH_BASE(GridComponent, AsyncComponent);
 	public:
 		virtual ~GridComponent(){}
 

@@ -25,7 +25,7 @@ namespace Pakal
 
 		explicit Task(const std::function<TArgs(void)>& job) : BasicTask(nullptr)
 		{
-			m_job = [=]() { m_result = job(); };
+			m_job = [this, job]() { m_result = job(); };
 		}
 		explicit Task(const TArgs& result) : m_result(result) {}
 
@@ -40,7 +40,7 @@ namespace Pakal
 		template <class TReturn>
 		TaskPtr<TReturn> continue_with(const std::function<TReturn(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
-			auto task = std::make_shared<Task<TReturn>>([=]() { return callBack(m_result);  });
+			auto task = std::make_shared<Task<TReturn>>([this, callBack]() { return callBack(m_result);  });
 
 			queue_continuation(ContinuationData(task, callBackThread));
 			
@@ -54,7 +54,7 @@ namespace Pakal
 
 		BasicTaskPtr continue_with(const std::function<void(TArgs)>& callBack, std::thread::id callBackThread = NULL_THREAD)
 		{
-			auto task = std::make_shared<BasicTask>([=]() {  callBack(m_result);  });
+			auto task = std::make_shared<BasicTask>([this, callBack]() {  callBack(m_result);  });
 
 			queue_continuation(ContinuationData(task, callBackThread));
 			
@@ -85,6 +85,7 @@ namespace Pakal
 				friend class TaskUtils;
 			public:
 				explicit DummyTaskAtomic(const std::function<void(void)>& job) : BasicTask(job){}
+				inline void runTask() { run(); }
 				std::atomic_int	m_result;				
 			};
 
@@ -101,7 +102,7 @@ namespace Pakal
 				t->m_result-= 1;
 				if (t->m_result == 0)
 				{
-					t->run();
+					t->runTask();
 				}
 			};
 

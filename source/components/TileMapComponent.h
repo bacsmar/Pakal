@@ -1,14 +1,14 @@
 #pragma once
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "BasicTask.h"
 #include "PakalMath.h"
 #include <vector>
 
 namespace Pakal
 {
-	class _PAKALExport TileMapComponent : public Component
+	class _PAKALExport TileMapComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(TileMapComponent, Component);
+		DECLARE_RTTI_WITH_BASE(TileMapComponent, AsyncComponent);
 	public:
 		struct Settings
 		{

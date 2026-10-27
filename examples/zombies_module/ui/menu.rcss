@@ -1,0 +1,92 @@
+/* The menus outside the missions: main, missions, shop. Sizes in dp (720 dp tall screen). */
+#menu_back {
+	position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+	decorator: vertical-gradient(#26262c #0d0d0f);
+	pointer-events: auto;
+}
+#wallet { position: absolute; top: 16dp; right: 20dp; }
+#wallet .chip { float: right; margin-left: 10dp; margin-right: 0; }
+.chip_star { width: 22dp; height: 22dp; margin-top: 7dp; margin-right: 6dp; vertical-align: top; }
+.screen { position: absolute; left: 0; top: 0; width: 100%; height: 100%; text-align: center; }
+
+#game_title { padding-top: 70dp; font-size: 120dp; color: #ffcf40; letter-spacing: 4dp; }
+#game_subtitle { font-size: 22dp; color: #b8b8b8; margin-bottom: 28dp; }
+.button.big { width: 340dp; height: 66dp; line-height: 66dp; font-size: 38dp; margin: 10dp auto; }
+
+.screen_header { height: 80dp; position: relative; }
+.screen_title { position: absolute; left: 0; right: 0; top: 14dp; font-size: 48dp; color: #ffcf40; pointer-events: none; }
+.button.back { position: absolute; left: 20dp; top: 16dp; width: 130dp; height: 44dp; line-height: 44dp; font-size: 24dp; margin: 0; }
+.button.view { position: absolute; left: 170dp; top: 16dp; width: 160dp; height: 44dp; line-height: 44dp; font-size: 24dp; margin: 0; }
+#shop_message { position: absolute; right: 230dp; top: 30dp; font-size: 18dp; color: #ffcf40; }
+
+/* Missions: cards in rows */
+/* the list scrolls (a drag on a phone, the wheel on a desktop) when there are more cards than fit under the header */
+#mission_list {
+	position: absolute; top: 80dp; bottom: 0; left: 0; right: 0;
+	overflow-y: auto;
+	pointer-events: auto;
+}
+#mission_cards { display: flow-root; width: 1080dp; margin: 6dp auto 24dp auto; }
+#mission_list scrollbarvertical { width: 10dp; margin-right: 6dp; }
+#mission_list scrollbarvertical slidertrack { background-color: #ffffff10; border-radius: 5dp; }
+#mission_list scrollbarvertical sliderbar { background-color: #ffcf40a0; border-radius: 5dp; min-height: 40dp; }
+.card {
+	float: left;
+	width: 336dp; height: 270dp;
+	margin: 10dp;
+	padding: 14dp;
+	box-sizing: border-box;
+	background-color: #1e1e22f0;
+	border: 2dp #3a3a40;
+	border-radius: 14dp;
+	text-align: left;
+	position: relative;
+	pointer-events: auto;
+}
+.card:hover { border-color: #ffcf40; }
+.card.locked { background-color: #151517f0; color: #6a6a70; }
+.card.locked:hover { border-color: #3a3a40; }
+.card_number { position: absolute; right: 16dp; top: 8dp; font-size: 40dp; color: #3a3a40; }
+.card_title { font-size: 32dp; color: #ffcf40; margin-right: 40dp; }
+.card.locked .card_title { color: #6a6a70; }
+.card_brief { font-size: 16dp; color: #c8c8c8; margin-top: 6dp; height: 90dp; }
+.card.locked .card_brief { color: #5a5a60; }
+.card_stars img { width: 36dp; height: 36dp; margin-right: 4dp; }
+.card_lock img { width: 40dp; height: 40dp; }
+.card_reward { font-size: 16dp; color: #7dff7d; margin-top: 6dp; }
+.card.locked .card_reward { color: #6a6a70; }
+
+/* Options */
+#options_box { width: 760dp; margin: 30dp auto; text-align: left; }
+
+/* Heroes: one card each; the locked ones say which mission rescues them */
+#hero_cards { display: flow-root; width: 1200dp; margin: 6dp auto; }
+.card.hero { width: 280dp; height: 350dp; }
+.card.hero .card_brief { height: 70dp; }
+.hero_portrait { width: 140dp; height: 140dp; display: block; margin: 0 auto 6dp auto; }
+.card.locked .hero_portrait { image-color: #ffffff30; }
+.card_side { font-size: 15dp; color: #6fc8ff; margin-top: 4dp; }
+
+/* Shop: two columns of rows */
+#shop_columns { width: 1100dp; margin: 0 auto; }
+.shop_column { float: left; width: 530dp; margin: 0 10dp; text-align: left; }
+.column_title { font-size: 28dp; color: #b8b8b8; margin: 4dp 0 6dp 4dp; }
+.row {
+	height: 66dp;
+	margin-bottom: 8dp;
+	padding: 8dp 12dp;
+	box-sizing: border-box;
+	background-color: #1e1e22f0;
+	border-radius: 10dp;
+	position: relative;
+}
+.row_title { font-size: 26dp; color: #ffcf40; }
+.row_info { font-size: 14dp; color: #b0b0b0; }
+.row_actions { position: absolute; right: 10dp; top: 11dp; }
+.button.small {
+	display: inline-block;
+	width: auto; height: 42dp; line-height: 42dp;
+	padding: 0 14dp; margin: 0 0 0 8dp;
+	font-size: 22dp;
+}
+.tag { display: inline-block; height: 42dp; line-height: 42dp; padding: 0 12dp; margin-left: 8dp; font-family: Bangers; font-size: 22dp; color: #7dff7d; }

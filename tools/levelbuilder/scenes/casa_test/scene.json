@@ -1,0 +1,73 @@
+{
+ "name": "casa_test",
+ "version": 6,
+ "bounds": [
+  -20.0,
+  -20.0,
+  20.0,
+  20.0
+ ],
+ "start": [
+  0.0,
+  0.0
+ ],
+ "missions": [
+  {
+   "id": "survival",
+   "mode": "survival",
+   "kills": 60
+  }
+ ],
+ "zones": {
+  "spawn_x": {
+   "rect": [
+    -19,
+    -19,
+    -18,
+    -18
+   ],
+   "kind": "spawn"
+  }
+ },
+ "entities": [
+  {
+   "id": "house_01",
+   "layer": "base",
+   "asset": "Building_House_6x8_2_mixed_19031b38",
+   "x": -12,
+   "y": 0,
+   "z": 0.0,
+   "yaw": 0.0,
+   "scale": 1.0,
+   "zone": null,
+   "role": "house",
+   "tags": []
+  },
+  {
+   "id": "house_02",
+   "layer": "base",
+   "asset": "Building_House_4x4_1_plaster_2ac75a57",
+   "x": 0,
+   "y": 0,
+   "z": 0.0,
+   "yaw": 0.0,
+   "scale": 1.0,
+   "zone": null,
+   "role": "house",
+   "tags": []
+  },
+  {
+   "id": "house_03",
+   "layer": "base",
+   "asset": "Building_House_8x10_1_brick_5b35f10e",
+   "x": 12,
+   "y": 0,
+   "z": 0.0,
+   "yaw": 0.0,
+   "scale": 1.0,
+   "zone": null,
+   "role": "house",
+   "tags": []
+  }
+ ]
+}

@@ -37,19 +37,19 @@ namespace Pakal
 			T cmp[NUM];
 
 			// constructors
-			vectorn<T,NUM>()
+			vectorn()
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] = static_cast<T>(0.0);
 			}
 
-			vectorn<T,NUM>(const T* vector)
+			vectorn(const T* vector)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] = vector[idx];
 			}
 
-			vectorn<T,NUM>(const vectorn<T,NUM>& v)
+			vectorn(const vectorn<T,NUM>& v)
 			{
 				for (int idx = 0; idx < NUM; ++idx)
 					cmp[idx] = v.cmp[idx];

@@ -3,27 +3,27 @@
 // File: IComponent.h
 // Original Author: Salvador Noel Romo Garcia.
 // Creation Date: 26-11-2015
-// Purpose: Component physics.
+// Purpose: AsyncComponent physics.
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "config.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "Event.h"
 
 namespace Pakal
 {	
-	class Entity;
+	class AsyncEntity;
 
-	class _PAKALExport PhysicComponent : public Component
+	class _PAKALExport PhysicComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(PhysicComponent, Component);		
+		DECLARE_RTTI_WITH_BASE(PhysicComponent, AsyncComponent);		
 		friend class ContactListener;
 	public:		
 		virtual ~PhysicComponent(){}
 
-		Event<const Entity*> event_collide;
-		Event<const Entity*> event_end_collide;
+		Event<const AsyncEntity*> event_collide;
+		Event<const AsyncEntity*> event_end_collide;
 
 		struct BodyPart
 		{

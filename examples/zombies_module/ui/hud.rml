@@ -1,0 +1,39 @@
+<rml>
+<head>
+	<title>HUD</title>
+	<link type="text/rcss" href="base.rcss"/>
+	<link type="text/rcss" href="zombies.rcss"/>
+</head>
+<body id="hud">
+	<div id="topbar">
+		<div class="chip" id="health"><span class="label">HP</span><span id="health_bar"><div id="health_fill"></div></span> <span id="health_text">0</span></div>
+		<div class="chip" id="money"><span class="label">$</span><span id="money_text">0</span></div>
+		<div class="chip" id="weapon"><span class="label">GUN</span><span id="weapon_text"></span></div>
+		<div class="chip" id="kills"><span class="label">KILLS</span><span id="kills_text">0</span></div>
+	</div>
+	<div id="objective_box">
+		<div id="objective"></div>
+		<div id="timer" class="hidden"></div>
+		<div id="boost" class="hidden"></div>
+	</div>
+	<div id="dialog" class="hidden"></div>
+	<div id="help">Move: WASD &nbsp;·&nbsp; Aim: mouse &nbsp;·&nbsp; Fire: left button or Space &nbsp;·&nbsp; Pause: P or Esc &nbsp;·&nbsp; Restart: R &nbsp;·&nbsp; Dev panel: F1</div>
+	<div id="pause_button">II</div>
+	<div id="boosts" class="hidden"></div>
+
+	<div id="overlay" class="hidden">
+		<div id="panel">
+			<div id="panel_title" class="title">PAUSED</div>
+			<div id="panel_stars" class="hidden"><img id="star1" src="images/star_off.png"/><img id="star2" src="images/star_off.png"/><img id="star3" src="images/star_off.png"/></div>
+			<div id="panel_text"></div>
+			<div id="panel_reward" class="hidden"></div>
+			<div id="btn_next" class="button hidden">NEXT MISSION</div>
+			<div id="btn_resume" class="button">RESUME</div>
+			<div id="btn_revive" class="button hidden">REVIVE</div>
+			<div id="btn_restart" class="button">RESTART</div>
+			<div id="btn_menu" class="button secondary hidden">MENU</div>
+			<div id="pause_options" class="hidden"></div>
+		</div>
+	</div>
+</body>
+</rml>

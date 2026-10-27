@@ -1,0 +1,30 @@
+<rml>
+<head>
+	<title>Brawler</title>
+	<link type="text/rcss" href="../../ui/base.rcss"/>
+	<link type="text/rcss" href="../../ui/zombies.rcss"/>
+	<link type="text/rcss" href="hud.rcss"/>
+</head>
+<!-- The brawler's HUD (BrawlerLevelState fills it): the hero, the enemies, the result -->
+<body id="brawler">
+	<div id="b_hero" class="b_panel">
+		<div class="b_name title">HERO</div>
+		<div class="b_bar big"><div id="b_hero_fill" class="b_fill hero"></div></div>
+		<div id="b_hero_text" class="b_note"></div>
+	</div>
+	<div id="b_hits" class="title hidden">0 HITS</div>
+	<div id="b_enemies"></div>
+	<div id="b_result" class="hidden">
+		<div id="b_result_title" class="title">ROUND CLEAR</div>
+		<div id="b_again" class="button">FIGHT AGAIN</div>
+	</div>
+	<div id="b_touch">
+		<div id="t_guard" class="b_touch_button title">GUARD</div>
+		<div id="t_dodge" class="b_touch_button title">DODGE</div>
+		<div id="t_jump" class="b_touch_button title">JUMP</div>
+		<div id="t_heavy" class="b_touch_button title">HEAVY</div>
+		<div id="t_light" class="b_touch_button big title">HIT</div>
+	</div>
+	<div id="b_keys">WASD move   J light (again: a combo)   K heavy   I guard (held)   L dodge   Space jump (J/K in the air: kick)   R again</div>
+</body>
+</rml>

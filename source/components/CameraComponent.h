@@ -1,13 +1,13 @@
 #pragma once
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "BasicTask.h"
 #include "PakalMath.h"
 
 namespace Pakal
 {
-	class _PAKALExport CameraComponent : public Component
+	class _PAKALExport CameraComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(CameraComponent, Component);
+		DECLARE_RTTI_WITH_BASE(CameraComponent, AsyncComponent);
 	public:
 
 		struct Settings

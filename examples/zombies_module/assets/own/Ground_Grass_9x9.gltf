@@ -1,0 +1,143 @@
+{
+ "asset": {
+  "version": "2.0",
+  "generator": "Pakal levelbuilder own_assets.py"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "Ground_Grass_9x9"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Ground_Grass_9x9",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TANGENT": 2,
+      "TEXCOORD_0": 3
+     },
+     "indices": 4,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "Ground_Grass_9x9",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.95
+   }
+  }
+ ],
+ "textures": [
+  {
+   "source": 0,
+   "sampler": 0
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987,
+   "wrapS": 10497,
+   "wrapT": 10497
+  }
+ ],
+ "images": [
+  {
+   "uri": "Ground_Grass_9x9.png"
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 204,
+   "uri": "data:application/octet-stream;base64,AAAQwZqZGb4AABDBAAAAAJqZGb4AABDBAAAAAJqZGb4AAAAAAAAQwZqZGb4AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAABAQAAAAAAAAEBAAABAQAAAAAAAAEBAAAACAAEAAAADAAIA"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 48
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 48,
+   "byteLength": 48
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 96,
+   "byteLength": 64
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 160,
+   "byteLength": 32
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 192,
+   "byteLength": 12
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 4,
+   "type": "VEC3",
+   "min": [
+    -9.0,
+    -0.15,
+    -9.0
+   ],
+   "max": [
+    0.0,
+    -0.15,
+    0.0
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 4,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 4,
+   "type": "VEC4"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5126,
+   "count": 4,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5123,
+   "count": 6,
+   "type": "SCALAR"
+  }
+ ]
+}

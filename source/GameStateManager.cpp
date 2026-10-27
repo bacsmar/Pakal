@@ -26,6 +26,8 @@ void GameStateManager::terminate()
 
 void GameStateManager::update(unsigned long dtMilliseconds)
 {
+	if (states.empty())
+		return;
 	peek_state()->on_update(dtMilliseconds);
 }
 

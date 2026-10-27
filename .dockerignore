@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Build artifacts
+build/
+.build/
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+docs/
+README.md
+
+# Temporary files
+*.tmp
+*.log
+
+# OS
+.codeql_detected_source_root

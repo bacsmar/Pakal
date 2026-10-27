@@ -1,10 +1,15 @@
 #include "Config.h"
+#include <algorithm>
 #include "Box2DPhysicsSystem.h"
 #include "Box2DPhysicsListeners.h"
 
 #include "ComponentFactory.h"
-#include "Components/SpritePhysicsComponent_Box2D.h"
+#include "SpritePhysicsComponent_Box2D.h"
 #include "LogMgr.h"
+
+#if PAKAL_USE_BGFX == 1
+	#include "bgfx/BgfxDebugDrawer.h"
+#endif
 
 #if PAKAL_USE_IRRLICHT
 	#include "box2d/B2DebugDrawIrr.h"	
@@ -59,7 +64,7 @@ inline void Box2DPhysicsSystem::disable()	{ m_contact_listener->Disable(); }
 
 void Box2DPhysicsSystem::set_gravity(const tmath::vector3df& gravity)
 {
-	execute_block([=]()
+	execute_block([this, gravity]()
 	{
 		m_world->SetGravity({ gravity.x,  gravity.y});
 	});
@@ -74,7 +79,7 @@ void Box2DPhysicsSystem::do_debug_draw()
 #if PAKAL_USE_IRRLICHT
 		((B2DebugDrawIrr*)m_debug_draw)->update_camera();
 #endif
-		m_world->DrawDebugData();
+		m_world->DebugDraw();
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -82,9 +87,15 @@ void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 {	
 #if PAKAL_USE_IRRLICHT
 	m_debug_draw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
+#elif PAKAL_USE_BGFX == 1
+	(void)renderInfo;
+	m_debug_draw = new BgfxDebugDrawer(nullptr);
 #endif
-	m_world->SetDebugDraw(m_debug_draw);
-	m_debug_draw->SetFlags(b2Draw::e_shapeBit);
+	if (m_world && m_debug_draw)
+	{
+		m_world->SetDebugDraw(m_debug_draw);
+		m_debug_draw->SetFlags(b2Draw::e_shapeBit | b2Draw::e_jointBit);
+	}
 }
 
 void Box2DPhysicsSystem::init_world()
@@ -122,16 +133,15 @@ void Box2DPhysicsSystem::clear_world()
 
 void Box2DPhysicsSystem::update_world(unsigned long dt)
 {
-	static float targetTimeInSeconds = (1.f / 60); 
-	static float targetTime = targetTimeInSeconds * 1000.f; // in milliseconds
-	
+	// One step per update: the system's own rate (max_fps) sets the step (at 120, 8 ms steps). It used to wait for more
+	// than 1/60 s, which at 60 updates a second stepped only every other one. A long hitch is cut to 50 ms so nothing
+	// tunnels through a wall.
 	m_time_elapsed += dt;
-
-	if (m_time_elapsed > targetTime)
+	if (m_time_elapsed > 0)
 	{
 		mutex_guard lock(m_debug_draw_mutex);
-		m_world->Step(m_time_elapsed*0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
-		m_time_elapsed = 0; 
+		m_world->Step(std::min<long long>(m_time_elapsed, 50) * 0.001f, m_settings.velocity_iterations, m_settings.position_iterations);
+		m_time_elapsed = 0;
 	}
 
 }

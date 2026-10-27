@@ -1,12 +1,12 @@
 #pragma once
-#include <Component.h>
+#include <AsyncComponent.h>
 #include <Event.h>
 #include <IInputManager.h>
 #include <persist/TextReader.h>
 
 namespace Pakal
 {
-	class Entity;
+	class AsyncEntity;
 	class ICharacterHandler;
 
 	class _PAKALExport InputHandler
@@ -26,9 +26,9 @@ namespace Pakal
 	};
 
 
-	class _PAKALExport KeyboardHandlerComponent : public Component, public InputHandler
+	class _PAKALExport KeyboardHandlerComponent : public AsyncComponent, public InputHandler
 	{
-		DECLARE_RTTI_WITH_BASE(KeyboardHandlerComponent, Component);
+		DECLARE_RTTI_WITH_BASE(KeyboardHandlerComponent, AsyncComponent);
 
 	public:
 		struct KeyMapping
