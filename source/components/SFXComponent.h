@@ -2,19 +2,20 @@
 
 #include "Config.h"
 #include "TaskFwd.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "PakalPath.h"
 #include "SoundManager.h"
 
 namespace Pakal
 {
-	class _PAKALExport SFXComponent : public Component
+	class _PAKALExport SFXComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(SFXComponent, Component);
+		DECLARE_RTTI_WITH_BASE(SFXComponent, AsyncComponent);
 	public:
 
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;
+		void prepare_dispose() override { terminate(); }
 		
 		inline bool add(unsigned id, const std::string& resourcePath) { return add(id, Path(resourcePath)); }
 		virtual bool add(unsigned id, const Path& resourcePath) = 0;

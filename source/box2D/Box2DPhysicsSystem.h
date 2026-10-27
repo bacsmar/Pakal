@@ -15,7 +15,7 @@ namespace Pakal
 	class ContactListener;
 	class ContactFilter;
 	class DestructionListener;
-	class Component;
+	class AsyncComponent;
 	//////////////////////////////////////////////////////////////////////////	
 
 	class _PAKALExport Box2DPhysicsSystem final : public PhysicsSystem, IDebugDrawerClient

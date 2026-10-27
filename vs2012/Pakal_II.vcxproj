@@ -69,7 +69,6 @@
     <ClInclude Include="..\source\persist\PersistUtils.h" />
     <ClInclude Include="..\source\persist\XmlReader.h" />
     <ClInclude Include="..\source\persist\XmlWriter.h" />
-    <ClInclude Include="..\source\script\ScriptableGameState.h" />
     <ClInclude Include="..\source\SimpleTimer.h" />
     <ClInclude Include="..\source\State.h" />
     <ClInclude Include="..\source\StateMachine.h" />
@@ -119,11 +118,11 @@
     <ClInclude Include="..\source\EventScheduler.h" />
     <ClInclude Include="..\source\GameStateManager.h" />
     <ClInclude Include="..\source\GenericEntity.h" />
-    <ClInclude Include="..\source\Component.h" />
+    <ClInclude Include="..\source\AsyncComponent.h" />
     <ClInclude Include="..\source\ComponentFactory.h" />
     <ClInclude Include="..\source\IComponentProvider.h" />
     <ClInclude Include="..\source\IDebugDrawer.h" />
-    <ClInclude Include="..\source\Entity.h" />
+    <ClInclude Include="..\source\AsyncEntity.h" />
     <ClInclude Include="..\source\InboxQueue.h" />
     <ClInclude Include="..\source\IPakalApplication.h" />
     <ClInclude Include="..\source\LogMgr.h" />
@@ -147,7 +146,7 @@
     <ClCompile Include="..\source\components\DynamicMesh\poly2tri\sweep\sweep_context.cc" />
     <ClCompile Include="..\source\components\DynamicMesh\UVMapping.cpp" />
     <ClCompile Include="..\source\components\DynamicMesh\VertexInfo.cpp" />
-    <ClCompile Include="..\source\Entity.cpp" />
+    <ClCompile Include="..\source\AsyncEntity.cpp" />
     <ClCompile Include="..\source\EntityDescriptor.cpp" />
     <ClCompile Include="..\source\components\CharacterComponent.cpp" />
     <ClCompile Include="..\source\components\InputHandlerComponent.cpp" />
@@ -163,7 +162,6 @@
     <ClCompile Include="..\source\persist\XmlReader.cpp" />
     <ClCompile Include="..\source\persist\Archive.cpp" />
     <ClCompile Include="..\source\persist\XmlWriter.cpp" />
-    <ClCompile Include="..\source\script\ScriptableGameState.cpp" />
     <ClCompile Include="..\source\SimpleTimer.cpp" />
     <ClCompile Include="..\source\State.cpp" />
     <ClCompile Include="..\source\components\AutomataComponent.cpp" />

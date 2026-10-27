@@ -14,7 +14,7 @@ void Pakal::TransitionCondition::set_script(ScriptComponent& script)
 {
 	if (fn_condition.empty() == false)
 	{
-		m_condition = ([=, &script]() -> bool
+		m_condition = ([this, &script]() -> bool
 		{
 			bool retValue = false;
 			//const auto& result = script.call_script(fn_condition);

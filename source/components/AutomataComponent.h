@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "AsyncComponent.h"
 #include <string>
 #include "StateMachine.h"
 
@@ -8,9 +8,9 @@ namespace Pakal
 {	
 	class StateMachine;	
 	class ScriptComponent;
-	class _PAKALExport AutomataComponent : public Component
+	class _PAKALExport AutomataComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(AutomataComponent, Component);
+		DECLARE_RTTI_WITH_BASE(AutomataComponent, AsyncComponent);
 	public:
 		virtual ~AutomataComponent() override;
 		AutomataComponent();

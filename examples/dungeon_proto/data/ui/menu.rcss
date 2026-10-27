@@ -1,0 +1,14 @@
+/* The dungeon's menu (sizes in dp: 720 dp tall) */
+#m_panel {
+	position: absolute; left: 50%; top: 40dp; width: 720dp; margin-left: -360dp;
+	padding: 18dp 24dp; text-align: center;
+	background-color: #1a1410f0; border: 2dp #5a4632; border-radius: 12dp;
+	pointer-events: auto;
+}
+#m_title { font-size: 72dp; color: #e8c06a; font-effect: shadow(3dp 3dp #000000c0); margin-bottom: 8dp; }
+#m_panel .button { width: 420dp; }
+.m_heading { font-size: 26dp; color: #e8c06a; margin: 18dp 0 4dp 0; }
+#m_panel .button.m_game { width: 640dp; height: auto; min-height: 50dp; line-height: 30dp; padding: 10dp 0; font-size: 22dp; background-color: #6fd8ff; }
+.m_address { display: block; font-family: Roboto; font-size: 14dp; color: #1b1b1e; }
+.m_none { font-size: 16dp; color: #a09080; margin: 10dp 0; }
+#m_device { font-size: 13dp; color: #807060; margin-top: 12dp; }

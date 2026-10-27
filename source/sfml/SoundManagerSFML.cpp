@@ -6,6 +6,10 @@
 #include "StreamSFML.h"
 #include "Utils.h"
 
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 
 namespace Pakal
 {
@@ -106,16 +110,59 @@ namespace Pakal
 		return nullptr;
 	}
 
+	SharedPtr<sf::SoundBuffer> SoundManagerSFML::create_tone(float frequencyHz, float seconds)
+	{
+		const unsigned int sampleRate = 44100;
+		const size_t count = static_cast<size_t>(seconds * sampleRate);
+		std::vector<sf::Int16> samples(count);
+		const double twoPi = 6.283185307179586;
+		for (size_t i = 0; i < count; ++i)
+		{
+			// Short fade in and out, so the tone does not click
+			const double t = static_cast<double>(i) / sampleRate;
+			const double fade = std::min(1.0, std::min(t, seconds - t) / 0.01);
+			samples[i] = static_cast<sf::Int16>(std::sin(twoPi * frequencyHz * t) * 0.3 * fade * 32767.0);
+		}
+
+		SharedPtr<sf::SoundBuffer> buffer = std::make_shared<sf::SoundBuffer>();
+		if (!buffer->loadFromSamples(samples.data(), samples.size(), 1, sampleRate))
+		{
+			LOG_ERROR("[SoundManagerSFML] could not create a %.1f Hz tone", frequencyHz);
+			return nullptr;
+		}
+		return buffer;
+	}
+
+	void SoundManagerSFML::set_listener(const tmath::vector3df& position, const tmath::vector3df& forward, const tmath::vector3df& up)
+	{
+		sf::Listener::setPosition(position.x, position.y, position.z);
+		sf::Listener::setDirection(forward.x, forward.y, forward.z);
+		sf::Listener::setUpVector(up.x, up.y, up.z);
+	}
+
+	void SoundManagerSFML::apply_settings(sf::Sound& sound, const sf::SoundBuffer& buffer, const SoundSettings& settings)
+	{
+		sound.setBuffer(buffer);
+		sound.setVolume(settings.volume);
+		sound.setPitch(settings.pitch);
+		sound.setRelativeToListener(settings.relative_to_source);
+		sound.setPosition(settings.position.x, settings.position.y, settings.position.z);
+		sound.setMinDistance(settings.min_distance);
+		sound.setAttenuation(settings.attenuation);
+
+		// SFML only spatializes mono sources; a stereo sound plays centered whatever its position
+		if (buffer.getChannelCount() != 1)
+		{
+			LOG_WARNING("[SoundManagerSFML] stereo sound: position is ignored (only mono sounds are spatialized)");
+		}
+	}
+
 	void SoundManagerSFML::play_sfx(SharedPtr<sf::SoundBuffer> buffer, const SoundSettings& settings)
 	{
 		//UniquePtr<sf::Sound> sound = std::make_unique<sf::Sound>();
 		UniquePtr<sf::Sound> sound = UniquePtr<sf::Sound>(new sf::Sound());
 
-		sound->setBuffer(*buffer);
-		sound->setVolume(settings.volume);
-		sound->setPitch(settings.pitch);
-		sound->setRelativeToListener(settings.relative_to_source);
-		sound->setPosition(settings.position.x, settings.position.y, settings.position.z);
+		apply_settings(*sound, *buffer, settings);
 		sound->play();
 
 		mutex_guard lock(m_players_mutex);

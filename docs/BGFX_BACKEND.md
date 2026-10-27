@@ -94,34 +94,6 @@ The `BgfxDebugDrawer` class implements Box2D debug visualization:
 - Uses bgfx debug draw API for efficient line rendering
 - Automatically integrated when PAKAL_USE_BOX2D is enabled
 
-## Current Limitations
-
-This is the initial implementation with the following limitations:
-
-1. **No sprite rendering yet**: SpriteComponent_Bgfx is not implemented
-2. **No advanced materials**: Simple debug rendering only
-3. **No texture loading**: TextureResource_Bgfx not yet available
-4. **No 3D support**: Currently focused on 2D rendering
-5. **No shader customization**: Uses bgfx built-in shaders
-6. **No post-processing**: No effects pipeline yet
-7. **Basic debug drawing**: Limited to simple primitives
-
-## Future Enhancements
-
-Planned features for future releases:
-
-- [ ] Sprite rendering system with batching
-- [ ] Texture loading via bimg
-- [ ] Camera system (orthographic and perspective)
-- [ ] Material system
-- [ ] Shader loading and hot-reloading
-- [ ] Post-processing effects
-- [ ] Render-to-texture support
-- [ ] Text rendering
-- [ ] UI integration (Dear ImGui support)
-- [ ] Particle systems
-- [ ] Advanced debug visualization
-
 ## Troubleshooting
 
 ### bgfx fails to initialize

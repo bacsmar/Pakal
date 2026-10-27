@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "Event.h"
 
 namespace Pakal
@@ -24,9 +24,9 @@ namespace Pakal
 		Pakal::Event<const UIMessage&> evt_ui;
 	};
 
-	class _PAKALExport UILabel : public Component, public UIElement
+	class _PAKALExport UILabel : public AsyncComponent, public UIElement
 	{
-		DECLARE_RTTI_WITH_BASE(UILabel, Component);
+		DECLARE_RTTI_WITH_BASE(UILabel, AsyncComponent);
 	public:				
 		virtual void set_text(const std::string& text) = 0;
 		virtual void set_color(unsigned color) const = 0;
@@ -39,9 +39,9 @@ namespace Pakal
 	};
 
 
-	class _PAKALExport UILayoutElement : public Component, public UIElement
+	class _PAKALExport UILayoutElement : public AsyncComponent, public UIElement
 	{
-		DECLARE_RTTI_WITH_BASE(UILayoutElement, Component);
+		DECLARE_RTTI_WITH_BASE(UILayoutElement, AsyncComponent);
 	public:
 		virtual bool add_element_inside(UILayoutElement*) const=0;
 		virtual void remove_inside_elements() const = 0;

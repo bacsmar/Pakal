@@ -98,9 +98,6 @@
     <ClCompile Include="..\source\persist\JsonWriter.cpp">
       <Filter>Foundation\Persist</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\script\ScriptableGameState.cpp">
-      <Filter>Managers\GameStateManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\SimpleTimer.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
@@ -116,7 +113,7 @@
     <ClCompile Include="..\source\EntityManager.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\Entity.cpp">
+    <ClCompile Include="..\source\AsyncEntity.cpp">
       <Filter>Managers\EntityManager</Filter>
     </ClCompile>
     <ClCompile Include="..\source\EntityDescriptor.cpp">
@@ -273,7 +270,7 @@
     <ClInclude Include="..\source\ResourceManager.h">
       <Filter>Managers\ResourceManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\Component.h">
+    <ClInclude Include="..\source\AsyncComponent.h">
       <Filter>Managers\ComponentManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\ComponentFactory.h">
@@ -393,9 +390,6 @@
     <ClInclude Include="..\source\persist\JsonWriter.h">
       <Filter>Foundation\Persist</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\script\ScriptableGameState.h">
-      <Filter>Managers\GameStateManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\SimpleTimer.h">
       <Filter>Foundation</Filter>
     </ClInclude>
@@ -438,7 +432,7 @@
     <ClInclude Include="..\source\EntityDescriptor.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\Entity.h">
+    <ClInclude Include="..\source\AsyncEntity.h">
       <Filter>Managers\EntityManager</Filter>
     </ClInclude>
     <ClInclude Include="..\source\IEntityProvider.h">

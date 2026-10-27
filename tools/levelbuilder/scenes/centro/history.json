@@ -1,0 +1,602 @@
+[
+ {
+  "version": 1,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 4, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": true, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T16:01:32",
+  "entities": 823
+ },
+ {
+  "version": 2,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T16:01:32",
+  "entities": 823
+ },
+ {
+  "version": 3,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 4, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": true, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T16:01:47",
+  "entities": 821
+ },
+ {
+  "version": 4,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T16:01:47",
+  "entities": 821
+ },
+ {
+  "version": 5,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": true, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T16:03:44",
+  "entities": 1012
+ },
+ {
+  "version": 6,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T16:03:44",
+  "entities": 1012
+ },
+ {
+  "version": 7,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T16:05:01",
+  "entities": 1011
+ },
+ {
+  "version": 8,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T16:05:01",
+  "entities": 1011
+ },
+ {
+  "version": 9,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T16:09:51",
+  "entities": 1139
+ },
+ {
+  "version": 10,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T16:09:51",
+  "entities": 1139
+ },
+ {
+  "version": 11,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T16:43:09",
+  "entities": 1139
+ },
+ {
+  "version": 12,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T16:43:09",
+  "entities": 1139
+ },
+ {
+  "version": 13,
+  "note": "clutter centro --layer survival_props --groups 14 --seed 59",
+  "at": "2026-10-25T18:07:31",
+  "entities": 1190
+ },
+ {
+  "version": 14,
+  "note": "clutter centro --layer tokens_props --groups 14 --seed 45",
+  "at": "2026-10-25T18:07:31",
+  "entities": 1232
+ },
+ {
+  "version": 15,
+  "note": "clutter centro --layer race_props --groups 14 --seed 31",
+  "at": "2026-10-25T18:07:31",
+  "entities": 1278
+ },
+ {
+  "version": 16,
+  "note": "clutter centro --layer explore_props --groups 14 --seed 52",
+  "at": "2026-10-25T18:07:31",
+  "entities": 1322
+ },
+ {
+  "version": 17,
+  "note": "mission centro survival --layers props,survival_props",
+  "at": "2026-10-25T18:07:31",
+  "entities": 1322
+ },
+ {
+  "version": 18,
+  "note": "mission centro tokens --layers props,tokens_props",
+  "at": "2026-10-25T18:07:32",
+  "entities": 1322
+ },
+ {
+  "version": 19,
+  "note": "mission centro race --layers props,race_props",
+  "at": "2026-10-25T18:07:32",
+  "entities": 1322
+ },
+ {
+  "version": 20,
+  "note": "mission centro explore --layers props,explore_props",
+  "at": "2026-10-25T18:07:32",
+  "entities": 1322
+ },
+ {
+  "version": 21,
+  "note": "delete centro --layer survival_props",
+  "at": "2026-10-25T18:10:27",
+  "entities": 1271
+ },
+ {
+  "version": 22,
+  "note": "clutter centro --layer survival_props --groups 14 --seed 59",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1338
+ },
+ {
+  "version": 23,
+  "note": "delete centro --layer tokens_props",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1296
+ },
+ {
+  "version": 24,
+  "note": "clutter centro --layer tokens_props --groups 14 --seed 45",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1371
+ },
+ {
+  "version": 25,
+  "note": "delete centro --layer race_props",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1325
+ },
+ {
+  "version": 26,
+  "note": "clutter centro --layer race_props --groups 14 --seed 31",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1392
+ },
+ {
+  "version": 27,
+  "note": "delete centro --layer explore_props",
+  "at": "2026-10-25T18:10:28",
+  "entities": 1348
+ },
+ {
+  "version": 28,
+  "note": "clutter centro --layer explore_props --groups 14 --seed 52",
+  "at": "2026-10-25T18:10:29",
+  "entities": 1410
+ },
+ {
+  "version": 29,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T18:19:10",
+  "entities": 1198
+ },
+ {
+  "version": 30,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T18:19:10",
+  "entities": 1268
+ },
+ {
+  "version": 31,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T18:19:10",
+  "entities": 1334
+ },
+ {
+  "version": 32,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T18:19:10",
+  "entities": 1417
+ },
+ {
+  "version": 33,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T18:19:34",
+  "entities": 1198
+ },
+ {
+  "version": 34,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T18:19:34",
+  "entities": 1267
+ },
+ {
+  "version": 35,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T18:19:34",
+  "entities": 1333
+ },
+ {
+  "version": 36,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T18:19:34",
+  "entities": 1414
+ },
+ {
+  "version": 37,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T18:34:10",
+  "entities": 1219
+ },
+ {
+  "version": 38,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T18:34:10",
+  "entities": 1291
+ },
+ {
+  "version": 39,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T18:34:10",
+  "entities": 1350
+ },
+ {
+  "version": 40,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T18:34:10",
+  "entities": 1421
+ },
+ {
+  "version": 41,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T18:34:25",
+  "entities": 1219
+ },
+ {
+  "version": 42,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T18:34:25",
+  "entities": 1291
+ },
+ {
+  "version": 43,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T18:34:25",
+  "entities": 1349
+ },
+ {
+  "version": 44,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T18:34:25",
+  "entities": 1420
+ },
+ {
+  "version": 45,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T18:35:54",
+  "entities": 1229
+ },
+ {
+  "version": 46,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T18:35:55",
+  "entities": 1304
+ },
+ {
+  "version": 47,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T18:35:55",
+  "entities": 1371
+ },
+ {
+  "version": 48,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T18:35:55",
+  "entities": 1442
+ },
+ {
+  "version": 49,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T19:01:01",
+  "entities": 1419
+ },
+ {
+  "version": 50,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T19:01:01",
+  "entities": 1489
+ },
+ {
+  "version": 51,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T19:01:01",
+  "entities": 1550
+ },
+ {
+  "version": 52,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T19:01:01",
+  "entities": 1621
+ },
+ {
+  "version": 53,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T19:01:31",
+  "entities": 1418
+ },
+ {
+  "version": 54,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T19:01:31",
+  "entities": 1488
+ },
+ {
+  "version": 55,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T19:01:31",
+  "entities": 1550
+ },
+ {
+  "version": 56,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T19:01:31",
+  "entities": 1621
+ },
+ {
+  "version": 57,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:01:04",
+  "entities": 1418
+ },
+ {
+  "version": 58,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:01:04",
+  "entities": 1488
+ },
+ {
+  "version": 59,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:01:04",
+  "entities": 1550
+ },
+ {
+  "version": 60,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:01:04",
+  "entities": 1621
+ },
+ {
+  "version": 61,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:01:04",
+  "entities": 1730
+ },
+ {
+  "version": 62,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:01:23",
+  "entities": 1418
+ },
+ {
+  "version": 63,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:01:23",
+  "entities": 1485
+ },
+ {
+  "version": 64,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:01:23",
+  "entities": 1547
+ },
+ {
+  "version": 65,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:01:23",
+  "entities": 1618
+ },
+ {
+  "version": 66,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:01:23",
+  "entities": 1729
+ },
+ {
+  "version": 67,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1418
+ },
+ {
+  "version": 68,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1485
+ },
+ {
+  "version": 69,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1547
+ },
+ {
+  "version": 70,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1618
+ },
+ {
+  "version": 71,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1729
+ },
+ {
+  "version": 72,
+  "note": "mission centro crates --mode crates --crates 6 --seconds 45 --seed 4 --layers props --title CENTRO: break the infected crates, one after another",
+  "at": "2026-10-25T20:04:43",
+  "entities": 1787
+ },
+ {
+  "version": 73,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1418
+ },
+ {
+  "version": 74,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1485
+ },
+ {
+  "version": 75,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1547
+ },
+ {
+  "version": 76,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1618
+ },
+ {
+  "version": 77,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1729
+ },
+ {
+  "version": 78,
+  "note": "mission centro crates --mode crates --crates 6 --seconds 45 --seed 4 --layers props --title CENTRO: break the infected crates, one after another",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1787
+ },
+ {
+  "version": 79,
+  "note": "mission centro escort_lis --mode escort --hero lis --checkpoints 4 --seed 2 --layers props --title CENTRO: Lis is hiding in the church. Get her out of town",
+  "at": "2026-10-25T20:11:04",
+  "entities": 1853
+ },
+ {
+  "version": 80,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1463
+ },
+ {
+  "version": 81,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1532
+ },
+ {
+  "version": 82,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1598
+ },
+ {
+  "version": 83,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1672
+ },
+ {
+  "version": 84,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1776
+ },
+ {
+  "version": 85,
+  "note": "mission centro crates --mode crates --crates 6 --seconds 45 --seed 4 --layers props --title CENTRO: break the infected crates, one after another",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1837
+ },
+ {
+  "version": 86,
+  "note": "mission centro escort_lis --mode escort --hero lis --checkpoints 4 --seed 2 --layers props --title CENTRO: Lis is hiding in the church. Get her out of town",
+  "at": "2026-10-25T20:57:59",
+  "entities": 1909
+ },
+ {
+  "version": 87,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1465
+ },
+ {
+  "version": 88,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1538
+ },
+ {
+  "version": 89,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1606
+ },
+ {
+  "version": 90,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1680
+ },
+ {
+  "version": 91,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1782
+ },
+ {
+  "version": 92,
+  "note": "mission centro crates --mode crates --crates 6 --seconds 45 --seed 4 --layers props --title CENTRO: break the infected crates, one after another",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1840
+ },
+ {
+  "version": 93,
+  "note": "mission centro escort_lis --mode escort --hero lis --checkpoints 4 --seed 2 --layers props --title CENTRO: Lis is hiding in the church. Get her out of town",
+  "at": "2026-10-25T20:58:26",
+  "entities": 1913
+ },
+ {
+  "version": 94,
+  "note": "generada: {\"grid\": [4, 4], \"arm\": 5, \"seed\": 5, \"blocks\": {\"park\": 1, \"downtown\": 1, \"shops\": 1, \"houses\": 1}, \"ring\": true, \"sidewalks\": true, \"sign\": true, \"gift\": true, \"landmark\": false, \"mission\": {\"kills\": 60}, \"layout\": \"historic\"}",
+  "at": "2026-10-25T20:58:38",
+  "entities": 1463
+ },
+ {
+  "version": 95,
+  "note": "mission centro explore --mode explore --layers props --title CENTRO: explore (no zombies)",
+  "at": "2026-10-25T20:58:38",
+  "entities": 1536
+ },
+ {
+  "version": 96,
+  "note": "mission centro tokens --mode collect --tokens 20 --seconds 150 --seed 7 --layers props --title CENTRO: collect 20 tokens before the time runs out",
+  "at": "2026-10-25T20:58:38",
+  "entities": 1604
+ },
+ {
+  "version": 97,
+  "note": "mission centro race --mode race --checkpoints 6 --seconds 120 --seed 3 --layers props --title CENTRO: reach the six checkpoints in time",
+  "at": "2026-10-25T20:58:38",
+  "entities": 1678
+ },
+ {
+  "version": 98,
+  "note": "mission centro defend --mode defend --seconds 150 --layers props --title CENTRO: defend the truck until it is fixed",
+  "at": "2026-10-25T20:58:38",
+  "entities": 1776
+ },
+ {
+  "version": 99,
+  "note": "mission centro crates --mode crates --crates 6 --seconds 45 --seed 4 --layers props --title CENTRO: break the infected crates, one after another",
+  "at": "2026-10-25T20:58:39",
+  "entities": 1834
+ },
+ {
+  "version": 100,
+  "note": "mission centro escort_lis --mode escort --hero lis --checkpoints 4 --seed 2 --layers props --title CENTRO: Lis is hiding in the church. Get her out of town",
+  "at": "2026-10-25T20:58:39",
+  "entities": 1907
+ }
+]

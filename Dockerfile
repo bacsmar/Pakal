@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y \
     liblua5.3-dev \
     libbox2d-dev \
     xvfb \
+    x11vnc \
+    openbox \
+    x11-apps \
     gdb \
     python3 \
     python-is-python3 \

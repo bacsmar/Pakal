@@ -2,6 +2,7 @@
 #include "Config.h"
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 #include "ISystem.h"
 #include "AsyncTaskDispatcher.h"
@@ -15,13 +16,13 @@ namespace Pakal
 	{
 		std::atomic<SystemState> m_state;// (SystemState::Created);
 		std::thread*			m_thread = nullptr;
-		unsigned				m_desired_frame_time_ms = 1;
+		std::chrono::nanoseconds	m_frame_period{0};
 
 		bool					m_threaded;
 		AsyncTaskDispatcher		m_dispatcher;
 		FPSCounter				m_fps_counter;
 		std::atomic_bool		m_dispatcher_ready;
-		Pakal::Clock			m_fps_limiter_clock;
+		std::chrono::steady_clock::time_point m_next_frame{};
 
 	protected:
 
@@ -47,7 +48,7 @@ namespace Pakal
 		inline unsigned get_fps() override final { return m_fps_counter.get_fps(); };
 		inline void set_target_fps(unsigned target_fps) override final
 		{
-			m_desired_frame_time_ms = static_cast<unsigned>((target_fps ? 1.0 / target_fps : 0) * 1000); 
+			m_frame_period = std::chrono::nanoseconds(target_fps ? 1000000000ll / target_fps : 0);
 		};
 
 		void update(unsigned long dtMilliSeconds) override final;

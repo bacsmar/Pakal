@@ -13,8 +13,22 @@
 #if PAKAL_USE_BOX2D == 1
 
 #include "BgfxGraphicsSystem.h"
+#include <debugdraw/debugdraw.h>
 #include <bgfx/bgfx.h>
+#include <bx/math.h>
 #include <cmath>
+
+namespace
+{
+	static uint32_t to_abgr(const b2Color& color)
+	{
+		const uint8_t r = static_cast<uint8_t>(bx::clamp(color.r, 0.0f, 1.0f) * 255.0f);
+		const uint8_t g = static_cast<uint8_t>(bx::clamp(color.g, 0.0f, 1.0f) * 255.0f);
+		const uint8_t b = static_cast<uint8_t>(bx::clamp(color.b, 0.0f, 1.0f) * 255.0f);
+		const uint8_t a = static_cast<uint8_t>(bx::clamp(color.a, 0.0f, 1.0f) * 255.0f);
+		return (uint32_t(a) << 24) | (uint32_t(b) << 16) | (uint32_t(g) << 8) | uint32_t(r);
+	}
+}
 
 namespace Pakal
 {
@@ -81,11 +95,24 @@ namespace Pakal
 
 	void BgfxDebugDrawer::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 	{
-		// TODO: Implement line drawing using a proper bgfx debug draw pipeline.
-		// The previous bgfx::DebugVertex dbgDrawLine API is not available in current bgfx.
-		(void)p1;
-		(void)p2;
-		(void)color;
+		const float x1 = p1.x * m_scale + m_translation_x;
+		const float y1 = p1.y * m_scale + m_translation_y;
+		const float x2 = p2.x * m_scale + m_translation_x;
+		const float y2 = p2.y * m_scale + m_translation_y;
+
+		bgfx::ViewId viewId = 0;
+		if (m_graphics_system)
+		{
+			viewId = m_graphics_system->get_main_view_id();
+		}
+
+		DebugDrawEncoder dde;
+		// Use depth-test disabled for 2D physics debug overlay.
+		dde.begin(viewId, false);
+		dde.setColor(to_abgr(color));
+		dde.moveTo(x1, y1, 0.0f);
+		dde.lineTo(x2, y2, 0.0f);
+		dde.end();
 	}
 
 	void BgfxDebugDrawer::DrawTransform(const b2Transform& xf)

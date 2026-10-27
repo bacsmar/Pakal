@@ -47,11 +47,11 @@ void Pakal::InputHandler::remove_subscriptions()
 
 Pakal::KeyboardHandlerComponent::KeyboardHandlerComponent(Pakal::IInputManager* inputManager) : m_input_manager_ref(inputManager)
 {
-	m_id_event_key_down = m_input_manager_ref->event_key_down.add_listener([=](const Pakal::KeyArgs& args)
+	m_id_event_key_down = m_input_manager_ref->event_key_down.add_listener([this](const Pakal::KeyArgs& args)
 	{
 		this->traslate_command_kdown(args);
 	}, THIS_THREAD);
-	m_id_event_key_up = m_input_manager_ref->event_key_up.add_listener([=](const Pakal::KeyArgs& args)
+	m_id_event_key_up = m_input_manager_ref->event_key_up.add_listener([this](const Pakal::KeyArgs& args)
 	{
 		this->traslate_command_kUp(args);
 	}, THIS_THREAD);

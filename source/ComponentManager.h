@@ -9,6 +9,8 @@
 #pragma once
 #include "Config.h"
 
+#include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <string>
 
@@ -18,31 +20,33 @@
 
 namespace Pakal
 {
-	class Component;
+	class AsyncComponent;
 	class IComponentProvider;
 
 	class _PAKALExport ComponentManager : IManager
 	{
 	public:
 		void initialize() override {};
-		void terminate() override {};
+		void terminate() override;
 
 		void register_factory(IComponentFactory* factory, bool replacePreviousFactory = false);
 
 		template <class TBase>
-		inline void register_factory(const std::function<Component*()>& fn , bool replacePreviousFactory = false)
+		inline void register_factory(const std::function<AsyncComponent*()>& fn , bool replacePreviousFactory = false)
 		{
-			register_factory(CreateFactory<Component, TBase>(fn), replacePreviousFactory);
+			register_factory(CreateFactory<AsyncComponent, TBase>(fn), replacePreviousFactory);
 		}
 
 		void register_provider(IComponentProvider &provider);
 
-		Component* create_component(const std::string& componentName);
+		AsyncComponent* create_component(const std::string& componentName);
+		void request_dispose(AsyncComponent* component);
+		size_t process_pending_disposals();
 
 		template <class T>
 		T* create_component()
 		{
- 			Component* ic = create_component( TypeInfo::get<T>().get_name());
+ 			AsyncComponent* ic = create_component( TypeInfo::get<T>().get_name());
 			return static_cast<T*>(ic);
 		}
 
@@ -52,5 +56,6 @@ namespace Pakal
 		ComponentManager(){}
 	private:
 		std::unordered_map<std::string, IComponentFactory*> m_factories;
+		std::unordered_set<AsyncComponent*> m_pendingDispose;
 	};
 }

@@ -1,0 +1,107 @@
+/* The dungeon's HUD (sizes in dp: 720 dp tall) */
+#d_top { position: absolute; left: 16dp; top: 12dp; width: 600dp; }
+#d_level { font-size: 30dp; color: #e8c06a; font-effect: shadow(2dp 2dp #000000c0); }
+#d_gold { font-size: 18dp; color: #f2d27a; margin-top: 2dp; }
+#d_monsters { font-size: 15dp; color: #c8b8a8; margin-top: 2dp; }
+
+#d_message {
+	position: absolute; left: 0; top: 150dp; width: 100%; text-align: center;
+	font-size: 40dp; color: #f0d090; font-effect: shadow(2dp 2dp #000000d0);
+}
+
+/* the belt: two orbs and between them the experience and the abilities */
+#d_bottom { position: absolute; left: 0; bottom: 34dp; width: 100%; height: 130dp; }
+/* (flasks, not orbs: RmlUi does not clip a fill to a round border) */
+.d_orb {
+	position: absolute; bottom: 0; width: 110dp; height: 126dp;
+	border-radius: 22dp; border: 3dp #5a4632; background-color: #120c0ae0;
+}
+#d_health { left: 50%; margin-left: -370dp; }
+#d_mana { left: 50%; margin-left: 254dp; }
+.d_orb_fill { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; border-radius: 19dp; }
+#d_health_fill { background-color: #b0201a; }
+#d_mana_fill { background-color: #2850c0; }
+.d_orb_text { position: absolute; left: 0; top: 52dp; width: 100%; text-align: center; font-size: 16dp; color: #ffffff; font-effect: shadow(1dp 1dp #000000); }
+
+#d_belt { position: absolute; left: 50%; margin-left: -240dp; bottom: 0; width: 480dp; height: 84dp; }
+#d_xp { position: absolute; left: 50%; margin-left: -240dp; bottom: 92dp; width: 480dp; height: 8dp; background-color: #ffffff20; border-radius: 4dp; }
+#d_xp_fill { height: 100%; width: 0%; background-color: #e8c06a; border-radius: 4dp; }
+#d_abilities { height: 84dp; }
+.d_ability {
+	position: relative; float: left; width: 106dp; height: 78dp; margin-right: 8dp;
+	background-color: #1e1814e0; border: 2dp #5a4632; border-radius: 8dp; overflow: hidden;
+}
+.d_ability.unpaid { background-color: #0a0808f0; }
+.d_ability.unpaid .d_ab_name { color: #7070a0; }
+.d_cd { position: absolute; left: 0; bottom: 0; width: 100%; height: 0%; background-color: #000000b0; }
+.d_key { position: absolute; left: 6dp; top: 4dp; font-size: 13dp; color: #c8b8a8; }
+.d_ab_name { position: absolute; left: 0; top: 34dp; width: 100%; text-align: center; font-size: 17dp; color: #f2e2c2; text-transform: uppercase; }
+
+/* the inventory */
+#d_inventory {
+	position: absolute; right: 16dp; top: 70dp; width: 330dp; padding: 12dp 14dp;
+	background-color: #1a1410f0; border: 2dp #5a4632; border-radius: 10dp;
+}
+.d_heading { font-size: 22dp; color: #e8c06a; margin: 6dp 0 4dp 0; }
+.d_item { padding: 6dp 8dp; margin-bottom: 6dp; background-color: #2a2018; border-radius: 6dp; cursor: pointer; }
+.d_item:hover { background-color: #3a2c20; }
+.d_item_name { font-size: 17dp; color: #e0e0e0; }
+.d_item.magic .d_item_name { color: #7090ff; }
+.d_item.unique .d_item_name { color: #d8a040; }
+.d_item_slot { font-size: 12dp; color: #a09080; }
+.d_item_bonus { font-size: 13dp; color: #90d090; }
+.d_empty { font-size: 14dp; color: #807060; margin-bottom: 6dp; }
+.d_hint { font-size: 12dp; color: #a09080; margin: 4dp 0 8dp 0; }
+#d_inventory .button { width: 160dp; margin: 0 auto; text-align: center; }
+
+#d_result { position: absolute; left: 0; top: 230dp; width: 100%; text-align: center; }
+#d_result_title { font-size: 90dp; color: #e8c06a; font-effect: shadow(3dp 3dp #000000c0); }
+#d_result .button { width: 280dp; margin: 16dp auto; }
+
+#d_keys { position: absolute; bottom: 8dp; left: 0; width: 100%; text-align: center; font-size: 14dp; color: #ffffffa0; }
+body.touch #d_keys { display: none; }
+
+/* the abilities take a tap (a touch screen has no keys; with a mouse, a click) */
+.d_ability { pointer-events: auto; }
+body.touch .d_key { display: none; }
+/* the bag's button: only on a touch screen (I opens it with keys) */
+#d_bag_button {
+	display: none; position: absolute; right: 80dp; top: 12dp; width: 84dp; height: 44dp; line-height: 44dp;
+	text-align: center; font-size: 24dp; color: #e8c06a;
+	background-color: #1a1410e0; border: 2dp #5a4632; border-radius: 10dp; pointer-events: auto;
+}
+body.touch #d_bag_button { display: block; }
+body.touch #d_bag_button.hidden { display: none; }   /* online: the bag is the server's */
+#d_inventory { pointer-events: auto; }
+
+/* the pause: its button at the top right, its panel in the middle */
+#d_pause_button {
+	position: absolute; right: 16dp; top: 12dp; width: 52dp; height: 44dp; line-height: 44dp;
+	text-align: center; font-size: 26dp; color: #e8c06a;
+	background-color: #1a1410e0; border: 2dp #5a4632; border-radius: 10dp; pointer-events: auto;
+}
+#d_pause {
+	position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding-top: 170dp;
+	text-align: center; background-color: #000000a0; pointer-events: auto;
+}
+#d_pause_title { font-size: 80dp; color: #e8c06a; font-effect: shadow(3dp 3dp #000000c0); }
+#p_note { font-size: 16dp; color: #c8b8a8; margin: 4dp 0 10dp 0; }
+#d_pause .button { width: 300dp; margin: 12dp auto; }
+
+/* A touch screen: no aim stick (abilities aim at the nearest monster); the abilities are buttons in the bottom right
+   corner, the attack the biggest, the others around it within a thumb's reach; the flasks and the experience move to
+   the middle, out of the way of the move stick and of the buttons */
+body.touch #d_belt { left: auto; right: 20dp; margin-left: 0; bottom: 12dp; width: 330dp; height: 290dp; }
+body.touch #d_abilities { height: 290dp; }
+body.touch .d_ability { position: absolute; float: none; margin: 0; width: 100dp; height: 100dp; border-radius: 22dp; }
+body.touch #d_ab0 { right: 0; bottom: 0; width: 140dp; height: 140dp; border-radius: 30dp; background-color: #5a2a18e8; }
+body.touch #d_ab1 { right: 156dp; bottom: 0; }
+body.touch #d_ab2 { right: 138dp; bottom: 120dp; }
+body.touch #d_ab3 { right: 0; bottom: 156dp; }
+body.touch .d_ab_name { top: 38%; font-size: 16dp; }
+body.touch #d_ab0 .d_ab_name { font-size: 22dp; }
+body.touch .d_orb { width: 96dp; height: 108dp; }
+body.touch .d_orb_text { top: 44dp; }
+body.touch #d_health { margin-left: -300dp; }
+body.touch #d_mana { margin-left: -196dp; }
+body.touch #d_xp { margin-left: -90dp; width: 220dp; bottom: 30dp; }

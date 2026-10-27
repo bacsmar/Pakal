@@ -4,6 +4,13 @@
 #include "EventScheduler.h"
 #include "LogMgr.h"
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <timeapi.h>
+#endif
+
 namespace Pakal
 {
 	// for threaded systems... executed in their own thread
@@ -15,6 +22,7 @@ namespace Pakal
 				
 		Clock clock;
 		unsigned dt = 0;
+		long long carry_us = 0;   // what whole milliseconds leave out, so the system's time does not run slow
 
 		while(m_state != SystemState::Terminated)
 		{
@@ -37,7 +45,9 @@ namespace Pakal
 				limit_fps();
 			}
 			
-			dt = clock.restart().asMilliseconds();
+			const long long us = clock.restart().asMicroseconds() + carry_us;
+			dt = static_cast<unsigned>(us / 1000);
+			carry_us = us % 1000;
 		} 
 	}
 
@@ -55,30 +65,31 @@ namespace Pakal
 		}
 	}
 
+	// Keeps the system at its target rate with a deadline per frame (not "sleep what is left of this one", which drifts
+	// and, with whole milliseconds and Windows' 15.6 ms timer, overslept: 60 FPS with vsync landed on ~33). Sleeps until
+	// a millisecond before the deadline and yields the rest; a frame that ran late starts a new cadence instead of
+	// rushing the next ones.
 	void System::limit_fps()
 	{
-		auto frame_time_ms = m_fps_limiter_clock.restart().asMilliseconds();
-		long sleepTime_us = (m_desired_frame_time_ms - frame_time_ms) * 1000;  // Convert to microseconds
-		if( sleepTime_us > 0)
+		using clock = std::chrono::steady_clock;
+		if (m_frame_period.count() == 0)
+			return;
+#ifdef _WIN32
+		static const bool fine_timer = timeBeginPeriod(1) == TIMERR_NOERROR;   // the 1 ms scheduler tick, for the whole process
+		(void)fine_timer;
+#endif
+		const auto now = clock::now();
+		m_next_frame += m_frame_period;
+		if (m_next_frame < now - m_frame_period || m_next_frame > now + 2 * m_frame_period)
 		{
-			// Sleep in tiny chunks to allow quick termination response
-			// Use microseconds for better interrupt responsiveness
-			const long chunk_us = 100;  // 100 microsecond chunks for fast termination response
-			while (sleepTime_us > 0 && m_state == SystemState::Running)
-			{
-				// Process any pending tasks (e.g., terminate) while waiting
-				m_dispatcher.dispatch_all_tasks();
-				if (m_state != SystemState::Running)
-				{
-					break;
-				}
-				long sleep_chunk = sleepTime_us < chunk_us ? sleepTime_us : chunk_us;
-				std::this_thread::sleep_for(std::chrono::microseconds(sleep_chunk));
-				sleepTime_us -= sleep_chunk;
-			}
+			m_next_frame = now;   // late by more than a frame (a hitch, a pause) or a new rate: start over from here
+			return;
 		}
-		m_fps_limiter_clock.restart();
-	}	
+		if (m_next_frame - now > std::chrono::milliseconds(1))
+			std::this_thread::sleep_for(m_next_frame - now - std::chrono::milliseconds(1));
+		while (clock::now() < m_next_frame)
+			std::this_thread::yield();
+	}
 
 	System::~System()
 	{

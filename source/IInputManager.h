@@ -62,5 +62,12 @@ namespace Pakal
 
 
 		virtual tmath::vector2di get_mouse_position() const = 0;
+
+		// The touch controls drawn over the picture (a phone's sticks) are the game's while it is played: on in a level, off in
+		// its menus and viewers (off at the start). A platform without them ignores it.
+		virtual void set_touch_controls(bool shown) { (void)shown; }
+		// Whether the game aims with the right half of a touch screen (on at the start): a game that does not (a brawler,
+		// whose buttons are there) turns it off, and that half is neither drawn as a stick nor read as one
+		virtual void set_touch_aim(bool aims) { (void)aims; }
 	};
 }

@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "components/SpritePhysicsComponent.h"
 #include <unordered_map>
+#include <mutex>
 
 
 class b2Body;
@@ -19,6 +20,16 @@ namespace Pakal
 	class _PAKALExport SpritebodyComponent_Box2D final : public SpritePhysicsComponent
 	{
 		DECLARE_RTTI_WITH_BASE(SpritebodyComponent_Box2D,SpritePhysicsComponent);
+		struct PhysicsSnapshot
+		{
+			tmath::vector3df position = tmath::vector3df(0.0f, 0.0f, 0.0f);
+			tmath::vector3df angle = tmath::vector3df(0.0f, 0.0f, 0.0f);
+			tmath::vector2df lineal_velocity = tmath::vector2df(0.0f, 0.0f);
+			bool initialized = false;
+		};
+
+		void refresh_snapshot_from_body();
+		void reset_snapshot();
 	public:
 
 		explicit SpritebodyComponent_Box2D(Box2DPhysicsSystem* sys): m_system(sys){}
@@ -40,6 +51,7 @@ namespace Pakal
 		virtual void apply_force(const tmath::vector2df& force) override;
 		virtual tmath::vector2df get_lineal_velocity() const override;
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) override;
+		virtual void set_horizontal_velocity(float vx) override;
 
 		bool fixed_rotation() const;
 
@@ -58,5 +70,7 @@ namespace Pakal
 		b2Body*	m_active_body = nullptr;		
 		float m_scale = 1.f;
 		std::vector<b2Fixture*> m_fixtures;
+		mutable std::mutex m_snapshot_mutex;
+		PhysicsSnapshot m_snapshot;
 	};	
 }

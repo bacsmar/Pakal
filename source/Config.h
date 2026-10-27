@@ -32,9 +32,16 @@
 #endif
 
 //! compile with http://www.sfml-dev.org
-#define PAKAL_USE_SFML_AUDIO 1
-#define PAKAL_USE_SFML_INPUT 1
-#define PAKAL_USE_SFML_WINDOW 1
+// (the Android build defines PAKAL_NO_SFML: its window, input and sound come from the platform)
+#ifdef PAKAL_NO_SFML
+	#define PAKAL_USE_SFML_AUDIO 0
+	#define PAKAL_USE_SFML_INPUT 0
+	#define PAKAL_USE_SFML_WINDOW 0
+#else
+	#define PAKAL_USE_SFML_AUDIO 1
+	#define PAKAL_USE_SFML_INPUT 1
+	#define PAKAL_USE_SFML_WINDOW 1
+#endif
 #ifndef PAKAL_USE_SFML
 #define PAKAL_USE_SFML (PAKAL_USE_SFML_AUDIO || PAKAL_USE_SFML_INPUT || PAKAL_USE_SFML_WINDOW)
 #endif

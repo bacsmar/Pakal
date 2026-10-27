@@ -312,7 +312,7 @@ set(Managers
 source_group("Managers" FILES ${Managers})
 
 set(Managers__ComponentManager
-    "../source/Component.h"
+    "../source/AsyncComponent.h"
     "../source/ComponentFactory.h"
     "../source/ComponentManager.cpp"
     "../source/ComponentManager.h"
@@ -321,8 +321,8 @@ set(Managers__ComponentManager
 source_group("Managers\\ComponentManager" FILES ${Managers__ComponentManager})
 
 set(Managers__EntityManager
-    "../source/Entity.cpp"
-    "../source/Entity.h"
+    "../source/AsyncEntity.cpp"
+    "../source/AsyncEntity.h"
     "../source/EntityDescriptor.cpp"
     "../source/EntityDescriptor.h"
     "../source/EntityManager.cpp"
@@ -355,8 +355,6 @@ set(Managers__GameStateManager
     "../source/BaseGameState.h"
     "../source/GameStateManager.cpp"
     "../source/GameStateManager.h"
-    "../source/script/ScriptableGameState.cpp"
-    "../source/script/ScriptableGameState.h"
 )
 source_group("Managers\\GameStateManager" FILES ${Managers__GameStateManager})
 

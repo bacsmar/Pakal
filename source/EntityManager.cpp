@@ -1,6 +1,7 @@
 #include "EntityManager.h"
 #include "Utils.h"
-#include "Entity.h"
+#include "AsyncEntity.h"
+#include "GenericEntity.h"
 #include "EntityDescriptor.h"
 #include "persist/XmlReader.h"
 #include "ResourceManager.h"
@@ -32,6 +33,7 @@ void EntityManager::initialize()
 
 void EntityManager::terminate()
 {
+	dispose_all_entities();
 	clear_descriptors();
 
 	for (auto& pair : m_descriptorFactories)
@@ -77,7 +79,7 @@ void EntityManager::remove_descriptor(const std::string& descriptorName)
 
 void EntityManager::register_provider(IEntityProvider* provider)
 {
-	std::vector<IFactory<Entity>*> entity_factories;
+	std::vector<IFactory<AsyncEntity>*> entity_factories;
 	std::vector<IFactory<EntityDescriptor>*> descriptor_factories;
 
 	provider->register_entities(entity_factories);
@@ -95,7 +97,7 @@ void EntityManager::register_provider(IEntityProvider* provider)
 	
 }
 
-void EntityManager::add_entity_factory(IFactory<Entity>* factory)
+void EntityManager::add_entity_factory(IFactory<AsyncEntity>* factory)
 {
 	m_entityFactories.insert(std::make_pair(factory->get_typename(), factory));
 	LOG_DEBUG("[EntityManager] registered factory for: '%s' entity type.", factory->get_typename().c_str());
@@ -109,18 +111,140 @@ void EntityManager::add_descriptor_factory(IFactory<EntityDescriptor>* factory)
 
 }
 
-Entity* EntityManager::create_entity(const std::string& name, const std::string& descriptor)
+AsyncEntity* EntityManager::create_entity(const std::string& name, const std::string& descriptor)
 {
-	IFactory<Entity>* factory = nullptr;
+	IFactory<AsyncEntity>* factory = nullptr;
 
 	if (map_utils::try_get(m_entityFactories, name, factory))
 	{
-		Entity* entity = factory->create();
+		AsyncEntity* entity = factory->create();
 		entity->set_descriptor(descriptor);
+		register_live_entity(entity);
+		
+		// Set ComponentManager on GenericEntity if applicable
+		GenericEntity* genericEntity = dynamic_cast<GenericEntity*>(entity);
+		if (genericEntity && m_componentManager)
+		{
+			genericEntity->set_component_manager(m_componentManager);
+		}
+		
 		return entity;
 	}
 	
 	return nullptr;
+}
+
+void EntityManager::register_live_entity(AsyncEntity* entity)
+{
+	if (!entity)
+	{
+		return;
+	}
+
+	const uint64_t entityId = m_nextEntityId++;
+	uint32_t generation = 1;
+	auto generationIt = m_generations.find(entityId);
+	if (generationIt != m_generations.end())
+	{
+		generation = generationIt->second;
+	}
+	m_generations[entityId] = generation;
+	entity->m_handle = { entityId, generation };
+	m_entitiesById[entityId] = entity;
+	m_liveEntities.insert(entity);
+}
+
+void EntityManager::request_dispose(AsyncEntity* entity)
+{
+	if (!entity || entity->m_pendingDispose)
+	{
+		return;
+	}
+
+	entity->m_pendingDispose = true;
+	m_pendingDispose.insert(entity);
+}
+
+void EntityManager::request_dispose(EntityHandle handle)
+{
+	request_dispose(resolve(handle));
+}
+
+AsyncEntity* EntityManager::resolve(EntityHandle handle) const
+{
+	if (!handle.is_valid())
+	{
+		return nullptr;
+	}
+
+	auto generationIt = m_generations.find(handle.id);
+	if (generationIt == m_generations.end() || generationIt->second != handle.generation)
+	{
+		return nullptr;
+	}
+
+	auto entityIt = m_entitiesById.find(handle.id);
+	if (entityIt == m_entitiesById.end())
+	{
+		return nullptr;
+	}
+
+	return entityIt->second;
+}
+
+size_t EntityManager::process_pending_disposals()
+{
+	m_componentManager->process_pending_disposals();
+
+	if (m_pendingDispose.empty())
+	{
+		return 0;
+	}
+
+	std::vector<AsyncEntity*> pending(m_pendingDispose.begin(), m_pendingDispose.end());
+	m_pendingDispose.clear();
+
+	size_t disposedCount = 0;
+	for (auto* entity : pending)
+	{
+		if (!entity)
+		{
+			continue;
+		}
+
+		auto* genericEntity = dynamic_cast<GenericEntity*>(entity);
+		if (genericEntity)
+		{
+			const auto components = genericEntity->get_components();
+			for (auto* component : components)
+			{
+				component->prepare_dispose();
+			}
+		}
+
+		m_liveEntities.erase(entity);
+		m_entitiesById.erase(entity->m_handle.id);
+		auto generationIt = m_generations.find(entity->m_handle.id);
+		if (generationIt != m_generations.end())
+		{
+			generationIt->second++;
+		}
+		delete entity;
+		disposedCount++;
+	}
+
+	return disposedCount;
+}
+
+size_t EntityManager::dispose_all_entities()
+{
+	std::vector<AsyncEntity*> liveEntities(m_liveEntities.begin(), m_liveEntities.end());
+	for (auto* entity : liveEntities)
+	{
+		request_dispose(entity);
+	}
+
+	return process_pending_disposals();
 }
 
 void* EntityManager::create_object(const std::string& className)

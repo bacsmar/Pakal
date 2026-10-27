@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "win64",
+      "displayName": "Windows x64 (MSVC, vcpkg static)",
+      "description": "Run from a Developer shell (vcvars64). Requires vcpkg at VCPKG_ROOT and bgfx built in external/bgfx/.build/win64_vs2022 (see docs/BUILDING.md).",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-win64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "win64-release",
+      "configurePreset": "win64",
+      "configuration": "Release"
+    }
+  ]
+}

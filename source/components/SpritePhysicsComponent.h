@@ -1,9 +1,10 @@
 #pragma once
 #include "Config.h"
 #include "PakalMath.h"
-#include "TaskFwd.h"
+#include "BasicTask.h"
 #include "PhysicComponent.h"
 #include "SpritePhysics.h"
+#include <optional>
 
 namespace Pakal
 {
@@ -21,13 +22,30 @@ namespace Pakal
 
 		struct Settings
 		{
-			SpriteSheetPhysicsPtr sprite_physics = std::make_shared<SpriteSheetPhysics>();
+			SpriteSheetPhysicsPtr sprite_physics;
 			tmath::vector3df position;
 			float scale = 1.f;
+			std::optional<BodyType> body_type;
+			std::optional<bool> fixed_rotation;
+			std::optional<float> gravity_scale;
+			std::optional<tmath::vector2df> lineal_velocity;
+			std::optional<tmath::vector2df> initial_impulse;
+			std::optional<tmath::vector2df> initial_force;
+
+			Settings() = default;
+			explicit Settings(const SpriteSheetPhysicsPtr& physics) : sprite_physics(physics) {}
 		};
 
 		virtual BasicTaskPtr initialize(const Settings& loader) = 0;
 		virtual BasicTaskPtr terminate() = 0;
+		void prepare_dispose() override
+		{
+			auto terminateTask = terminate();
+			if (terminateTask)
+			{
+				terminateTask->wait();
+			}
+		}
 
 		virtual BasicTaskPtr set_position(const tmath::vector3df& newPosition) = 0;
 		virtual tmath::vector3df get_position() = 0;
@@ -50,6 +68,9 @@ namespace Pakal
 
 		inline void set_lineal_velocity(float x, float y) { set_lineal_velocity({x,y}); }
 		virtual void set_lineal_velocity(const tmath::vector2df& velocity) = 0;
+
+		// Sets only the horizontal (X) velocity without touching the physics-driven vertical (Y) velocity.
+		virtual void set_horizontal_velocity(float vx) = 0;
 
 		virtual void set_fixed_rotation(bool val) = 0;
 

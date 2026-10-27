@@ -4,7 +4,8 @@
 
 using namespace Pakal;
 
-#ifdef PAKAL_ANDROID_PLATFORM
+// (the PAKAL_NO_SFML Android build has its own window and input in android/main_android.cpp)
+#if defined(PAKAL_ANDROID_PLATFORM) && !defined(PAKAL_NO_SFML)
 	#include "android/OsWrapperAndroid.h"
 	using OSManagerImpl = OsWrapperAndroid;
 #else

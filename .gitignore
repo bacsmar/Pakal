@@ -11,6 +11,8 @@
 
 # Build directories
 build/
+build-*/
+build-module-mvp/
 Build/
 bin/
 Bin/
@@ -52,7 +54,29 @@ Thumbs.db
 
 # Logs
 *.log
+__pycache__/
 
 # Package manager
 node_modules/
 packages/
+
+examples/ContraGame/Assets/free_assets/
+examples/ContraGame/Assets/
+examples/zombies_module/ZombieApocalypseKit-March-2024/
+examples/zombies_module/assets/source/
+
+# Level builder: generated files (the scenes keep scene.json and history.json)
+tools/levelbuilder/catalog.json
+tools/levelbuilder/scenes/*/versions/
+tools/levelbuilder/scenes/*/renders/
+tools/levelbuilder/scenes/*/*.glb
+tools/levelbuilder/scenes/*/blender_plan.json
+tools/levelbuilder/scenes/*/batch_plan.json
+tools/levelbuilder/scenes/*/lightmap_plan.json
+tools/levelbuilder/scenes/*/lightmap.log
+tools/levelbuilder/assets_index.json
+examples/zombies_module/assets/generated/
+
+# This machine's own settings
+android/local_paths.json
+tools/bench_budgets.local.json

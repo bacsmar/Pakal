@@ -1,0 +1,2468 @@
+[
+ {
+  "version": 1,
+  "note": "escena nueva",
+  "at": "2026-10-25T00:02:11",
+  "entities": 0
+ },
+ {
+  "version": 2,
+  "note": "streets pueblito --grid 3 2 --arm 5",
+  "at": "2026-10-25T00:02:11",
+  "entities": 204
+ },
+ {
+  "version": 3,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles shop,library,diner",
+  "at": "2026-10-25T00:02:24",
+  "entities": 206
+ },
+ {
+  "version": 4,
+  "note": "fill pueblito --zone block_0_0 --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,school --seed 2",
+  "at": "2026-10-25T00:02:24",
+  "entities": 208
+ },
+ {
+  "version": 5,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles police_station,shop --seed 3",
+  "at": "2026-10-25T00:02:24",
+  "entities": 210
+ },
+ {
+  "version": 6,
+  "note": "fill pueblito --zone block_1_0 --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles church,house --seed 4",
+  "at": "2026-10-25T00:02:24",
+  "entities": 212
+ },
+ {
+  "version": 7,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --seed 5",
+  "at": "2026-10-25T00:02:24",
+  "entities": 212
+ },
+ {
+  "version": 8,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --seed 6",
+  "at": "2026-10-25T00:02:25",
+  "entities": 212
+ },
+ {
+  "version": 9,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --seed 7",
+  "at": "2026-10-25T00:02:25",
+  "entities": 214
+ },
+ {
+  "version": 10,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --seed 8",
+  "at": "2026-10-25T00:02:25",
+  "entities": 216
+ },
+ {
+  "version": 11,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T00:08:18",
+  "entities": 0
+ },
+ {
+  "version": 12,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T00:08:18",
+  "entities": 337
+ },
+ {
+  "version": 13,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T00:08:18",
+  "entities": 460
+ },
+ {
+  "version": 14,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T00:08:18",
+  "entities": 461
+ },
+ {
+  "version": 15,
+  "note": "place pueblito TownSign --at -16 13 --yaw 315 --zone block_0_1 --role sign --id town_sign",
+  "at": "2026-10-25T00:08:18",
+  "entities": 462
+ },
+ {
+  "version": 16,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T00:08:18",
+  "entities": 463
+ },
+ {
+  "version": 17,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T00:08:18",
+  "entities": 464
+ },
+ {
+  "version": 18,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T00:08:18",
+  "entities": 465
+ },
+ {
+  "version": 19,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T00:08:18",
+  "entities": 467
+ },
+ {
+  "version": 20,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T00:08:18",
+  "entities": 468
+ },
+ {
+  "version": 21,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T00:08:18",
+  "entities": 470
+ },
+ {
+  "version": 22,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T00:08:18",
+  "entities": 471
+ },
+ {
+  "version": 23,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T00:08:18",
+  "entities": 472
+ },
+ {
+  "version": 24,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T00:08:18",
+  "entities": 474
+ },
+ {
+  "version": 25,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T00:08:18",
+  "entities": 479
+ },
+ {
+  "version": 26,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T00:08:18",
+  "entities": 485
+ },
+ {
+  "version": 27,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T00:08:18",
+  "entities": 489
+ },
+ {
+  "version": 28,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T00:08:18",
+  "entities": 493
+ },
+ {
+  "version": 29,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T00:08:18",
+  "entities": 591
+ },
+ {
+  "version": 30,
+  "note": "wreck pueblito --at -28 -24 --count 3 --seed 1 --zone street_h0",
+  "at": "2026-10-25T00:08:18",
+  "entities": 596
+ },
+ {
+  "version": 31,
+  "note": "wreck pueblito --at 29 24 --count 3 --seed 2 --zone street_h2",
+  "at": "2026-10-25T00:08:18",
+  "entities": 602
+ },
+ {
+  "version": 32,
+  "note": "wreck pueblito --at 3 -6 --count 2 --seed 3 --zone street_v1",
+  "at": "2026-10-25T00:08:18",
+  "entities": 610
+ },
+ {
+  "version": 33,
+  "note": "wreck pueblito --at 47 -30 --count 2 --seed 4 --zone street_v2",
+  "at": "2026-10-25T00:08:18",
+  "entities": 615
+ },
+ {
+  "version": 34,
+  "note": "mission pueblito survival --mode survival --kills 60 --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T00:08:18",
+  "entities": 615
+ },
+ {
+  "version": 35,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_04,crashed_car_07,crashed_car_09 --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T00:08:18",
+  "entities": 615
+ },
+ {
+  "version": 36,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T00:08:18",
+  "entities": 615
+ },
+ {
+  "version": 37,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T00:13:04",
+  "entities": 0
+ },
+ {
+  "version": 38,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T00:13:04",
+  "entities": 337
+ },
+ {
+  "version": 39,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T00:13:04",
+  "entities": 460
+ },
+ {
+  "version": 40,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T00:13:04",
+  "entities": 461
+ },
+ {
+  "version": 41,
+  "note": "place pueblito TownSign --at -16 13 --yaw 315 --zone block_0_1 --role sign --id town_sign",
+  "at": "2026-10-25T00:13:04",
+  "entities": 462
+ },
+ {
+  "version": 42,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T00:13:04",
+  "entities": 463
+ },
+ {
+  "version": 43,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T00:13:04",
+  "entities": 464
+ },
+ {
+  "version": 44,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T00:13:04",
+  "entities": 465
+ },
+ {
+  "version": 45,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T00:13:04",
+  "entities": 467
+ },
+ {
+  "version": 46,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T00:13:04",
+  "entities": 468
+ },
+ {
+  "version": 47,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T00:13:04",
+  "entities": 470
+ },
+ {
+  "version": 48,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T00:13:04",
+  "entities": 471
+ },
+ {
+  "version": 49,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T00:13:04",
+  "entities": 472
+ },
+ {
+  "version": 50,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T00:13:04",
+  "entities": 474
+ },
+ {
+  "version": 51,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T00:13:04",
+  "entities": 479
+ },
+ {
+  "version": 52,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T00:13:04",
+  "entities": 485
+ },
+ {
+  "version": 53,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T00:13:04",
+  "entities": 489
+ },
+ {
+  "version": 54,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T00:13:04",
+  "entities": 493
+ },
+ {
+  "version": 55,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T00:13:04",
+  "entities": 591
+ },
+ {
+  "version": 56,
+  "note": "wreck pueblito --at -28 -24 --count 3 --seed 1 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T00:13:04",
+  "entities": 596
+ },
+ {
+  "version": 57,
+  "note": "wreck pueblito --at 29 24 --count 3 --seed 2 --zone street_h2 --layer wrecks",
+  "at": "2026-10-25T00:13:04",
+  "entities": 602
+ },
+ {
+  "version": 58,
+  "note": "wreck pueblito --at 3 -6 --count 2 --seed 3 --zone street_v1 --layer wrecks",
+  "at": "2026-10-25T00:13:04",
+  "entities": 610
+ },
+ {
+  "version": 59,
+  "note": "wreck pueblito --at 47 -30 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T00:13:04",
+  "entities": 615
+ },
+ {
+  "version": 60,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 619
+ },
+ {
+  "version": 61,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 619
+ },
+ {
+  "version": 62,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 623
+ },
+ {
+  "version": 63,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 627
+ },
+ {
+  "version": 64,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 628
+ },
+ {
+  "version": 65,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 628
+ },
+ {
+  "version": 66,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 630
+ },
+ {
+  "version": 67,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 632
+ },
+ {
+  "version": 68,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 633
+ },
+ {
+  "version": 69,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T00:13:04",
+  "entities": 634
+ },
+ {
+  "version": 70,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T00:13:04",
+  "entities": 634
+ },
+ {
+  "version": 71,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_04,crashed_car_07,crashed_car_09 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T00:13:04",
+  "entities": 634
+ },
+ {
+  "version": 72,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T00:13:04",
+  "entities": 634
+ },
+ {
+  "version": 73,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T00:13:19",
+  "entities": 0
+ },
+ {
+  "version": 74,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T00:13:19",
+  "entities": 337
+ },
+ {
+  "version": 75,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T00:13:19",
+  "entities": 460
+ },
+ {
+  "version": 76,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T00:13:19",
+  "entities": 461
+ },
+ {
+  "version": 77,
+  "note": "place pueblito TownSign --at -16 13 --yaw 315 --zone block_0_1 --role sign --id town_sign",
+  "at": "2026-10-25T00:13:19",
+  "entities": 462
+ },
+ {
+  "version": 78,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T00:13:19",
+  "entities": 463
+ },
+ {
+  "version": 79,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T00:13:19",
+  "entities": 464
+ },
+ {
+  "version": 80,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T00:13:19",
+  "entities": 465
+ },
+ {
+  "version": 81,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T00:13:19",
+  "entities": 467
+ },
+ {
+  "version": 82,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T00:13:19",
+  "entities": 468
+ },
+ {
+  "version": 83,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T00:13:19",
+  "entities": 470
+ },
+ {
+  "version": 84,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T00:13:19",
+  "entities": 471
+ },
+ {
+  "version": 85,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T00:13:19",
+  "entities": 472
+ },
+ {
+  "version": 86,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T00:13:19",
+  "entities": 474
+ },
+ {
+  "version": 87,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T00:13:19",
+  "entities": 479
+ },
+ {
+  "version": 88,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T00:13:19",
+  "entities": 485
+ },
+ {
+  "version": 89,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T00:13:19",
+  "entities": 489
+ },
+ {
+  "version": 90,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T00:13:19",
+  "entities": 493
+ },
+ {
+  "version": 91,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T00:13:19",
+  "entities": 591
+ },
+ {
+  "version": 92,
+  "note": "wreck pueblito --at -28 -24 --count 3 --seed 1 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T00:13:19",
+  "entities": 596
+ },
+ {
+  "version": 93,
+  "note": "wreck pueblito --at 29 24 --count 3 --seed 2 --zone street_h2 --layer wrecks",
+  "at": "2026-10-25T00:13:19",
+  "entities": 602
+ },
+ {
+  "version": 94,
+  "note": "wreck pueblito --at 3 -6 --count 2 --seed 3 --zone street_v1 --layer wrecks",
+  "at": "2026-10-25T00:13:19",
+  "entities": 610
+ },
+ {
+  "version": 95,
+  "note": "wreck pueblito --at 47 -30 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T00:13:19",
+  "entities": 615
+ },
+ {
+  "version": 96,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 619
+ },
+ {
+  "version": 97,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 619
+ },
+ {
+  "version": 98,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 623
+ },
+ {
+  "version": 99,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 627
+ },
+ {
+  "version": 100,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 628
+ },
+ {
+  "version": 101,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 628
+ },
+ {
+  "version": 102,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 630
+ },
+ {
+  "version": 103,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 632
+ },
+ {
+  "version": 104,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 633
+ },
+ {
+  "version": 105,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T00:13:19",
+  "entities": 634
+ },
+ {
+  "version": 106,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T00:13:19",
+  "entities": 634
+ },
+ {
+  "version": 107,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_04,crashed_car_07,crashed_car_09 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T00:13:19",
+  "entities": 634
+ },
+ {
+  "version": 108,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T00:13:20",
+  "entities": 634
+ },
+ {
+  "version": 109,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T00:17:10",
+  "entities": 0
+ },
+ {
+  "version": 110,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T00:17:10",
+  "entities": 337
+ },
+ {
+  "version": 111,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T00:17:10",
+  "entities": 460
+ },
+ {
+  "version": 112,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T00:17:10",
+  "entities": 461
+ },
+ {
+  "version": 113,
+  "note": "place pueblito TownSign --at -16 13 --yaw 315 --zone block_0_1 --role sign --id town_sign",
+  "at": "2026-10-25T00:17:10",
+  "entities": 462
+ },
+ {
+  "version": 114,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T00:17:10",
+  "entities": 463
+ },
+ {
+  "version": 115,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T00:17:10",
+  "entities": 464
+ },
+ {
+  "version": 116,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T00:17:10",
+  "entities": 465
+ },
+ {
+  "version": 117,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T00:17:10",
+  "entities": 467
+ },
+ {
+  "version": 118,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T00:17:10",
+  "entities": 468
+ },
+ {
+  "version": 119,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T00:17:10",
+  "entities": 470
+ },
+ {
+  "version": 120,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T00:17:10",
+  "entities": 471
+ },
+ {
+  "version": 121,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T00:17:10",
+  "entities": 472
+ },
+ {
+  "version": 122,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T00:17:10",
+  "entities": 474
+ },
+ {
+  "version": 123,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T00:17:10",
+  "entities": 479
+ },
+ {
+  "version": 124,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T00:17:10",
+  "entities": 485
+ },
+ {
+  "version": 125,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T00:17:10",
+  "entities": 489
+ },
+ {
+  "version": 126,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T00:17:10",
+  "entities": 493
+ },
+ {
+  "version": 127,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T00:17:10",
+  "entities": 591
+ },
+ {
+  "version": 128,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T00:17:10",
+  "entities": 600
+ },
+ {
+  "version": 129,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T00:17:10",
+  "entities": 607
+ },
+ {
+  "version": 130,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T00:17:10",
+  "entities": 615
+ },
+ {
+  "version": 131,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T00:17:10",
+  "entities": 622
+ },
+ {
+  "version": 132,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 626
+ },
+ {
+  "version": 133,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 630
+ },
+ {
+  "version": 134,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 634
+ },
+ {
+  "version": 135,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 638
+ },
+ {
+  "version": 136,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 641
+ },
+ {
+  "version": 137,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 644
+ },
+ {
+  "version": 138,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 647
+ },
+ {
+  "version": 139,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 650
+ },
+ {
+  "version": 140,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 651
+ },
+ {
+  "version": 141,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T00:17:10",
+  "entities": 652
+ },
+ {
+  "version": 142,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T00:17:10",
+  "entities": 652
+ },
+ {
+  "version": 143,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_04,crashed_car_07,crashed_car_09 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T00:17:10",
+  "entities": 652
+ },
+ {
+  "version": 144,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T00:17:10",
+  "entities": 652
+ },
+ {
+  "version": 145,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T00:17:29",
+  "entities": 0
+ },
+ {
+  "version": 146,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T00:17:29",
+  "entities": 337
+ },
+ {
+  "version": 147,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T00:17:29",
+  "entities": 460
+ },
+ {
+  "version": 148,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T00:17:29",
+  "entities": 461
+ },
+ {
+  "version": 149,
+  "note": "place pueblito TownSign --at -16 13 --yaw 315 --zone block_0_1 --role sign --id town_sign",
+  "at": "2026-10-25T00:17:29",
+  "entities": 462
+ },
+ {
+  "version": 150,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T00:17:29",
+  "entities": 463
+ },
+ {
+  "version": 151,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T00:17:29",
+  "entities": 464
+ },
+ {
+  "version": 152,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T00:17:29",
+  "entities": 465
+ },
+ {
+  "version": 153,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T00:17:29",
+  "entities": 467
+ },
+ {
+  "version": 154,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T00:17:29",
+  "entities": 468
+ },
+ {
+  "version": 155,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T00:17:29",
+  "entities": 470
+ },
+ {
+  "version": 156,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T00:17:29",
+  "entities": 471
+ },
+ {
+  "version": 157,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T00:17:29",
+  "entities": 472
+ },
+ {
+  "version": 158,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T00:17:29",
+  "entities": 474
+ },
+ {
+  "version": 159,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T00:17:29",
+  "entities": 479
+ },
+ {
+  "version": 160,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T00:17:29",
+  "entities": 485
+ },
+ {
+  "version": 161,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T00:17:29",
+  "entities": 489
+ },
+ {
+  "version": 162,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T00:17:29",
+  "entities": 493
+ },
+ {
+  "version": 163,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T00:17:29",
+  "entities": 591
+ },
+ {
+  "version": 164,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T00:17:29",
+  "entities": 598
+ },
+ {
+  "version": 165,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T00:17:29",
+  "entities": 605
+ },
+ {
+  "version": 166,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T00:17:29",
+  "entities": 613
+ },
+ {
+  "version": 167,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T00:17:29",
+  "entities": 620
+ },
+ {
+  "version": 168,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 624
+ },
+ {
+  "version": 169,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 628
+ },
+ {
+  "version": 170,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 632
+ },
+ {
+  "version": 171,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 636
+ },
+ {
+  "version": 172,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 639
+ },
+ {
+  "version": 173,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 642
+ },
+ {
+  "version": 174,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 645
+ },
+ {
+  "version": 175,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 648
+ },
+ {
+  "version": 176,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 649
+ },
+ {
+  "version": 177,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T00:17:29",
+  "entities": 650
+ },
+ {
+  "version": 178,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T00:17:29",
+  "entities": 650
+ },
+ {
+  "version": 179,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T00:17:29",
+  "entities": 650
+ },
+ {
+  "version": 180,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T00:17:29",
+  "entities": 650
+ },
+ {
+  "version": 181,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T02:26:36",
+  "entities": 0
+ },
+ {
+  "version": 182,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T02:26:36",
+  "entities": 301
+ },
+ {
+  "version": 183,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T02:26:36",
+  "entities": 424
+ },
+ {
+  "version": 184,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T02:26:36",
+  "entities": 425
+ },
+ {
+  "version": 185,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T02:26:36",
+  "entities": 426
+ },
+ {
+  "version": 186,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T02:26:36",
+  "entities": 427
+ },
+ {
+  "version": 187,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T02:26:36",
+  "entities": 428
+ },
+ {
+  "version": 188,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T02:26:36",
+  "entities": 429
+ },
+ {
+  "version": 189,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T02:26:36",
+  "entities": 431
+ },
+ {
+  "version": 190,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T02:26:36",
+  "entities": 432
+ },
+ {
+  "version": 191,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T02:26:36",
+  "entities": 434
+ },
+ {
+  "version": 192,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T02:26:36",
+  "entities": 435
+ },
+ {
+  "version": 193,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T02:26:36",
+  "entities": 436
+ },
+ {
+  "version": 194,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T02:26:36",
+  "entities": 438
+ },
+ {
+  "version": 195,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T02:26:36",
+  "entities": 443
+ },
+ {
+  "version": 196,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T02:26:36",
+  "entities": 449
+ },
+ {
+  "version": 197,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T02:26:36",
+  "entities": 453
+ },
+ {
+  "version": 198,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T02:26:36",
+  "entities": 457
+ },
+ {
+  "version": 199,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T02:26:36",
+  "entities": 551
+ },
+ {
+  "version": 200,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T02:26:36",
+  "entities": 558
+ },
+ {
+  "version": 201,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T02:26:36",
+  "entities": 565
+ },
+ {
+  "version": 202,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T02:26:36",
+  "entities": 573
+ },
+ {
+  "version": 203,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T02:26:36",
+  "entities": 580
+ },
+ {
+  "version": 204,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 584
+ },
+ {
+  "version": 205,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 588
+ },
+ {
+  "version": 206,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 592
+ },
+ {
+  "version": 207,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 596
+ },
+ {
+  "version": 208,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 599
+ },
+ {
+  "version": 209,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 602
+ },
+ {
+  "version": 210,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 605
+ },
+ {
+  "version": 211,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 608
+ },
+ {
+  "version": 212,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 609
+ },
+ {
+  "version": 213,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T02:26:36",
+  "entities": 610
+ },
+ {
+  "version": 214,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T02:26:36",
+  "entities": 610
+ },
+ {
+  "version": 215,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T02:26:36",
+  "entities": 610
+ },
+ {
+  "version": 216,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T02:26:36",
+  "entities": 610
+ },
+ {
+  "version": 217,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T09:49:52",
+  "entities": 0
+ },
+ {
+  "version": 218,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T09:49:52",
+  "entities": 301
+ },
+ {
+  "version": 219,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T09:49:52",
+  "entities": 415
+ },
+ {
+  "version": 220,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T09:49:52",
+  "entities": 416
+ },
+ {
+  "version": 221,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T09:49:52",
+  "entities": 417
+ },
+ {
+  "version": 222,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T09:49:52",
+  "entities": 418
+ },
+ {
+  "version": 223,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T09:49:52",
+  "entities": 419
+ },
+ {
+  "version": 224,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T09:49:52",
+  "entities": 420
+ },
+ {
+  "version": 225,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T09:49:52",
+  "entities": 422
+ },
+ {
+  "version": 226,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T09:49:52",
+  "entities": 423
+ },
+ {
+  "version": 227,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T09:49:52",
+  "entities": 425
+ },
+ {
+  "version": 228,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T09:49:52",
+  "entities": 426
+ },
+ {
+  "version": 229,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T09:49:52",
+  "entities": 427
+ },
+ {
+  "version": 230,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T09:49:52",
+  "entities": 429
+ },
+ {
+  "version": 231,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T09:49:52",
+  "entities": 434
+ },
+ {
+  "version": 232,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T09:49:52",
+  "entities": 440
+ },
+ {
+  "version": 233,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T09:49:52",
+  "entities": 444
+ },
+ {
+  "version": 234,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T09:49:52",
+  "entities": 448
+ },
+ {
+  "version": 235,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T09:49:52",
+  "entities": 542
+ },
+ {
+  "version": 236,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T09:49:52",
+  "entities": 549
+ },
+ {
+  "version": 237,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T09:49:52",
+  "entities": 556
+ },
+ {
+  "version": 238,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T09:49:52",
+  "entities": 564
+ },
+ {
+  "version": 239,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T09:49:52",
+  "entities": 571
+ },
+ {
+  "version": 240,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:52",
+  "entities": 575
+ },
+ {
+  "version": 241,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:52",
+  "entities": 579
+ },
+ {
+  "version": 242,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:52",
+  "entities": 583
+ },
+ {
+  "version": 243,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 587
+ },
+ {
+  "version": 244,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 590
+ },
+ {
+  "version": 245,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 593
+ },
+ {
+  "version": 246,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 596
+ },
+ {
+  "version": 247,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 599
+ },
+ {
+  "version": 248,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 600
+ },
+ {
+  "version": 249,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T09:49:53",
+  "entities": 601
+ },
+ {
+  "version": 250,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T09:49:53",
+  "entities": 601
+ },
+ {
+  "version": 251,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T09:49:53",
+  "entities": 601
+ },
+ {
+  "version": 252,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T09:49:53",
+  "entities": 601
+ },
+ {
+  "version": 253,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T12:19:30",
+  "entities": 0
+ },
+ {
+  "version": 254,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T12:19:30",
+  "entities": 337
+ },
+ {
+  "version": 255,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T12:19:30",
+  "entities": 451
+ },
+ {
+  "version": 256,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T12:19:30",
+  "entities": 452
+ },
+ {
+  "version": 257,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T12:19:30",
+  "entities": 453
+ },
+ {
+  "version": 258,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T12:19:30",
+  "entities": 454
+ },
+ {
+  "version": 259,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T12:19:30",
+  "entities": 455
+ },
+ {
+  "version": 260,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T12:19:30",
+  "entities": 456
+ },
+ {
+  "version": 261,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T12:19:30",
+  "entities": 458
+ },
+ {
+  "version": 262,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T12:19:30",
+  "entities": 459
+ },
+ {
+  "version": 263,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T12:19:30",
+  "entities": 461
+ },
+ {
+  "version": 264,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T12:19:30",
+  "entities": 462
+ },
+ {
+  "version": 265,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T12:19:30",
+  "entities": 463
+ },
+ {
+  "version": 266,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T12:19:30",
+  "entities": 465
+ },
+ {
+  "version": 267,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T12:19:30",
+  "entities": 470
+ },
+ {
+  "version": 268,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T12:19:30",
+  "entities": 476
+ },
+ {
+  "version": 269,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T12:19:30",
+  "entities": 480
+ },
+ {
+  "version": 270,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T12:19:30",
+  "entities": 484
+ },
+ {
+  "version": 271,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T12:19:30",
+  "entities": 578
+ },
+ {
+  "version": 272,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T12:19:30",
+  "entities": 585
+ },
+ {
+  "version": 273,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T12:19:30",
+  "entities": 592
+ },
+ {
+  "version": 274,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T12:19:30",
+  "entities": 600
+ },
+ {
+  "version": 275,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T12:19:30",
+  "entities": 607
+ },
+ {
+  "version": 276,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 611
+ },
+ {
+  "version": 277,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 615
+ },
+ {
+  "version": 278,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 619
+ },
+ {
+  "version": 279,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 623
+ },
+ {
+  "version": 280,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 626
+ },
+ {
+  "version": 281,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 629
+ },
+ {
+  "version": 282,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 632
+ },
+ {
+  "version": 283,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 635
+ },
+ {
+  "version": 284,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 636
+ },
+ {
+  "version": 285,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T12:19:30",
+  "entities": 637
+ },
+ {
+  "version": 286,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T12:19:30",
+  "entities": 637
+ },
+ {
+  "version": 287,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T12:19:30",
+  "entities": 637
+ },
+ {
+  "version": 288,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T12:19:30",
+  "entities": 637
+ },
+ {
+  "version": 289,
+  "note": "clutter pueblito --layer survival_props --groups 12 --seed 26",
+  "at": "2026-10-25T18:08:00",
+  "entities": 674
+ },
+ {
+  "version": 290,
+  "note": "clutter pueblito --layer destroy_props --groups 12 --seed 23",
+  "at": "2026-10-25T18:08:00",
+  "entities": 715
+ },
+ {
+  "version": 291,
+  "note": "clutter pueblito --layer holdout_props --groups 12 --seed 23",
+  "at": "2026-10-25T18:08:00",
+  "entities": 757
+ },
+ {
+  "version": 292,
+  "note": "mission pueblito survival --layers props,survival_props",
+  "at": "2026-10-25T18:08:00",
+  "entities": 757
+ },
+ {
+  "version": 293,
+  "note": "mission pueblito destroy --layers props,wrecks,destroy_props",
+  "at": "2026-10-25T18:08:00",
+  "entities": 757
+ },
+ {
+  "version": 294,
+  "note": "mission pueblito holdout --layers props,fort,holdout_props",
+  "at": "2026-10-25T18:08:00",
+  "entities": 757
+ },
+ {
+  "version": 295,
+  "note": "delete pueblito --layer survival_props",
+  "at": "2026-10-25T18:10:30",
+  "entities": 720
+ },
+ {
+  "version": 296,
+  "note": "clutter pueblito --layer survival_props --groups 12 --seed 26",
+  "at": "2026-10-25T18:10:30",
+  "entities": 775
+ },
+ {
+  "version": 297,
+  "note": "delete pueblito --layer destroy_props",
+  "at": "2026-10-25T18:10:31",
+  "entities": 734
+ },
+ {
+  "version": 298,
+  "note": "clutter pueblito --layer destroy_props --groups 12 --seed 23",
+  "at": "2026-10-25T18:10:31",
+  "entities": 793
+ },
+ {
+  "version": 299,
+  "note": "delete pueblito --layer holdout_props",
+  "at": "2026-10-25T18:10:31",
+  "entities": 751
+ },
+ {
+  "version": 300,
+  "note": "clutter pueblito --layer holdout_props --groups 12 --seed 23",
+  "at": "2026-10-25T18:10:31",
+  "entities": 805
+ },
+ {
+  "version": 301,
+  "note": "delete pueblito --id barrier_83",
+  "at": "2026-10-25T18:10:39",
+  "entities": 804
+ },
+ {
+  "version": 302,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T18:19:11",
+  "entities": 0
+ },
+ {
+  "version": 303,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T18:19:11",
+  "entities": 337
+ },
+ {
+  "version": 304,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T18:19:11",
+  "entities": 451
+ },
+ {
+  "version": 305,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T18:19:11",
+  "entities": 452
+ },
+ {
+  "version": 306,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T18:19:11",
+  "entities": 453
+ },
+ {
+  "version": 307,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T18:19:11",
+  "entities": 454
+ },
+ {
+  "version": 308,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T18:19:11",
+  "entities": 455
+ },
+ {
+  "version": 309,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T18:19:11",
+  "entities": 456
+ },
+ {
+  "version": 310,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T18:19:11",
+  "entities": 458
+ },
+ {
+  "version": 311,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T18:19:11",
+  "entities": 459
+ },
+ {
+  "version": 312,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T18:19:11",
+  "entities": 461
+ },
+ {
+  "version": 313,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T18:19:11",
+  "entities": 462
+ },
+ {
+  "version": 314,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T18:19:11",
+  "entities": 463
+ },
+ {
+  "version": 315,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T18:19:11",
+  "entities": 465
+ },
+ {
+  "version": 316,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T18:19:11",
+  "entities": 470
+ },
+ {
+  "version": 317,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T18:19:11",
+  "entities": 476
+ },
+ {
+  "version": 318,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T18:19:11",
+  "entities": 480
+ },
+ {
+  "version": 319,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T18:19:11",
+  "entities": 484
+ },
+ {
+  "version": 320,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T18:19:11",
+  "entities": 586
+ },
+ {
+  "version": 321,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T18:19:11",
+  "entities": 593
+ },
+ {
+  "version": 322,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T18:19:11",
+  "entities": 600
+ },
+ {
+  "version": 323,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T18:19:11",
+  "entities": 608
+ },
+ {
+  "version": 324,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T18:19:11",
+  "entities": 615
+ },
+ {
+  "version": 325,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 619
+ },
+ {
+  "version": 326,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 623
+ },
+ {
+  "version": 327,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 627
+ },
+ {
+  "version": 328,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 631
+ },
+ {
+  "version": 329,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 634
+ },
+ {
+  "version": 330,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 637
+ },
+ {
+  "version": 331,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 640
+ },
+ {
+  "version": 332,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 643
+ },
+ {
+  "version": 333,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 644
+ },
+ {
+  "version": 334,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T18:19:11",
+  "entities": 645
+ },
+ {
+  "version": 335,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T18:19:11",
+  "entities": 645
+ },
+ {
+  "version": 336,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T18:19:11",
+  "entities": 717
+ },
+ {
+  "version": 337,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T18:19:11",
+  "entities": 788
+ },
+ {
+  "version": 338,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T18:19:35",
+  "entities": 0
+ },
+ {
+  "version": 339,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T18:19:35",
+  "entities": 337
+ },
+ {
+  "version": 340,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T18:19:35",
+  "entities": 451
+ },
+ {
+  "version": 341,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T18:19:35",
+  "entities": 452
+ },
+ {
+  "version": 342,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T18:19:35",
+  "entities": 453
+ },
+ {
+  "version": 343,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T18:19:35",
+  "entities": 454
+ },
+ {
+  "version": 344,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T18:19:35",
+  "entities": 455
+ },
+ {
+  "version": 345,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T18:19:35",
+  "entities": 456
+ },
+ {
+  "version": 346,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T18:19:35",
+  "entities": 458
+ },
+ {
+  "version": 347,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T18:19:35",
+  "entities": 459
+ },
+ {
+  "version": 348,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T18:19:35",
+  "entities": 461
+ },
+ {
+  "version": 349,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T18:19:35",
+  "entities": 462
+ },
+ {
+  "version": 350,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T18:19:35",
+  "entities": 463
+ },
+ {
+  "version": 351,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T18:19:35",
+  "entities": 465
+ },
+ {
+  "version": 352,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T18:19:35",
+  "entities": 470
+ },
+ {
+  "version": 353,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T18:19:35",
+  "entities": 476
+ },
+ {
+  "version": 354,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T18:19:35",
+  "entities": 480
+ },
+ {
+  "version": 355,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T18:19:35",
+  "entities": 484
+ },
+ {
+  "version": 356,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T18:19:35",
+  "entities": 586
+ },
+ {
+  "version": 357,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T18:19:35",
+  "entities": 593
+ },
+ {
+  "version": 358,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T18:19:35",
+  "entities": 600
+ },
+ {
+  "version": 359,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T18:19:35",
+  "entities": 607
+ },
+ {
+  "version": 360,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T18:19:35",
+  "entities": 614
+ },
+ {
+  "version": 361,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 618
+ },
+ {
+  "version": 362,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 622
+ },
+ {
+  "version": 363,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 626
+ },
+ {
+  "version": 364,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 630
+ },
+ {
+  "version": 365,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 633
+ },
+ {
+  "version": 366,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 636
+ },
+ {
+  "version": 367,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 639
+ },
+ {
+  "version": 368,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 642
+ },
+ {
+  "version": 369,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 643
+ },
+ {
+  "version": 370,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T18:19:35",
+  "entities": 644
+ },
+ {
+  "version": 371,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T18:19:35",
+  "entities": 715
+ },
+ {
+  "version": 372,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T18:19:35",
+  "entities": 786
+ },
+ {
+  "version": 373,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T18:19:35",
+  "entities": 855
+ },
+ {
+  "version": 374,
+  "note": "mission pueblito escort_shaun --mode escort --hero shaun --checkpoints 3 --seed 5 --layers props --title PUEBLITO: Shaun is stuck at the gas station. Walk him out",
+  "at": "2026-10-25T20:20:23",
+  "entities": 913
+ },
+ {
+  "version": 375,
+  "note": "el pueblito de ejemplo",
+  "at": "2026-10-25T21:02:03",
+  "entities": 0
+ },
+ {
+  "version": 376,
+  "note": "streets pueblito --grid 3 3 --arm 5",
+  "at": "2026-10-25T21:02:03",
+  "entities": 337
+ },
+ {
+  "version": 377,
+  "note": "park pueblito --zone block_0_1 --seed 3",
+  "at": "2026-10-25T21:02:03",
+  "entities": 451
+ },
+ {
+  "version": 378,
+  "note": "place pueblito WaterTower --at -42 41 --zone block_0_1 --role landmark --id water_tower",
+  "at": "2026-10-25T21:02:03",
+  "entities": 452
+ },
+ {
+  "version": 379,
+  "note": "sign pueblito --side w",
+  "at": "2026-10-25T21:02:04",
+  "entities": 453
+ },
+ {
+  "version": 380,
+  "note": "place pueblito Chest_Special --at -26.5 26.5 --scale 1.6 --zone block_0_1 --role gift --id gift_box",
+  "at": "2026-10-25T21:02:04",
+  "entities": 454
+ },
+ {
+  "version": 381,
+  "note": "lot pueblito Building_Small_1 --zone block_0_0 --side N --role diner --id diner_01",
+  "at": "2026-10-25T21:02:04",
+  "entities": 455
+ },
+ {
+  "version": 382,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_0_0 --side N --offset 16 --role library --id library_01",
+  "at": "2026-10-25T21:02:04",
+  "entities": 456
+ },
+ {
+  "version": 383,
+  "note": "fill pueblito --zone block_0_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,shop --seed 2",
+  "at": "2026-10-25T21:02:04",
+  "entities": 458
+ },
+ {
+  "version": 384,
+  "note": "lot pueblito Building_Large_2 --zone block_1_0 --side N --role police_station --id police_station_01",
+  "at": "2026-10-25T21:02:04",
+  "entities": 459
+ },
+ {
+  "version": 385,
+  "note": "fill pueblito --zone block_1_0 --side S --assets Building_Small_1,Building_Medium_2_001 --roles shop,apartment --seed 4",
+  "at": "2026-10-25T21:02:04",
+  "entities": 461
+ },
+ {
+  "version": 386,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side S --role school --id school_01",
+  "at": "2026-10-25T21:02:04",
+  "entities": 462
+ },
+ {
+  "version": 387,
+  "note": "lot pueblito Building_Medium_2_001 --zone block_1_1 --side N --role church --id church_01",
+  "at": "2026-10-25T21:02:04",
+  "entities": 463
+ },
+ {
+  "version": 388,
+  "note": "fill pueblito --zone block_1_1 --side E --assets Building_Small_1 --roles house --seed 5",
+  "at": "2026-10-25T21:02:04",
+  "entities": 465
+ },
+ {
+  "version": 389,
+  "note": "fill pueblito --zone ring_s --side N --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 6",
+  "at": "2026-10-25T21:02:04",
+  "entities": 470
+ },
+ {
+  "version": 390,
+  "note": "fill pueblito --zone ring_n --side S --assets Building_Small_1,Building_Medium_2_001,Building_Large_2 --roles house,apartment,office --seed 7",
+  "at": "2026-10-25T21:02:04",
+  "entities": 476
+ },
+ {
+  "version": 391,
+  "note": "fill pueblito --zone ring_w --side E --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 8",
+  "at": "2026-10-25T21:02:04",
+  "entities": 480
+ },
+ {
+  "version": 392,
+  "note": "fill pueblito --zone ring_e --side W --assets Building_Small_1,Building_Medium_2_001 --roles house,apartment --seed 9",
+  "at": "2026-10-25T21:02:04",
+  "entities": 484
+ },
+ {
+  "version": 393,
+  "note": "sidewalks pueblito --seed 2",
+  "at": "2026-10-25T21:02:04",
+  "entities": 608
+ },
+ {
+  "version": 394,
+  "note": "wreck pueblito --at -28 1 --count 3 --seed 1 --zone street_h1 --layer wrecks",
+  "at": "2026-10-25T21:02:04",
+  "entities": 615
+ },
+ {
+  "version": 395,
+  "note": "wreck pueblito --at 28 -54 --count 3 --seed 2 --zone street_h0 --layer wrecks",
+  "at": "2026-10-25T21:02:04",
+  "entities": 621
+ },
+ {
+  "version": 396,
+  "note": "wreck pueblito --at -54 28 --count 2 --seed 3 --zone street_v0 --layer wrecks",
+  "at": "2026-10-25T21:02:04",
+  "entities": 628
+ },
+ {
+  "version": 397,
+  "note": "wreck pueblito --at 55 -27 --count 2 --seed 4 --zone street_v2 --layer wrecks",
+  "at": "2026-10-25T21:02:04",
+  "entities": 635
+ },
+ {
+  "version": 398,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -8 --to -2 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 639
+ },
+ {
+  "version": 399,
+  "note": "row pueblito TrafficBarrier_1 --from 2 -8 --to 8 -8 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 643
+ },
+ {
+  "version": 400,
+  "note": "row pueblito TrafficBarrier_1 --from -8 8 --to -2 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 647
+ },
+ {
+  "version": 401,
+  "note": "row pueblito TrafficBarrier_1 --from 2 8 --to 8 8 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 651
+ },
+ {
+  "version": 402,
+  "note": "row pueblito TrafficBarrier_1 --from -8 -6 --to -8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 654
+ },
+ {
+  "version": 403,
+  "note": "row pueblito TrafficBarrier_1 --from -8 2 --to -8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 657
+ },
+ {
+  "version": 404,
+  "note": "row pueblito TrafficBarrier_1 --from 8 -6 --to 8 -2 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 660
+ },
+ {
+  "version": 405,
+  "note": "row pueblito TrafficBarrier_1 --from 8 2 --to 8 6 --spacing 2 --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 663
+ },
+ {
+  "version": 406,
+  "note": "place pueblito Vehicle_Truck_Armored --at -11 0 --yaw 0 --role barricade --id fort_truck_w --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 664
+ },
+ {
+  "version": 407,
+  "note": "place pueblito Vehicle_Truck_Armored --at 11 0 --yaw 180 --role barricade --id fort_truck_e --layer fort",
+  "at": "2026-10-25T21:02:04",
+  "entities": 665
+ },
+ {
+  "version": 408,
+  "note": "mission pueblito survival --mode survival --kills 60 --layers props --title PUEBLITO: kill 60 of the infected",
+  "at": "2026-10-25T21:02:04",
+  "entities": 740
+ },
+ {
+  "version": 409,
+  "note": "mission pueblito destroy --mode destroy --targets crashed_car_01,crashed_car_02,crashed_car_05,crashed_car_07 --layers props,wrecks --title PUEBLITO: blow up the 4 infested cars",
+  "at": "2026-10-25T21:02:04",
+  "entities": 813
+ },
+ {
+  "version": 410,
+  "note": "mission pueblito holdout --mode holdout --seconds 150 --layers props,fort --title PUEBLITO: hold out until the rescue arrives",
+  "at": "2026-10-25T21:02:04",
+  "entities": 884
+ },
+ {
+  "version": 411,
+  "note": "mission pueblito escort_shaun --mode escort --hero shaun --checkpoints 3 --seed 5 --layers props --title PUEBLITO: Shaun is stuck at the gas station. Walk him out",
+  "at": "2026-10-25T21:02:04",
+  "entities": 952
+ }
+]

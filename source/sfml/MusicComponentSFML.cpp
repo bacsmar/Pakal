@@ -9,34 +9,29 @@ namespace Pakal
 
 	bool MusicComponentSFML::initialize(SharedPtr<std::istream> resourceStream, const SoundSettings& settings)
 	{
-		m_buffer = std::make_shared<StreamSFML>(resourceStream);
-
-		set_volume(settings.volume);
-		set_position(settings.position);
-		set_pitch(settings.pitch);
-		set_relative_to_listener(settings.relative_to_source);
-		set_loop(settings.loop);
-
-		if (m_player.openFromStream(*m_buffer))
+		auto buffer = std::make_shared<StreamSFML>(resourceStream);
+		if (m_player.openFromStream(*buffer))
 		{
+			m_buffer = buffer;
+			set_volume(settings.volume);
+			set_position(settings.position);
+			set_pitch(settings.pitch);
+			set_relative_to_listener(settings.relative_to_source);
+			set_loop(settings.loop);
 			return true;
 		}
 
-		m_buffer = nullptr;
 		return false;
 	}
 
 	void MusicComponentSFML::terminate()
 	{
 		stop();
-		m_player.openFromMemory(nullptr, 0);
-		m_buffer = nullptr;
-
 	}
 
 	MusicComponentSFML::~MusicComponentSFML()
 	{
-		ASSERT(m_buffer == nullptr);
+		stop();
 	}
 
 	void MusicComponentSFML::play()

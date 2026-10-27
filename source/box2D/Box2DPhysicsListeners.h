@@ -5,7 +5,7 @@
 
 namespace Pakal
 {	
-	class Component;
+	class AsyncComponent;
 	//////////////////////////////////////////////////////////////////////////	
 	enum ECollisionBitFlags
 	{

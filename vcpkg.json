@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "pakal",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "sfml",
+    "box2d",
+    "assimp",
+    "nlohmann-json",
+    "lua",
+    "rmlui"
+  ],
+  "builtin-baseline": "20ceb8adbf0504d4b0d5e4058a32f9d4fc896391",
+  "overrides": [
+    { "name": "sfml", "version": "2.6.2" },
+    { "name": "box2d", "version-semver": "2.4.1" }
+  ]
+}
