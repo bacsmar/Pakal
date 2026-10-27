@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Box2D.h>
+#include <box2d/box2d.h>
 #include <vector>
 
 namespace Pakal
 {	
-	class Component;
+	class AsyncComponent;
 	//////////////////////////////////////////////////////////////////////////	
 	enum ECollisionBitFlags
 	{

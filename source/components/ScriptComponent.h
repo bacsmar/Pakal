@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "AsyncComponent.h"
 #include <string>
 #include "TaskFwd.h"
 
@@ -37,9 +37,9 @@ namespace Pakal
 	void register_script_interface_for(T*, Script&, const std::string&);
 	
 	// Scriptable
-	class ScriptComponent : public Component
+	class ScriptComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(ScriptComponent, Component);
+		DECLARE_RTTI_WITH_BASE(ScriptComponent, AsyncComponent);
 		std::mutex	m_register_mutex;
 	public:		
 

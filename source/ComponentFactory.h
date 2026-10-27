@@ -13,26 +13,26 @@
 
 namespace Pakal
 {
-	class Component;	
+	class AsyncComponent;	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////	
-	using IComponentFactory = IFactory<Component>;
+	using IComponentFactory = IFactory<AsyncComponent>;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase>
-	inline IComponentFactory * CreateComponentFactory( const std::function<Component*()>& _fn)
+	inline IComponentFactory * CreateComponentFactory( const std::function<AsyncComponent*()>& _fn)
 	{
-		return (CreateFactory<Component, TBase>(_fn));
+		return (CreateFactory<AsyncComponent, TBase>(_fn));
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase, class TImplementation, class TInitializer>
 	IComponentFactory * CreateComponentFactory(TInitializer* initializer)
 	{
-		return CreateComponentFactory<TBase>([=]() -> Component* { return new TImplementation(initializer); });
+		return CreateComponentFactory<TBase>([=]() -> AsyncComponent* { return new TImplementation(initializer); });
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class TBase, class TImplementation>
 	IComponentFactory * CreateComponentFactory()
 	{
-		return CreateComponentFactory<TBase>( []() -> Component* { return new TImplementation(); });
+		return CreateComponentFactory<TBase>( []() -> AsyncComponent* { return new TImplementation(); });
 	};	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 }

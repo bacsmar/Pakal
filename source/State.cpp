@@ -1,6 +1,6 @@
-#include "state.h"
+#include "State.h"
 #include "persist/Archive.h"
-#include "Components/ScriptComponent.h"
+#include "components/ScriptComponent.h"
 #include "LogMgr.h"
 
 void Pakal::TransitionCondition::persist(Archive* archive)
@@ -14,7 +14,7 @@ void Pakal::TransitionCondition::set_script(ScriptComponent& script)
 {
 	if (fn_condition.empty() == false)
 	{
-		m_condition = ([=, &script]() -> bool
+		m_condition = ([this, &script]() -> bool
 		{
 			bool retValue = false;
 			//const auto& result = script.call_script(fn_condition);

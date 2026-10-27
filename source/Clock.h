@@ -26,7 +26,7 @@
 #define PAKAL_CLOCK_HPP
 
 #include "config.h"
-#include "pakalTime.h"
+#include "PakalTime.h"
 
 
 namespace Pakal

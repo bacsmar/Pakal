@@ -1,0 +1,17 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2026 The PakalEngine Open Source Project
+// File: TopDown.h
+// Purpose: Zombies is built on the TopDown module (game_genres/topdown): its names are used here without
+//          the namespace.
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+namespace Pakal::TopDown
+{
+}
+
+namespace Zombies
+{
+	using namespace Pakal::TopDown;
+}

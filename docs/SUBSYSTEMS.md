@@ -1,51 +1,52 @@
-# Subsistemas de Pakal
+# Pakal subsystems
 
 ## GraphicsSystem
-Implementación principal: `IrrGraphicsSystem` (archivos: `source/irrlicht/IrrGraphicsSystem.h`, `source/irrlicht/IrrGraphicsSystem.cpp`).
+Main implementation: `BgfxGraphicsSystem` (files: `source/bgfx/BgfxGraphicsSystem.h`, `source/bgfx/BgfxGraphicsSystem.cpp`). Irrlicht no longer exists in the repo.
 
-Responsabilidades:
-- Inicializar `irr::IrrlichtDevice` y `IVideoDriver`.
-- Manejar `begin_scene`, `draw`, `end_scene`.
-- Proveer batchers: `SceneNodeBatcher`, `SpriteBatcher`.
-- Manejar `MaterialManager` y debug drawers.
-- Integrar Rocket GUI mediante `IrrRocketRenderer` / `IrrRocketGUI`.
+Responsibilities:
+- Initialize the bgfx context and the selected render backend.
+- Handle the render frame cycle.
+- Provide 2D and 3D cameras: `CameraComponent_Bgfx`, `CameraComponent3D_Bgfx`.
+- Provide sprite components (`SpriteComponent_Bgfx`) and a debug drawer (`BgfxDebugDrawer`).
 
-Notas y ejemplos:
-- En `on_init_graphics` se crea el dispositivo con `SIrrlichtCreationParameters` y se registran fuentes de recursos:
-  - DirectorySourceIrrlitch, ZipSourceIrrlitch.
-- En `on_update_graphics` el flujo es: `begin_scene()` -> `draw()` -> `m_ui_manager->draw_ui()` -> `end_scene()`.
+Notes:
+- The Rocket-based UI is not available with the bgfx backend.
 
 ## PhysicsSystem
-Implementación principal: `Box2DPhysicsSystem` (`source/box2D/Box2DPhysicsSystem.h`).
+Main implementation: `Box2DPhysicsSystem` (`source/box2D/Box2DPhysicsSystem.h`).
 
-Responsabilidades:
-- Crear y mantener `b2World`.
-- Crear/destruir cuerpos y joints.
-- Proveer debug drawer para visualizar shapes en `GraphicsSystem`.
+Responsibilities:
+- Create and maintain the `b2World`.
+- Create/destroy bodies and joints.
+- Provide a debug drawer to visualize shapes in `GraphicsSystem`.
 
-Notas:
-- Configurable mediante `PhysicsSystem::Settings` (gravity, iterations, continuous physics, etc.).
+Notes:
+- Configurable through `PhysicsSystem::Settings` (gravity, iterations, continuous physics, etc.).
 
-## Entity / Component System
-Archivos relevantes: `source/ComponentManager.*`, `source/EntityManager.*`, `source/components/*`.
+## Entity / Component Systems
+There are two models (see ARCHITECTURE.md, "Entities: two models").
 
-Modelo:
-- `EntityManager` gestiona entidades (IDs) y sus componentes.
-- `ComponentManager` registra `IComponentProvider`s (cada System implementa provider) y factories que crean componentes concretos (Ej: `MeshComponent_Irrlicht`).
-- Componentes tienen ciclo de vida mediante `initialize()` y `terminate()` que devuelven `BasicTaskPtr` (sistema de tareas asíncronas).
+Asynchronous (`AsyncEntity` / `AsyncComponent`). Relevant files: `source/AsyncEntity.*`, `source/AsyncComponent.*`,
+`source/ComponentManager.*`, `source/EntityManager.*`, `source/components/*`.
+- `EntityManager` manages the entities (IDs) and their components.
+- `ComponentManager` registers `IComponentProvider`s (each System implements a provider) and factories that create concrete components (e.g. `SpriteComponent2D`).
+- Components have a lifecycle through `initialize()` and `terminate()`, which return `BasicTaskPtr` (asynchronous task system).
 
-## ResourceManager &amp; Persistencia
-- `ResourceManager` permite registrar fuentes (Directory, Zip), localizar y cargar recursos.
-- La persistencia y serialización se manejan vía `Archive` y un proyecto relacionado `pakal_persist` (fork en `bacsmar/pakal_persist`).
+Synchronous (`SyncEntity` / `SyncComponent` in a `SimWorld`): `source/SyncEntity.h`, `source/SimWorld.h`. A game's
+simulation in fixed steps; the components run in order, once per step, on one thread.
+
+## ResourceManager &amp; Persistence
+- `ResourceManager` lets you register sources (Directory, Zip), and locate and load resources.
+- Persistence and serialization are handled through `Archive` and a related project `pakal_persist` (fork at `bacsmar/pakal_persist`).
 
 ## OSManager / Input / Sound / UI
-- `OSManager` maneja ventanas y eventos. Puede usar SFML o wrappers nativos (Android) dependiendo de defines.
-- `IInputManager` se obtiene con `os_manager()->get_input_manager()` y se registra como provider de componentes.
-- `SoundManager` backend configurable (SFML u otra implementación).
-- UI: Rocket GUI integrado con `IrrGraphicsSystem` mediante `IrrRocketRenderer`.
+- `OSManager` handles windows and events. It can use SFML or native wrappers (Android) depending on defines.
+- `IInputManager` is obtained with `os_manager()->get_input_manager()` and is registered as a component provider.
+- `SoundManager` has a configurable backend (SFML or another implementation).
+- UI: no active implementation in the bgfx backend. Rocket GUI required Irrlicht and is no longer available.
 
-## Otros
-- Task system: `BasicTask`, `TaskUtils` para inicialización/terminación en paralelo.
-- GameStateManager: maneja estados de juego y su actualización.
+## Other
+- Task system: `BasicTask`, `TaskUtils` for parallel initialization/termination.
+- GameStateManager: handles game states and their update.
 
-Referencias a archivos y clases en el repo para profundizar.
+See the files and classes in the repo for more depth.

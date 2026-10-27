@@ -15,21 +15,36 @@
 #define PAKAL_COMPILE_WITH_EDITOR 0
 
 //! compile with LUA Scripts
-#define PAKAL_USE_SCRIPTS 1
+#define PAKAL_USE_SCRIPTS 0
 //! compile with ogre3D
 #define PAKAL_USE_OGRE 0
 //! compile with Irrlicht
-#define PAKAL_USE_IRRLICHT 1
+#define PAKAL_USE_IRRLICHT 0
+//! compile with bgfx
+#define PAKAL_USE_BGFX 1
 
-#if PAKAL_USE_OGRE == 0 && PAKAL_USE_IRRLICHT == 0
+#if PAKAL_USE_BGFX == 1 && PAKAL_USE_IRRLICHT == 1
+	#error "Cannot use both BGFX and Irrlicht simultaneously"
+#endif
+
+#if PAKAL_USE_OGRE == 0 && PAKAL_USE_IRRLICHT == 0 && PAKAL_USE_BGFX == 0
 	#define PAKAL_USE_DUMMY_GRAPHICS 1
 #endif
 
 //! compile with http://www.sfml-dev.org
-#define PAKAL_USE_SFML_AUDIO 1
-#define PAKAL_USE_SFML_INPUT 1 
-#define PAKAL_USE_SFML_WINDOW 1 
+// (the Android build defines PAKAL_NO_SFML: its window, input and sound come from the platform)
+#ifdef PAKAL_NO_SFML
+	#define PAKAL_USE_SFML_AUDIO 0
+	#define PAKAL_USE_SFML_INPUT 0
+	#define PAKAL_USE_SFML_WINDOW 0
+#else
+	#define PAKAL_USE_SFML_AUDIO 1
+	#define PAKAL_USE_SFML_INPUT 1
+	#define PAKAL_USE_SFML_WINDOW 1
+#endif
+#ifndef PAKAL_USE_SFML
 #define PAKAL_USE_SFML (PAKAL_USE_SFML_AUDIO || PAKAL_USE_SFML_INPUT || PAKAL_USE_SFML_WINDOW)
+#endif
 
 //! compile with bullet physics
 #define PAKAL_USE_BULLET 0
@@ -38,7 +53,7 @@
 #define PAKAL_USE_BOX2D 1
 
 //! compile with Rocket GUI
-#define PAKAL_USE_ROCKET 1
+#define PAKAL_USE_ROCKET 0
 
 //! compile with DEBUGGER
 #define PAKAL_USE_DEBUGGER 0

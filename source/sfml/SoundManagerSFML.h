@@ -39,6 +39,14 @@ namespace Pakal
 
 		void play_sfx(SharedPtr<sf::SoundBuffer> buffer, const SoundSettings& settings);
 
+		// Mono sine tone generated in memory (no asset needed). Spatialized when played with a position.
+		SharedPtr<sf::SoundBuffer> create_tone(float frequencyHz, float seconds);
+
+		void set_listener(const tmath::vector3df& position, const tmath::vector3df& forward, const tmath::vector3df& up) override;
+
+		// Applies the volume, pitch and spatial settings to a sound before it plays
+		static void apply_settings(sf::Sound& sound, const sf::SoundBuffer& buffer, const SoundSettings& settings);
+
 	};
 
 

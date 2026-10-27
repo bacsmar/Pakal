@@ -28,7 +28,7 @@ namespace Pakal
 	public:
 		struct IWindowManager
 		{
-			virtual unsigned setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
+			virtual WindowArgs setup_window(unsigned windowId, const tmath::vector2di& dimensions, bool fullscreen, unsigned int bitsPerPixel) = 0;
 			virtual void close_window() = 0;
 			virtual void process_window_events() = 0;
 			virtual void flush() {};

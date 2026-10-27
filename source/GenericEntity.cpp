@@ -1,7 +1,7 @@
 
 
 #include "GenericEntity.h"
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "Task.h"
 #include <string>
 
@@ -11,22 +11,36 @@ namespace Pakal
 	BasicTaskPtr GenericEntity::terminate()
 	{
 		evt_terminate.notify();
-		// TODO: lo mismo que para initialize
+		// TODO: same as for initialize
 		m_terminate_task.set_completed();
 		return m_terminate_task.get_task();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	void GenericEntity::add_component(Component *c) 
+	void GenericEntity::add_component(AsyncComponent *c) 
 	{
 		c->set_parent_entity(this);
 		m_components.push_back(c);
 	}
 
-	void GenericEntity::remove_component(Component* c)
+	void GenericEntity::remove_component(AsyncComponent* c)
 	{
 		c->set_parent_entity(nullptr);
 		m_components.erase(find(m_components.begin(),m_components.end(),c));
+	}
+
+	bool GenericEntity::destroy_component(AsyncComponent* c)
+	{
+		auto it = find(m_components.begin(), m_components.end(), c);
+		if (it == m_components.end())
+		{
+			return false;
+		}
+
+		(*it)->set_parent_entity(nullptr);
+		delete *it;
+		m_components.erase(it);
+		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +66,7 @@ namespace Pakal
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	Component* GenericEntity::get_component(const std::string& component_id_string) const
+	AsyncComponent* GenericEntity::get_component(const std::string& component_id_string) const
 	{
 		for (auto & component : m_components)
 		{

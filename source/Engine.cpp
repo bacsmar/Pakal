@@ -4,6 +4,7 @@
 #include "PhysicsSystem.h"
 #include "GameStateManager.h"
 #include "IPakalApplication.h"
+#include "InputManager_Polling.h"
 
 #include "ComponentManager.h"
 #include "EntityManager.h"
@@ -13,7 +14,9 @@
 #include "Clock.h"
 #include <sstream>
 #include <chrono>
+#include <cstdlib>
 #include "IUIManager.h"
+#include "Profiler.h"
 
 
 //#include <vld.h>
@@ -73,6 +76,7 @@ Engine::Engine(const Settings& settings) :
 	m_component_manager->register_provider(*os_manager()->get_input_manager());
 
 	register_default_components();
+	register_default_entities();
 	
 	add_system(m_physics_system);
 	add_system(m_graphics_system);
@@ -87,9 +91,14 @@ void Engine::run(IPakalApplication* application)
 
 	m_application = application;
 	
+	
 	//Initialize managers
 	resource_manager()->initialize();
 	input_manager()->initialize();
+	
+	// Initialize InputManager_Polling wrapper for convenient key polling
+	InputManager_Polling::initialize(input_manager());
+	
 	m_component_manager->initialize();
 	m_entity_manager->initialize();
 	m_game_state_manager->initialize();
@@ -106,7 +115,11 @@ void Engine::run(IPakalApplication* application)
 	TaskUtils::wait_all(initializationTasks);
 	
 	// Initialize engine
-	initialize();
+	auto engineInitTask = initialize();
+	if (engineInitTask)
+	{
+		engineInitTask->wait(false);  // Non-blocking wait to process tasks while waiting
+	}
 
 	//get the systems we are gonna loop into
 	std::vector<ISystem*> threadlessSystems;
@@ -123,37 +136,96 @@ void Engine::run(IPakalApplication* application)
 	//do the loop
 	Clock clock;
 	unsigned long dt = 0;
+	long long carry_us = 0;   // what whole milliseconds leave out, so the time does not run slow
 
-
-	while (get_state() != SystemState::Terminated)
+	if (get_state() != SystemState::Terminated)
 	{
-		//Update the caption
-		m_graphics_system->set_window_caption(get_systems_fps().c_str());
-
-		//update threadless systems
-		for (auto s : threadlessSystems)
+		LOG_INFO("[Engine] Entering main game loop");
+		static int loop_count = 0;
+		
+		while (get_state() != SystemState::Terminated)
 		{
-			if (s->get_state() != SystemState::Terminated)
+			if (loop_count++ == 0)
 			{
-				s->update(dt);
+				LOG_INFO("[Engine] First iteration of game loop");
 			}
-		}
+			
+			//Update the caption
+			m_graphics_system->set_window_caption(get_systems_fps().c_str());
 
-		//process window events
-		if (get_state() != SystemState::Paused)
-		{
-			os_manager()->process_window_events();
-		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			os_manager()->process_window_events();
-			clock.restart();
-		}			
+			// Performance runs: one log line per second with every system's FPS (PAKAL_FPS_LOG=1)
+			static const bool logFps = std::getenv("PAKAL_FPS_LOG") != nullptr;
+			static auto lastLog = std::chrono::steady_clock::now();
+			if (logFps && std::chrono::steady_clock::now() - lastLog >= std::chrono::seconds(1))
+			{
+				lastLog = std::chrono::steady_clock::now();
+				LOG_INFO("[PERF] %s", get_systems_fps().c_str());
+			}
+			// A measured run with a length (PAKAL_PROFILE_SECONDS) ends by itself, its summary written
+			if (Profiler::get().time_is_up())
+			{
+				Profiler::get().finish();
+				os_manager()->event_app_finished();
+			}
 
-		//update the dt
-		dt = clock.restart().asMilliseconds();
+			//update threadless systems
+			for (auto s : threadlessSystems)
+			{
+				// Check Engine state before updating each system - allows quick exit on termination
+				if (get_state() == SystemState::Terminated)
+				{
+					LOG_INFO("[Engine] Loop terminating, state=Terminated");
+					break;
+				}
+				
+				if (s->get_state() != SystemState::Terminated)
+				{
+					if (loop_count == 1)
+					{
+						LOG_INFO("[Engine] Updating system, state=%d", (int)s->get_state());
+					}
+					{
+						// each system of the main loop by its name (a system that waits for the frame shows it here)
+						PAKAL_PROFILE_SCOPE(s->get_system_name());
+						s->update(dt);
+					}
+					if (loop_count == 1)
+					{
+						LOG_INFO("[Engine] System update completed");
+					}
+				}
+			}
+
+			//process window events
+			if (get_state() != SystemState::Paused)
+			{
+				if (loop_count == 1)
+				{
+					LOG_INFO("[Engine] Processing window events...");
+				}
+				os_manager()->process_window_events();
+				if (loop_count == 1)
+				{
+					LOG_INFO("[Engine] Window events processed, state=%d", (int)get_state());
+				}
+			}
+			else
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				os_manager()->process_window_events();
+				clock.restart();
+			}			
+
+			//update the dt
+			const long long us = clock.restart().asMicroseconds() + carry_us;
+			dt = static_cast<unsigned long>(us / 1000);
+			carry_us = us % 1000;
+		}
 	}
+
+	Profiler::get().finish();
+	m_game_state_manager->terminate();
+
 
 	//terminate systems
 	std::vector<BasicTaskPtr> terminationTasks;
@@ -161,38 +233,53 @@ void Engine::run(IPakalApplication* application)
 	for(auto s : m_systems)
 	{
 		if (s->get_state() != SystemState::Terminated)
+		{
 			terminationTasks.push_back(s->terminate());
+		}
 	}
+	
 	TaskUtils::wait_all(terminationTasks);
 
 	//terminate managers
-	
 	m_sound_manager->terminate();
 	m_entity_manager->terminate();
 	m_component_manager->terminate();
-	m_game_state_manager->terminate();
 	input_manager()->terminate();
 	resource_manager()->terminate();
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_update(unsigned long dtMilliSeconds)
 {
+	static int update_count = 0;
+	if (update_count++ == 0)
+	{
+		LOG_INFO("[Engine] on_update() called for first time, dt=%llu ms", dtMilliSeconds);
+	}
+	
 	m_game_state_manager->update(dtMilliSeconds);
+	m_entity_manager->process_pending_disposals();
+	
+	if (update_count == 1)
+	{
+		LOG_INFO("[Engine] on_update() completed, state=%d", (int)get_state());
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_initialize()
 {
-	m_listener_terminate = os_manager()->event_app_finished.add_listener([=]() {this->terminate(); });
+	m_listener_terminate = os_manager()->event_app_finished.add_listener([this]() {this->terminate(); });
 
 	m_application->start(*this);	
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_terminate()
 {
+	
 	os_manager()->event_app_finished.remove_listener(m_listener_terminate);
 
 	m_application->end(*this);
+	
 }
 //////////////////////////////////////////////////////////////////////////
 

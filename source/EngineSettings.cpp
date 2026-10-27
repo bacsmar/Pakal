@@ -2,13 +2,21 @@
 #include "config.h"
 
 #include "persist/Archive.h"
+#include "DummyUIManager.h"
 
 #if PAKAL_USE_SFML_WINDOW == 1
-	#include "WindowCreatorSFML.h"
+	#include "sfml/WindowCreatorSFML.h"
 #endif
 
 #if PAKAL_USE_BOX2D == 1
 	#include "box2D/Box2DPhysicsSystem.h"
+#else
+	#include "DummyPhysicsSystem.h"
+#endif
+
+#if PAKAL_USE_BGFX == 1
+	#include "bgfx/BgfxGraphicsSystem.h"
+	#include "bgfx/BgfxRmlUi.h"
 #endif
 
 #if PAKAL_USE_IRRLICHT == 1
@@ -33,7 +41,7 @@
 #endif
 
 #if PAKAL_USE_SFML_INPUT == 1
-	#include "InputManager_SFML.h"
+	#include "sfml/InputManager_SFML.h"
 #endif
 
 #if PAKAL_USE_ROCKET == 1
@@ -51,39 +59,14 @@
 
 #if defined(PAKAL_WIN32_PLATFORM )
 
-		// pugixml
-#if defined(_DEBUG)
-	#pragma comment(lib, "pugixmlsd.lib")
-#else
-	#pragma comment(lib, "pugixmls.lib")
-#endif	// pugixml
+//		// pugixml
+//#if defined(_DEBUG)
+//	#pragma comment(lib, "pugixmlsd.lib")
+//#else
+//	#pragma comment(lib, "pugixmls.lib")
+//#endif	// pugixml
 
-#if PAKAL_USE_SFML == 1
-#if defined( _DEBUG)
-	#ifdef PAKAL_STATIC_LIB	//debug & static lib
-		#pragma comment(lib, "sfml-audio-s-d.lib")
-		#pragma comment(lib, "sfml-system-s-d.lib")
-		#pragma comment(lib, "sfml-window-s-d.lib")
-	#else
-		#pragma comment(lib, "sfml-audio-s-d.lib")
-		#pragma comment(lib, "sfml-system-s-d.lib")
-		#pragma comment(lib, "sfml-window-s-d.lib")
-		/*#pragma comment(lib, "sfml-audio-d.lib")
-		#pragma comment(lib, "sfml-system-d.lib")
-		#pragma comment(lib, "sfml-window-d.lib")*/
-	#endif
-#else
-	#ifdef PAKAL_STATIC_LIB	//release & static lib
-		#pragma comment(lib, "sfml-audio-s.lib") 
-		#pragma comment(lib, "sfml-system-s.lib")
-		#pragma comment(lib, "sfml-window-s.lib")
-	#else
-		#pragma comment(lib, "sfml-audio.lib") 
-		#pragma comment(lib, "sfml-system.lib")
-		#pragma comment(lib, "sfml-window.lib")
-	#endif
-#endif
-#endif	//PAKAL_USE_SFML
+// SFML libraries are linked by CMake (see CMakeLists.txt), not by pragmas here.
 #endif	//PAKAL_WIN32_PLATFORM
 
 using namespace Pakal;
@@ -92,7 +75,14 @@ using namespace Pakal;
 Engine::Settings::Settings()
 {
 
-#if PAKAL_USE_IRRLICHT == 1
+#if PAKAL_USE_BGFX == 1
+
+	// The game's interface: RmlUi drawn with bgfx
+	graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new BgfxRmlUi(static_cast<BgfxGraphicsSystem*>(gs)); };
+	
+	graphic_system_allocator = [](Engine* engine, const GraphicsSystem::Settings& settings) { return new BgfxGraphicsSystem(settings); };
+
+#elif PAKAL_USE_IRRLICHT == 1
 
 	#if PAKAL_USE_ROCKET == 1
 		graphic_system_settings.ui_manager_allocator = [](GraphicsSystem* gs) { return new IrrRocketUI(gs);  };
@@ -108,6 +98,10 @@ Engine::Settings::Settings()
 
 #if PAKAL_USE_BOX2D == 1
 	physics_system_allocator = [](Engine* engine,const PhysicsSystem::Settings& settings) { return new Box2DPhysicsSystem(settings); };
+#else
+	physics_system_allocator = [](Engine* engine, const PhysicsSystem::Settings& settings) { 
+		return new DummyPhysicsSystem(settings); 
+	};
 #endif
 
 #if PAKAL_USE_SFML_AUDIO == 1

@@ -39,7 +39,7 @@ bool Pakal::CharacterComponent::suscribe_to_input_handler(InputHandler* inputHan
 	{
 		ListenedInput input;
 		input.handler = inputHandler;
-		input.event_id = inputHandler->evt_translated_command.add_listener([=](const std::string& command)
+			input.event_id = inputHandler->evt_translated_command.add_listener([this](const std::string& command)
 		{
 			this->process_command(command);
 		});

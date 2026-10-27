@@ -1,6 +1,6 @@
 #pragma once
 #include <Event.h>
-#include "Component.h"
+#include "AsyncComponent.h"
 #include "InputDevice.h"
 #include <set>
 #include <vector>
@@ -8,9 +8,9 @@
 namespace Pakal
 {	
 	class IInputManager;
-	class GamepadComponent : public Component
+	class GamepadComponent : public AsyncComponent
 	{
-		DECLARE_RTTI_WITH_BASE(GamepadComponent, Component);
+		DECLARE_RTTI_WITH_BASE(GamepadComponent, AsyncComponent);
 	public:
 		friend class InputManager;
 		enum  Buttons 

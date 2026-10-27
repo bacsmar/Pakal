@@ -36,6 +36,14 @@ namespace Pakal
 		struct Settings
 		{
 			tmath::vector2di resolution = {800,600};
+			// The screen's size when the picture is drawn smaller (resolution) and scaled up to it (FSR 1); 0: the same
+			tmath::vector2di output_resolution = {0,0};
+			// Steps the picture down (frame cap, render scale) when the device cannot hold it, and back up (BgfxGraphicsSystem)
+			bool governor = false;
+			// The player's FSR option (BgfxGraphicsSystem::set_fsr): the share of the screen's height the picture is drawn at
+			// with FSR, and without it (a phone's big screen keeps a cap; the stretch is then plain bilinear)
+			float fsr_scale = 0.67f;
+			float plain_scale = 1.0f;
 			int bits = 32;
 			bool full_screen = false;
 			bool vsync = false;

@@ -1,0 +1,62 @@
+<rml>
+<head>
+	<title>Viewer</title>
+	<link type="text/rcss" href="base.rcss"/>
+	<link type="text/rcss" href="zombies.rcss"/>
+	<link type="text/rcss" href="menu.rcss"/>
+	<link type="text/rcss" href="viewer.rcss"/>
+</head>
+<!-- The character viewer and the zombie encyclopedia: panels over the 3D model (CharacterViewer.cpp fills them) -->
+<body id="viewer">
+	<div class="screen_header">
+		<div id="v_back" class="button back secondary">BACK</div>
+		<div id="v_title" class="screen_title title">HEROES</div>
+	</div>
+
+	<div id="v_info" class="v_panel">
+		<img id="v_portrait" class="hidden" src="images/hero_sam.png"/>
+		<div id="v_name" class="title">Name</div>
+		<div id="v_text"></div>
+		<div id="v_stats"></div>
+		<div id="v_choose" class="button hidden">PLAY AS</div>
+	</div>
+
+	<div id="v_controls" class="v_panel">
+		<div class="v_label">CLIP</div>
+		<div class="v_picker">
+			<div id="v_clip_prev" class="button secondary v_arrow">&lt;</div>
+			<div id="v_clip" class="v_value">Idle</div>
+			<div id="v_clip_next" class="button secondary v_arrow">&gt;</div>
+		</div>
+		<div id="v_clip_info" class="v_note"></div>
+		<div id="v_second_label" class="v_label">HOLDS</div>
+		<div class="v_picker">
+			<div id="v_second_prev" class="button secondary v_arrow">&lt;</div>
+			<div id="v_second" class="v_value">-</div>
+			<div id="v_second_next" class="button secondary v_arrow">&gt;</div>
+		</div>
+		<div id="v_second_info" class="v_note"></div>
+		<div id="v_reach_box">
+			<div id="v_reach_info" class="v_note"></div>
+		</div>
+		<div class="v_toggles">
+			<div id="v_pause" class="button secondary v_toggle">PAUSE</div>
+			<div id="v_slower" class="button secondary v_toggle">SLOWER</div>
+			<div id="v_faster" class="button secondary v_toggle">FASTER</div>
+			<div id="v_spin" class="button secondary v_toggle on">SPIN</div>
+			<div id="v_closer" class="button secondary v_toggle">CLOSER</div>
+			<div id="v_farther" class="button secondary v_toggle">FARTHER</div>
+			<div id="v_reach" class="button secondary v_toggle on">OTHER HAND</div>
+			<div id="v_lines" class="button secondary v_toggle on">LINES</div>
+		</div>
+	</div>
+
+	<div id="v_nav">
+		<div id="v_prev" class="button v_big_arrow">&lt;</div>
+		<div id="v_count" class="title">1 / 4</div>
+		<div id="v_next" class="button v_big_arrow">&gt;</div>
+	</div>
+
+	<div id="v_keys">Arrows: character and clip   Q/E: holds   R: other hand   L: lines   Space: pause   Z/X: speed   A/D: turn   W/S: zoom   T: spin   Esc: back</div>
+</body>
+</rml>

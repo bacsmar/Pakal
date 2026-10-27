@@ -1,6 +1,7 @@
 #include "ComponentManager.h"
 
 #include "ComponentFactory.h"
+#include "GenericEntity.h"
 #include "IComponentProvider.h"
 #include "LogMgr.h"
 
@@ -34,7 +35,7 @@ void ComponentManager::register_factory(IComponentFactory* factory, bool replace
 	LOG_DEBUG("[ComponentManager] registered factory for: '%s' component type.", componentTypename.c_str() );
 }
 
-Component* ComponentManager::create_component(const std::string& typeName )
+AsyncComponent* ComponentManager::create_component(const std::string& typeName )
 {
 	const auto &it = m_factories.find(typeName);
 
@@ -44,8 +45,61 @@ Component* ComponentManager::create_component(const std::string& typeName )
 		return nullptr;
 	}	
 
-	Component * newComponent = it->second->create(); //call the factory create component
+	AsyncComponent * newComponent = it->second->create(); //call the factory create component
 	return newComponent;
+}
+
+void ComponentManager::request_dispose(AsyncComponent* component)
+{
+	if (!component || component->m_pendingDispose)
+	{
+		return;
+	}
+
+	component->m_pendingDispose = true;
+	m_pendingDispose.insert(component);
+}
+
+size_t ComponentManager::process_pending_disposals()
+{
+	if (m_pendingDispose.empty())
+	{
+		return 0;
+	}
+
+	std::vector<AsyncComponent*> pending(m_pendingDispose.begin(), m_pendingDispose.end());
+	m_pendingDispose.clear();
+
+	size_t disposedCount = 0;
+	for (auto* component : pending)
+	{
+		if (!component)
+		{
+			continue;
+		}
+
+		component->prepare_dispose();
+
+		auto* genericParent = dynamic_cast<GenericEntity*>(component->get_parent_entity());
+		if (genericParent)
+		{
+			if (genericParent->destroy_component(component))
+			{
+				disposedCount++;
+			}
+			continue;
+		}
+
+		delete component;
+		disposedCount++;
+	}
+
+	return disposedCount;
+}
+
+void ComponentManager::terminate()
+{
+	process_pending_disposals();
 }
 
 ComponentManager::~ComponentManager()

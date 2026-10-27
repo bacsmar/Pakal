@@ -1,0 +1,38 @@
+/* The brawler's HUD (sizes in dp: 720 dp tall) */
+.b_panel {
+	position: absolute;
+	padding: 10dp 14dp;
+	background-color: #1e1e22d0;
+	border: 2dp #3a3a40;
+	border-radius: 12dp;
+}
+#b_hero { left: 16dp; top: 14dp; width: 300dp; }
+.b_name { font-size: 26dp; color: #ffcf40; }
+.b_bar { height: 10dp; margin-top: 6dp; background-color: #ffffff25; border-radius: 5dp; }
+.b_bar.big { height: 18dp; border-radius: 9dp; }
+.b_fill { height: 100%; width: 100%; border-radius: 5dp; background-color: #ff6b5a; }
+.b_fill.hero { background-color: #4cd964; border-radius: 9dp; }
+.b_note { font-size: 15dp; color: #c8c8c8; margin-top: 4dp; }
+
+#b_enemies { position: absolute; right: 16dp; top: 14dp; width: 240dp; }
+.b_enemy { margin-bottom: 8dp; position: relative; }
+.b_enemy.down { opacity: 0.4; }
+
+#b_hits { position: absolute; left: 372dp; top: 18dp; font-size: 40dp; color: #ffcf40; font-effect: shadow(2dp 2dp #000000c0); }
+
+#b_result { position: absolute; left: 0; top: 240dp; width: 100%; text-align: center; }
+#b_result_title { font-size: 96dp; color: #ffcf40; font-effect: shadow(3dp 3dp #000000c0); }
+#b_result .button { width: 260dp; margin: 16dp auto; }
+
+#b_keys { position: absolute; bottom: 8dp; left: 0; width: 100%; text-align: center; font-size: 14dp; color: #ffffffb0; }
+body.touch #b_keys { display: none; }
+
+/* a touch screen's buttons (keys elsewhere): bottom right, the left half moves */
+#b_touch { display: none; position: absolute; right: 20dp; bottom: 24dp; width: 330dp; }
+body.touch #b_touch { display: block; }
+.b_touch_button {
+	float: right; width: 96dp; height: 96dp; line-height: 96dp; margin: 6dp; border-radius: 48dp;
+	text-align: center; font-size: 22dp; color: #1b1b1e; background-color: #ffcf40d0; pointer-events: auto;
+}
+.b_touch_button.big { width: 120dp; height: 120dp; line-height: 120dp; border-radius: 60dp; font-size: 30dp; }
+.b_touch_button:active { background-color: #d8a820; }

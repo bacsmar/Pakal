@@ -9,12 +9,10 @@
 #ifdef PAKAL_WIN32_PLATFORM
 	#ifdef _DEBUG
 		//#pragma comment(lib, "Pakal_II.lib")	// engine name
-		#pragma comment(lib, "box2d.lib")
-		#pragma comment(lib, "Irrlicht.lib") 
-		#pragma comment(lib, "lua.lib")
-		#pragma comment(lib, "oolua.lib")		
-		//#pragma comment(lib, "PocoFoundationmdd.lib")
-		//#pragma comment(lib, "tinythread.lib")
+		//#pragma comment(lib, "box2d.lib")
+		//#pragma comment(lib, "Irrlicht.lib") 
+		//#pragma comment(lib, "lua.lib")
+		//#pragma comment(lib, "oolua.lib")		
 #if ROCKET_STATIC_LIB
 		//#pragma comment(lib, "RocketCore.lib")
 		//#pragma comment(lib, "RocketControls.lib")
@@ -27,6 +25,8 @@
 	#endif
 
 #endif
+
+#include <persist/pugixml/pugixml.cpp>
 
 #ifdef PAKAL_WIN32_PLATFORM
 	#include <windows.h>
