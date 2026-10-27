@@ -30,6 +30,14 @@ if(NOT WIN32)
     file(WRITE "${CMAKE_BINARY_DIR}/config.h" "#include \"Config.h\"\n")
 endif()
 
+# The engine's core alone (no backends, the dummy systems), built with every build so that the core stays apart from
+# them; PAKAL_BUILD_CORE_ONLY builds it and nothing else (no bgfx, SFML, Box2D, Assimp or RmlUi needed)
+option(PAKAL_BUILD_CORE_ONLY "Build only the engine's core (PakalCore and CoreTests)" OFF)
+include(${CMAKE_SOURCE_DIR}/cmake/PakalCore.cmake)
+if(PAKAL_BUILD_CORE_ONLY)
+    return()
+endif()
+
 # Include directories
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/source)

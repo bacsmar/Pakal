@@ -93,6 +93,19 @@ cmake --build --preset win64-release
 
 The build output is in `build-win64\bin`: `PakalPlayer.exe`, `Pakal.dll`, `ContraGameModule.dll`, and the bgfx shaders for Direct3D 11.
 
+### 3b. The core alone
+
+Every build also builds `PakalCore` (`cmake/PakalCore.cmake`): the engine's core without its backends (no bgfx, Box2D,
+SFML, Assimp or RmlUi; the dummy graphics, physics, UI, window and input systems take their place), and `CoreTests`,
+which starts the engine with it, runs its systems and ends it. The target only sees `source/`, so a core file that
+includes a backend breaks it. To build only the core (bgfx need not be built):
+
+```bat
+cmake --preset win64-core
+cmake --build --preset win64-core-release
+build-core\bin\CoreTests.exe
+```
+
 ### 4. Run ContraGame
 
 ```bat

@@ -14,12 +14,25 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "win64-core",
+      "inherits": "win64",
+      "displayName": "Windows x64, the engine's core alone",
+      "description": "PakalCore and CoreTests only: no backends, no games (bgfx need not be built).",
+      "binaryDir": "${sourceDir}/build-core",
+      "cacheVariables": { "PAKAL_BUILD_CORE_ONLY": "ON" }
     }
   ],
   "buildPresets": [
     {
       "name": "win64-release",
       "configurePreset": "win64",
+      "configuration": "Release"
+    },
+    {
+      "name": "win64-core-release",
+      "configurePreset": "win64-core",
       "configuration": "Release"
     }
   ]
