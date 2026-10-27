@@ -44,6 +44,8 @@
 	#include "sfml/InputManager_SFML.h"
 #endif
 
+#include "DummyOSManagers.h"
+
 #if PAKAL_USE_ROCKET == 1
 	#include "rocketgui/IrrRocketGUI.h"
 #if defined(PAKAL_WIN32_PLATFORM)
@@ -109,6 +111,11 @@ Engine::Settings::Settings()
 #else
 	sound_manager_allocator = [](Engine*) { return new NullSoundManager(); };
 #endif
+
+	// Without a platform's window and input (the core alone), ones that do nothing; a platform that has its own (Android)
+	// sets them after this
+	os_manager_settings.input_manager_allocator = [](OSManager*) { return new DummyInputManager(); };
+	os_manager_settings.window_manager_allocator = [](OSManager*) { return new DummyWindowManager(); };
 
 #if PAKAL_USE_SFML_INPUT == 1
 	os_manager_settings.input_manager_allocator = [](OSManager* manager){ return new InputManager_SFML(manager); };
