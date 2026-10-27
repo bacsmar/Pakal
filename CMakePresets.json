@@ -4,36 +4,30 @@
   "configurePresets": [
     {
       "name": "win64",
-      "displayName": "Windows x64 (MSVC, vcpkg static)",
-      "description": "Run from a Developer shell (vcvars64). Requires vcpkg at VCPKG_ROOT and bgfx built in external/bgfx/.build/win64_vs2022 (see docs/BUILDING.md).",
+      "displayName": "Windows x64 (MSVC, vcpkg)",
+      "description": "Run from a Developer shell (vcvars64). Requires vcpkg at VCPKG_ROOT.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build-win64",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
       }
     },
     {
-      "name": "win64-core",
-      "inherits": "win64",
-      "displayName": "Windows x64, the engine's core alone",
-      "description": "PakalCore and CoreTests only: no backends, no games (bgfx need not be built).",
-      "binaryDir": "${sourceDir}/build-core",
-      "cacheVariables": { "PAKAL_BUILD_CORE_ONLY": "ON" }
+      "name": "linux",
+      "displayName": "Linux (GCC or Clang, vcpkg)",
+      "description": "Requires vcpkg at VCPKG_ROOT.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
     }
   ],
   "buildPresets": [
-    {
-      "name": "win64-release",
-      "configurePreset": "win64",
-      "configuration": "Release"
-    },
-    {
-      "name": "win64-core-release",
-      "configurePreset": "win64-core",
-      "configuration": "Release"
-    }
+    { "name": "win64-release", "configurePreset": "win64", "configuration": "Release" },
+    { "name": "linux-release", "configurePreset": "linux", "configuration": "Release" }
   ]
 }
