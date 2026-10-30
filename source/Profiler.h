@@ -41,6 +41,13 @@ namespace Pakal
 		void frame(double milliseconds);
 		// The run is over: the summary record (every frame's percentiles), and the file is closed
 		void finish();
+		// A recording started while the program runs (a development menu): from now on, into this file (one before it
+		// is finished first). stop() writes its summary and closes it, and the profiler goes back to how it started
+		bool start(const std::string& path);
+		void stop();
+		bool recording() const { return m_recording; }
+		const std::string& recording_path() const { return m_recordingPath; }
+		double recording_seconds() const;
 		// PAKAL_PROFILE_SECONDS have passed: the program should end (the engine asks each frame)
 		bool time_is_up() const;
 
@@ -55,6 +62,8 @@ namespace Pakal
 		};
 
 		bool m_enabled = false;
+		bool m_recording = false;
+		std::string m_recordingPath;
 		std::mutex m_mutex;
 		std::FILE* m_file = nullptr;
 		std::map<std::string, Section> m_sections;       // this second's
@@ -64,6 +73,7 @@ namespace Pakal
 		std::vector<float> m_second;                     // this second's frame times
 		std::vector<float> m_all;                        // every frame's (the summary)
 		std::map<std::string, Section> m_allSections;
+		size_t m_allSectionFrames = 0;   // the frames of the seconds those sum (the warm-up left out)
 		std::chrono::steady_clock::time_point m_start, m_last;
 		bool m_finished = false;
 		double m_skipSeconds = 0.0;   // PAKAL_PROFILE_SKIP

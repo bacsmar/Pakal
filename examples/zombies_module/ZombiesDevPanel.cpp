@@ -217,7 +217,7 @@ namespace Zombies
 		}
 		m_wasEditing = m_edit->editing();
 
-		bool reload = m_edit->take_reload();
+		bool reload = m_edit->take_reload() || m_liveFailed.exchange(false);
 		static auto lastCheck = std::chrono::steady_clock::now();
 		const auto now = std::chrono::steady_clock::now();
 		if (m_edit->live_reload() && now - lastCheck > std::chrono::milliseconds(500))
@@ -230,9 +230,34 @@ namespace Zombies
 				m_levelWriteTime = written;
 				if (written != m_edit->saved_at())
 				{
-					LOG_INFO("[ZombiesLevel] '%s' changed: reloading it", m_levelPath.c_str());
-					reload = true;
+					// only its objects changed (moved, added, a prefab or an override): brought in line where they are;
+					// anything else (walls, scripts, rules) builds the level again
+					auto document = std::make_unique<LevelDocument>();
+					std::string failure;
+					if (load_level(m_levelPath, *document, failure))
+					{
+						document->assign_keys();
+						Json before = m_edit->document().to_json(), after = document->to_json();
+						before.erase("objects");
+						after.erase("objects");
+						if (before == after)
+						{
+							LOG_INFO("[ZombiesLevel] '%s' changed: its objects are brought in line", m_levelPath.c_str());
+							update_objects_live(std::move(document));
+						}
+						else
+						{
+							LOG_INFO("[ZombiesLevel] '%s' changed: reloading it", m_levelPath.c_str());
+							reload = true;
+						}
+					}
 				}
+			}
+			// a prefab's file changed: the objects made from it are made again
+			if (!m_prefabs.refresh().empty())
+			{
+				auto document = std::make_unique<LevelDocument>(m_edit->document());
+				update_objects_live(std::move(document));
 			}
 		}
 		if (!reload) return;
@@ -245,6 +270,29 @@ namespace Zombies
 		m_carryEdit.selected = m_edit->selected();
 		m_transitionTo = m_levelPath;
 		m_transitionMission = m_missionId;
+	}
+
+	void ZombiesLevelState::update_objects_live(std::unique_ptr<LevelDocument> document)
+	{
+		// on the graphics thread (the models are made there), not waited for: the state's lock is held here and the panel
+		// takes it there
+		std::shared_ptr<LevelDocument> shared(std::move(document));
+		m_graphics->execute_block([this, shared]()
+		{
+			std::lock_guard<std::recursive_mutex> lock(m_stateMutex);
+			if (!m_game || !m_edit) return;
+			if (!m_levelObjects.update(*shared, m_game.get(), m_objectHandle))
+			{
+				LOG_INFO("[ZombiesLevel] %s (an object of the level's own rules): the level is built again", m_levelObjects.not_in_place().c_str());
+				m_liveFailed = true;   // the next update builds the level again
+				return;
+			}
+			size_t props = 0;
+			for (const auto& instance : m_levelObjects.instances()) props += instance.ownActor ? 1 : 0;
+			LOG_INFO("[ZombiesLevel] %zu objects in line, %zu of them props made from their components", m_levelObjects.instances().size(), props);
+			m_edit->replace_document(*shared);
+			for (size_t i = 0; i < m_levelObjects.instances().size(); ++i) m_edit->set_mesh(i, m_levelObjects.mesh_at(i));
+		});
 	}
 
 	// The level's picture settings minus what the dev panel turned off

@@ -89,6 +89,98 @@ center, 3 x 3 blocks around the main square:
 
 Trees are mixed everywhere (the common ones and some pines: `ops.TREES_MIX`); buildings stay low (3-4 stories).
 
+## Coastal towns: a street network from curves (`"layout": "coastal"`)
+
+    lb.py generate <scene> --force --brief-file brief.json      # {"layout": "coastal", "seed": 7, "theme": ..., "coastal": {...}}
+    python tools/levelbuilder/streetnet.py --seed 7 --out net.png  # the network alone, as a picture (no Blender)
+
+A town that is not a grid, the way coastal towns grow (`coastal.py`, which `generate.py` calls for this layout):
+
+1. **The network** (`streetnet.py`). The coast is a smooth curve with noise, the sea to the west. The promenade follows it;
+   the avenues are the coast offset inland at block depths (with low-frequency noise, so they bend and do not stay
+   parallel); a winding street follows the foot of the hill. Cross streets start at the coast and head inland along its
+   normal turned by their district's angle: where the coast curves they fan out and the blocks become wedges and
+   trapezoids. A river comes down from the hill and splits the town into two districts (each with its own angle and block
+   length); only the avenues named in `river.bridges` cross it. Some cross streets end early (T junctions, dead ends) and
+   some reach the hill as pedestrian alleys. Optional: a sand beach in one district, a pier with a round platform. Blocks
+   are what is left of the land (`polygonize`); one or two next to the promenade become plazas. Everything is a shapely
+   geometry; the same seed gives the same network.
+2. **Meshes** (`roadmesh.py`, `terrain.py`): the streets are our own glTF meshes cut into 32 m cells, not tiles: asphalt
+   (Downtown City's texture, world UVs so the cells match) 10 cm below the sidewalks, curbs, concrete sidewalks,
+   cobblestone (Medieval Village's UnevenBrick) for the promenade, plazas and alleys, lane markings (double yellow on
+   avenues, dashed on streets, cut at the crossings), zebra crossings on both sides of each crossing, bridge parapets.
+   Around them: the sea and the seawall, the river between stone walls, grass banks, the beach sloping into the water,
+   the pier (deck, V legs, railings, a sculpture), a hill heightfield, and a backdrop model (the sea to the horizon, land
+   rising into mountains) for camera pans.
+   Out in the water (`coastal.py`): the brief's `sea_rocks` (`count`, `off` meters from the shore, `scale`, `apart`, a
+   role: rocks scaled up, their foot sunk) and `pier_boats` (`count`, `role`, `off` meters from the deck's side, `draft`
+   meters under the water, `crew` [lo, hi], and an optional `ship` with its own `role`, `off` past the pier's tip and
+   `draft`). Each moored boat lies along the pier and carries crew spots; the level lists them as `"crowd"`
+   (`{"at": [x, y, z], "yaw", "group"}`, meters and degrees, yaw 0 facing south) for a game to put people on.
+3. **Buildings in lots** (`parcels.py`): along every side of a block, longest first, buildings side by side with their
+   front on the street (a continuous street front), never outside the block nor over another; the rest is the block's
+   yard. Each block gets a **type** by its band (distance from the coast): the brief's `block_types` (for example
+   commercial, mixed, residential, park) give the roles that fill it (`mix`) and the role of the first lot on each side
+   (`corner`, with `corner_chance`: the corner shop); `block_bands` weigh the types per band. A park block has no
+   buildings and gets the `park` region. Where a block's front has no building, a **wall** (`bardas`: height,
+   thickness, material) closes it, with collision, so the street stays a wall. A landmark (church, city hall) faces
+   each plaza; a kiosk or fountain stands in it.
+   **One block made again**: the brief's `block_overrides` (`{"<block id>": {"seed", "type", "mix"}}`) fill that block
+   with its own seed, type and role mix. It first draws as it would have (results thrown away), so the town's random
+   streams go on the same and every other block keeps its buildings. `lb.py generate <scene> --brief-file <brief>
+   --force --only-block <id>` then keeps the scene's everything else as it was (hand edits included): the dressing
+   after the buildings (signs, plants, clutter) draws from streams shared by the whole town, so only the block's things
+   (its zone, or lying in its polygon) are taken from the new run (`coastal.keep_outside`). Gas stations, strip malls
+   and shopping blocks are not made by type and cannot be overridden.
+   **Plazas** (`plazas.py`, the brief's `plazas`: one kind per plaza) are laid out the Mexican way. Paved walks run from
+   the corners and the sides to the center. Between them are garden beds: raised grass behind a low stone curb,
+   planted by the `garden` spawners with trees, bushes and flowers, with benches along their edges. The kinds:
+   - `civic`: beds in every wedge, the kiosk in the middle;
+   - `children`: the two largest beds become sand pits with play equipment (the `playground` region and role);
+   - `dance`: a large open floor in the middle, beds only around it.
+   The middle holds a kiosk (civic, dance) or a fountain (the others); the brief's `plaza_centerpiece` picks one for all.
+   Benches lean on the beds facing the walks (a spawner's `yaw`: `face:<region>` or `away:<region>`).
+4. **Lots dressed** (`dress.py`, the preset's `lots`): each building brings its own things, by role, as one group: on
+   the facade at a height (signs, awnings, air conditioners, window planters, ivy, fire escapes on tall ones), in front
+   on the sidewalk (crates, tables, planters, a mailbox, a tree), at the curb (a parked car along the street), behind it
+   in the yard (a doghouse, a washing line) and on the roof (vents, dishes, antennas). Wall pieces sit with their back
+   on the facade; ground pieces respect the occupancy grid.
+5. **Set pieces** (`setpieces.py`, the preset's `setpieces`): a scene told in one place (a barricade at a crossing, a
+   crash, a checkpoint, a looted shop), items placed in the anchor's frame (along and across the street, or along the
+   facade and toward the street), instead of clutter spread evenly.
+6. **Over the streets** (`overhead.py`, the preset's `overhead`): power poles along one side of the streets with sagging
+   cables between them and across to the facades opposite; strings of papel picado (cut-paper flags) from facade to
+   facade on the streets near the plazas and the promenade. Cables and flags are our own meshes
+   (`roadmesh.cable`, `roadmesh.bunting`).
+7. **Spawners** (`spawners.py`, `presets/coastal.json`; a brief's `skip_spawners` lists the presets' spawners it leaves
+   out): data, as in Gaia: candidate places (Poisson disk, clusters, rows
+   along the streets at an offset from the curb, a line along the coast, the perimeter of a region such as the
+   buildings), a fitness from masks evaluated at each place (inside a region, distance to a region, value noise;
+   multiplied or combined), per-instance variation (yaw random, facing the street or a region, along the street; scale),
+   and an occupancy grid of real footprints so nothing overlaps. Big things first (cars, palms), then props on a rhythm
+   (lights, trash bins, street trees, hydrants), then vegetation in patches against the walls and in the yards and parks,
+   then decals. A ring of cheap background buildings (`background`) continues the town outside the playable area, for
+   camera pans.
+8. **Wear** (`decals.py`): our own decal atlas (potholes, cracks, asphalt patches, stains, mud, broken sidewalk, drips and
+   fallen plaster for facades), placed by spawners on the ground and on building fronts, alpha-blended.
+9. **Collision at body height** (`tools/zombies_convert/collision_shapes.py`): what a model has between 0.15 and 1.7 m
+   above the floor, seen from above. A gazebo collides with its four posts and lets the player walk under its roof; an
+   awning collides with nothing; a bench collides with its seat. It comes from `<model>.colliders.json` next to the
+   model when there is one (boxes, capsules and spheres an extractor wrote, for example from a Unity prefab; a "mesh"
+   entry adds the model's own slice). Otherwise it comes from the model's triangles cut to that band and rasterized at
+   5 cm. Convex pieces become solid polygons, the rest closed chains. Buildings keep their footprint box, so an open
+   door does not let the player in. Results are cached by content in `Assets/levelgen/_outlines`.
+10. **Gameplay**: closed collision chains around the sea, the river (not under the bridges) and the hill; filled
+   collision (convex pieces, so their inside is not walkable either) for garden beds, walls and bridge rails; zombie
+   entrances where streets leave the playable area (each spawn point on a manhole, the theme's `manhole` role, marked
+   `"manhole": true` in the level's spawners) and at the top of the alleys; the start in a plaza; a reachability check (flood
+   fill on a 1 m grid from the start) that reports the walkable area reached and any entrance with no path.
+
+**Themes** (`theme.py`): the models of each role can come from packs other than Quaternius, extracted under `Assets/`
+when a level needs them. A theme JSON names its packs, the command that extracts models, and per role the packs and a
+name pattern; its models enter the catalog with their path under `Assets/` as id and are used where they are. A theme
+can also say which models break (as which game object). Without a theme, the roles fall back to the catalog's.
+
 ## Building generator (`buildings.py`)
 
 Houses are composed from the modular pieces of the Medieval Village pack, whose walls are 2 m wide and 3.12 m tall and

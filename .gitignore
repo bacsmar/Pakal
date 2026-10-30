@@ -80,3 +80,6 @@ examples/zombies_module/assets/generated/
 # This machine's own settings
 android/local_paths.json
 tools/bench_budgets.local.json
+
+# An open level editor's request folder (tools/level_doc/LiveEditing)
+*.live/

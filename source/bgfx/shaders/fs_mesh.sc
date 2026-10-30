@@ -11,6 +11,7 @@ uniform vec4 u_ambient;    // rgb: ambient color from above (the sky)
 uniform vec4 u_ambientGround; // rgb: ambient color from below (the light bounced by the ground)
 uniform vec4 u_tint;       // material color multiplier
 uniform vec4 u_material;   // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit
+uniform vec4 u_ground;     // x: how much a second, turned read of the texture breaks its tiling, y: the macro variation (0: off)
 
 // Value noise in 3D (0..1): smooth bumps one unit apart
 float clay_hash(vec3 p)
@@ -41,6 +42,11 @@ float clay_surface(vec3 p)
 void main()
 {
 	vec4 texel = texture2D(s_texColor, v_texcoord0);
+	if (u_ground.x + u_ground.y > 0.0)
+	{
+		texel = ground_detile(texel, texture2D(s_texColor, ground_second_uv(v_texcoord0)), v_worldpos.xz, u_ground);
+	}
+	texel = paint_texel(texel, v_texcoord0);
 	vec4 albedo = texel * u_tint;
 	// the cutout follows the texture alone: a faded model (u_tint.a) keeps its leaves
 	if (u_material.x > 0.0 && texel.a < u_material.x)

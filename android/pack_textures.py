@@ -64,14 +64,28 @@ def encode(texturec, source, target, kind):
         raise RuntimeError(f'texturec failed on {source}: {result.stdout}{result.stderr}')
 
 
+def tiny(path, limit=64):
+    """A palette (a color map of a few texels, sampled cell by cell): block compression would blend its cells, so it
+    stays as it is. Reads the size from the PNG or TGA header."""
+    head = Path(path).read_bytes()[:24]
+    if head[:8] == bytes([0x89]) + b'PNG\r\n' + bytes([0x1a]) + b'\n':
+        width, height = int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big')
+    elif Path(path).suffix.lower() == '.tga' and len(head) >= 16:
+        width, height = int.from_bytes(head[12:14], 'little'), int.from_bytes(head[14:16], 'little')
+    else:
+        return False
+    return 0 < width <= limit and 0 < height <= limit
+
+
 def compress_textures(stage, cache, texturec):
     """Replaces every PNG/TGA under stage by its KTX. Returns (count, bytes before, bytes after)."""
     stage, cache = Path(stage), Path(cache)
     cache.mkdir(parents=True, exist_ok=True)
     kinds = texture_kinds(stage)
-    # The interface's images stay PNG: RmlUi decodes them itself and knows nothing of the .ktx copies
+    # The interface's images stay PNG: RmlUi decodes them itself and knows nothing of the .ktx copies (any folder named
+    # ui: Assets/ui, a game's own Assets/<game>/ui, a pack's Assets/<game>/<pack>/ui with the shop's weapon pictures)
     sources = [f for f in stage.rglob('*') if f.is_file() and f.suffix.lower() in SOURCES
-               and 'ui' not in f.relative_to(stage).parts[:2]]
+               and 'ui' not in f.relative_to(stage).parts[:-1] and not tiny(f)]
 
     # The kit repeats textures in every model's folder: each different one (contents and kind) is encoded once
     keys = {}

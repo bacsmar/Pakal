@@ -36,7 +36,9 @@ namespace Pakal
 		bool unload_document(unsigned id) override;
 		void show_document(unsigned id, bool autoresize = true) override;
 		void hide_document(unsigned id) override;
+		void bring_to_front(unsigned id) override;
 		bool load_font(const Path& resourcePath) override;
+		bool load_fallback_font(const Path& resourcePath) override;
 		void set_theme(const Path& themePath) override;
 
 		void draw_ui() override;
@@ -49,6 +51,11 @@ namespace Pakal
 		void set_class(unsigned document, const std::string& element, const std::string& name, bool on) override;
 		void set_property(unsigned document, const std::string& element, const std::string& name, const std::string& value) override;
 		void set_attribute(unsigned document, const std::string& element, const std::string& name, const std::string& value) override;
+		bool create_data_model(const std::string& model, const std::string& json) override;
+		void remove_data_model(const std::string& model) override;
+		void set_data(const std::string& model, const std::string& variable, const std::string& json) override;
+		void add_data_event(const std::string& model, const std::string& name, DataEventCallback callback) override;
+		void set_strings(const std::map<std::string, std::string>& strings) override;
 		unsigned add_click_listener(unsigned document, ClickCallback callback) override;
 		void remove_click_listener(unsigned listener) override;
 		bool is_over_ui(int x, int y) const override;
@@ -58,6 +65,7 @@ namespace Pakal
 
 		class Backend;
 		class ClickListener;
+		struct DataModel;
 
 	private:
 		Rml::Element* find(unsigned document, const std::string& element) const;
@@ -94,5 +102,6 @@ namespace Pakal
 		mutable std::recursive_mutex m_lock;
 		IInputManager* m_input = nullptr;
 		unsigned m_ids[7] = {};
+		std::map<std::string, std::unique_ptr<DataModel>> m_models;
 	};
 }

@@ -1,6 +1,7 @@
 #include "SoundManagerAAudio.h"
 
 #include "LogMgr.h"
+#include "ResourceManager.h"
 
 #include <algorithm>
 #include <cstring>
@@ -52,7 +53,14 @@ namespace Pakal
 	{
 		if (m_stream)
 		{
+			// stopped before it is closed: Android 8's AAudio closed while still stopping let go of a binder
+			// object twice, and the app crashed as it quit
 			AAudioStream_requestStop(m_stream);
+			aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STOPPING;
+			for (int i = 0; i < 4 && state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_DISCONNECTED; ++i)
+			{
+				if (AAudioStream_waitForStateChange(m_stream, state, &state, 100 * 1000000LL) != AAUDIO_OK) break;
+			}
 			AAudioStream_close(m_stream);
 			m_stream = nullptr;
 		}
@@ -62,9 +70,10 @@ namespace Pakal
 
 	std::shared_ptr<PcmSound> SoundManagerAAudio::load_wav(const std::string& path)
 	{
-		std::ifstream file(path, std::ios::binary);
-		if (!file) return nullptr;
-		const std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		// from wherever the resource manager finds it (the app's storage, the APK)
+		const auto shared = ResourceMgr.read_bytes(path);
+		if (!shared) return nullptr;
+		const std::vector<uint8_t>& bytes = *shared;
 		if (bytes.size() < 44 || std::memcmp(bytes.data(), "RIFF", 4) != 0 || std::memcmp(bytes.data() + 8, "WAVE", 4) != 0) return nullptr;
 
 		int channels = 1, bits = 16, rate = 44100;

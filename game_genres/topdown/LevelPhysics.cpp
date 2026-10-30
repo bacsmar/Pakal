@@ -11,6 +11,7 @@
 #include "gameplay/NavGrid2D.h"
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -42,9 +43,13 @@ namespace Pakal::TopDown
 			{
 				const float hx = doc.meters(wall.w) * 0.5f;
 				const float hy = doc.meters(wall.h) * 0.5f;
-				world.add_static_box(b2Vec2(x, y), b2Vec2(hx, hy), category, userData);
-				extend(x - hx, y - hy);
-				extend(x + hx, y + hy);
+				// a turned box (a car along a diagonal street): its own extent, not the one of the box around it
+				const float angle = static_cast<float>(wall.angle) * 3.14159265f / 180.0f;
+				world.add_static_box(b2Vec2(x, y), b2Vec2(hx, hy), category, userData, angle);
+				const float c = std::abs(std::cos(angle)), s = std::abs(std::sin(angle));
+				const float ex = hx * c + hy * s, ey = hx * s + hy * c;
+				extend(x - ex, y - ey);
+				extend(x + ex, y + ey);
 				++count.walls;
 			}
 			else if (wall.shape == "circle")

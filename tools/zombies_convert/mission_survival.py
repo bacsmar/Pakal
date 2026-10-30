@@ -19,6 +19,8 @@ TEMPLATE_OF = {
     'Vehicle_Pickup_Armored': 'Explosive_Gazelle_Brown', 'Vehicle_Sports_Armored': 'Explosive_Stang_purple',
 }
 ROUND = {'TrafficCone_1', 'TrafficCone_2', 'FireHydrant', 'Barrel', 'TrashBag_1'}
+# A model shown in a breakable's place once it is broken (a burnt gas pump): a part of the same object, role "broken"
+BROKEN_OF = {}
 
 GIFT_ID = 45035
 START_POINT_ID = 45036
@@ -50,12 +52,14 @@ class Props:
         object_id = level.next_id
         level.next_id += 1
         level.place(model, x, y, yaw, scale=scale, object_id=object_id, label=template)
+        if BROKEN_OF.get(model):
+            level.place(BROKEN_OF[model], x, y, yaw, scale=scale, object_id=object_id, label=template)
+            level.objects[-1]['role'] = 'broken'
         cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
         if model in ROUND:
             wall = {'shape': 'circle', 'x': round(cx * 100, 2), 'y': round(cy * 100, 2), 'd': round(max(box[2] - box[0], box[3] - box[1]) * 100, 2)}
         else:
-            wall = {'shape': 'rect', 'x': round(cx * 100, 2), 'y': round(cy * 100, 2),
-                    'w': round((box[2] - box[0]) * 100, 2), 'h': round((box[3] - box[1]) * 100, 2)}
+            wall = citykit.box_wall(low, high, x, y, yaw, scale)
         wall.update({'id': object_id, 'source': 'prop'})
         level.walls.append(wall)
         level.destructibles.append({'id': object_id, 'name': template, 'x': round(x * 100, 2), 'y': round(y * 100, 2),

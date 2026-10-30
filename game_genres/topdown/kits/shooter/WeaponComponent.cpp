@@ -15,16 +15,6 @@ namespace Pakal::TopDown
 {
 	namespace
 	{
-		// The trapezoid a melee weapon hits (MeleeWeapon): half widths at the player and at the reach (meters)
-		const float kMeleeNearHalfWidth = 0.1f;
-		const float kMeleeFarHalfWidth = 2.0f;
-		const float kFireClipSeconds = 0.35f;
-		const float kSwingClipSeconds = 0.3f;
-		const float kMuzzleForward = 0.4f;       // where bullets start, in front of the player
-		const float kMuzzleSide = 0.15f;         // half the distance between the two guns
-		const float kSwingHeight = 1.8f;         // a swing reaches this high from the feet (Height.h)
-		const float kMuzzleHeight = 1.0f;        // bullets fly this high over the shooter's feet
-
 		// Whether a circle at (x, y) touches the trapezoid from (-near, 0)-(near, 0) to (-far, reach)-(far, reach)
 		bool circle_touches_trapezoid(float x, float y, float radius, float nearHalf, float farHalf, float reach)
 		{
@@ -163,11 +153,11 @@ namespace Pakal::TopDown
 		const b2Vec2 facing = control ? control->facing() : b2Vec2(0.0f, 1.0f);
 		const b2Vec2 side(facing.y, -facing.x);
 		const GunRules& g = gun();
-		b2Vec2 from = actor().position + kMuzzleForward * facing;
+		b2Vec2 from = actor().position + g.muzzleForward * facing;
 		if (g.dualMuzzles)
 		{
 			m_leftMuzzle = !m_leftMuzzle;
-			from += (m_leftMuzzle ? -kMuzzleSide : kMuzzleSide) * side;
+			from += (m_leftMuzzle ? -g.muzzleSide : g.muzzleSide) * side;
 		}
 		for (int pellet = 0; pellet < g.pellets; ++pellet)
 		{
@@ -180,12 +170,13 @@ namespace Pakal::TopDown
 				direction = b2Vec2(facing.x * std::cos(angle) - facing.y * std::sin(angle), facing.x * std::sin(angle) + facing.y * std::cos(angle));
 			}
 			game.fire_bullet(from, direction, meters(g.bulletSpeed), g.bulletDamage * damageFactor, meters(g.rangeCm), g.piercing, g.knockback,
-				game.faction_of(actor()), height_of(actor()) + kMuzzleHeight);
+				game.faction_of(actor()), height_of(actor()) + g.muzzleHeight);
+			if (g.blastRadiusCm > 0.0f) game.make_last_bullet_burst(meters(g.blastRadiusCm), g.blastDamage * damageFactor);
 		}
 		game.play(g.fireSound, actor().position);
 		game.events.emit(ShotEvent{ from, facing });
 		if (m_firearm) --m_fireMagazine; else --m_magazine;
-		m_fireClipTimer = std::max(m_fireClipTimer, kFireClipSeconds);
+		m_fireClipTimer = std::max(m_fireClipTimer, g.fireClipSeconds);
 		m_recoil = 1.0f;
 	}
 
@@ -195,12 +186,13 @@ namespace Pakal::TopDown
 		const b2Vec2 facing = control ? control->facing() : b2Vec2(0.0f, 1.0f);
 		const float reach = meters(melee.reach);
 		game.play(melee.swingSound, actor().position);
-		m_swingTimer = kSwingClipSeconds;
+		m_swingTimer = melee.clipSeconds;
+		++m_swings;
 		for (const auto& other : game.actors())
 		{
 			// it hits the characters hostile to the one swinging, and props
 			if (other.get() == &actor() || other->removed || !(other->kind == ActorKind::Prop || (other->kind == ActorKind::Character && game.hostile(actor(), *other)))
-				|| !heights_meet(actor(), *other, kSwingHeight))
+				|| !heights_meet(actor(), *other, melee.height))
 			{
 				continue;
 			}
@@ -215,7 +207,7 @@ namespace Pakal::TopDown
 			{
 				// in the weapon's frame: y ahead, x to the side
 				const b2Vec2 side(facing.y, -facing.x);
-				hit = circle_touches_trapezoid(b2Dot(to, side), b2Dot(to, facing), radius, kMeleeNearHalfWidth, kMeleeFarHalfWidth, reach);
+				hit = circle_touches_trapezoid(b2Dot(to, side), b2Dot(to, facing), radius, melee.nearHalfWidth, melee.farHalfWidth, reach);
 			}
 			if (hit)
 			{

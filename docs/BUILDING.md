@@ -81,6 +81,10 @@ msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformTool
 
 `PlatformToolset=v145` is the toolset of Visual Studio 2026. Use `v143` with Visual Studio 2022. The libraries are written to `external\bgfx\.build\win64_vs2022\bin`.
 
+Pakal carries a few fixes to bgfx as patches (`patches/bgfx/*.patch`, e.g. the OpenGL barrier that lets draws read
+what a compute shader wrote). The Android build applies them to the submodule when it configures; for the desktop
+libraries apply them before building bgfx: `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+
 ### 3. Configure and build
 
 Set `VCPKG_ROOT` to your vcpkg folder, then from a Developer shell:
@@ -92,6 +96,19 @@ cmake --build --preset win64-release
 ```
 
 The build output is in `build-win64\bin`: `PakalPlayer.exe`, `Pakal.dll`, `ContraGameModule.dll`, and the bgfx shaders for Direct3D 11.
+
+### 3b. The core alone
+
+Every build also builds `PakalCore` (`cmake/PakalCore.cmake`): the engine's core without its backends (no bgfx, Box2D,
+SFML, Assimp or RmlUi; the dummy graphics, physics, UI, window and input systems take their place), and `CoreTests`,
+which starts the engine with it, runs its systems and ends it. The target only sees `source/`, so a core file that
+includes a backend breaks it. To build only the core (bgfx need not be built):
+
+```bat
+cmake --preset win64-core
+cmake --build --preset win64-core-release
+build-core\bin\CoreTests.exe
+```
 
 ### 4. Run ContraGame
 

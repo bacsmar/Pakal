@@ -29,6 +29,7 @@ namespace Pakal::TopDown
 		read_floats(json.value("ambientGround", nlohmann::json()), look.ambientGround, 3);
 		read_floats(json.value("skyTop", nlohmann::json()), look.skyTop, 3);
 		read_floats(json.value("skyHorizon", nlohmann::json()), look.skyHorizon, 3);
+		look.skyClouds = json.value("skyClouds", look.skyClouds);
 		look.gloss = json.value("gloss", kDefaultGloss);
 
 		auto& shadows = look.shadows;
@@ -55,6 +56,18 @@ namespace Pakal::TopDown
 		post.aoRadius = pj.value("aoRadius", post.aoRadius);
 		post.aoBias = pj.value("aoBias", post.aoBias);
 		post.aoRange = pj.value("aoRange", post.aoRange);
+		// "fog": {"density", "start", "max", "sky", "horizon", "color"}; its color, the sky's horizon unless it says one
+		const nlohmann::json fj = pj.value("fog", nlohmann::json::object());
+		if (fj.is_object() && !fj.empty())
+		{
+			for (int i = 0; i < 3; ++i) post.fogColor[i] = look.skyHorizon[i];
+			read_floats(fj.value("color", nlohmann::json()), post.fogColor, 3);
+			post.fogDensity = fj.value("density", post.fogDensity);
+			post.fogStart = fj.value("start", post.fogStart);
+			post.fogMax = fj.value("max", post.fogMax);
+			post.fogSky = fj.value("sky", post.fogSky);
+			post.fogHorizon = fj.value("horizon", post.fogHorizon);
+		}
 		return look;
 	}
 
@@ -64,6 +77,7 @@ namespace Pakal::TopDown
 		graphics.set_ambient_light(ambient[0], ambient[1], ambient[2]);
 		graphics.set_ground_ambient_light(ambientGround[0], ambientGround[1], ambientGround[2]);
 		graphics.set_sky_colors(skyTop[0], skyTop[1], skyTop[2], skyHorizon[0], skyHorizon[1], skyHorizon[2]);
+		graphics.set_sky_clouds(skyClouds);
 		Pakal::MeshComponent3D_Bgfx::set_style(gloss, kGlossShininess);
 		graphics.set_shadows(shadows);
 		graphics.set_post_process(post);

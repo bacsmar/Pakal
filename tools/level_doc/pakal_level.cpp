@@ -10,6 +10,8 @@
 
 #include "LevelDocument.h"
 #include "LevelEditor.h"
+#include "LiveEditing.h"
+#include "PrefabLibrary.h"
 
 #include <cmath>
 #include <cstdio>
@@ -35,16 +37,25 @@ namespace
 			"  zones                        the zones and how many objects each holds\n"
 			"  validate                     the level's problems (exit 1 when there is an error)\n"
 			"  history                      the operations done and the ones that can be redone\n"
+			"  prefabs                      the level's prefabs (meta.prefabs, \"prefabs\" by default) and how many objects use each\n"
+			"  prefab <name>                a prefab with its bases merged in\n"
 			"\n"
 			"Changing (saved at once, undoable):\n"
 			"  move <object> <x> <y> [z]    | nudge <object> <dx> <dy>   | turn <object> <degrees>   | scale <object> <s>\n"
 			"  add <model> <x> <y> [key=K] [name=N] [role=R] [zone=Z] [yaw=D] [scale=S] [z=Z]\n"
 			"  copy <object> <x> <y> [key]  | delete <object>            | set <object> <field> <value>\n"
 			"  zone <name> <kind> <x0> <y0> <x1> <y1>    | unzone <name>  | spawn <x> <y>\n"
+			"  instantiate <prefab> <x> <y> [key=K] [zone=Z] [yaw=D] [scale=S] [z=Z]\n"
+			"  override <object> <path> <json value>   (path: \"/components/Destructible/health\")\n"
+			"  revert <object> [path]       | apply-to-prefab <object>   | make-prefab <object> <name>\n"
 			"  keys                         a readable key for every object without one\n"
 			"  zoning [all]                 each object's zone from where it stands\n"
-			"  do '<json operation>'        any operation of LevelEditor (see 'ops')\n"
+			"  do '<json operation>'        any operation of LevelEditor (see 'ops'); a JSON array: several, in order\n"
 			"  undo | redo\n"
+			"\n"
+			"With the level editor open on the level, changes are done in it (undoable there, with the person's own;\n"
+			"saved at once when nothing else was unsaved). --file changes the file instead.\n"
+			"  live                         is an editor open on it, and what it shows (selection, view, unsaved changes)\n"
 			"\n"
 			"Files:\n"
 			"  split [section...]           keep sections in files of their own (default: objects collision script)\n"
@@ -59,6 +70,7 @@ namespace
 		Json item = { { "key", o.key }, { "index", index }, { "name", o.name }, { "x", meters(doc, o.x) }, { "y", meters(doc, o.y) },
 			{ "z", meters(doc, o.z) }, { "yaw", o.rot[2] }, { "scale", o.scale }, { "mesh", o.mesh } };
 		if (o.id >= 0) item["id"] = o.id;
+		if (!o.prefab.empty()) item["prefab"] = o.prefab;
 		if (!o.role.empty()) item["role"] = o.role;
 		if (!o.zone.empty()) item["zone"] = o.zone;
 		return item;
@@ -114,8 +126,68 @@ int main(int argc, char** argv)
 		return args.empty() ? 1 : 0;
 	}
 	const bool asJson = flag(args, "--json");
+	const bool fileOnly = flag(args, "--file");
 	const std::string path = args[0];
 	const std::string command = args[1];
+	// the level editor open on this level takes the changes (LiveEditing)
+	Json editorState;
+	const bool live = !fileOnly && LiveEditing::editor_open(path, &editorState);
+	auto send = [&](const Json& request) -> int
+	{
+		Json reply;
+		std::string failure;
+		if (!LiveEditing::ask(path, request, reply, failure))
+		{
+			std::fprintf(stderr, "error: %s\n", failure.c_str());
+			return 1;
+		}
+		if (asJson)
+		{
+			std::printf("%s\n", reply.dump().c_str());
+			return reply.value("ok", false) ? 0 : 1;
+		}
+		const Json results = reply.value("results", Json::array());
+		for (size_t i = 0; i < results.size(); ++i)
+		{
+			if (results[i].is_string() && !results[i].get<std::string>().empty())
+				std::fprintf(stderr, "error: operation %zu: %s\n", i + 1, results[i].get<std::string>().c_str());
+		}
+		if (!reply.value("ok", false))
+		{
+			std::fprintf(stderr, "error: %s\n", reply.value("error", std::string("not done")).c_str());
+			size_t done = 0;
+			while (done < results.size() && results[done].is_string() && results[done].get<std::string>().empty()) ++done;
+			if (done > 0)
+				std::fprintf(stderr, "(the first %zu were done in the editor%s)\n", done, reply.value("saved", false) ? " and saved" : ", not saved");
+			return 1;
+		}
+		const std::string what = reply.contains("what") ? ": " + reply["what"].get<std::string>() : std::string();
+		std::printf("done in the editor%s%s\n", what.c_str(), reply.value("saved", false) ? " (saved)" : " (not saved: the editor has unsaved changes of its own)");
+		return 0;
+	};
+	if (command == "live")
+	{
+		if (!live)
+		{
+			std::printf("%s\n", asJson ? "{\"open\":false}" : "no editor is open on this level");
+			return 1;
+		}
+		Json reply;
+		std::string failure;
+		if (!LiveEditing::ask(path, { { "query", "state" } }, reply, failure, 3.0))
+		{
+			std::fprintf(stderr, "error: an editor was open on this level but does not answer (%s)\n", failure.c_str());
+			return 1;
+		}
+		const Json state = reply.value("state", editorState);
+		std::printf("%s\n", asJson ? Json({ { "open", true }, { "state", state } }).dump().c_str() : state.dump(1).c_str());
+		return 0;
+	}
+	if (live && editorState.value("unsaved", false)
+		&& (command == "info" || command == "list" || command == "show" || command == "zones" || command == "validate"))
+	{
+		std::fprintf(stderr, "note: the editor open on this level has unsaved changes; this reads the file\n");
+	}
 	if (command == "ops")
 	{
 		for (const auto& line : LevelEditor::help()) std::printf("%s\n", line.c_str());
@@ -131,7 +203,10 @@ int main(int argc, char** argv)
 	}
 	const std::filesystem::path file(path);
 	const std::string historyFolder = (file.parent_path() / (file.stem().string() + ".history")).string();
+	PrefabLibrary prefabs;
+	prefabs.open(path, doc);
 	LevelEditor editor(doc);
+	editor.set_prefabs(&prefabs);
 	if (!editor.load_history(historyFolder, error))
 	{
 		std::fprintf(stderr, "error: %s\n", error.c_str());
@@ -227,10 +302,14 @@ int main(int argc, char** argv)
 			if (o.id >= 0 && w.id == o.id)
 			{
 				collision.push_back({ { "shape", w.shape }, { "x", meters(doc, w.x) }, { "y", meters(doc, w.y) }, { "w", meters(doc, w.w) },
-					{ "h", meters(doc, w.h) }, { "d", meters(doc, w.d) } });
+					{ "h", meters(doc, w.h) }, { "d", meters(doc, w.d) }, { "angle", w.angle } });
 			}
 		}
 		if (!collision.empty()) item["collision"] = collision;
+		if (!o.overrides.empty()) item["overrides"] = o.overrides;
+		Json resolved = prefabs.resolve(o, error);
+		if (!error.empty()) item["problem"] = error;
+		else if (!o.prefab.empty() || !o.overrides.empty()) item["resolved"] = resolved;
 		std::printf("%s\n", item.dump(asJson ? -1 : 1).c_str());
 		return 0;
 	}
@@ -268,6 +347,39 @@ int main(int argc, char** argv)
 		if (problems.empty()) std::printf("ok\n");
 		return errors ? 1 : 0;
 	}
+	if (command == "prefabs")
+	{
+		Json list = Json::array();
+		for (const auto& name : prefabs.names())
+		{
+			int uses = 0;
+			for (const auto& o : doc.objects) uses += o.prefab == name ? 1 : 0;
+			const Json& raw = prefabs.raw(name);
+			list.push_back({ { "name", name }, { "base", raw.is_object() ? raw.value("base", std::string()) : std::string() }, { "objects", uses } });
+		}
+		if (asJson) std::printf("%s\n", list.dump().c_str());
+		else
+		{
+			for (const auto& item : list)
+			{
+				std::printf("%-28s %-20s %d objects\n", item["name"].get<std::string>().c_str(), item["base"].get<std::string>().c_str(), item["objects"].get<int>());
+			}
+			std::printf("%zu prefabs in %s\n", list.size(), prefabs.folder().c_str());
+		}
+		return 0;
+	}
+	if (command == "prefab")
+	{
+		if (!need(1)) return 1;
+		Json prefab = prefabs.prefab(args[2], error);
+		if (!error.empty())
+		{
+			std::fprintf(stderr, "error: %s\n", error.c_str());
+			return 1;
+		}
+		std::printf("%s\n", prefab.dump(asJson ? -1 : 1).c_str());
+		return 0;
+	}
 	if (command == "history")
 	{
 		Json history = { { "done", editor.done() }, { "redo", editor.undone() } };
@@ -276,6 +388,10 @@ int main(int argc, char** argv)
 	}
 
 	// --- changing ---
+	if ((command == "undo" || command == "redo") && live)
+	{
+		return send({ { command, true } });
+	}
 	if (command == "undo" || command == "redo")
 	{
 		const std::string what = command == "undo" ? editor.undo() : editor.redo();
@@ -313,9 +429,9 @@ int main(int argc, char** argv)
 	{
 		if (!need(1)) return 1;
 		op = Json::parse(args[2], nullptr, false);
-		if (op.is_discarded() || !op.is_object())
+		if (op.is_discarded() || (!op.is_object() && !op.is_array()))
 		{
-			std::fprintf(stderr, "error: not a JSON object: %s\n", args[2].c_str());
+			std::fprintf(stderr, "error: not a JSON object or array: %s\n", args[2].c_str());
 			return 1;
 		}
 	}
@@ -377,6 +493,35 @@ int main(int argc, char** argv)
 		if (!need(2)) return 1;
 		op = { { "op", "spawn" }, { "x", num(2) }, { "y", num(3) } };
 	}
+	else if (command == "instantiate")
+	{
+		if (!need(3)) return 1;
+		op = { { "op", "instantiate" }, { "prefab", args[2] }, { "x", num(3) }, { "y", num(4) } };
+		named_fields(args, 5, op);
+	}
+	else if (command == "override")
+	{
+		if (!need(3)) return 1;
+		Json value = Json::parse(args[4], nullptr, false);
+		if (value.is_discarded()) value = args[4];   // a bare word is a string
+		op = { { "op", "override" }, { "object", args[2] }, { "path", args[3] }, { "value", value } };
+	}
+	else if (command == "revert")
+	{
+		if (!need(1)) return 1;
+		op = { { "op", "revert" }, { "object", args[2] } };
+		if (args.size() > 3) op["path"] = args[3];
+	}
+	else if (command == "apply-to-prefab")
+	{
+		if (!need(1)) return 1;
+		op = { { "op", "apply-to-prefab" }, { "object", args[2] } };
+	}
+	else if (command == "make-prefab")
+	{
+		if (!need(2)) return 1;
+		op = { { "op", "make-prefab" }, { "object", args[2] }, { "name", args[3] } };
+	}
 	else if (command == "keys")
 	{
 		op = { { "op", "keys" } };
@@ -390,11 +535,20 @@ int main(int argc, char** argv)
 		std::fprintf(stderr, "error: unknown command '%s' (pakal-level --help)\n", command.c_str());
 		return 1;
 	}
-	const std::string failure = editor.apply(op);
-	if (!failure.empty())
+	const Json ops = op.is_array() ? op : Json::array({ op });
+	if (live)
 	{
-		std::fprintf(stderr, "error: %s\n", failure.c_str());
-		return 1;
+		return send({ { "ops", ops } });
+	}
+	for (size_t i = 0; i < ops.size(); ++i)
+	{
+		const std::string failure = editor.apply(ops[i]);
+		if (!failure.empty())
+		{
+			std::fprintf(stderr, "error: operation %zu: %s\n", i + 1, failure.c_str());
+			if (i > 0 && save() == 0) std::fprintf(stderr, "(the %zu before it were done and saved)\n", i);
+			return 1;
+		}
 	}
 	if (int failed = save()) return failed;
 	std::printf("done: %s\n", op.dump().c_str());

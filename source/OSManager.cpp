@@ -1,6 +1,7 @@
 #include "OSManager.h"
 #include "SingletonHolder.h"
 #include "IInputManager.h"
+#include "LogMgr.h"
 
 using namespace Pakal;
 
@@ -69,4 +70,13 @@ void OSManager::on_window_destroyed(const WindowArgs& arg)
 {
 	m_windows_setup_task = TaskCompletionSource<WindowArgs>();
 	event_window_destroyed.notify(arg);
+}
+bool OSManager::share_file(const std::string& path, const std::string& title)
+{
+	if (m_share)
+	{
+		return m_share(path, title);
+	}
+	LOG_INFO("[OSManager] %s: %s", title.c_str(), path.c_str());
+	return false;
 }

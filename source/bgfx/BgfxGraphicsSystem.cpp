@@ -18,6 +18,8 @@
 #include "SpriteComponent_Bgfx.h"
 #include "MeshComponent3D_Bgfx.h"
 #include "BgfxCallbacks.h"
+#include "ResourceManager.h"
+#include "ZipSourceMiniz.h"
 #include "IUIManager.h"
 #include "CameraComponent_Bgfx.h"
 #include "CameraComponent3D_Bgfx.h"
@@ -36,9 +38,13 @@
 #include <bx/math.h>
 #include <bx/readerwriter.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
+#include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 #include <cstdio>
+#include <sstream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
@@ -47,16 +53,15 @@ namespace
 {
 	const bgfx::Memory* load_shader_memory(const char* path)
 	{
-		bx::FileReader reader;
-		if (!bx::open(&reader, path))
+		// from wherever the resource manager finds it (a folder, a zip, the APK)
+		const auto bytes = ResourceMgr.read_bytes(path);
+		if (!bytes)
 		{
 			return nullptr;
 		}
-
-		uint32_t size = static_cast<uint32_t>(bx::getSize(&reader));
+		const uint32_t size = static_cast<uint32_t>(bytes->size());
 		const bgfx::Memory* mem = bgfx::alloc(size + 1);
-		bx::read(&reader, mem->data, size, bx::ErrorAssert{});
-		bx::close(&reader);
+		if (size) std::memcpy(mem->data, bytes->data(), size);
 		mem->data[mem->size - 1] = '\0';
 		return mem;
 	}
@@ -166,6 +171,13 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::set_fsr(bool on)
 	{
+		// PAKAL_FSR (a launch's debug switch) wins over the game's saved option: a run told "no FSR" stays without it
+		if (const char* forced = std::getenv("PAKAL_FSR"))
+		{
+			const bool want = std::string(forced) != "0";
+			if (want != on) LOG_INFO("[BgfxGraphicsSystem] FSR %s asked, kept %s by PAKAL_FSR", on ? "on" : "off", want ? "on" : "off");
+			on = want;
+		}
 		m_fsr = on;
 		m_upscaler = on ? Upscaler::Fsr : Upscaler::Bilinear;
 		const float scale = std::clamp(on ? m_settings.fsr_scale : m_settings.plain_scale, 0.25f, 1.0f);
@@ -226,8 +238,12 @@ namespace Pakal
 		g.secondsSinceDown += seconds;
 		g.secondsSinceUp += seconds;
 		g.thermal = read_thermal_status();
-		if (!g.enabled || loading)
+		if (loading) g.warmup = 6;
+		const bool warming = g.warmup > 0;
+		if (warming) --g.warmup;
+		if (!g.enabled || loading || warming || m_governorHeld)
 		{
+			g.slow = 0;
 			return;
 		}
 		const bool hot = g.thermal >= 2;   // ATHERMAL_STATUS_MODERATE
@@ -312,6 +328,21 @@ namespace Pakal
 	void BgfxGraphicsSystem::on_init_graphics(const WindowArgs& args)
 	{
 		LOG_INFO("[BgfxGraphicsSystem] Initializing bgfx graphics system");
+		// the resource manager's zip source (miniz comes with bimg, which this backend links); the resource manager is
+		// initialized by now (the engine's run)
+		if (!ResourceMgr.has_source_factory<ZipSource>())
+		{
+			ResourceMgr.register_source<ZipSource>([]() -> ZipSource* { return new ZipSourceMiniz(); });
+		}
+		// PAKAL_MOUNT_ZIP=<a.zip>[;<b.zip>...]: their files read as if they were on the disk (a pack, a mod, a test)
+		if (const char* zips = std::getenv("PAKAL_MOUNT_ZIP"))
+		{
+			std::stringstream list(zips);
+			for (std::string zip; std::getline(list, zip, ';');)
+			{
+				if (!zip.empty()) ResourceMgr.add_source<ZipSource>(zip, true, std::string());
+			}
+		}
 		LOG_INFO("[BgfxGraphicsSystem] Window ID: %u, Resolution: %dx%d", args.windowId, args.size_x, args.size_y);
 
 		m_width = args.size_x;
@@ -432,6 +463,10 @@ namespace Pakal
 			LOG_INFO("[BgfxGraphicsSystem] GPU: %s (vendor 0x%04x, device 0x%04x, %u adapter(s))",
 				vendor == BGFX_PCI_ID_NVIDIA ? "NVIDIA" : vendor == BGFX_PCI_ID_AMD ? "AMD" : vendor == BGFX_PCI_ID_INTEL ? "Intel" : "other",
 				vendor, caps->deviceId, unsigned(caps->numGPUs));
+			// what a profiling session says the device draws with
+			char gpu[96];
+			std::snprintf(gpu, sizeof(gpu), "%s, vendor 0x%04x, device 0x%04x", bgfx::getRendererName(bgfx::getRendererType()), vendor, caps->deviceId);
+			Profiler::get().info("gpu", gpu);
 		}
 
 		ddInit();
@@ -569,8 +604,11 @@ namespace Pakal
 
 		// Sky first (depth test LEQUAL, drawn at the far plane), then the lit 3D meshes
 		render_sky();
+		m_frameDrawing = take_frame_drawing();
 		// Particles go first in the blended view (it keeps the order): a faded building in front of them is drawn after
 		render_particles();
+		// the GPU's particles: moved in the sun's view (the first to run), drawn with the blended things
+		m_gpuParticles.frame(dt_seconds, m_shadow_view_id, m_transparent_view_id);
 		{
 			PAKAL_PROFILE_SCOPE("gfx.meshes");   // the models' poses and draws (gfx.pose: the poses alone)
 			render_meshes3d(dt_seconds);
@@ -592,13 +630,8 @@ namespace Pakal
 			}
 		}
 
-		std::vector<Line3D> lines;
-		std::vector<Triangle3D> triangles;
-		{
-			std::lock_guard<std::mutex> lock(m_lineMutex);
-			lines.swap(m_pendingLines);
-			triangles.swap(m_pendingTriangles);
-		}
+		const std::vector<Line3D>& lines = m_frameDrawing.lines;
+		const std::vector<Triangle3D>& triangles = m_frameDrawing.triangles;
 		if (!triangles.empty())
 		{
 			DebugDrawEncoder encoder;
@@ -635,11 +668,7 @@ namespace Pakal
 		}
 
 		// Lines in pixels over the finished picture (an orthographic view of the whole screen)
-		std::vector<ScreenLine> screenLines;
-		{
-			std::lock_guard<std::mutex> lock(m_lineMutex);
-			screenLines.swap(m_pendingScreenLines);
-		}
+		const std::vector<ScreenLine>& screenLines = m_frameDrawing.screenLines;
 		if (!screenLines.empty())
 		{
 			float identity[16], ortho[16];
@@ -836,7 +865,8 @@ namespace Pakal
 	{
 		if (mesh)
 		{
-			m_meshes3d.push_back(mesh);
+			m_meshes3d.push_back(mesh);   // drawn one by one until the next regrouping takes it
+			m_loose.push_back(mesh);      // ... and walked every frame until the grid takes it
 		}
 	}
 
@@ -848,6 +878,13 @@ namespace Pakal
 			if (it != m_meshes3d.end())
 			{
 				m_meshes3d.erase(it);
+				// a copy in an instance group: the groups would keep a pointer to it (characters and pickups come and go
+				// all the time: those are in none, and the groups stay)
+				if (mesh->grouped()) ++m_meshesVersion;
+				// in the grid: it is made again before the next frame walks it; loose: out of the list
+				auto loose = std::find(m_loose.begin(), m_loose.end(), mesh);
+				if (loose != m_loose.end()) m_loose.erase(loose);
+				else m_gridStale = true;
 			}
 		}
 	}
@@ -917,15 +954,71 @@ namespace Pakal
 		m_pendingParticles.push_back({ at, radius, color, additive });
 	}
 
+	void BgfxGraphicsSystem::draw_ground_spot(const tmath::vector3df& at, float radius, uint32_t color, bool additive)
+	{
+		std::lock_guard<std::mutex> lock(m_lineMutex);
+		m_pendingParticles.push_back({ at, radius, color, additive, true });
+	}
+
+	void BgfxGraphicsSystem::draw_sprite_particle(const tmath::vector3df& at, float radius, uint32_t color, bool additive, uint16_t sprite, float angle)
+	{
+		std::lock_guard<std::mutex> lock(m_lineMutex);
+		m_pendingParticles.push_back({ at, radius, color, additive, false, sprite, angle });
+	}
+
+	void BgfxGraphicsSystem::draw_sprite_spot(const tmath::vector3df& at, float radius, uint32_t color, bool additive, uint16_t sprite, float angle)
+	{
+		std::lock_guard<std::mutex> lock(m_lineMutex);
+		m_pendingParticles.push_back({ at, radius, color, additive, true, sprite, angle });
+	}
+
+	void BgfxGraphicsSystem::set_particle_sprites(const std::string& texture, int columns, int rows)
+	{
+		MeshComponent3D_Bgfx::release_level_texture(m_particle_sheet);   // (the textures' shared cache counts its users: never destroyed here)
+		m_particle_sheet = BGFX_INVALID_HANDLE;
+		if (texture.empty() || columns < 1 || rows < 1) return;
+		m_particle_sheet = MeshComponent3D_Bgfx::load_level_texture(texture);
+		m_particle_sheet_size[0] = float(columns);
+		m_particle_sheet_size[1] = float(rows);
+		LOG_INFO("[BgfxGraphicsSystem] particle sprites: %s (%dx%d)%s", texture.c_str(), columns, rows,
+			bgfx::isValid(m_particle_sheet) ? "" : " could not be loaded");
+	}
+
+	void BgfxGraphicsSystem::commit_frame_drawing()
+	{
+		std::lock_guard<std::mutex> lock(m_lineMutex);
+		m_commits = true;
+		m_lastCommit = std::chrono::steady_clock::now();
+		m_committed.lines.swap(m_pendingLines);
+		m_committed.triangles.swap(m_pendingTriangles);
+		m_committed.screenLines.swap(m_pendingScreenLines);
+		m_committed.particles.swap(m_pendingParticles);
+		m_pendingLines.clear();
+		m_pendingTriangles.clear();
+		m_pendingScreenLines.clear();
+		m_pendingParticles.clear();
+	}
+
+	BgfxGraphicsSystem::Committed BgfxGraphicsSystem::take_frame_drawing()
+	{
+		std::lock_guard<std::mutex> lock(m_lineMutex);
+		// a copy: drawn again if the game has not committed another; a game that stopped committing (it left the level)
+		// gets the queue taken again
+		if (m_commits && std::chrono::steady_clock::now() - m_lastCommit < std::chrono::milliseconds(250)) return m_committed;
+		m_commits = false;
+		Committed frame;
+		frame.lines.swap(m_pendingLines);
+		frame.triangles.swap(m_pendingTriangles);
+		frame.screenLines.swap(m_pendingScreenLines);
+		frame.particles.swap(m_pendingParticles);
+		return frame;
+	}
+
 	// The frame's particles as camera-facing quads (vs_particle widens each one in view space): the blended ones sorted
-	// farthest first, then the additive ones (light added in proportion to their alpha). They test depth but do not write it.
+	// farthest first (the flat spots on the floor before them, in their order), then the additive ones (light added in proportion to their alpha). They test depth but do not write it.
 	void BgfxGraphicsSystem::render_particles()
 	{
-		std::vector<Particle> particles;
-		{
-			std::lock_guard<std::mutex> lock(m_lineMutex);
-			particles.swap(m_pendingParticles);
-		}
+		std::vector<Particle>& particles = m_frameDrawing.particles;
 		const float* view = nullptr;
 		const float* proj = nullptr;
 		if (particles.empty() || !bgfx::isValid(m_particle_program) || !m_active_camera || !m_active_camera->get_view_projection(view, proj))
@@ -936,19 +1029,25 @@ namespace Pakal
 		std::stable_sort(particles.begin(), particles.end(), [&depth](const Particle& a, const Particle& b)
 		{
 			if (a.additive != b.additive) return !a.additive; // blended first
+			// the spots on the floor under the rest, in the order they came (the newest on top): by depth two that overlap
+			// would swap as the camera moves, and flicker
+			if (a.flat != b.flat) return a.flat;
+			if (a.flat) return false;
 			return depth(a) > depth(b);
 		});
 
-		struct Vertex { float x, y, z, u, v, size, pad; uint32_t color; };
+		struct Vertex { float x, y, z, u, v, size, pad, sprite, angle, unused0, unused1; uint32_t color; };
 		static bgfx::VertexLayout layout;
 		if (layout.getStride() == 0)
 		{
 			layout.begin()
 				.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 				.add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float)
 				.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 				.end();
 		}
+		const bool sheet = bgfx::isValid(m_particle_sheet);
 		const uint32_t blendedCount = static_cast<uint32_t>(std::count_if(particles.begin(), particles.end(), [](const Particle& p) { return !p.additive; }));
 		auto submit = [&](uint32_t first, uint32_t count, uint64_t blend)
 		{
@@ -970,7 +1069,8 @@ namespace Pakal
 				const Particle& p = particles[first + i];
 				for (int c = 0; c < 4; ++c)
 				{
-					vertex[i * 4 + c] = { p.at.x, p.at.y, p.at.z, corners[c][0], corners[c][1], p.radius, 0.0f, p.color };
+					vertex[i * 4 + c] = { p.at.x, p.at.y, p.at.z, corners[c][0], corners[c][1], p.radius, p.flat ? 1.0f : 0.0f,
+						sheet ? float(p.sprite) : 0.0f, p.angle, 0.0f, 0.0f, p.color };
 				}
 				const uint16_t base = static_cast<uint16_t>(i * 4);
 				const uint16_t quad[6] = { base, uint16_t(base + 1), uint16_t(base + 2), base, uint16_t(base + 2), uint16_t(base + 3) };
@@ -978,6 +1078,9 @@ namespace Pakal
 			}
 			bgfx::setVertexBuffer(0, &tvb);
 			bgfx::setIndexBuffer(&tib);
+			const float sheetSize[4] = { m_particle_sheet_size[0], m_particle_sheet_size[1], 0.0f, 0.0f };
+			bgfx::setUniform(m_u_particle_sheet, sheetSize);
+			if (sheet) bgfx::setTexture(0, m_s_particle, m_particle_sheet);
 			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA | blend);
 			bgfx::submit(m_transparent_view_id, m_particle_program);
 		};
@@ -1018,6 +1121,24 @@ namespace Pakal
 				sprite->render(m_main_view_id, nullptr);
 			}
 		}
+	}
+
+	bgfx::ProgramHandle BgfxGraphicsSystem::load_compute(const char* csName)
+	{
+		const char* renderer_dir = get_shader_renderer_dir(bgfx::getRendererType());
+		for (const char* root : { "Assets/shaders", "shaders", "bin/Assets/shaders", "bin/shaders", "../bin/Assets/shaders", "../bin/shaders" })
+		{
+			const std::string path = std::string(root) + "/" + renderer_dir + "/" + csName + ".bin";
+			const bgfx::Memory* memory = load_shader_memory(path.c_str());
+			if (!memory) continue;
+			bgfx::ShaderHandle shader = bgfx::createShader(memory);
+			if (!bgfx::isValid(shader)) continue;
+			bgfx::setName(shader, csName);
+			LOG_INFO("[BgfxGraphicsSystem] Compute program %s loaded (%s)", csName, renderer_dir);
+			return bgfx::createProgram(shader, true);
+		}
+		LOG_WARNING("[BgfxGraphicsSystem] Compute program %s not found for %s", csName, renderer_dir);
+		return BGFX_INVALID_HANDLE;
 	}
 
 	bgfx::ProgramHandle BgfxGraphicsSystem::load_program(const char* vsName, const char* fsName)
@@ -1068,8 +1189,19 @@ namespace Pakal
 		m_mesh_program = load_program("vs_mesh", "fs_mesh");
 		m_skin_program = load_program("vs_skin", "fs_mesh");
 		m_pbr_program = load_program("vs_pbr", "fs_pbr");
+		m_pbr_inst_program = load_program("vs_pbr_inst", "fs_pbr");
+		m_mesh_inst_program = load_program("vs_mesh_inst", "fs_mesh");
+		static const bool gpuParticlesWanted = !(std::getenv("PAKAL_GPU_PARTICLES") && std::string(std::getenv("PAKAL_GPU_PARTICLES")) == "0");
+		if (gpuParticlesWanted && (bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE))
+		{
+			m_gpuParticles.create([this]() { return load_compute("cs_particles"); }, [this]() { return load_program("vs_gpu_particle", "fs_particle"); });
+			LOG_INFO("[BgfxGraphicsSystem] GPU particles %s", m_gpuParticles.available() ? "on" : "off (the CPU's)");
+		}
 		m_sky_program = load_program("vs_sky", "fs_sky");
-		m_particle_program = load_program("vs_particle", "fs_particle");
+		// the uniforms before the program (GL finds a program's uniforms when it is linked)
+		m_u_particle_sheet = bgfx::createUniform("u_particleSheet", bgfx::UniformType::Vec4);
+		m_s_particle = bgfx::createUniform("s_texParticle", bgfx::UniformType::Sampler);
+		m_particle_program = load_program("vs_particle", "fs_particle_sprite");
 
 		m_u_light_dir = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
 		m_u_light_color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4);
@@ -1077,6 +1209,8 @@ namespace Pakal
 		m_u_ambient_ground = bgfx::createUniform("u_ambientGround", bgfx::UniformType::Vec4);
 		m_u_sky_top = bgfx::createUniform("u_skyTop", bgfx::UniformType::Vec4);
 		m_u_sky_horizon = bgfx::createUniform("u_skyHorizon", bgfx::UniformType::Vec4);
+		m_u_sky_sun = bgfx::createUniform("u_skySun", bgfx::UniformType::Vec4);
+		m_u_sky_sun_color = bgfx::createUniform("u_skySunColor", bgfx::UniformType::Vec4);
 
 		// Unit cube used as sky dome; the sky shader ignores the camera position.
 		static const float skyVertices[] = {
@@ -1105,17 +1239,26 @@ namespace Pakal
 		auto destroyProgram = [](bgfx::ProgramHandle& h) { if (bgfx::isValid(h)) bgfx::destroy(h); h = BGFX_INVALID_HANDLE; };
 		auto destroyUniform = [](bgfx::UniformHandle& h) { if (bgfx::isValid(h)) bgfx::destroy(h); h = BGFX_INVALID_HANDLE; };
 
+		m_gpuParticles.destroy();
 		destroyProgram(m_mesh_program);
 		destroyProgram(m_skin_program);
 		destroyProgram(m_pbr_program);
+		destroyProgram(m_pbr_inst_program);
+		destroyProgram(m_mesh_inst_program);
 		destroyProgram(m_sky_program);
 		destroyProgram(m_particle_program);
+		destroyUniform(m_u_particle_sheet);
+		destroyUniform(m_s_particle);
+		MeshComponent3D_Bgfx::release_level_texture(m_particle_sheet);   // (the textures' shared cache counts its users: never destroyed here)
+		m_particle_sheet = BGFX_INVALID_HANDLE;
 		destroyUniform(m_u_light_dir);
 		destroyUniform(m_u_light_color);
 		destroyUniform(m_u_ambient);
 		destroyUniform(m_u_ambient_ground);
 		destroyUniform(m_u_sky_top);
 		destroyUniform(m_u_sky_horizon);
+		destroyUniform(m_u_sky_sun);
+		destroyUniform(m_u_sky_sun_color);
 
 		if (bgfx::isValid(m_sky_vb)) bgfx::destroy(m_sky_vb);
 		if (bgfx::isValid(m_sky_ib)) bgfx::destroy(m_sky_ib);
@@ -1126,7 +1269,7 @@ namespace Pakal
 	void BgfxGraphicsSystem::create_post_resources()
 	{
 		m_post_program = load_program("vs_post", "fs_post");
-		for (int i = 0; i < 8; ++i)
+		for (int i = 0; i < 11; ++i)
 		{
 			const std::string name = "u_post" + std::to_string(i);
 			m_u_post[i] = bgfx::createUniform(name.c_str(), bgfx::UniformType::Vec4);
@@ -1337,6 +1480,12 @@ namespace Pakal
 			p7[2] = view[14];
 		}
 		bgfx::setUniform(m_u_post[7], p7);
+		const float p8[4] = { s.fogColor[0], s.fogColor[1], s.fogColor[2], m_post.enabled ? s.fogDensity : 0.0f };
+		const float p9[4] = { s.fogStart, s.fogMax, s.fogSky, s.fogHorizon };
+		bgfx::setUniform(m_u_post[8], p8);
+		bgfx::setUniform(m_u_post[9], p9);
+		const float p10[4] = { m_sky_horizon[0], m_sky_horizon[1], m_sky_horizon[2], 0.0f };
+		bgfx::setUniform(m_u_post[10], p10);
 
 		bgfx::TransientVertexBuffer triangle;
 		if (bgfx::getAvailTransientVertexBuffer(3, m_post_layout) < 3)
@@ -1405,6 +1554,7 @@ namespace Pakal
 	{
 		m_shadow_program = load_program("vs_shadow", "fs_shadow");
 		m_shadow_skin_program = load_program("vs_shadow_skin", "fs_shadow");
+		m_shadow_inst_program = load_program("vs_shadow_inst", "fs_shadow");
 	}
 
 	void BgfxGraphicsSystem::destroy_shadow_resources()
@@ -1414,7 +1564,8 @@ namespace Pakal
 		m_shadow_depth = BGFX_INVALID_HANDLE;
 		if (bgfx::isValid(m_shadow_program)) bgfx::destroy(m_shadow_program);
 		if (bgfx::isValid(m_shadow_skin_program)) bgfx::destroy(m_shadow_skin_program);
-		m_shadow_program = m_shadow_skin_program = BGFX_INVALID_HANDLE;
+		if (bgfx::isValid(m_shadow_inst_program)) bgfx::destroy(m_shadow_inst_program);
+		m_shadow_program = m_shadow_skin_program = m_shadow_inst_program = BGFX_INVALID_HANDLE;
 		m_shadow_size = 0;
 	}
 
@@ -1440,7 +1591,8 @@ namespace Pakal
 		if (!bgfx::isValid(m_shadow_target) || m_shadow_size != m_shadows.mapSize)
 		{
 			if (bgfx::isValid(m_shadow_target)) bgfx::destroy(m_shadow_target);
-			const uint64_t flags = BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT
+			// sampled with comparison and filtering (the shaders' shadow2D: the hardware's PCF)
+			const uint64_t flags = BGFX_TEXTURE_RT | BGFX_SAMPLER_COMPARE_LEQUAL | BGFX_SAMPLER_MIP_POINT
 				| BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 			m_shadow_depth = bgfx::createTexture2D(uint16_t(m_shadows.mapSize), uint16_t(m_shadows.mapSize), false, 1, bgfx::TextureFormat::D32F, flags);
 			m_shadow_target = bgfx::createFrameBuffer(1, &m_shadow_depth, true);
@@ -1646,25 +1798,225 @@ namespace Pakal
 
 		bgfx::setUniform(m_u_sky_top, m_sky_top);
 		bgfx::setUniform(m_u_sky_horizon, m_sky_horizon);
+		{
+			// the sun where the light comes from, and the time the clouds drift with
+			static const auto clockStart = std::chrono::steady_clock::now();
+			const float seconds = std::fmod(std::chrono::duration<float>(std::chrono::steady_clock::now() - clockStart).count(), 100000.0f);
+			const float lx = -m_light_dir[0], ly = -m_light_dir[1], lz = -m_light_dir[2];
+			const float length = std::max(1e-4f, std::sqrt(lx * lx + ly * ly + lz * lz));
+			const float sun[4] = { lx / length, ly / length, lz / length, seconds };
+			// the light's color brought down to a color (its intensity may be over 1), and the clouds' cover
+			const float peak = std::max(1.0f, std::max(m_light_color[0], std::max(m_light_color[1], m_light_color[2])));
+			const float sunColor[4] = { m_light_color[0] / peak, m_light_color[1] / peak, m_light_color[2] / peak, m_sky_clouds };
+			bgfx::setUniform(m_u_sky_sun, sun);
+			bgfx::setUniform(m_u_sky_sun_color, sunColor);
+		}
 		bgfx::setVertexBuffer(0, m_sky_vb);
 		bgfx::setIndexBuffer(m_sky_ib);
 		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LEQUAL);
 		bgfx::submit(m_main_view_id, m_sky_program);
 	}
 
+	void BgfxGraphicsSystem::update_grid()
+	{
+		// a phone walked the thousands of models of a town every frame (a box test and a pointer each, twice with the sun's
+		// view) to draw the few hundred in view
+		PAKAL_PROFILE_SCOPE("gfx.grid");
+		const float kGridCell = 32.0f;
+		static const bool enabled = [] { const char* text = std::getenv("PAKAL_GRID"); return !text || std::string(text) != "0"; }();
+		if (!enabled)
+		{
+			// PAKAL_GRID=0: every model walked every frame (to measure what the grid saves)
+			m_loose.assign(m_meshes3d.begin(), m_meshes3d.end());
+			m_frameMeshes.assign(m_meshes3d.begin(), m_meshes3d.end());
+			return;
+		}
+		if (MeshComponent3D_Bgfx::take_grid_moved()) m_gridStale = true;
+		if (m_gridStale || ++m_gridAge > 30)
+		{
+			m_gridStale = false;
+			m_gridAge = 0;
+			m_gridCells.clear();
+			m_loose.clear();
+			std::unordered_map<int64_t, size_t> cellOf;
+			std::vector<std::array<float, 6>> bounds;   // each cell's lowest and highest corner
+			for (auto* mesh : m_meshes3d)
+			{
+				if (!mesh) continue;
+				// in it: what did not move since the grid was made last (a second ago), so what moves stays loose
+				const uint32_t moves = mesh->moves();
+				const bool still = mesh->grid_candidate() && moves == mesh->grid_moves();
+				mesh->set_gridded(still, moves);
+				if (!still)
+				{
+					m_loose.push_back(mesh);
+					continue;
+				}
+				float center[3], extent[3];
+				mesh->get_world_box(center, extent);
+				const int64_t cx = static_cast<int64_t>(std::floor(center[0] / kGridCell));
+				const int64_t cz = static_cast<int64_t>(std::floor(center[2] / kGridCell));
+				const int64_t key = (cx << 32) ^ (cz & 0xffffffff);
+				auto found = cellOf.find(key);
+				if (found == cellOf.end())
+				{
+					found = cellOf.emplace(key, m_gridCells.size()).first;
+					m_gridCells.emplace_back();
+					bounds.push_back({ center[0] - extent[0], center[1] - extent[1], center[2] - extent[2],
+						center[0] + extent[0], center[1] + extent[1], center[2] + extent[2] });
+				}
+				std::array<float, 6>& box = bounds[found->second];
+				for (int axis = 0; axis < 3; ++axis)
+				{
+					box[axis] = std::min(box[axis], center[axis] - extent[axis]);
+					box[3 + axis] = std::max(box[3 + axis], center[axis] + extent[axis]);
+				}
+				m_gridCells[found->second].meshes.push_back(mesh);
+			}
+			for (size_t i = 0; i < m_gridCells.size(); ++i)
+			{
+				for (int axis = 0; axis < 3; ++axis)
+				{
+					m_gridCells[i].center[axis] = 0.5f * (bounds[i][axis] + bounds[i][3 + axis]);
+					m_gridCells[i].extent[axis] = 0.5f * (bounds[i][3 + axis] - bounds[i][axis]);
+				}
+			}
+		}
+
+		// this frame's: the loose ones, and the squares the camera sees or whose shadows can fall in its view (the test each
+		// model makes, on the square's box)
+		m_frameMeshes.assign(m_loose.begin(), m_loose.end());
+		const float reach = MeshComponent3D_Bgfx::shadow_reach();
+		for (const GridCell& cell : m_gridCells)
+		{
+			bool seen = !MeshComponent3D_Bgfx::box_outside_frustum(0, cell.center, cell.extent);
+			if (!seen && m_shadow_active && !MeshComponent3D_Bgfx::box_outside_frustum(1, cell.center, cell.extent))
+			{
+				if (reach < 0.0f) seen = true;
+				else
+				{
+					const float grow = std::max(0.0f, cell.center[1] + cell.extent[1]) * reach + 0.5f;
+					const float grown[3] = { cell.extent[0] + grow, cell.extent[1] + grow, cell.extent[2] + grow };
+					seen = !MeshComponent3D_Bgfx::box_outside_frustum(0, cell.center, grown);
+				}
+			}
+			if (seen) m_frameMeshes.insert(m_frameMeshes.end(), cell.meshes.begin(), cell.meshes.end());
+		}
+	}
+
 	void BgfxGraphicsSystem::render_meshes3d(float dt_seconds)
 	{
-		for (auto* mesh : m_meshes3d)
+		update_grid();
+		// A crowd on screen (more than kFullRatePoses skinned models): the ones that carry nothing are posed every other
+		// frame, half of them each frame (their clips' clocks go on every frame). On a phone at 30 FPS posing was a third of
+		// the meshes' time with a horde in view
+		const int kFullRatePoses = 16;
+		int skinned = 0;
+		for (auto* mesh : m_loose) if (mesh && mesh->is_skinned() && mesh->drawn_in_main_view()) ++skinned;
+		const bool halve = skinned > kFullRatePoses;
+		static unsigned frameParity = 0;
+		++frameParity;
+		unsigned crowdIndex = 0;
+
+		// GPU instancing: the static copies of one model (a town's palms, lamps, benches, plants: the same model hundreds of
+		// times) in one draw per material instead of one per copy. Copies that are faded, tinted, lightmapped or few (under
+		// kMinInstances) are drawn one by one as before. Off on Android unless PAKAL_INSTANCING=1: on a Kirin 980 sending draws
+		// was not what cost (walking and testing the models was), and grouping them cost more than it saved (p95 41 -> 46 ms);
+		// PAKAL_INSTANCING=0 turns it off on desktop
+		const int kMinInstances = 4;
+		static const bool instancingWanted = []
 		{
-			if (!mesh)
+			const char* text = std::getenv("PAKAL_INSTANCING");
+			if (text) return std::string(text) != "0";
+#if defined(__ANDROID__)
+			return false;
+#else
+			return true;
+#endif
+		}();
+		const bool instancing = instancingWanted && (bgfx::getCaps()->supported & BGFX_CAPS_INSTANCING) != 0
+			&& bgfx::isValid(m_pbr_inst_program) && bgfx::isValid(m_mesh_inst_program);
+		++m_instanceFrame;
+		if (instancing)
+		{
+			PAKAL_PROFILE_SCOPE("gfx.instances");
+			// the groups: rebuilt when a grouped copy went away, and every 4 s for new models and the ones that finished
+			// loading (meanwhile they are drawn one by one)
+			if (m_groupsVersion != m_meshesVersion || ++m_groupsAge > 240)
+			{
+				m_groupsVersion = m_meshesVersion;
+				m_groupsAge = 0;
+				std::unordered_map<uint16_t, std::vector<MeshComponent3D_Bgfx*>> byModel;
+				for (auto* mesh : m_meshes3d)
+				{
+					if (!mesh) continue;
+					mesh->set_grouped(false);
+					if (mesh->instanceable()) byModel[mesh->instance_key()].push_back(mesh);
+				}
+				m_instanceGroups.clear();
+				for (auto& entry : byModel)
+				{
+					if (entry.second.size() < static_cast<size_t>(kMinInstances)) continue;
+					for (auto* mesh : entry.second) mesh->set_grouped(true);
+					m_instanceGroups.push_back(std::move(entry.second));
+				}
+			}
+			std::vector<MeshComponent3D_Bgfx*> taken, seen;
+			for (const auto& copies : m_instanceGroups)
+			{
+				// this frame's: the copies still drawn as their model is (one faded or hidden now goes one by one)
+				taken.clear();
+				for (auto* copy : copies)
+				{
+					if (copy->instanceable()) taken.push_back(copy);
+				}
+				if (taken.size() < static_cast<size_t>(kMinInstances)) continue;
+				bool drawn = true;
+				if (m_shadow_active && bgfx::isValid(m_shadow_inst_program))
+				{
+					seen.clear();
+					for (auto* copy : taken)
+					{
+						if (!(m_shadow_moving_only && copy->shadow_baked()) && copy->drawn_in_depth_view()) seen.push_back(copy);
+					}
+					drawn = MeshComponent3D_Bgfx::render_instances(m_shadow_view_id, m_shadow_inst_program, seen, true);
+				}
+				seen.clear();
+				for (auto* copy : taken)
+				{
+					if (copy->drawn_in_main_view()) seen.push_back(copy);
+				}
+				if (!seen.empty() && drawn)
+				{
+					bgfx::setUniform(m_u_light_dir, m_light_dir);
+					bgfx::setUniform(m_u_light_color, m_light_color);
+					bgfx::setUniform(m_u_ambient, m_ambient);
+					bgfx::setUniform(m_u_ambient_ground, m_ambient_ground);
+					drawn = MeshComponent3D_Bgfx::render_instances(m_main_view_id,
+						taken.front()->uses_pbr() ? m_pbr_inst_program : m_mesh_inst_program, seen, false);
+				}
+				// bgfx out of room for instances this frame: these copies are drawn one by one below
+				if (drawn)
+				{
+					for (auto* copy : taken) copy->mark_instanced(m_instanceFrame);
+				}
+			}
+		}
+
+		for (auto* mesh : m_frameMeshes)
+		{
+			if (!mesh || mesh->instanced_in(m_instanceFrame))
 			{
 				continue;
 			}
 
-			// Animation advances once per frame, whether or not the mesh is drawn
+			// Animation advances once per frame, whether or not the mesh is drawn (a model without bones has none: thousands
+			// of them in a town, not timed one by one)
+			if (mesh->is_skinned())
 			{
 				PAKAL_PROFILE_SCOPE("gfx.pose");
-				mesh->update(dt_seconds);
+				const bool pose = !halve || mesh->carries() || ((crowdIndex++ + frameParity) % 2 == 0);
+				mesh->update(dt_seconds, pose);
 			}
 			if (m_shadow_active && !(m_shadow_moving_only && mesh->shadow_baked()))
 			{
@@ -1677,7 +2029,9 @@ namespace Pakal
 				continue;
 			}
 
-			// Light uniforms are set before each draw, so every mesh gets the same values.
+			// Light uniforms are set before each draw, so every mesh gets the same values (only for the ones drawn: most of a
+			// town is out of the frame)
+			if (!mesh->drawn_in_main_view()) continue;
 			bgfx::setUniform(m_u_light_dir, m_light_dir);
 			bgfx::setUniform(m_u_light_color, m_light_color);
 			bgfx::setUniform(m_u_ambient, m_ambient);
@@ -1693,7 +2047,7 @@ namespace Pakal
 		const float* view = nullptr;
 		const float* proj = nullptr;
 		const bool sorted = m_active_camera && m_active_camera->get_view_projection(view, proj);
-		for (auto* mesh : m_meshes3d)
+		for (auto* mesh : m_frameMeshes)
 		{
 			if (!mesh || !mesh->needs_transparent_pass())
 			{
@@ -1726,8 +2080,8 @@ namespace Pakal
 	{
 		const char* renderer_dir = get_shader_renderer_dir(bgfx::getRendererType());
 		// Prefer custom RGBA sprite shaders; keep fallbacks for robustness.
-		const char* vs_names[] = { "vs_sprite", "vs_particle", "vs_cubes" };
-		const char* fs_names[] = { "fs_sprite", "fs_particle", "fs_cubes" };
+		const char* vs_names[] = { "vs_sprite_simple", "vs_sprite", "vs_cubes" };
+		const char* fs_names[] = { "fs_sprite_simple", "fs_sprite", "fs_cubes" };
 
 		const char* roots[] = {
 			"Assets/shaders",

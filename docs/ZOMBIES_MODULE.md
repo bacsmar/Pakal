@@ -58,7 +58,7 @@ fires past 41% of its travel) and the top center square restarts (see [ANDROID.m
 
 ## Campaign and progress
 
-- The game opens on its menu (`MenuState`): play (the missions in order), shop. `ZOMBIES_LEVEL` skips it and plays one level.
+- The game opens on its menu (`MenuState`): play (the missions in order), shop. `ZOMBIES_LEVEL` skips it and plays one level. A shop weapon may name its picture (campaign.json `icon`, from the menu's folder), shown at its row's left.
 - `examples/zombies_module/game/campaign.json` (copied to `Assets/game`): the missions (level, reward for the first win and for
   replays, three stars: win, end with some health, win in time or with enough kills), the guns (the Downtown ones, lent by the
   chest in a level, are bought here and carried from the start), upgrades (damage and fire rate per level), toughness (more
@@ -68,7 +68,8 @@ fires past 41% of its travel) and the top center square restarts (see [ANDROID.m
   `pickupCount`), `Fail(text)` (the mission is lost: the panel says why, the game stops), `IsPlayerNear(point, radiusCm)`,
   `ShowMarker(point, on)` (a beacon; an arrow by the player points to the nearest beacon, or else the nearest token).
 - Options (OPTIONS on the main menu, and in the pause panel): the picture's quality (AUTO is the device's default) and FSR
-  upscaling (on at first: the picture drawn at 67% and rebuilt with FSR 1; off: at the screen's size), and the look: CLEAN
+  upscaling (by default the device's: on, the picture drawn at 67% and rebuilt with FSR 1, except where the quality starts
+  low, an old phone's GPU, where FSR cost a third of the frame rate; off: at the screen's size; saved as `fsrMode`), and the look: CLEAN
   or SKETCH (the town as an etching on warm paper: pen strokes along each surface's plane, more and crossed in the dark,
   a speckled grain; `BgfxGraphicsSystem::set_sketch`, in the post-process pass). Saved in the profile
   (`options`) and given to the graphics at the start (`Session::apply_options`, `BgfxGraphicsSystem::set_fsr`).
@@ -95,6 +96,12 @@ fires past 41% of its travel) and the top center square restarts (see [ANDROID.m
   `examples/zombies_module/ui` (copied to `Assets/ui`): `hud.rml` is the HUD and the pause / down / level complete panel,
   `zombies.rcss` its look (sizes in `dp`: 1 dp is a pixel at 720 lines). The game changes elements by id
   (`set_text`, `set_class`, `set_property`) and hears clicks by id. Fonts: Roboto and Bangers (`ui/fonts/README.md`).
+- **Data models** (the engine's `IUIManager`, for a game that keeps its interface out of its code): `create_data_model`
+  binds a JSON tree (numbers, text, booleans, lists, records) to RmlUi's data bindings (`{{money}}`, `data-for`,
+  `data-if`, `data-class-*`, `data-style-*`), `set_data` replaces a variable and the documents update, `add_data_event`
+  hears a document's `data-event-click="buy(id)"` with its arguments, `set_strings` shows a document's text that is a key
+  as the table's (languages; RmlUi's TranslateString), `load_fallback_font` gives the characters the other fonts lack,
+  `bring_to_front` raises a panel.
 - **Development panels**: Dear ImGui (`source/bgfx/BgfxDebugUI`), F1 or three fingers on a phone; `PAKAL_DEV_UI=1` shows
   them from the start. The Zombies panel: frame rate, level list and restart, god mode, money, consumables, spawn any
   enemy type, and Graphics: quality level, post-process, SSAO, tilt-shift, real-time shadows, lightmap, light probes, the
@@ -126,7 +133,7 @@ works with a finger. Keys on a desktop: Left/Right character, Up/Down clip, Q/E 
 Space pause, Z/X slower and faster, A/D turn, W/S closer and farther, T spin, Esc back.
 
 `ZOMBIES_VIEWER_ENTRY`, `ZOMBIES_VIEWER_WEAPON` and `ZOMBIES_VIEWER_CLIP` (a clip's name) start on one;
-`ZOMBIES_VIEWER_CLICKS=v_next,v_second_next,...` presses its buttons one every half second; `ZOMBIES_VIEWER_LEVEL` reads
+`ZOMBIES_VIEWER_CLICKS=next,second_next,...` runs the view's actions (`act(name)` of `ui/viewer.rml`) one every half second; `ZOMBIES_VIEWER_LEVEL` reads
 another level; `ZOMBIES_SCREENSHOT` and `ZOMBIES_SCREENSHOT_AT` take a capture as in the levels.
 
 `ZOMBIES_VIEWER_SHOTS=<folder>` takes a capture of every weapon with each clip of `ZOMBIES_VIEWER_SHOT_CLIPS` (and logs
@@ -141,6 +148,12 @@ forward. A two-handed gun rests in both hands (`gunIdle`, `Idle_Gun` by default;
 plain idle it hung from one hand, its grip 27 cm out of the other's reach. The values are in
 `tools/zombies_convert/build_downtown.py` (`KIT_MELEE_*`, `KIT_HERO_CLIPS`);
 `tools/zombies_convert/update_holds.py` writes them into levels already built.
+
+The viewer shows a weapon as the game holds it: its own clips over the look's (a held weapon's `clips`), so it rests in
+its melee rest when the rules make it a melee weapon, else in its `gunIdle` when it is two-handed or names its own clips,
+else in the plain idle; its twin in the other hand (`pair`) is drawn too. Weapons are named as the campaign's shop names
+them (by the consumable that lends them; 0 the hero's gun). It stands them on the level's `visuals.viewerFloor` (a
+model, from the level's folder), else on the downtown street.
 
 ## Debug switches (environment variables)
 
@@ -176,8 +189,8 @@ Zombies:
 | `ZOMBIES_SEED=<n>` | Random seed |
 | `ZOMBIES_VIEWER=heroes\|enemies` | Opens the character viewer or the zombie encyclopedia (see above) |
 | `ZOMBIES_TIMESCALE=<x>` | Plays x times faster (more fixed steps per frame, the same game; at most 0.25 s of game per frame). `bot_check.ps1` uses 8 |
-| `ZOMBIES_GIVE=<id>` | Starts with that consumable |
-| `ZOMBIES_REACH=off\|x,y,z` | The other hand on the gun: off, or its grip at that point of the weapon's model (to fit `grip`) |
+| `ZOMBIES_GIVE=<id>` | Starts with that consumable (a game may keep it to its cheats builds) |
+| `PAKAL_REACH=off\|x,y,z` | The other hand on the gun: off, or its grip at that point of the weapon's model (to fit `grip`) |
 | `ZOMBIES_GLOSS=<k>` | The plastic toy highlight's strength (the level's `lighting.gloss`, 0.35 by default; 0 turns it off) |
 | `ZOMBIES_SKETCH=<k>` | The sketch look at that strength (0.85 is the option's) |
 | `ZOMBIES_HUD_CLICKS=<s>:<id>,...` | Clicks those HUD elements at those game times (`btn_revive`, `opt_fsr_off`...) |
@@ -185,16 +198,19 @@ Zombies:
 | `ZOMBIES_SPAWN=<type>:<alive>:<cooldownMs>,...` | More spawn orders on top of the script's (`25016:2:3000` keeps two boomers coming) |
 | `ZOMBIES_START=x,y` | Warps go to that point (meters) |
 | `ZOMBIES_DEBUG_KILL_EVERY=<s>` | Removes a living zombie at that interval |
-| `ZOMBIES_DEBUG_BREAK=<m>` | Breaks every prop that close to the player 3 s into the game (to see their effects) |
+| `ZOMBIES_WIN_AT=<s>` | Wins the mission at that game time (to see its end: the win's camera shot, the result; a game may keep it to its cheats builds) |
+| `ZOMBIES_DRAW_DISTANCE=off` | Draws every model the camera sees, however far (game/effects.json "drawDistance" off) |
+| `ZOMBIES_DEBUG_BREAK=<m>` | Breaks every prop that close to the player 3 s into the game (to see their effects; a game may keep it to its cheats builds) |
 | `ZOMBIES_SCREENSHOT=<file.tga>`, `ZOMBIES_SCREENSHOT_AT=<s>` | One capture at that time |
 | `ZOMBIES_LIVE_RELOAD=1`, `ZOMBIES_EDIT=1`, `ZOMBIES_EDIT_SELECT=<key>` | The level is built again when its file changes; the level panel open, editing; an object selected (docs/LEVEL_EDITOR.md) |
 | `ZOMBIES_PAUSE_AT=<s>` | Pauses at that time (to look at the pause panel) |
 | `ZOMBIES_PROFILE=<file.json>` | Another profile file (tests) |
-| `ZOMBIES_MENU_CLICKS=<id>,<id>,...`, `ZOMBIES_MENU_SHOT=<file.tga>` | Clicks menu elements one per half second (`nav_play,mission_0`), then captures the screen |
+| `ZOMBIES_MENU_CLICKS=<id>,<id>,...`, `ZOMBIES_MENU_SHOT=<file.tga>` | Clicks menu elements one per half second (`nav_play,mission_0`), then captures the screen. With `\|`, one list per visit to the menu (`nav_play,mission_1\|nav_play,mission_2`: a mission, back to the menu, another) |
 | `ZOMBIES_SCREENSHOT_LOADING=<file.tga>` | Captures the loading screen halfway |
 | `ZOMBIES_NO_FADE=1` | Nothing fades (also in the development panel) |
 | `ZOMBIES_SHOTS=<prefix>,<start>,<interval>,<count>` | A series of captures |
 | `ZOMBIES_CAM_SCALE=<k>`, `ZOMBIES_CAM_AT=x,y`, `ZOMBIES_CAM_ON_ENEMY=1\|<type>` | Pulls the camera back / looks at a point / follows a zombie |
+| `ZOMBIES_CAM_EYE=x,y,h`, `ZOMBIES_CAM_LOOK=x,y,h`, `ZOMBIES_CAM_FOV=<deg>` | A free camera at that point looking at the other (meters, h the height): a drone's view for pictures |
 | `ZOMBIES_CLIP_TEST=<clip>` | Every character plays that clip |
 | `ZOMBIES_ONLY=<text>` | Only the level models whose file contains the text |
 | `ZOMBIES_SHOW_COLLIDERS=1` | Draws the colliders |

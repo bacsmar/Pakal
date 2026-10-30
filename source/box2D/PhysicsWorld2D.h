@@ -30,7 +30,7 @@ namespace Pakal
 
 		// Static geometry, in meters. 'halfSize' is half the width and height of the box. 'userData' is
 		// reported by ray casts that hit the shape (RayCastHit::userData), 0 for none.
-		void add_static_box(const b2Vec2& center, const b2Vec2& halfSize, uint16 categoryBits = 0x0001, uintptr_t userData = 0);
+		void add_static_box(const b2Vec2& center, const b2Vec2& halfSize, uint16 categoryBits = 0x0001, uintptr_t userData = 0, float angle = 0.0f);
 		void add_static_circle(const b2Vec2& center, float radius, uint16 categoryBits = 0x0001, uintptr_t userData = 0);
 		// Static chain of edges through 'points' (meters). A closed chain joins the last point to the first.
 		void add_static_chain(const std::vector<b2Vec2>& points, bool closed, uint16 categoryBits = 0x0001);

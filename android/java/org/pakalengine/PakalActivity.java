@@ -1,7 +1,11 @@
 package org.pakalengine;
 
 import android.app.NativeActivity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +13,12 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The game's activity: the engine's NativeActivity, full screen. The system bars (status and navigation) are hidden and
@@ -39,6 +49,54 @@ public class PakalActivity extends NativeActivity {
         } catch (SecurityException notAsked) {
             broadcasts = null; // a game that does not play online
         }
+    }
+
+    /**
+     * Hands a file the game wrote (a profiling session) to the person: the share sheet (e-mail, chat, a drive).
+     * From Android 10 a copy goes to Downloads first (MediaStore), which the share passes on as is; before that, its
+     * text. Called by the native code, from any thread.
+     */
+    public void shareFile(final String path, final String title) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File file = new File(path);
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType("text/plain");
+                    send.putExtra(Intent.EXTRA_SUBJECT, title + ": " + file.getName());
+                    if (Build.VERSION.SDK_INT >= 29) {
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+                        Uri copy = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        if (copy == null) {
+                            return;
+                        }
+                        try (InputStream in = new FileInputStream(file); OutputStream out = getContentResolver().openOutputStream(copy)) {
+                            byte[] buffer = new byte[16384];
+                            for (int read; (read = in.read(buffer)) > 0; ) {
+                                out.write(buffer, 0, read);
+                            }
+                        }
+                        send.putExtra(Intent.EXTRA_STREAM, copy);
+                        send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } else {
+                        byte[] bytes = new byte[(int) file.length()];
+                        try (InputStream in = new FileInputStream(file)) {
+                            int at = 0;
+                            for (int read; at < bytes.length && (read = in.read(bytes, at, bytes.length - at)) > 0; ) {
+                                at += read;
+                            }
+                        }
+                        send.putExtra(Intent.EXTRA_TEXT, new String(bytes, StandardCharsets.UTF_8));
+                    }
+                    startActivity(Intent.createChooser(send, title));
+                } catch (Exception failed) {
+                    android.util.Log.w("Pakal", "share " + path + ": " + failed);
+                }
+            }
+        });
     }
 
     @Override

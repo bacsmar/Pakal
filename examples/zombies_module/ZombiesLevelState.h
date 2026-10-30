@@ -17,10 +17,12 @@
 #include "topdown/view/CharacterViewComponent.h"
 #include "topdown/view/InputMapper.h"
 #include "topdown/view/LevelEditPanel.h"
+#include "topdown/view/LevelObjects.h"
 #include "topdown/view/OccluderFade.h"
 #include "topdown/view/SceneLook.h"
 #include "GameRules.h"
 #include "LevelDocument.h"
+#include "LevelLayers.h"
 #include "Meta.h"
 #include "topdown/MouseAim.h"
 #include "RandomStreams.h"
@@ -183,7 +185,16 @@ namespace Zombies
 		std::shared_ptr<Pakal::AssetCache> m_assetCache;
 		std::map<std::string, Pakal::AssetHandle<Pakal::MeshComponent3D_Bgfx>> m_prototypes;
 		LevelCarry m_carried;   // the previous level's, let go once this one is loaded
-		std::vector<std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_objects;            // placed level models
+		// The level's objects (their models, and the actors of the ones with components), their prefabs and the components
+		// they can carry
+		LevelObjects m_levelObjects;
+		LevelObjects::Handle m_objectHandle;   // the game's own objects of a converted level (build_objects)
+		Pakal::PrefabLibrary m_prefabs;
+		ComponentSchema m_schema;
+		// The level's file changed and only its objects did: they are brought in line where they are (graphics thread), or
+		// the level is built again when that cannot be (live_failed)
+		void update_objects_live(std::unique_ptr<Pakal::LevelDocument> document);
+		std::atomic<bool> m_liveFailed{ false };
 		// Tall buildings fade out while they stand between the camera and the player
 		OccluderFade m_occluders;
 		void update_occluders(float dt);
@@ -259,7 +270,6 @@ namespace Zombies
 		// Editing the running level (the dev panel's "Edit level", ZOMBIES_EDIT=1) and reloading it when its file changes
 		// (ZOMBIES_LIVE_RELOAD=1: pakal-level, an agent)
 		std::unique_ptr<LevelEditPanel> m_edit;
-		std::vector<Pakal::MeshComponent3D_Bgfx*> m_objectMeshes;   // by the document's object index (null: none)
 		std::filesystem::file_time_type m_levelWriteTime{};
 		float m_liveCheck = 0.0f;
 		bool m_wasEditing = false;

@@ -25,10 +25,18 @@ MEDIEVAL = REPO / 'examples/zombies_module/assets/source/medieval-village'
 GENERATED = REPO / 'examples/zombies_module/assets/generated'
 # Our own pieces for what the packs lack (ground tiles), made by tools/levelbuilder/own_assets.py and kept in the repository
 OWN = REPO / 'examples/zombies_module/assets/own'
+# The desktop build's Assets: a model named by a path under it ('<pack>/models/<model>', what a level builder
+# theme extracts there) is used where it is, not copied next to the level
+ASSETS_ROOT = REPO / 'build-win64' / 'bin' / 'Assets'
 
 
 def find_model(name):
-    """Path of <name>.gltf in the city, the kit, the nature kit or our own pieces."""
+    """Path of <name>.gltf in the city, the kit, the nature kit or our own pieces; or under Assets/ when 'name' is a path."""
+    if '/' in name:
+        path = ASSETS_ROOT / f'{name}.gltf'
+        if not path.is_file():
+            raise FileNotFoundError(name)
+        return path
     for root in (CITY / 'Exports', KIT, NATURE / 'glTF', MEDIEVAL / 'glTF', OWN, GENERATED):
         found = list(root.rglob(name + '.gltf'))
         if found:
@@ -70,6 +78,41 @@ def model_bounds(path):
     for root in doc['scenes'][doc.get('scene', 0)]['nodes']:
         visit(root, np.eye(4))
     return np.min(points, axis=0), np.max(points, axis=0)
+
+
+_vertices = {}
+
+
+def model_vertices(path):
+    """Every vertex of a glTF (n x 3, meters, Y up, node transforms applied); cached by path."""
+    path = Path(path)
+    if path in _vertices:
+        return _vertices[path]
+    doc = json.loads(path.read_text())
+    blobs, out = {}, []
+
+    def accessor(i):
+        a = doc['accessors'][i]
+        view = doc['bufferViews'][a['bufferView']]
+        if view['buffer'] not in blobs:
+            blobs[view['buffer']] = (path.parent / doc['buffers'][view['buffer']]['uri']).read_bytes()
+        start = view.get('byteOffset', 0) + a.get('byteOffset', 0)
+        return np.frombuffer(blobs[view['buffer']], np.float32, a['count'] * 3, start).reshape(-1, 3)
+
+    def visit(index, parent):
+        node = doc['nodes'][index]
+        world = parent @ _local_matrix(node)
+        if 'mesh' in node:
+            for prim in doc['meshes'][node['mesh']]['primitives']:
+                p = accessor(prim['attributes']['POSITION'])
+                out.append((np.c_[p, np.ones(len(p))] @ world.T)[:, :3])
+        for child in node.get('children', []):
+            visit(child, world)
+
+    for root in doc['scenes'][doc.get('scene', 0)]['nodes']:
+        visit(root, np.eye(4))
+    _vertices[path] = np.concatenate(out) if out else np.zeros((0, 3))
+    return _vertices[path]
 
 
 _content_keys = {}
@@ -160,6 +203,27 @@ def export_retargeted(name, clips, level_dir, source=UAL1, strip=()):
         raise RuntimeError(f'retargeting {name} wrote no {out} (run tools/blender/retarget_ual.py by hand to see why)')
     stamp.write_text(key)
     return relative
+
+
+def box_wall(low, high, x, y, yaw_degrees, scale=1.0, shrink=0.0):
+    """A level 'rect' wall (level units) that is the model's floor rectangle placed at (x, y) with a yaw: turned with it
+    ('angle'), not the box around it. A yaw that is a quarter turn swaps the sides and needs no angle."""
+    corners = footprint(low, high, x, y, yaw_degrees, scale, shrink)
+    cx = sum(c[0] for c in corners) / 4
+    cy = sum(c[1] for c in corners) / 4
+    w = (high[0] - low[0]) * scale - 2 * shrink
+    h = (high[2] - low[2]) * scale - 2 * shrink
+    quarters = yaw_degrees / 90.0
+    angle = 0.0
+    if abs(quarters - round(quarters)) < 1e-3:
+        if round(quarters) % 2:
+            w, h = h, w
+    else:
+        angle = round(yaw_degrees % 360.0, 2)
+    wall = {'shape': 'rect', 'x': round(cx * 100, 2), 'y': round(cy * 100, 2), 'w': round(w * 100, 2), 'h': round(h * 100, 2)}
+    if angle:
+        wall['angle'] = angle
+    return wall
 
 
 def footprint(low, high, x, y, yaw_degrees, scale=1.0, shrink=0.0):
