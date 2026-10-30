@@ -120,6 +120,7 @@ namespace Pakal
 		{
 			if (!o.key.empty()) continue;
 			std::string base = o.name;
+			if (base.empty()) base = o.prefab;
 			if (base.empty()) base = std::filesystem::path(o.mesh).stem().string();
 			base = slug(base);
 			std::string key;
@@ -174,15 +175,38 @@ namespace Pakal
 		return cut == std::string::npos ? std::string() : path.substr(0, cut + 1);
 	}
 
+	namespace
+	{
+		LevelDocument::FileReader& file_reader()
+		{
+			static LevelDocument::FileReader reader;
+			return reader;
+		}
+	}
+
+	void LevelDocument::set_file_reader(FileReader reader)
+	{
+		file_reader() = std::move(reader);
+	}
+
+	bool LevelDocument::read_file(const std::string& path, std::string& text)
+	{
+		if (file_reader()) return file_reader()(path, text);
+		std::ifstream file(path, std::ios::binary);
+		if (!file) return false;
+		text.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+		return true;
+	}
+
 	bool LevelDocument::load(const std::string& path, std::string& error)
 	{
-		std::ifstream file(path, std::ios::binary);
-		if (!file)
+		std::string text;
+		if (!read_file(path, text))
 		{
 			error = "cannot open '" + path + "'";
 			return false;
 		}
-		Json root = Json::parse(file, nullptr, false);
+		Json root = Json::parse(text, nullptr, false);
 		if (root.is_discarded())
 		{
 			error = "'" + path + "' is not valid JSON";
@@ -196,10 +220,11 @@ namespace Pakal
 			const Json names = root["parts"];   // a copy: adding the sections to the root moves its keys
 			for (auto it = names.begin(); it != names.end(); ++it)
 			{
-				const std::string partFile = (dir / it.value().get<std::string>()).string();
-				std::ifstream in(partFile, std::ios::binary);
-				Json part = in ? Json::parse(in, nullptr, false) : Json();
-				if (!in || part.is_discarded())
+				const std::string partFile = (dir / it.value().get<std::string>()).generic_string();
+				std::string partText;
+				const bool found = read_file(partFile, partText);
+				Json part = found ? Json::parse(partText, nullptr, false) : Json();
+				if (!found || part.is_discarded())
 				{
 					error = "cannot read the part '" + it.key() + "' of '" + path + "' ('" + partFile + "')";
 					return false;
@@ -262,6 +287,7 @@ namespace Pakal
 			w.y = wall.value("y", 0.0);
 			w.w = wall.value("w", 0.0);
 			w.h = wall.value("h", 0.0);
+			w.angle = wall.value("angle", 0.0);
 			w.d = wall.value("d", 0.0);
 			w.source = wall.value("source", std::string(v1 ? "prop" : ""));
 			w.id = wall.value("id", -1);
@@ -284,6 +310,8 @@ namespace Pakal
 			o.role = object.value("role", std::string());
 			o.zone = object.value("zone", std::string());
 			o.mesh = object.value("mesh", std::string());
+			o.prefab = object.value("prefab", std::string());
+			if (object.contains("overrides") && object["overrides"].is_object()) o.overrides = object["overrides"];
 			o.x = object.value("x", 0.0);
 			o.y = object.value("y", 0.0);
 			o.z = object.value("z", 0.0);
@@ -305,6 +333,13 @@ namespace Pakal
 				}
 			}
 			o.baked = object.value("baked", false);
+			if (object.contains("paint") && object["paint"].is_object()) o.paint = object["paint"];
+			const Json basis = object.value("basis", Json::array());
+			if (basis.is_array() && basis.size() == 9)
+			{
+				o.has_basis = true;
+				for (size_t i = 0; i < 9; ++i) o.basis[i] = basis[i].is_number() ? basis[i].get<double>() : 0.0;
+			}
 			doc.objects.push_back(o);
 		}
 		for (const auto& zone : root.value("zones", Json::array()))
@@ -384,6 +419,7 @@ namespace Pakal
 			{
 				item["w"] = w.w;
 				item["h"] = w.h;
+				if (w.angle != 0.0) item["angle"] = w.angle;
 			}
 			if (!w.source.empty())
 			{
@@ -417,10 +453,12 @@ namespace Pakal
 			Json item = Json::object();
 			if (!o.key.empty()) item["key"] = o.key;
 			item["name"] = o.name;
-			if (o.id >= 0) item["id"] = o.id;
+			if (o.id != -1) item["id"] = o.id;   // the converter's negative ids (-11...) mean something to the game too
 			if (!o.role.empty()) item["role"] = o.role;
 			if (!o.zone.empty()) item["zone"] = o.zone;
-			item["mesh"] = o.mesh;
+			if (!o.prefab.empty()) item["prefab"] = o.prefab;
+			if (!o.mesh.empty() || o.prefab.empty()) item["mesh"] = o.mesh;
+			if (!o.overrides.empty()) item["overrides"] = o.overrides;
 			item["x"] = o.x;
 			item["y"] = o.y;
 			item["z"] = o.z;
@@ -428,6 +466,13 @@ namespace Pakal
 			item["scale"] = o.scale;
 			if (o.lightmap[0] > 0.0) item["lightmap"] = Json::array({ o.lightmap[0], o.lightmap[1], o.lightmap[2] });
 			if (o.baked) item["baked"] = true;
+			if (o.paint.is_object()) item["paint"] = o.paint;
+			if (o.has_basis)
+			{
+				Json basis = Json::array();
+				for (double value : o.basis) basis.push_back(value);
+				item["basis"] = basis;
+			}
 			objectsJson.push_back(item);
 		}
 		root["objects"] = objectsJson;
@@ -539,11 +584,11 @@ namespace Pakal
 			{
 				warning(where + " is in the unknown zone '" + o.zone + "'");
 			}
-			if (o.mesh.empty())
+			if (o.mesh.empty() && o.prefab.empty())
 			{
-				error(where + " has no model");
+				error(where + " has no model and no prefab");
 			}
-			else if (!levelDir.empty() && !std::filesystem::exists(std::filesystem::path(levelDir) / o.mesh))
+			else if (!o.mesh.empty() && !levelDir.empty() && !std::filesystem::exists(std::filesystem::path(levelDir) / o.mesh))
 			{
 				warning(where + " uses the missing model '" + o.mesh + "'");
 			}

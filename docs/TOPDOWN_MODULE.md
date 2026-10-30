@@ -114,20 +114,42 @@ A kit is a set of components for one style of game, in `game_genres/topdown/kits
   Tested by `tests/RpgKitTests.cpp`; used by `examples/dungeon_proto` (a Diablo-like).
 
 A brain the game writes (Zombies: `EnemyBrainComponent`) tells the character's model how it looks through
-`CharacterViewSource::view_state()` (`CharacterViewState`: dead, attacking, knocked, flung, hurt, sinking, the step of a
-special attack).
+`CharacterViewSource::view_state()` (`CharacterViewState`: dead, attacking, knocked, flung, hurt, sinking, climbing out of the floor, the step
+of a special attack). A character climbing out (`emergeLeft` of `emergeSeconds`) rises from under the floor facing the
+way it will go and plays the look's `emerge` action, or its getting up, over the whole climb.
 
 Also: `EnemyAI2D` (an enemy that sees, chases along the walkable grid and attacks; its layers come in its `EnemyConfig`),
-`SpawnSystem` (orders that keep N enemies of a type alive from reachable spawners), `TopDownRules` (gun, melee, player,
-pickups, consumables, gift table, props, the sounds of the events), `build_level_physics` (`LevelPhysics.h`: a level's
+`SpawnSystem` (orders that keep N enemies of a type alive from reachable spawners; how long a spawner rests and how
+often one that appears moans are the rules' `spawn`), `TopDownRules` (gun, melee, player, pickups, consumables, gift
+table, props, the sounds of the events), `build_level_physics` (`LevelPhysics.h`: a level's
 walls, collision polygons and walkable grid from its `LevelDocument`, on the game's layers), and the camera helpers
-(`ActorOrientation`, `CameraInput`, `CameraPan`, `MouseAim`).
+(`ActorOrientation`, `CameraInput`, `CameraPan`, `MouseAim`; `LevelCameraPath` reads a level's camera path,
+`"camera": {"intro": ...}`, as a `CameraPan`'s keys).
+
+What the genre's parts do comes from fields a game sets, with neutral defaults: a gun's muzzle (`muzzleForward`,
+`muzzleSide`, `muzzleHeight`) and fire pose (`fireClipSeconds`); a melee weapon's trapezoid (`nearHalfWidth`,
+`farHalfWidth`), `height` and `clipSeconds`; a barricade's `repairReach`; an escort's `waitDistance` and `pointReach`;
+`HealthComponent::hurtFlashSeconds`; a character look's `turnSpeed`, `minFacingSpeed`, `hitCooldown`, `backpedalCos` and
+`knockDownAbove` (its visuals' JSON); and `EffectsSystem::Settings` (which prop effect a name is, the lasting effects'
+seconds and rates, the blood's color).
 
 ## Views
 
 `view/`: `CharacterViewComponent` (the animated model: clips after state and speed, what the hands hold, the hurt flash,
-the boost glow), `PropMesh` (a prop's model), `EffectsSystem` (bullet trails, muzzle flashes, casings, sparks, blood, the
-props' water, fire, glass and debris), `AudioCues` (sounds by name from `audio.json`; SFML on desktops, AAudio on
+the boost glow; the player's fire and reload clips play on the upper body (`overlayRoot` up) over the legs, and so do a
+hit and a melee swing taken on the run (`meleeMoving` empty), so the legs keep their run instead of sliding; a held weapon
+may bring its own `clips` (a rifle's hold, a launcher on the shoulder: those it names replace the look's while in hand;
+standing, a two-handed gun or one with its own clips rests in their `gunIdle`, a melee weapon in `meleeIdle`),
+its `grip` for the other hand (the `reach` arm's two-bone IK) and its `muzzle` (its barrel's mouth in its model: the
+shots' flash, casings and the height its bullets fly at); with a gun in hand the body turns by what its barrel is off the
+aim on the drawn pose (a rifle held at the shoulder, the torso side on), so the gun points where the shots go;
+`PAKAL_AIM_ALIGN=0` turns it off; a held weapon's `pair` is its twin in the other hand, drawn with it, the shots
+leaving each in turn: a pair of pistols; `set_hands_free` hides what the hands hold while a forced clip plays, a
+celebration),
+`PropMesh` (a prop's model; a hit on one that breaks lights it up and shakes it, `PropView::show_hit`, for the seconds the game gives `PropComponent::set_hit_seconds`, none by default), `EffectsSystem` (bullet trails, muzzle flashes, casings, sparks, blood, the
+props' water, fire, glass and debris; and what lies on the floor, drawn with `BgfxGraphicsSystem::draw_ground_spot`: the
+muzzle's light flickering around the shooter, blood pools and splats that stay and fade after a while, bodies blown to
+pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`; SFML on desktops, AAudio on
 Android), `CameraRig` (the camera at a fixed offset from what it follows, scripted pans, the shake; its `rest_pose` is
 what the simulation may use), `InputMapper` (the step's `PlayerInput` from the keys, the mouse and the sticks, relative to
 the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections), `LevelRuntime` (what a
@@ -136,9 +158,15 @@ scenery and the look, each character's animated model, the fixed steps and the v
 go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand), `UiPanel` (a
 game's interface of one RmlUi document: text, bars, style properties and classes by element id, and the buttons pressed
 on it),
-`LevelEditPanel` (the running level's editor: an ImGui panel over its document and `LevelEditor`, picking and dragging
+`LevelObjects` (a level document's objects by key: each one's model from its prefab or its own mesh, and for one with
+components a prop actor made with the `ComponentSchema`; brought in line with an edited document object by object;
+`LevelPlacement.h` places them), `LevelEditPanel` (the running level's editor: an ImGui panel over its document and `LevelEditor`, picking and dragging
 on the floor, gizmos; docs/LEVEL_EDITOR.md), `OccluderFade` (models between the camera and the player fade out) and `RenderSpace.h` (`floor_point`: the
 plane to render space).
+
+`ComponentSchema` (the components a level's object can carry: fields with their types, defaults and ranges, and how each
+joins the actor; TopDown's Destructible, Explosive and GiftBox, a game's own added) is part of the simulation. The level
+editor is `editor/` (`PakalTopDownEditor`: `LevelEditorState`, `EditorMath`); see docs/EDITOR.md.
 
 A game's scripts run on the engine's `ScriptHost` (`source/scripting`, library `PakalScripting`, the only part that
 links Lua): tasks as coroutines that wait on the game clock, game variables, and the functions the game binds by name.

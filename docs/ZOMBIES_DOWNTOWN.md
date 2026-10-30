@@ -48,6 +48,11 @@ those sections (the original) look as before.
   the ambient. `alphaMode` is also read from glTFs (crosswalks, glass). The original's models do not change.
 - **Post-processing** (`PostSettings`): the frame goes to a framebuffer with depth and a final pass applies color (exposure, contrast,
   saturation, tint, vignette), tilt-shift (blur at the top and bottom, miniature effect) and screen-space ambient occlusion.
+  **Fog** (`post.fog`: `density` per meter, `start` meters, `max`, `sky`, `color`) uses the same pass's depth. It lerps
+  toward the sky's horizon color (or its own) with the distance from the camera. That costs one exponential per pixel,
+  so it stays on at every quality level. In a top-down view, a start a little before the ground keeps the roofs clear
+  and hazes the streets, which reads as height. The sky, at the far plane, takes at most `sky`, the haze at the horizon
+  in camera pans.
 - Variables: `ZOMBIES_POST=off`, `ZOMBIES_SHADOWS=off`, `ZOMBIES_GI=off` for comparison.
 
 ## Occlusion

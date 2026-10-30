@@ -89,6 +89,8 @@ namespace Pakal::TopDown
 
 		Pakal::BgfxGraphicsSystem& graphics() { return *m_graphics; }
 		CameraRig& rig() { return *m_rig; }
+		// The bgfx camera the rig drives (a tool places it itself: an editor's free camera)
+		Pakal::CameraComponent3D_Bgfx& camera() { return *m_camera; }
 		InputMapper& input() { return *m_input; }
 		Pakal::AssetCache& assets() { return *m_assets; }
 		Pakal::RandomStreams& random() { return m_random; }

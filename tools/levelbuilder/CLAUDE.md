@@ -29,6 +29,19 @@ path. Building a playable level also needs the converted Survival level (see doc
 | `blender_scene.py` | Runs inside Blender: assembles the scene, writes the `.glb` (node names = entity ids) and the renders |
 | `blender_batch.py` | Runs inside Blender: merges the fixed models of the base into one model per 32 m cell (`build --batch`) |
 | `lb.py` | The command line |
+| `geom.py` | Geometry on shapely 2: smooth curves, 1D noise, curve offsets, triangulation, convex pieces |
+| `streetnet.py` | A coastal street network from curves (coast, promenade, avenues, fanning cross streets, river and bridges, hill, beach, pier); a PIL preview |
+| `roadmesh.py` | Our glTF meshes in 32 m cells: asphalt, curbs, sidewalks, cobblestone, markings, zebras, parapets, decals |
+| `terrain.py` | Sea and seawall, river and banks, beach, pier, the hill heightfield, the backdrop |
+| `parcels.py` | Buildings along each side of a polygonal block, facing the street |
+| `spawners.py` | Spawners as data: candidates, masks, variation, occupancy (presets in `presets/`) |
+| `decals.py` | Our wear decal atlas and beach sand texture |
+| `theme.py` | Themes: models per role from other packs, extracted under `Assets/` |
+| `plazas.py` | Mexican plazas: walks to the center, raised garden beds, kinds (civic, children, dance) |
+| `dress.py` | What each lot brings with its building: facade, sidewalk, curb, yard and roof pieces (the preset's `lots`) |
+| `setpieces.py` | Scenes told in one place: barricades, crashes, checkpoints, looted shops (the preset's `setpieces`) |
+| `overhead.py` | Power poles and cables along the streets, papel picado across them (the preset's `overhead`) |
+| `coastal.py` | The coastal generator end to end (`"layout": "coastal"`): block types, walls on open frontage, background ring |
 | `examples/pueblito.py` | A complete example town, from scratch |
 
 ## Scene model
@@ -78,6 +91,12 @@ the sidewalks, puts the town sign at an entrance, the water tower and the gift i
 validate, render, and refine with the operations (or another seed). Houses come from `buildings.py`
 (`ops.houses`); Downtown offers only three whole buildings, so a downtown block looks alike until office buildings are
 composed from its modular pieces too.
+
+Coastal towns (`"layout": "coastal"`, docs/LEVEL_BUILDER.md): `lb.py generate <scene> --brief-file <brief.json>`;
+the scene keeps its network, zone polygons, generated meshes (`Assets/levelgen/<scene>`) and collision chains
+(`outlines`). `python -m unittest discover tests/levelbuilder` runs the generator's tests. Needs `pip install shapely`.
+One block again, the rest as it is: `block_overrides` in the brief, then `lb.py generate <scene> --brief-file <brief>
+--force --only-block <id>`; `lb.py build --no-gi` for a quick look (the old light probes stay), a full build to bake.
 
 ## Workflow
 

@@ -2,11 +2,14 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: LevelDocumentTests.cpp
 // Purpose: Round trip of the level document: a version 1 file is upgraded, saved, and reloaded
-//          without losing data; unknown sections survive; validation finds broken data.
+//          without losing data; unknown sections survive; validation finds broken data. A mission's layer
+//          over a base level (LevelLayers) is composed with it.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "LevelDocument.h"
+#include "LevelLayers.h"
 
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -82,6 +85,55 @@ int main()
 	Pakal::LevelDocument future;
 	check(!future.from_json(Pakal::Json::parse(R"({"format":"pakal-level","version":99})"), ignored),
 		"a newer version is refused");
+
+	// A layer over a base: hides a building with its collision, moves a car, adds a barricade, and its rules and light win
+	{
+		namespace fs = std::filesystem;
+		const fs::path root = fs::temp_directory_path() / "pakal_layers_test";
+		fs::create_directories(root / "base" / "missions");
+		std::ofstream(root / "base" / "level.json") << R"({"format":"pakal-level","version":2,"name":"town",
+			"objects":[{"key":"house_1","mesh":"meshes/house.gltf","x":0,"y":0},{"key":"car_1","mesh":"meshes/car.gltf","x":500,"y":0},
+			           {"key":"lamp_1","mesh":"../shared/lamp.gltf","x":900,"y":0}],
+			"collision":{"segments":[{"layer":"solid","of":"house_1","points":[[0,0],[1,0],[1,1]]},{"layer":"solid","points":[[5,5],[6,5],[6,6]]},
+			                         {"layer":"solid","of":"car_1","points":[[600,0],[500,100],[400,0]]}]},
+			"lighting":{"sunColor":[1,1,1],"ambient":[0.5,0.5,0.5]},"rules":{"kills":10,"speed":2}})";
+		std::ofstream(root / "base" / "missions" / "roadblock.json") << R"({"format":"pakal-level","version":2,"name":"roadblock",
+			"extends":"../level.json","hide":["house_1","gone_9"],"adjust":{"car_1":{"x":650,"rot":[0,0,90]}},
+			"objects":[{"key":"barricade_1","mesh":"barricade.gltf","x":100,"y":100}],
+			"collision":{"segments":[{"layer":"solid","of":"barricade_1","points":[[1,1],[2,1],[2,2]]}]},
+			"lighting":{"sunColor":[1,0.6,0.4]},"rules":{"kills":40}})";
+		Pakal::LevelDocument layered;
+		Pakal::LevelLayering info;
+		std::string layerError;
+		const bool ok = Pakal::load_level((root / "base" / "missions" / "roadblock.json").string(), layered, layerError, &info);
+		check(ok, "a layer over a base loads");
+		if (ok)
+		{
+			check(info.base == "../level.json" && info.hidden == 1 && info.adjusted == 1 && info.added == 1, "the layering is reported");
+			check(layered.name == "roadblock" && layered.find("house_1") < 0, "the hidden building is gone");
+			const int car = layered.find("car_1");
+			check(car >= 0 && layered.objects[car].x == 650.0, "the adjusted car moved");
+			check(car >= 0 && layered.objects[car].mesh == "../meshes/car.gltf", "the base's paths are made relative to the layer");
+			const int lamp = layered.find("lamp_1");
+			check(lamp >= 0 && layered.objects[lamp].mesh == "../../shared/lamp.gltf", "a base path out of its folder too");
+			check(layered.find("barricade_1") >= 0 && layered.objects[layered.find("barricade_1")].mesh == "barricade.gltf",
+				"the layer's own objects keep their paths");
+			const auto& segments = layered.collision["segments"];
+			check(segments.size() == 3 && segments[0].value("of", std::string()) != "house_1", "the hidden building's collision goes with it");
+			// the car moved 150 east and turned a quarter: its collision turned about its old place and came along
+			const auto& carShape = segments[1]["points"];
+			check(std::abs(carShape[0][0].get<double>() - 650.0) < 1e-6 && std::abs(carShape[0][1].get<double>() - 100.0) < 1e-6,
+				"an adjusted object's collision moves and turns with it");
+			check(layered.lighting["sunColor"][1] == 0.6 && layered.lighting["ambient"][0] == 0.5, "the layer's light merges over the base's");
+			check(layered.extra["rules"]["kills"] == 40 && layered.extra["rules"]["speed"] == 2, "the layer's rules merge over the base's");
+			check(layered.meta["layers"]["base"] == "../level.json", "the composed level says where its base is");
+			check(info.missing.size() == 1 && info.missing[0] == "gone_9", "a key the base does not have is reported");
+		}
+		Pakal::LevelDocument plain;
+		check(Pakal::load_level((root / "base" / "level.json").string(), plain, layerError) && plain.objects.size() == 3,
+			"a level without a base loads as it is");
+		fs::remove_all(root);
+	}
 
 	if (g_failures == 0)
 	{

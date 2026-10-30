@@ -37,13 +37,19 @@ namespace Pakal::TopDown
 		// pistols fired together shoot twice per cycle, one shot from each.
 		std::vector<float> triggers{ 0.0f };
 		float rangeCm = 1000.0f;      // a bullet is dropped after flying this far
-		float piercing = 1.0f;        // PiercingFactor: each zombie hit takes this from the bullet's 1; it goes on while some is left
-		bool knockback = false;       // its bullets knock zombies back (DamageType KNOCKBACK_HURT: shotguns)
+		float piercing = 1.0f;        // PiercingFactor: each body hit takes this from the bullet's 1; it goes on while some is left
+		bool knockback = false;       // its bullets knock enemies back (DamageType KNOCKBACK_HURT)
+		float blastRadiusCm = 0.0f;   // its shots burst where they land (a grenade launcher), hurting everything this close...
+		float blastDamage = 0.0f;     // ... this much
+		// Where its bullets start (meters): ahead of the shooter, to each side for two guns, over its feet; and how long
+		// the view shows a shot (the fire pose)
+		float muzzleForward = 0.4f, muzzleSide = 0.15f, muzzleHeight = 1.0f;
+		float fireClipSeconds = 0.35f;
 		std::string fireSound;
 		std::string reloadSound;
 	};
 
-	// How a zombie dies of a hit (the DeathType of the weapon): it falls, it is flung into the air, or nothing is left of it
+	// How an enemy dies of a hit (the DeathType of the weapon): it falls, it is flung into the air, or nothing is left of it
 	enum class DeathKind
 	{
 		Normal,
@@ -59,9 +65,11 @@ namespace Pakal::TopDown
 		float damage = 1.0f;
 		float runSpeed = 600.0f;
 		std::string swingSound;
-		// What it hits: a trapezoid ahead (20 cm wide at the player, 400 cm wide at the reach), or a circle of the reach all
-		// around (the battle axe)
+		// What it hits: a trapezoid ahead (its widths below), or a circle of the reach all around
 		bool circle = false;
+		float nearHalfWidth = 0.1f, farHalfWidth = 2.0f;   // the trapezoid's half widths at the player and at the reach (m)
+		float height = 1.8f;           // it reaches this high from the feet (m)
+		float clipSeconds = 0.3f;      // how long the view shows a swing
 		DeathKind death = DeathKind::Normal;
 	};
 
@@ -131,12 +139,16 @@ namespace Pakal::TopDown
 		};
 		std::vector<DamageLevel> damageLevels;
 		std::string burningEffect;   // an explosive prop keeps this going once it blew up (Explosive DamagedEffect)
-		// Not in the original's data (the level builder's defend missions): a barricade the zombies break and the player
+		// Not in the original's data (the level builder's defend missions): a barricade enemies break and the player
 		// repairs by standing next to it (Barricade RepairTime: ms from nothing to whole), and the thing to defend
-		// (Objective): zombies go for it
+		// (Objective): enemies go for it
 		bool repairable = false;
 		float repairSeconds = 4.0f;
+		float repairReach = 1.8f;    // a player this close to it (m) repairs it
 		bool objective = false;
+		// Gone when broken (Health ClearWhenBroken, ours: the original's Break Barrier, a board across a way): nothing stops
+		// at it any more and the walking grid opens there; other props keep blocking as their broken model
+		bool clearWhenBroken = false;
 	};
 
 	// How hard things shake the camera (CameraRig::shake_from powers): the original game's (CameraObject::ShakeCamera) unless the
@@ -145,9 +157,16 @@ namespace Pakal::TopDown
 	{
 		float explosion = 15.0f;    // grenades, explosive props, cars
 		float bombing = 50.0f;      // an air strike
-		float enemyBlast = 20.0f;   // a tourist blowing up, a boomer's blast
+		float enemyBlast = 20.0f;   // an enemy blowing up or its blast
 		float healthPack = 20.0f;   // the player takes a health pack
 		float hurt = 15.0f;         // the player is hit
+	};
+
+	// How the spawners pace what they put out
+	struct SpawnRules
+	{
+		float intervalSeconds = 5.0f;   // a spawner waits this long after putting one out
+		int moanEvery = 4;              // one in this many that appear moans ("enemyMoan"); 0: none
 	};
 
 	class TopDownRules
@@ -155,6 +174,7 @@ namespace Pakal::TopDown
 	public:
 		GunRules gun;
 		ShakeRules shake;
+		SpawnRules spawn;
 		PlayerRules player;
 		std::map<int, PickupRules> pickups;          // by game id
 		std::vector<int> randomPickups;              // what a random drop can be (PickupManager)

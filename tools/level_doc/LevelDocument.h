@@ -13,6 +13,7 @@
 #include <nlohmann/json.hpp>
 
 #include <array>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@ namespace Pakal
 		std::string shape = "rect"; // "rect" (w, h) or "circle" (d: diameter)
 		double x = 0.0, y = 0.0;
 		double w = 0.0, h = 0.0;
+		double angle = 0.0;         // a rect's turn about its center, degrees counterclockwise (level axes, like a yaw)
 		double d = 0.0;
 		std::string source; // where it comes from: "prop" (an object's own collision), "world" (level polygon)
 		int id = -1;        // game id of the object the collision belongs to, -1 when unknown
@@ -50,13 +52,22 @@ namespace Pakal
 		int id = -1;      // the game's object id (scripts show, hide and move objects by it), -1 when unknown
 		std::string role; // what it is for ("building", "prop", "light"...), free text the tools filter by
 		std::string zone; // the zone it belongs to (LevelZone::name), when it has one
-		std::string mesh; // path relative to the level file
+		std::string mesh; // path relative to the level file; empty for an object made from a prefab (the prefab's)
+		std::string prefab;                 // the prefab it is made from (PrefabLibrary), "" when none
+		Json overrides = Json::object();    // what it changes of its prefab: a JSON merge patch on the prefab
 		double x = 0.0, y = 0.0, z = 0.0;
 		std::array<double, 3> rot = { 0.0, 0.0, 0.0 }; // degrees about X, Y, Z (Z up), applied as Rz*Ry*Rx
 		double scale = 1.0;
 		// Its place in the level's lightmap atlas: scale, u0, v0 (uv = (u0, v0) + the model's second UV set * scale). Scale 0: none
 		std::array<double, 3> lightmap = { 0.0, 0.0, 0.0 };
 		bool baked = false; // part of the fixed scene the lightmap was baked with: its shadow on the floor is in it
+		// The model's own rotation and scale as a 3x3 matrix in render space (Y up, column-major), in place of rot and scale:
+		// for models placed with a tilt or a scale that differs per axis. The position stays x, y, z.
+		std::array<double, 9> basis = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		bool has_basis = false;
+		// Its walls and roof in colors of its own (a building): {"atlas": the texture's file name without extension,
+		// "mask": the paint mask (path relative to the level), "wall": [r, g, b], "roof": [r, g, b]}; null when none
+		Json paint;
 	};
 
 	// A named rectangle of the level (level units) with a kind ("street", "park", "spawn"...): where things are, for tools
@@ -122,6 +133,12 @@ namespace Pakal
 
 		// Directory of a level file path, with the trailing separator ("" when it has none)
 		static std::string directory_of(const std::string& path);
+
+		// How level files (the document, its parts, its layers) are read, a whole file as text: from the disk, unless the
+		// host gives its own reader (the engine's resource manager: a folder, a zip, the APK). False when it is not there.
+		using FileReader = std::function<bool(const std::string& path, std::string& text)>;
+		static void set_file_reader(FileReader reader);
+		static bool read_file(const std::string& path, std::string& text);
 		// The file of a part of a level file: "dir/level.json", "objects" -> "dir/level.objects.json"
 		static std::string part_path(const std::string& path, const std::string& section);
 

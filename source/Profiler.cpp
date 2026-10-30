@@ -137,7 +137,8 @@ namespace Pakal
 		const auto now = std::chrono::steady_clock::now();
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_second.push_back(static_cast<float>(milliseconds));
-		if (std::chrono::duration<double>(now - m_start).count() >= m_skipSeconds) m_all.push_back(static_cast<float>(milliseconds));
+		// past the warm-up: a frame that began after it (one that spans it keeps the loading's time out)
+		if (std::chrono::duration<double>(now - m_start).count() - milliseconds / 1000.0 >= m_skipSeconds) m_all.push_back(static_cast<float>(milliseconds));
 		const double seconds = std::chrono::duration<double>(now - m_last).count();
 		if (seconds >= 1.0)
 		{
@@ -162,15 +163,21 @@ namespace Pakal
 			{ "max", times.empty() ? 0.0 : times.back() } };
 		nlohmann::json sections = nlohmann::json::object();
 		std::string line;
+		// the summary's sections count only the seconds begun after the warm-up, over their own frames (ZM-QA-001)
+		const bool counted = std::chrono::duration<double>(m_last - m_start).count() >= m_skipSeconds;
+		if (counted) m_allSectionFrames += frames;
 		for (const auto& [name, s] : m_sections)
 		{
 			// per frame: the share of this second's time per drawn frame
 			const double perFrame = frames ? s.total / frames : 0.0;
 			sections[name] = { { "ms_per_frame", perFrame }, { "worst_ms", s.worst }, { "calls", s.calls } };
-			Section& all = m_allSections[name];
-			all.total += s.total;
-			all.worst = std::max(all.worst, s.worst);
-			all.calls += s.calls;
+			if (counted)
+			{
+				Section& all = m_allSections[name];
+				all.total += s.total;
+				all.worst = std::max(all.worst, s.worst);
+				all.calls += s.calls;
+			}
 			char part[96];
 			std::snprintf(part, sizeof(part), " %s=%.2f", name.c_str(), perFrame);
 			line += part;
@@ -193,6 +200,48 @@ namespace Pakal
 		}
 		m_second.clear();
 		m_sections.clear();
+	}
+
+	bool Profiler::start(const std::string& path)
+	{
+		if (m_recording || (m_enabled && !m_finished)) finish();
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::FILE* file = std::fopen(path.c_str(), "w");
+		if (!file)
+		{
+			LOG_WARNING("[Profiler] cannot write %s", path.c_str());
+			return false;
+		}
+		m_file = file;
+		m_second.clear();
+		m_all.clear();
+		m_sections.clear();
+		m_allSections.clear();
+		m_allSectionFrames = 0;
+		m_finished = false;
+		m_infoWritten = false;
+		m_skipSeconds = 0.0;
+		m_runSeconds = 0.0;
+		m_start = m_last = std::chrono::steady_clock::now();
+		m_recording = true;
+		m_recordingPath = path;
+		m_enabled = true;
+		LOG_INFO("[Profiler] recording to %s", path.c_str());
+		return true;
+	}
+
+	void Profiler::stop()
+	{
+		if (!m_recording) return;
+		finish();
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_recording = false;
+		m_enabled = false;   // what the environment asked for at the start is over by now (its file is closed)
+	}
+
+	double Profiler::recording_seconds() const
+	{
+		return m_recording ? std::chrono::duration<double>(std::chrono::steady_clock::now() - m_start).count() : 0.0;
 	}
 
 	bool Profiler::time_is_up() const
@@ -218,7 +267,7 @@ namespace Pakal
 		nlohmann::json sections = nlohmann::json::object();
 		for (const auto& [name, s] : m_allSections)
 		{
-			sections[name] = { { "ms_per_frame", m_all.empty() ? 0.0 : s.total / m_all.size() }, { "worst_ms", s.worst }, { "calls", s.calls } };
+			sections[name] = { { "ms_per_frame", m_allSectionFrames ? s.total / m_allSectionFrames : 0.0 }, { "worst_ms", s.worst }, { "calls", s.calls } };
 		}
 		summary["sections"] = sections;
 		summary["counters"] = m_counters;

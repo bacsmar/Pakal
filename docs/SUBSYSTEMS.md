@@ -36,7 +36,23 @@ Synchronous (`SyncEntity` / `SyncComponent` in a `SimWorld`): `source/SyncEntity
 simulation in fixed steps; the components run in order, once per step, on one thread.
 
 ## ResourceManager &amp; Persistence
-- `ResourceManager` lets you register sources (Directory, Zip), and locate and load resources.
+- `ResourceManager` (`ResourceMgr`) reads the engine's files. `read_bytes(path)`, `read_text(path)` and `exists(path)`
+  find a file as given, then under the root folder, then in the mounted sources, in that order. Any thread may call them.
+- Sources are registered by type (`register_source<T>(factory)`) and mounted with `add_source<T>(args...)`. Pakal has:
+  - a folder;
+  - a zip (`ZipSourceMiniz`, with miniz). Its names are indexed when it is mounted, ignoring case, with `/` as the
+    separator. `PAKAL_MOUNT_ZIP=<a.zip>[;<b.zip>...]` mounts zips at start;
+  - on Android, the APK's own assets (`AndroidAssetSource`). It answers from the package's `assets.list` without
+    calling the asset manager. A path under the root folder is looked up in the APK by what follows the root.
+- Bytes read are shared while anyone holds them: a texture or document read again meanwhile costs nothing. Whether a
+  path exists is remembered, so a missing file is not searched for again. Mounting or removing a source, a new root,
+  or a file written forget those answers.
+- What goes through it:
+  - models: assimp reads the glTF and its buffers through an IOSystem;
+  - textures, shaders and materials;
+  - RmlUi's documents, styles, fonts and images;
+  - levels and their layers: `LevelDocument::set_file_reader`, so the level library keeps no dependency on Pakal;
+  - audio banks and sounds.
 - Persistence and serialization are handled through `Archive` and a related project `pakal_persist` (fork at `bacsmar/pakal_persist`).
 
 ## OSManager / Input / Sound / UI

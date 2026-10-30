@@ -17,7 +17,7 @@ namespace Pakal::TopDown
 	using Actor = Pakal::SyncEntity;
 
 	// What an actor is (its SyncEntity::kind). Whose side a character is on is its faction (Factions.h); what sort of
-	// character it is comes from the game's data (Zombies: its EnemyRules by type).
+	// character it is comes from the game's data (an enemy: its rules by type).
 	struct ActorKind
 	{
 		enum : int

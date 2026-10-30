@@ -619,7 +619,7 @@ namespace Dungeon
 		const b2Vec2 at = hero ? hero->drawn_position(m_runtime->alpha()) : b2Vec2(0.0f, 0.0f);
 		static const float scale = env_number("DUNGEON_CAM_SCALE", 1.0f);   // debug: below 1 comes closer
 		m_runtime->follow(at, m_seconds * 1000.0, 0.9f, scale);
-		m_walls.update(m_runtime->rig().eye(), Vec3{ at.x, 1.0f, -at.y }, hero != nullptr, dt);
+		m_walls.update(m_runtime->rig().eye(), OccluderFade::body_points(at.x, at.y), hero != nullptr, dt);
 		// DUNGEON_SCREENSHOT=<file>.tga at DUNGEON_SCREENSHOT_AT seconds
 		static const char* shot = std::getenv("DUNGEON_SCREENSHOT");
 		if (shot && !m_shot && m_seconds >= env_number("DUNGEON_SCREENSHOT_AT", 3.0f))

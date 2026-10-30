@@ -8,6 +8,7 @@
 #include "Task.h"
 
 #include <RmlUi/Core.h>
+#include <nlohmann/json.hpp>
 #include <bimg/decode.h>
 #include <bx/allocator.h>
 #include <bx/math.h>
@@ -22,19 +23,6 @@ namespace Pakal
 {
 	namespace
 	{
-		// The file's path as given, else under the resource root (Android: the app's storage)
-		std::string resolve(const std::string& path)
-		{
-			if (FILE* file = std::fopen(path.c_str(), "rb"))
-			{
-				std::fclose(file);
-				return path;
-			}
-			const std::string& root = ResourceMgr.get_root_path();
-			if (!root.empty()) return root + "/" + path;
-			return path;
-		}
-
 		Rml::Input::KeyIdentifier to_rml(Key key)
 		{
 			const int k = static_cast<int>(key);
@@ -77,6 +65,9 @@ namespace Pakal
 	class BgfxRmlUi::Backend final : public Rml::RenderInterface, public Rml::SystemInterface, public Rml::FileInterface
 	{
 	public:
+		std::mutex m_stringsLock;
+		std::map<std::string, std::string> m_strings;
+
 		explicit Backend(BgfxGraphicsSystem* graphics) : m_graphics(graphics)
 		{
 			m_start = std::chrono::steady_clock::now();
@@ -179,11 +170,10 @@ namespace Pakal
 
 		Rml::TextureHandle LoadTexture(Rml::Vector2i& dimensions, const Rml::String& source) override
 		{
-			std::ifstream input(resolve(source), std::ios::binary);
-			if (!input) return 0;
-			std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+			const auto bytes = ResourceMgr.read_bytes(source);
+			if (!bytes || bytes->empty()) return 0;
 			bx::DefaultAllocator allocator;
-			bimg::ImageContainer* image = bimg::imageParse(&allocator, bytes.data(), uint32_t(bytes.size()), bimg::TextureFormat::RGBA8);
+			bimg::ImageContainer* image = bimg::imageParse(&allocator, bytes->data(), uint32_t(bytes->size()), bimg::TextureFormat::RGBA8);
 			if (!image) return 0;
 			// RmlUi blends with premultiplied alpha
 			uint8_t* pixels = static_cast<uint8_t*>(image->m_data);
@@ -235,6 +225,25 @@ namespace Pakal
 		}
 
 		// --- SystemInterface ---
+		// The documents' texts by key (set_strings): a text that is a key shows the table's
+		int TranslateString(Rml::String& translated, const Rml::String& input) override
+		{
+			std::lock_guard<std::mutex> lock(m_stringsLock);
+			auto found = m_strings.find(input);
+			if (found == m_strings.end())
+			{
+				translated = input;
+				return 0;
+			}
+			translated = found->second;
+			return 1;
+		}
+		void set_strings(const std::map<std::string, std::string>& strings)
+		{
+			std::lock_guard<std::mutex> lock(m_stringsLock);
+			m_strings = strings;
+		}
+
 		double GetElapsedTime() override
 		{
 			return std::chrono::duration<double>(std::chrono::steady_clock::now() - m_start).count();
@@ -248,15 +257,37 @@ namespace Pakal
 			return true;
 		}
 
-		// --- FileInterface ---
+		// --- FileInterface: documents, style sheets and fonts through the resource manager (a folder, a zip, the APK) ---
+		struct OpenFile
+		{
+			SharedPtr<const std::vector<uint8_t>> bytes;
+			size_t at = 0;
+		};
 		Rml::FileHandle Open(const Rml::String& path) override
 		{
-			return reinterpret_cast<Rml::FileHandle>(std::fopen(resolve(path).c_str(), "rb"));
+			auto bytes = ResourceMgr.read_bytes(path);
+			return bytes ? reinterpret_cast<Rml::FileHandle>(new OpenFile{ std::move(bytes), 0 }) : 0;
 		}
-		void Close(Rml::FileHandle file) override { std::fclose(reinterpret_cast<FILE*>(file)); }
-		size_t Read(void* buffer, size_t size, Rml::FileHandle file) override { return std::fread(buffer, 1, size, reinterpret_cast<FILE*>(file)); }
-		bool Seek(Rml::FileHandle file, long offset, int origin) override { return std::fseek(reinterpret_cast<FILE*>(file), offset, origin) == 0; }
-		size_t Tell(Rml::FileHandle file) override { return size_t(std::ftell(reinterpret_cast<FILE*>(file))); }
+		void Close(Rml::FileHandle file) override { delete reinterpret_cast<OpenFile*>(file); }
+		size_t Read(void* buffer, size_t size, Rml::FileHandle file) override
+		{
+			OpenFile& open = *reinterpret_cast<OpenFile*>(file);
+			const size_t count = std::min(size, open.bytes->size() - open.at);
+			std::memcpy(buffer, open.bytes->data() + open.at, count);
+			open.at += count;
+			return count;
+		}
+		bool Seek(Rml::FileHandle file, long offset, int origin) override
+		{
+			OpenFile& open = *reinterpret_cast<OpenFile*>(file);
+			const long base = origin == SEEK_SET ? 0 : origin == SEEK_CUR ? long(open.at) : long(open.bytes->size());
+			const long to = base + offset;
+			if (to < 0 || size_t(to) > open.bytes->size()) return false;
+			open.at = size_t(to);
+			return true;
+		}
+		size_t Tell(Rml::FileHandle file) override { return reinterpret_cast<OpenFile*>(file)->at; }
+		size_t Length(Rml::FileHandle file) override { return reinterpret_cast<OpenFile*>(file)->bytes->size(); }
 
 	private:
 		Rml::TextureHandle add_texture(bgfx::TextureHandle texture)
@@ -288,6 +319,155 @@ namespace Pakal
 	};
 
 	// A click in a document: the id of the clicked element or of its nearest parent with one
+	// ---------------------------------------------------------------------------------------------------------------
+	// Data models: RmlUi's variables over a JSON tree. A node is a scalar, a list or a record; each kind has one definition
+	// that reads the node it is given (its children are found as they are asked for), so any tree binds without types
+	// ---------------------------------------------------------------------------------------------------------------
+	namespace
+	{
+		using Json = nlohmann::json;
+		Rml::VariableDefinition* definition_of(const Json& node);
+
+		class JsonScalar final : public Rml::VariableDefinition
+		{
+		public:
+			JsonScalar() : Rml::VariableDefinition(Rml::DataVariableType::Scalar) {}
+			bool Get(void* ptr, Rml::Variant& variant) override
+			{
+				const Json& node = *static_cast<const Json*>(ptr);
+				if (node.is_boolean()) variant = node.get<bool>();
+				else if (node.is_number_integer()) variant = node.get<int>();
+				else if (node.is_number()) variant = node.get<double>();
+				else if (node.is_string()) variant = node.get<std::string>();
+				else variant = Rml::String();
+				return true;
+			}
+		};
+
+		class JsonList final : public Rml::VariableDefinition
+		{
+		public:
+			JsonList() : Rml::VariableDefinition(Rml::DataVariableType::Array) {}
+			int Size(void* ptr) override { return static_cast<int>(static_cast<Json*>(ptr)->size()); }
+			Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override
+			{
+				Json& node = *static_cast<Json*>(ptr);
+				if (address.index < 0 || address.index >= static_cast<int>(node.size()))
+				{
+					if (address.name == "size") return Rml::MakeLiteralIntVariable(static_cast<int>(node.size()));
+					return Rml::DataVariable();
+				}
+				Json& child = node[static_cast<size_t>(address.index)];
+				return Rml::DataVariable(definition_of(child), &child);
+			}
+		};
+
+		class JsonRecord final : public Rml::VariableDefinition
+		{
+		public:
+			JsonRecord() : Rml::VariableDefinition(Rml::DataVariableType::Struct) {}
+			Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override
+			{
+				Json& node = *static_cast<Json*>(ptr);
+				auto found = node.find(address.name);
+				if (found == node.end()) return Rml::DataVariable();
+				return Rml::DataVariable(definition_of(*found), &*found);
+			}
+			Rml::StringList ReflectMemberNames() override { return {}; }
+		};
+
+		Rml::VariableDefinition* definition_of(const Json& node)
+		{
+			static JsonScalar scalar;
+			static JsonList list;
+			static JsonRecord record;
+			if (node.is_array()) return &list;
+			if (node.is_object()) return &record;
+			return &scalar;
+		}
+	}
+
+	struct BgfxRmlUi::DataModel
+	{
+		Rml::DataModelConstructor constructor;
+		Rml::DataModelHandle handle;
+		Json root;   // its variables: the members of this object (bound by address: they are replaced, never moved)
+	};
+
+	bool BgfxRmlUi::create_data_model(const std::string& model, const std::string& json)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		if (!m_initialized || m_models.count(model)) return false;
+		auto data = std::make_unique<DataModel>();
+		data->root = Json::parse(json, nullptr, false);
+		if (!data->root.is_object())
+		{
+			LOG_ERROR("[UI] data model %s: its data is not a JSON object", model.c_str());
+			return false;
+		}
+		data->constructor = m_context->CreateDataModel(model, nullptr, true);
+		if (!data->constructor) return false;
+		for (auto it = data->root.begin(); it != data->root.end(); ++it)
+		{
+			data->constructor.BindCustomDataVariable(it.key(), Rml::DataVariable(definition_of(*it), &*it));
+		}
+		data->handle = data->constructor.GetModelHandle();
+		m_models[model] = std::move(data);
+		return true;
+	}
+
+	void BgfxRmlUi::remove_data_model(const std::string& model)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		auto found = m_models.find(model);
+		if (found == m_models.end()) return;
+		if (m_context) m_context->RemoveDataModel(model);
+		m_models.erase(found);
+	}
+
+	void BgfxRmlUi::set_data(const std::string& model, const std::string& variable, const std::string& json)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		auto found = m_models.find(model);
+		if (found == m_models.end()) return;
+		DataModel& data = *found->second;
+		auto member = data.root.find(variable);
+		if (member == data.root.end())
+		{
+			LOG_WARNING("[UI] data model %s has no variable %s (variables are made with the model)", model.c_str(), variable.c_str());
+			return;
+		}
+		Json value = Json::parse(json, nullptr, false);
+		if (value.is_discarded()) return;
+		if (definition_of(value) != definition_of(*member))
+		{
+			LOG_WARNING("[UI] data model %s: %s keeps its kind (a list stays a list, a record a record)", model.c_str(), variable.c_str());
+			return;
+		}
+		if (*member == value) return;
+		*member = std::move(value);   // in place: the binding holds this node
+		data.handle.DirtyVariable(variable);
+	}
+
+	void BgfxRmlUi::add_data_event(const std::string& model, const std::string& name, DataEventCallback callback)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		auto found = m_models.find(model);
+		if (found == m_models.end() || !callback) return;
+		found->second->constructor.BindEventCallback(name, [callback](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments)
+		{
+			std::vector<std::string> texts;
+			for (const Rml::Variant& argument : arguments) texts.push_back(argument.Get<Rml::String>());
+			callback(texts);
+		});
+	}
+
+	void BgfxRmlUi::set_strings(const std::map<std::string, std::string>& strings)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		if (m_backend) m_backend->set_strings(strings);
+	}
+
 	class BgfxRmlUi::ClickListener final : public Rml::EventListener
 	{
 	public:
@@ -353,6 +533,8 @@ namespace Pakal
 		detach_input();
 		m_listeners.clear();
 		m_documents.clear();
+		for (const auto& model : m_models) m_context->RemoveDataModel(model.first);
+		m_models.clear();
 		Rml::Shutdown();   // releases the documents, then their geometry and textures through the backend
 		m_context = nullptr;
 		m_backend->destroy();
@@ -366,6 +548,15 @@ namespace Pakal
 		if (!m_initialized) return false;
 		const bool loaded = Rml::LoadFontFace(resourcePath.c_str());
 		if (!loaded) LOG_WARNING("[UI] font %s did not load", resourcePath.c_str());
+		return loaded;
+	}
+
+	bool BgfxRmlUi::load_fallback_font(const Path& resourcePath)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		if (!m_initialized) return false;
+		const bool loaded = Rml::LoadFontFace(resourcePath.c_str(), true);
+		if (!loaded) LOG_WARNING("[UI] fallback font %s did not load", resourcePath.c_str());
 		return loaded;
 	}
 
@@ -425,6 +616,13 @@ namespace Pakal
 		(void)autoresize;
 		auto found = m_documents.find(id);
 		if (found != m_documents.end()) found->second->Show();
+	}
+
+	void BgfxRmlUi::bring_to_front(unsigned id)
+	{
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
+		auto found = m_documents.find(id);
+		if (found != m_documents.end()) found->second->PullToFront();
 	}
 
 	void BgfxRmlUi::hide_document(unsigned id)

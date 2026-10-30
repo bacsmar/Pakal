@@ -47,6 +47,8 @@ namespace Pakal
 		IWindowManager*	m_window_impl;
 		IInputManager*  m_input_manager;
 		TaskCompletionSource<WindowArgs> m_windows_setup_task;
+		std::string m_dataFolder = "./";
+		std::function<bool(const std::string&, const std::string&)> m_share;
 
 	protected:
 		virtual ~OSManager() {}
@@ -68,6 +70,16 @@ namespace Pakal
 		inline IInputManager* get_input_manager() const { return m_input_manager; };
 		inline IWindowManager* get_window_manager() const { return m_window_impl;  };
 		inline virtual std::string get_app_path() { return "./";  };
+
+		// Where the program may write files for the person to take away (a profiling session): the working folder, or
+		// what the platform sets (Android: the app's external files folder). With a separator at the end.
+		std::string data_folder() const { return m_dataFolder; }
+		void set_data_folder(const std::string& folder) { m_dataFolder = folder; }
+		// Hands a file to the person: the platform's "share" (Android: the share sheet, e-mail, chat), set by the platform
+		// with set_share_handler; elsewhere it is only logged (the file is where it was written). False when nothing
+		// took it
+		bool share_file(const std::string& path, const std::string& title);
+		void set_share_handler(std::function<bool(const std::string& path, const std::string& title)> handler) { m_share = std::move(handler); }
 		
 		void initialize(const Settings& settings);
 		void terminate();

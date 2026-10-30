@@ -12,7 +12,9 @@ Output: <name>.json (the grid's placement) and <name>.bin (RGBA8, x fastest, the
 """
 import json
 import math
+import os
 import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -74,9 +76,52 @@ def in_shadow(points, to_sun, boxes):
     return np.any((far >= np.maximum(near, 0.0)) & (far > 0.0), axis=0)
 
 
+GPU_PYTHON = os.environ.get('PAKAL_GPU_PYTHON', str(Path.home() / '.cache' / 'pakal-gpu-venv' / 'Scripts' / 'python.exe'))
+
+
+def bake_on_gpu(job):
+    """The bake on the GPU (bake_gi_gpu.py, CUDA through CuPy): in this Python when it has CuPy, else in the one of
+    PAKAL_GPU_PYTHON (a venv with numpy and cupy-cuda12x). None when there is no GPU to use."""
+    try:
+        import bake_gi_gpu
+        return bake_gi_gpu.bake(**job)[0]
+    except ImportError:
+        pass
+    if not Path(GPU_PYTHON).is_file():
+        return None
+    import subprocess
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        source, target = Path(tmp) / 'job.json', Path(tmp) / 'result.npy'
+        source.write_text(json.dumps(job), encoding='utf-8')
+        done = subprocess.run([GPU_PYTHON, str(Path(__file__).with_name('bake_gi_gpu.py')), str(source), str(target)],
+                              capture_output=True, text=True)
+        if done.returncode != 0 or not target.is_file():
+            print('gi: the GPU bake failed, on the CPU instead:', done.stderr.strip().splitlines()[-1:] or done.returncode,
+                  file=sys.stderr)
+            return None
+        return np.load(target)
+
+
 def bake(boxes, sun_travel, sun_color, sky_top, sky_horizon, bounds, cell=1.5, heights=(0.6, 2.4, 4.2, 6.0), rays=72,
          ground_albedo=0.32, wall_albedo=0.42, reference=None):
-    """boxes: list of (x0, y0, x1, y1, height). Returns (rgba bytes, dims, origin, size)."""
+    """boxes: list of (x0, y0, x1, y1, height). Returns (rgba bytes, dims, origin, size). On the GPU when there is one
+    (bake_gi_gpu.py, the same results in a fraction of a second); PAKAL_GI_GPU=0, or any failure there, bakes here on the
+    CPU, probe by probe."""
+    if os.environ.get('PAKAL_GI_GPU', '1') != '0':
+        job = {'boxes': [list(map(float, b)) for b in boxes], 'sun_travel': list(map(float, sun_travel)),
+               'sun_color': list(map(float, sun_color)), 'sky_top': list(map(float, sky_top)),
+               'sky_horizon': list(map(float, sky_horizon)), 'bounds': list(map(float, bounds)), 'cell': cell,
+               'heights': list(heights), 'rays': rays, 'ground_albedo': ground_albedo, 'wall_albedo': wall_albedo}
+        try:
+            result = bake_on_gpu(job)
+        except Exception as error:   # any trouble there: the CPU bakes it
+            print(f'gi: the GPU bake failed ({error}), on the CPU instead', file=sys.stderr)
+            result = None
+        if result is not None:
+            x0, y0, x1, y1 = bounds
+            print('  probes: baked on the GPU', file=sys.stderr)
+            return result, (int(math.ceil((x1 - x0) / cell)), int(math.ceil((y1 - y0) / cell)), len(heights)), (x0, y0), cell
     boxes = np.array([[b[0], b[1], 0.0, b[2], b[3], b[4]] for b in boxes], dtype=float).reshape(-1, 6)
     x0, y0, x1, y1 = bounds
     nx = int(math.ceil((x1 - x0) / cell))
@@ -118,8 +163,39 @@ def bake(boxes, sun_travel, sun_color, sky_top, sky_horizon, bounds, cell=1.5, h
     return result, (nx, ny, nz), (x0, y0), cell
 
 
+def fill_inside(result, dark=0.05, rounds=24):
+    """The probes inside a building (baked near black) take the light of the open ones next to them, ring by ring: a
+    wall's surface blends the probes round it, and dark ones inside darkened every large building's walls (the
+    shopping centre's stores came out nearly black). The light inside is never seen from the game's camera."""
+    out = result.copy()
+    for layer in out:
+        unknown = layer.mean(axis=2) < dark
+        for _ in range(rounds):
+            if not unknown.any():
+                break
+            known = ~unknown
+            total = np.zeros_like(layer)
+            count = np.zeros(unknown.shape)
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                shifted_known = np.roll(known, (dy, dx), axis=(0, 1))
+                shifted = np.roll(layer, (dy, dx), axis=(0, 1))
+                # (no wrapping round the grid's edges)
+                if dy == 1: shifted_known[0, :] = False
+                if dy == -1: shifted_known[-1, :] = False
+                if dx == 1: shifted_known[:, 0] = False
+                if dx == -1: shifted_known[:, -1] = False
+                total += shifted * shifted_known[..., None]
+                count += shifted_known
+            reached = unknown & (count > 0)
+            layer[reached] = total[reached] / count[reached][:, None]
+            unknown &= ~reached
+    return out
+
+
 def pack(result, ambient_reference):
-    """Scales so that an open street matches the flat ambient the level had, and packs RGBA8 (half scale, the shader doubles)."""
+    """Scales so that an open street matches the flat ambient the level had, and packs RGBA8 (half scale, the shader doubles).
+    The probes inside buildings are filled from the open ones round them first (fill_inside)."""
+    result = fill_inside(result)
     nz, ny, nx, _ = result.shape
     # the median of the open probes at the second height level (2.4 m) is the reference: a typical spot
     level = result[min(1, nz - 1)].reshape(-1, 3)

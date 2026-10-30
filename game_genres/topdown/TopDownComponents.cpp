@@ -20,14 +20,6 @@ namespace Pakal::TopDown
 {
 	namespace
 	{
-		const float kHurtFlashSeconds = 0.15f;  // the red flash of a hurt body (HealthComponent)
-		// Defend missions: the player repairs a barricade within this of it
-		const float kRepairReach = 1.8f;
-		// Escort missions: the survivor walks this fast (m/s), waits while the player is farther than this, and reaches a
-		// point of its route within this
-		const float kEscortSpeed = 2.2f;
-		const float kEscortWaitDistance = 7.0f;
-		const float kEscortPointReach = 1.5f;
 	}
 
 	// Component ------------------------------------------------------------------------------------
@@ -53,7 +45,7 @@ namespace Pakal::TopDown
 		const float taken = amount;
 		m_health.apply_damage(taken);
 		m_invincibleTimer = m_invincibleSeconds;
-		m_hurtTimer = kHurtFlashSeconds;
+		m_hurtTimer = hurtFlashSeconds;
 		return taken;
 	}
 
@@ -124,16 +116,17 @@ namespace Pakal::TopDown
 			return;
 		}
 		const b2Vec2 at = actor().position;
-		while (m_next < m_route.size() && (m_route[m_next] - at).Length() < kEscortPointReach) ++m_next;
+		// the last point (home) is reached a little farther out: it may sit where the walking grid's body does not fit
+		while (m_next < m_route.size() && (m_route[m_next] - at).Length() < (m_next + 1 == m_route.size() ? 3.0f : pointReach)) ++m_next;
 		if (m_next >= m_route.size())
 		{
 			m_state = State::Arrived;
 			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
-		// it goes with the players: it waits while the nearest one is far
-		Actor* player = game.nearest_player(at, false);
-		if (!player || (player->position - at).Length() > kEscortWaitDistance)
+		// it goes with the players: it waits while the nearest one is far (unless it walks on its own), or while held
+		Actor* player = waitsForPlayer ? game.nearest_player(at, false) : nullptr;
+		if (held || (waitsForPlayer && (!player || (player->position - at).Length() > waitDistance)))
 		{
 			m_state = State::Waiting;
 			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
@@ -141,15 +134,16 @@ namespace Pakal::TopDown
 		}
 		m_state = State::Walking;
 		m_pathTimer -= dt;
-		if (m_pathTimer <= 0.0f || m_path.empty())
+		if (m_pathTimer <= 0.0f || (m_path.empty() && !m_noRoute))
 		{
-			if (!game.nav().find_path(at, m_route[m_next], m_path)) m_path.clear();
+			m_noRoute = !game.nav().find_path(at, m_route[m_next], m_path);
+			if (m_noRoute) m_path.clear();
 			m_pathTimer = 0.5f;
 		}
 		while (!m_path.empty() && (m_path.front() - at).Length() < 0.4f) m_path.erase(m_path.begin());
 		b2Vec2 way = (m_path.empty() ? m_route[m_next] : m_path.front()) - at;
 		if (way.Normalize() < 1.0e-4f) way = b2Vec2(0.0f, 0.0f);
-		body->move(way, kEscortSpeed);
+		body->move(way, speed);
 	}
 
 	// ConsumableComponent --------------------------------------------------------------------------
@@ -157,6 +151,8 @@ namespace Pakal::TopDown
 	void ConsumableComponent::apply(TopDownGame& game, const ConsumableRules& rules)
 	{
 		end();
+		game.events.emit(ConsumableEvent{ actor().id, actor().position, rules.id, rules.timerMs / 1000.0f, rules.melee, rules.firearm,
+			rules.speedFactor, rules.damageFactor, rules.defenceFactor, rules.addHealth, rules.effect });
 		HealthComponent* health = actor().get<HealthComponent>();
 		if (rules.addHealth > 0.0f && health)
 		{
@@ -298,6 +294,15 @@ namespace Pakal::TopDown
 		}
 	}
 
+	void PropComponent::update(TopDownGame& game, float dt)
+	{
+		(void)game;
+		if (m_hitLeft <= 0.0f) return;
+		m_hitLeft = m_broken ? 0.0f : std::max(0.0f, m_hitLeft - dt);
+		m_view->show_hit(m_hitLeft / m_hitSeconds);
+		if (m_hitLeft <= 0.0f) apply();   // back where it stands
+	}
+
 	// DestructibleComponent ------------------------------------------------------------------------
 
 	DestructibleComponent::DestructibleComponent(const PropRules& rules) : m_rules(rules), m_health(rules.health)
@@ -321,6 +326,7 @@ namespace Pakal::TopDown
 		}
 		if (m_health > 0.0f)
 		{
+			if (PropComponent* prop = actor().get<PropComponent>()) prop->hit();
 			return;
 		}
 		m_broken = true;
@@ -330,7 +336,7 @@ namespace Pakal::TopDown
 		}
 		if (m_rules.repairable)
 		{
-			// down: the zombies walk through until it is put back up
+			// down: enemies walk through until it is put back up
 			m_health = 0.0f;
 			game.world().set_static_enabled(actor().id, false);
 			game.events.emit(PropEffectEvent{ actor().position, "Break", m_size });
@@ -338,6 +344,13 @@ namespace Pakal::TopDown
 			return;
 		}
 		game.events.emit(PropEffectEvent{ actor().position, "Break", m_size });
+		// gone for good (a wall of boards shot down): nothing stops at it any more, and the walking grid opens where it stood
+		if (m_rules.clearWhenBroken)
+		{
+			game.world().set_static_enabled(actor().id, false);
+			const b2Vec2 margin(1.0f, 1.0f);
+			if (m_high.x > m_low.x) game.nav().rebuild_area(game.world(), m_low - margin, m_high + margin);
+		}
 		if (!m_rules.burningEffect.empty()) game.events.emit(PropEffectEvent{ actor().position, m_rules.burningEffect, m_size });
 		game.play(m_rules.explosive ? game.rules().sound("carBlast") : m_rules.deathSound, actor().position);
 		game.roll_drop(m_rules.randomDrop, m_rules.drops, m_rules.dropRate, actor().position);
@@ -373,11 +386,12 @@ namespace Pakal::TopDown
 		{
 			return;
 		}
-		// A player standing next to it puts it back together; once half of it is up it stops bodies again
+		// A player standing next to it puts it back together; as soon as the repair starts it stops bodies again (the
+		// original's RepairableBarricade)
 		const auto& players = game.players();
 		const bool repaired = std::any_of(players.begin(), players.end(), [&](const Actor* player)
 		{
-			return player && !TopDownGame::is_down(*player) && (reach_point(player->position, 0.0f) - player->position).Length() <= kRepairReach;
+			return player && !TopDownGame::is_down(*player) && (reach_point(player->position, 0.0f) - player->position).Length() <= m_rules.repairReach;
 		});
 		if (!repaired)
 		{
@@ -389,7 +403,18 @@ namespace Pakal::TopDown
 		{
 			game.play(game.rules().sound("propHit"), actor().position);   // a knock for each quarter put back
 		}
-		if (m_broken && m_health >= 0.5f * m_rules.health)
+		if (m_broken && m_health > 0.0f)
+		{
+			m_broken = false;
+			game.world().set_static_enabled(actor().id, true);
+			if (PropComponent* prop = actor().get<PropComponent>()) prop->set_repaired();
+		}
+	}
+
+	void DestructibleComponent::restore(TopDownGame& game)
+	{
+		m_health = m_rules.health;
+		if (m_broken)
 		{
 			m_broken = false;
 			game.world().set_static_enabled(actor().id, true);
@@ -473,6 +498,7 @@ namespace Pakal::TopDown
 				}
 			}
 			game.play(m_rules.sound, actor().position);
+			game.events.emit(PickupEvent{ player->id, actor().position, actor().gameId, m_rules.type });
 			actor().removed = true;
 			return;
 		}

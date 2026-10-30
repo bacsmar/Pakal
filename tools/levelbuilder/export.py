@@ -24,6 +24,7 @@ import missions  # noqa: E402
 import lightmaps  # noqa: E402
 from ops import kind  # noqa: E402
 import ops  # noqa: E402
+import paint  # noqa: E402
 from scene import BASE, DEFAULT_LAYERS  # noqa: E402
 
 ASSETS = REPO / 'build-win64' / 'bin' / 'Assets' / 'zombies'
@@ -89,15 +90,16 @@ def spawn_points(scene, mission=None):
     """Dos puntos por zona spawn, a lo largo de su lado largo: las salidas del pueblo, o las barricadas del área de la
     misión si se juega en una (sus 'spawns')."""
     points = []
-    rects = mission.get('spawns') if mission and mission.get('spawns') else \
-        [z['rect'] for z in scene.data['zones'].values() if z['kind'] == 'spawn']
-    for rect in rects:
-        x0, y0, x1, y1 = rect
+    zones = [{'rect': r} for r in mission['spawns']] if mission and mission.get('spawns') else \
+        [z for z in scene.data['zones'].values() if z['kind'] == 'spawn']
+    for zone in zones:
+        x0, y0, x1, y1 = zone['rect']
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        manhole = bool(zone.get('manhole'))   # los zombis salen de una coladera ahí (coastal pone la tapa)
         if x1 - x0 >= y1 - y0:
-            points += [(x0 + (x1 - x0) * 0.25, cy), (x0 + (x1 - x0) * 0.75, cy)]
+            points += [(x0 + (x1 - x0) * 0.25, cy, manhole), (x0 + (x1 - x0) * 0.75, cy, manhole)]
         else:
-            points += [(cx, y0 + (y1 - y0) * 0.25), (cx, y0 + (y1 - y0) * 0.75)]
+            points += [(cx, y0 + (y1 - y0) * 0.25, manhole), (cx, y0 + (y1 - y0) * 0.75, manhole)]
     return points
 
 
@@ -135,8 +137,14 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
     def build(level, hollywood):
         object_ids = {}   # id de entidad -> id de objeto del nivel (lo que se rompe)
         templates = {d['name']: d['components'] for d in hollywood['destructibles']}
+        # a gas pump: a car's blast but smaller (4.5 m), so one island does not set off the other (the designer's Gasolinazo)
+        if 'Explosive_CopCar' in templates and 'Explosive_Pump' not in templates:
+            pump = json.loads(json.dumps(templates['Explosive_CopCar']))
+            pump['Explosive']['BlastRadius'] = 450.0
+            templates['Explosive_Pump'] = pump
         props = mission_survival.Props(level, templates)
         gift = None
+        crowd = []
         # la base primero (lo fijo: lo único que cuenta para la luz horneada), luego las capas de la misión
         chosen = [e for e in scene.entities if e.get('layer', BASE) == BASE]
         chosen += [e for e in scene.entities if e.get('layer', BASE) != BASE and in_mission(e, mission)]
@@ -144,7 +152,12 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
             if e.get('layer', BASE) != BASE:
                 level.static = False
             asset, x, y, yaw, s = e['asset'], e['x'], e['y'], e['yaw'], e['scale']
+            level.owner = e['id']   # su objeto y su colisión llevan su id (una capa de misión los oculta juntos)
             k = kind(catalog, asset)
+            if e.get('role') == 'landmark_letter':
+                # the word on the malecon stands solid (a letter's model has nothing at body height for collide())
+                low, high = level.model(asset)
+                level.solid(citykit.footprint(low, high, x, y, yaw, s, 0.02), 'letter')
             if batches and batched(catalog, e):
                 if k != 'ground':
                     level.collide(asset, x, y, yaw, s, shrink=0.05)   # se dibuja con su cuadro; aquí solo choca
@@ -154,36 +167,104 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
                 level.place(asset, x, y, yaw, scale=s, object_id=mission_survival.GIFT_ID, label='GiftBox')
             elif k == 'ground':
                 level.place(placed[e['id']]['asset'] if e['id'] in placed else asset, x, y, yaw, z=e.get('z', 0.0), scale=s,
-                            label=e['id'])
+                            label=e['id'], tilt=e.get('tilt', 0.0))
             elif k == 'tree':
                 level.place(asset, x, y, yaw, scale=s, label=f'Tree_{e["id"]}')
                 level.solid(circle(x, y, 0.25 * s), 'trunk')
             elif 'building' in catalog['models'][asset]['tags']:
-                level.collide(asset, x, y, yaw, s, shrink=0.15)
+                if e.get('role') == 'fancy_store':
+                    # a store composed from a demo scene with its terrace (tables, umbrellas, planters): its box took in the
+                    # plaza round it. What it has at body height instead, each piece filled (the shop shut: its inside was
+                    # left out) and cut convex; the box still counts for the baked light
+                    # (its walls sliced at 1-2 m, above the terrace's tables and chairs; door gaps up to 2 m closed; a shop
+                    # whose front is open glass, its walls a fraction of their hull, takes the hull)
+                    import collision_shapes
+                    from geom import convex_pieces, polygons
+                    from shapely.geometry import Polygon
+                    from shapely.ops import unary_union
+                    shapes = collision_shapes.shapes_at(citykit.find_model(asset), x, y, yaw, s, band=(1.0, 2.0)) or []
+                    walls = unary_union([Polygon(p).buffer(0) for p in shapes]).buffer(1.0, join_style=2).buffer(-1.0, join_style=2)
+                    for piece in polygons(walls):
+                        filled = Polygon(piece.exterior)
+                        if filled.area > 2.0 and filled.area < 0.6 * filled.convex_hull.area:
+                            filled = filled.convex_hull
+                        for corners in convex_pieces(filled.simplify(0.15)):
+                            level.solid(corners, asset)
+                    low, high = level.model(asset)
+                    level.add_box(citykit.footprint(low, high, x, y, yaw, s, 0.15), high[1] * s)
+                else:
+                    level.collide(asset, x, y, yaw, s, shrink=0.15, detail=False)   # una casa: su caja (su forma dejaría entrar por la puerta)
                 drawn = (lighter or {}).get(asset, asset)   # la copia optimizada, si la hay
                 if e['id'] in placed:
                     drawn = placed[e['id']]['asset']           # (con UV de lightmap)
                 level.place(drawn, x, y, yaw, scale=s, label=f'Building_{e["id"]}')
+                if e.get('paint') and level.objects:
+                    # its walls and roof in its colors (paint.py: the atlas's mask; the engine paints it)
+                    spec = e['paint']
+                    source = Path(level.asset_dir) / level.objects[-1]['mesh']
+                    atlas = paint.atlas_of(source, spec.get('atlases') or [])
+                    painted = paint.mask(atlas, paint.building_models(atlas, spec.get('models') or '*.gltf')) if atlas else None
+                    if painted is not None:
+                        level.objects[-1]['paint'] = {
+                            'atlas': atlas.stem, 'mask': Path(os.path.relpath(painted, level.asset_dir)).as_posix(),
+                            'wall': [round(c, 3) for c in spec['wall']], 'roof': [round(c, 3) for c in spec['roof']]}
             elif e.get('role') in OWN_PROPS:
                 object_ids[e['id']] = own_prop(level, asset, x, y, yaw, s, e['role'])
-            elif asset in mission_survival.TEMPLATE_OF and not e.get('unbreakable'):
+            elif asset in mission_survival.TEMPLATE_OF and not e.get('unbreakable') and e.get('posts') is None:
                 object_ids[e['id']] = props.add(asset, x, y, yaw, scale=s)
+            elif e.get('posts') is not None:
+                # walked under (a gas station's canopy): only its posts collide. One the theme says breaks (its pumps'
+                # blast reaches it) is a breakable whose walls are its posts, swapped for its broken model
+                template = mission_survival.TEMPLATE_OF.get(asset)
+                if template is None:
+                    for px, py, radius in e['posts']:
+                        level.solid(circle(px, py, radius), 'post')
+                    level.place(asset, x, y, yaw, scale=s, label=e['id'])
+                else:
+                    object_id = level.next_id
+                    level.next_id += 1
+                    level.place(asset, x, y, yaw, scale=s, object_id=object_id, label=template)
+                    if mission_survival.BROKEN_OF.get(asset):
+                        level.place(mission_survival.BROKEN_OF[asset], x, y, yaw, scale=s, object_id=object_id, label=template)
+                        level.objects[-1]['role'] = 'broken'
+                    for px, py, radius in e['posts']:
+                        level.walls.append({'shape': 'circle', 'x': round(px * 100, 2), 'y': round(py * 100, 2),
+                                            'd': round(radius * 200, 2), 'id': object_id, 'source': 'prop'})
+                    level.destructibles.append({'id': object_id, 'name': template, 'x': round(x * 100, 2), 'y': round(y * 100, 2),
+                                                'components': props.templates[template]})
+                    object_ids[e['id']] = object_id
             elif 'pole' in catalog['models'][asset]['tags']:
                 level.solid(circle(x, y, 0.2 * s), 'pole')   # el poste; el brazo pasa por arriba
                 level.place(asset, x, y, yaw, scale=s, label=e['id'])
             else:
                 level.collide(asset, x, y, yaw, s, shrink=0.05)
-                level.place(asset, x, y, yaw, scale=s, label=e['id'])
+                level.place(asset, x, y, yaw, z=e.get('z', 0.0), scale=s, label=e['id'])
+            if e.get('crew'):
+                # the spots on board for the people a game puts there (a boat's crew: [x, y, z, yaw], meters, degrees)
+                crowd.extend({'at': spot[:3], 'yaw': spot[3], 'group': e['id']} for spot in e['crew'])
+            if e.get('tint') and level.objects and level.objects[-1]['name'] == e['id']:
+                level.objects[-1]['paint'] = {'tint': [round(c, 3) for c in e['tint']]}   # the whole model in one color
             if placed and level.objects and level.objects[-1]['name'] in (e['id'], f'Building_{e["id"]}', f'Tree_{e["id"]}'):
                 if e['id'] in placed:
                     level.objects[-1]['lightmap'] = placed[e['id']]['lightmap']
                 if e['id'] in placed or lightmaps.occludes(catalog, e):
                     level.objects[-1]['baked'] = True   # su sombra ya está en el lightmap del piso
+        level.owner = None
         if batches:
             folder, names = batches
             for name in names:
                 relative = Path(os.path.relpath(folder / f'{name}.gltf', level.asset_dir)).as_posix()
                 level.objects.append({'name': name, 'id': -1, 'mesh': relative, 'x': 0.0, 'y': 0.0, 'z': 0.0, 'rot': [0, 0, 0], 'scale': 1.0})
+        # la colisión extra de la escena (un pueblo costero: el agua y el cerro), cadenas cerradas
+        # (las llenas, en piezas convexas: su interior tampoco se camina)
+        for outline in scene.data.get('outlines', []):
+            if outline.get('filled'):
+                from shapely.geometry import Polygon
+                from geom import convex_pieces
+                for piece in convex_pieces(Polygon(outline['points'])):
+                    level.solid(piece)
+            else:
+                level.outline(outline['points'], outline.get('layer', 'solid'))
         # el borde: paredes invisibles
         x0, y0, x1, y1 = scene.data['bounds']
         for wall in ([(x0 - 1, y0 - 1), (x1 + 1, y0 - 1), (x1 + 1, y0), (x0 - 1, y0)], [(x0 - 1, y1), (x1 + 1, y1), (x1 + 1, y1 + 1), (x0 - 1, y1 + 1)],
@@ -279,6 +360,8 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
             'enemyPool': mission_survival.ENEMY_POOL,
             'giBounds': (x0, y0, x1, y1),
         }
+        if crowd:
+            result['crowd'] = crowd
         if atlas:
             result['lightmap'] = {'texture': lightmaps.relative(atlas, level.asset_dir)}
         # lo que se rompe suelta dinero, salud o un power-up (el juego original solo soltaba dinero); los autos, más
@@ -287,9 +370,9 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
             if 'Barricade' in components or 'Objective' in components:
                 continue   # lo de defender no suelta nada
             explosive = 'Explosive' in components
-            pool = DROPS_LOOT if d['name'] == 'Loot' else DROPS_EXPLOSIVE if explosive else DROPS
+            pool = DROPS_LOOT if d['name'] == 'Loot' else DROPS_CRATE if d['name'] == 'Crate' else DROPS_EXPLOSIVE if explosive else DROPS
             components['PickupSpawn'] = {'Pickups': [{'Pickup': float(i)} for i in pool], 'Random': False,
-                                         'SpawnRate': 0.8 if explosive else 1.0 if d['name'] in ('Crate', 'Loot') else 0.55, 'SpawnTimer': 1000.0, 'UseSpawnTimer': False}
+                                         'SpawnRate': 0.8 if explosive else 1.0 if d['name'] in ('Crate', 'Loot') else 0.75, 'SpawnTimer': 1000.0, 'UseSpawnTimer': False}
             d['components'] = components
         if gift is None:
             print('aviso: la escena no tiene caja de regalo (una entidad con rol gift, p. ej. Chest_Special)')
@@ -368,7 +451,8 @@ def token_spots(scene, catalog, count, seed, spacing=6.0, green=True, start=None
 
 # Lo que sueltan los props al romperse (se elige uno al azar de la lista: los repetidos pesan más). Ids del juego:
 # 25006 dinero, 15020 salud, 15022 velocidad, 15023 daño, 15024 defensa, 15030 bombardeo
-DROPS = [25006, 25006, 25006, 25006, 15020, 15020, 15020, 15022, 15023, 15024]
+DROPS = [25006, 25006, 25006, 15020, 15020, 15020, 15022, 15023, 15024]   # money, health, power-ups by thirds (the designer)
+DROPS_CRATE = [15020, 15020, 15022, 15023, 15024]   # a crate always gives health or a power-up
 DROPS_EXPLOSIVE = [15020, 15020, 15023, 15030, 25006]
 DROPS_LOOT = [15020, 15020, 15022, 15023, 15024, 15030]   # a loot chest: health or a boost, always
 
@@ -388,15 +472,12 @@ def own_prop(level, model, x, y, yaw, scale, role):
     import citykit as ck
     low, high = level.model(model)
     corners = ck.footprint(low, high, x, y, yaw, scale, 0.0)
-    xs, ys = [c[0] for c in corners], [c[1] for c in corners]
-    box = (min(xs), min(ys), max(xs), max(ys))
     level.add_box(corners, high[1] * scale)
     object_id = level.next_id
     level.next_id += 1
     name = {'gate': 'Barricade', 'objective': 'Objective', 'crate': 'Crate', 'loot': 'Loot'}[role]
     level.place(model, x, y, yaw, scale=scale, object_id=object_id, label=name)
-    level.walls.append({'shape': 'rect', 'x': round((box[0] + box[2]) * 50, 2), 'y': round((box[1] + box[3]) * 50, 2),
-                        'w': round((box[2] - box[0]) * 100, 2), 'h': round((box[3] - box[1]) * 100, 2), 'id': object_id, 'source': 'prop'})
+    level.walls.append(dict(ck.box_wall(low, high, x, y, yaw, scale), id=object_id, source='prop'))
     level.destructibles.append({'id': object_id, 'name': name, 'x': round(x * 100, 2), 'y': round(y * 100, 2),
                                 'components': OWN_PROPS[role]})
     return object_id

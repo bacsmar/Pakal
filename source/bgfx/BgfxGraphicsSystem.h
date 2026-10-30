@@ -12,8 +12,10 @@
 #include "GraphicsSystem.h"
 #include "ICameraComponent_Bgfx.h"
 #include "BgfxDebugUI.h"
+#include "GpuParticles.h"
 
 #include <bgfx/bgfx.h>
+#include <atomic>
 #include <chrono>
 #include <string>
 #include <vector>
@@ -72,10 +74,12 @@ namespace Pakal
 			double secondsSinceUp = 1e9;     // since it last stepped up
 			double backoff = 1.0;            // the waits before stepping up, doubled each time a step up does not hold
 			bool fsrDropped = false;         // its first step: FSR's upscale traded for a plain stretch (far cheaper on phones)
+			int warmup = 0;                  // seconds still not counted after a load (the driver's first draws of it are slow)
 			int frames = 0;
 			double workMs = 0.0, lastWorkMs = 0.0, lastFps = 0.0, worstMs = 0.0;
 			std::chrono::steady_clock::time_point windowStart = std::chrono::steady_clock::now();
 		} m_governor;
+		std::atomic<bool> m_governorHeld{ false };
 		void governor_frame(double workMs);
 		int read_thermal_status();
 		void apply_render_scale();
@@ -97,13 +101,44 @@ namespace Pakal
 		std::vector<Triangle3D> m_pendingTriangles;
 		struct ScreenLine { float x0, y0, x1, y1; uint32_t color; };
 		std::vector<ScreenLine> m_pendingScreenLines;
-		struct Particle { tmath::vector3df at; float radius; uint32_t color; bool additive; };
+		struct Particle { tmath::vector3df at; float radius; uint32_t color; bool additive; bool flat = false; uint16_t sprite = 0; float angle = 0.0f; };
 		std::vector<Particle> m_pendingParticles;
+		// What the game committed last (commit_frame_drawing): drawn every frame until the next commit. The graphics thread
+		// is not the game's on Android: taking the lists as they were cut a game frame in half (some of it drawn, the rest
+		// not) or drew a frame with none (the game had not updated): stains, halos and bars blinked.
+		struct Committed { std::vector<Line3D> lines; std::vector<Triangle3D> triangles; std::vector<ScreenLine> screenLines; std::vector<Particle> particles; };
+		Committed m_committed;
+		bool m_commits = false;   // the game commits its frames (else each frame takes what was queued, as before)
+		std::chrono::steady_clock::time_point m_lastCommit;   // a quarter of a second without one: back to taking the queue
+		Committed take_frame_drawing();
+		Committed m_frameDrawing;   // this frame's (graphics thread)
 		bgfx::ProgramHandle m_particle_program = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle m_u_particle_sheet = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle m_s_particle = BGFX_INVALID_HANDLE;
+		bgfx::TextureHandle m_particle_sheet = BGFX_INVALID_HANDLE;
+		float m_particle_sheet_size[2] = { 0.0f, 0.0f };   // its columns and rows
 		void render_particles();
 		bgfx::ProgramHandle m_mesh_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_skin_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_pbr_program = BGFX_INVALID_HANDLE;
+		// Many copies of one static model in one draw (GPU instancing): the same shading, the transform per instance
+		bgfx::ProgramHandle m_pbr_inst_program = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle m_mesh_inst_program = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle m_shadow_inst_program = BGFX_INVALID_HANDLE;
+		// The copies of each model, kept while the list of models stays the same (a version bumped on each register and
+		// unregister; refreshed every so often too, for the models that finish loading)
+		std::vector<std::vector<MeshComponent3D_Bgfx*>> m_instanceGroups;
+		uint32_t m_meshesVersion = 1, m_groupsVersion = 0, m_groupsAge = 0, m_instanceFrame = 0;
+		// The models that stay put in squares of kGridCell meters, each with the box of what is in it: a frame walks only the
+		// squares the camera (or the sun's shadows into its view) can see, and the rest of the models (animated, moving,
+		// new) one by one. Made again every second, and at once when a model in it goes or moves.
+		struct GridCell { float center[3] = {}, extent[3] = {}; std::vector<MeshComponent3D_Bgfx*> meshes; };
+		std::vector<GridCell> m_gridCells;
+		std::vector<MeshComponent3D_Bgfx*> m_loose;        // not in the grid: walked every frame
+		std::vector<MeshComponent3D_Bgfx*> m_frameMeshes;  // this frame's: the loose ones and those of the squares in view
+		bool m_gridStale = true;
+		uint32_t m_gridAge = 0;
+		void update_grid();
 		bgfx::ProgramHandle m_sky_program = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle m_u_light_dir = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle m_u_light_color = BGFX_INVALID_HANDLE;
@@ -111,6 +146,8 @@ namespace Pakal
 		bgfx::UniformHandle m_u_ambient_ground = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle m_u_sky_top = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle m_u_sky_horizon = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle m_u_sky_sun = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle m_u_sky_sun_color = BGFX_INVALID_HANDLE;
 		bgfx::VertexBufferHandle m_sky_vb = BGFX_INVALID_HANDLE;
 		bgfx::IndexBufferHandle m_sky_ib = BGFX_INVALID_HANDLE;
 		float m_light_dir[4] = { 0.4f, -1.0f, -0.6f, 0.0f };
@@ -119,6 +156,7 @@ namespace Pakal
 		float m_ambient_ground[4] = { 0.16f, 0.15f, 0.14f, 1.0f };
 		float m_sky_top[4] = { 0.25f, 0.45f, 0.75f, 1.0f };
 		float m_sky_horizon[4] = { 0.75f, 0.82f, 0.9f, 1.0f };
+		float m_sky_clouds = 0.55f;   // how much of the sky the clouds cover (0..1)
 
 		void on_init_graphics(const WindowArgs& args) override;
 		void on_terminate_graphics() override;
@@ -168,7 +206,7 @@ namespace Pakal
 		bgfx::FrameBufferHandle m_post_target = BGFX_INVALID_HANDLE;
 		bgfx::TextureHandle m_post_color = BGFX_INVALID_HANDLE;
 		bgfx::TextureHandle m_post_depth = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle m_u_post[8] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
+		bgfx::UniformHandle m_u_post[11] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
 		float m_sketch = 0.0f;
 		bgfx::UniformHandle m_s_post_color = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle m_s_post_depth = BGFX_INVALID_HANDLE;
@@ -212,6 +250,15 @@ namespace Pakal
 			float aoRange = 2.0f;                   // meters: what is farther does not occlude
 			// How many samples the pass takes (1: all; less is cheaper and noisier). The quality level caps it.
 			float quality = 1.0f;
+			// Fog by distance from the camera (depth): toward 'fogColor' (the horizon's), from 'fogStart' meters on, with
+			// 'fogDensity' per meter, never more than 'fogMax'; the sky (what is at the far plane) up to 'fogSky'. Off at 0.
+			float fogColor[3] = { 0.8f, 0.85f, 0.9f };
+			float fogDensity = 0.0f;
+			float fogStart = 0.0f;
+			float fogMax = 1.0f;
+			float fogSky = 0.0f;
+			// From 55% of 'fogHorizon' meters to it, what is drawn fades wholly into what the sky shows at the horizon (0: off)
+			float fogHorizon = 0.0f;
 		};
 		// The sun's shadows: a depth map of the models seen from the light, around the point the camera looks at
 		struct ShadowSettings
@@ -288,6 +335,8 @@ namespace Pakal
 		// The ambient light that reaches surfaces facing down (what the ground bounces up)
 		void set_ground_ambient_light(float r, float g, float b);
 		void set_sky_colors(float topR, float topG, float topB, float horizonR, float horizonG, float horizonB);
+		// How much of the sky the clouds cover (0: a clear sky, 1: overcast); the sun is drawn where the light comes from
+		void set_sky_clouds(float cover) { m_sky_clouds = cover < 0.0f ? 0.0f : (cover > 1.0f ? 1.0f : cover); }
 		bgfx::ProgramHandle get_mesh_program() const { return m_mesh_program; }
 		// Saves the next presented frame as a TGA file. Call from the graphics thread (e.g. execute_block).
 		void request_screenshot(const char* filePath);
@@ -319,6 +368,9 @@ namespace Pakal
 		// out, without reporting any thermal status: the frame times are what tells. maxFps: the cap it starts at.
 		void set_governor(bool enabled, unsigned maxFps);
 		bool get_governor() const { return m_governor.enabled; }
+		// While held (a game's camera pan: a wide shot of the whole town for a few seconds), its seconds count for nothing:
+		// a slow pan does not take the play down to 30. The seconds just after a load do not count either
+		void hold_governor(bool held) { m_governorHeld = held; }
 		// One line for the dev panel: cap, scale, thermal status, last frame work
 		std::string governor_status() const;
 		// RCAS sharpening in stops: 0 the most, each one halves it
@@ -339,6 +391,25 @@ namespace Pakal
 		// One-frame particle: a soft round dot facing the camera, 'radius' world units, ABGR color (alpha: how much it covers).
 		// Additive ones add light (fire, sparks); the others blend over the scene (smoke, water, dust), farthest first.
 		void draw_particle(const tmath::vector3df& at, float radius, uint32_t color, bool additive = false);
+		// The same lying flat on the floor (a world-space disc on x-z at 'at'): a pool of light, a stain
+		void draw_ground_spot(const tmath::vector3df& at, float radius, uint32_t color, bool additive = false);
+		// The sprites particles may show instead of the dot: one texture (straight alpha) cut into columns x rows cells,
+		// counted from 1 left to right, top to bottom. Call on the graphics thread; an empty path drops it.
+		void set_particle_sprites(const std::string& texture, int columns, int rows);
+		bool has_particle_sprites() const { return bgfx::isValid(m_particle_sheet); }
+		// A particle or a floor spot showing a sprite of that sheet (0: the dot), turned 'angle' radians, tinted by 'color'
+		void draw_sprite_particle(const tmath::vector3df& at, float radius, uint32_t color, bool additive, uint16_t sprite, float angle);
+		void draw_sprite_spot(const tmath::vector3df& at, float radius, uint32_t color, bool additive, uint16_t sprite, float angle);
+		// Particles the GPU moves (compute) and draws, when the device can (gpu_particles): the game hands each one over
+		// once and forgets it. PAKAL_GPU_PARTICLES=0 keeps them on the CPU
+		bool gpu_particles() const { return m_gpuParticles.available(); }
+		void emit_gpu_particle(const GpuParticles::Particle& particle) { m_gpuParticles.emit(particle); }
+		// The game's seconds (none while it is paused) move the GPU's particles; clear: none left (a level that ends)
+		void advance_gpu_particles(float seconds) { m_gpuParticles.advance(seconds); }
+		void clear_gpu_particles() { m_gpuParticles.clear(); }
+		// From the game thread, at the end of its frame: what it queued since the last call (lines, triangles, particles,
+		// screen lines) is its whole frame, drawn until the next call. A game that never calls it has its queue taken each frame.
+		void commit_frame_drawing();
 		void set_active_camera(ICameraComponent_Bgfx* camera);
 		void clear_active_camera(ICameraComponent_Bgfx* camera);
 		bgfx::ProgramHandle get_sprite_program() const { return m_sprite_program; }
@@ -348,6 +419,8 @@ namespace Pakal
 		uint32_t get_height() const { return m_height; }
 		// A program from the compiled shaders (Assets/shaders/<renderer>/<name>.bin); invalid if they are missing
 		bgfx::ProgramHandle load_program(const char* vsName, const char* fsName);
+		bgfx::ProgramHandle load_compute(const char* csName);
+		GpuParticles m_gpuParticles;
 		// Development panels (Dear ImGui): games add their own with get_debug_ui().add_panel(...)
 		BgfxDebugUI& get_debug_ui() { return m_debug_ui; }
 	private:

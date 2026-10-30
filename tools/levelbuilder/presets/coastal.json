@@ -1,0 +1,2621 @@
+{
+ "note": "Spawners for a coastal town (coastal.py), in order: big things first. Roles, not models: a theme says which models play each role; a spawner whose role has no model is skipped. Regions: beach, pier, road, sidewalk, promenade, plaza, alley, bank, hill, yard (what buildings leave of a block), walk (sidewalk + promenade + plaza + alley), sea, river, buildings.",
+ "spawners": [
+  {
+   "name": "parked_cars",
+   "role": "car",
+   "where": "road",
+   "within": "road",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue",
+     "street"
+    ],
+    "offset": -1.5,
+    "spacing": 6.8,
+    "sides": [
+     -1,
+     1
+    ],
+    "clear_crossing": 6.0
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.45,
+      0.75
+     ]
+    }
+   ],
+   "threshold": 0.15,
+   "yaw": "along",
+   "clearance": 0.4,
+   "unbreakable": true
+  },
+  {
+   "name": "boats_beach",
+   "role": "boat",
+   "where": "beach",
+   "places": "poisson",
+   "spacing": 14.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "sea",
+     "range": [
+      1.5,
+      5.0
+     ]
+    }
+   ],
+   "threshold": 0.3,
+   "yaw": "face:sea",
+   "clearance": 0.5
+  },
+  {
+   "name": "palms_beach",
+   "role": "palm",
+   "where": "beach",
+   "places": "poisson",
+   "spacing": 9.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "promenade",
+     "range": [
+      1.0,
+      6.0
+     ]
+    }
+   ],
+   "threshold": 0.3,
+   "yaw": "random",
+   "scale": [
+    0.9,
+    1.2
+   ],
+   "occupy": "trunk",
+   "clearance": 0.6
+  },
+  {
+   "name": "beach_loungers_row_1",
+   "role": "lounger",
+   "where": "beach",
+   "within": "beach",
+   "places": "line",
+   "line": {
+    "along": "coastline",
+    "offset": -14.6,
+    "spacing": 2.75
+   },
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "face:sea",
+   "clearance": 0.1
+  },
+  {
+   "name": "beach_umbrella_row_1",
+   "note": "umbrellas in rows along the sand, in strong colors",
+   "role": "umbrella_open",
+   "where": "beach",
+   "within": "beach",
+   "places": "line",
+   "line": {
+    "along": "coastline",
+    "offset": -13.0,
+    "spacing": 5.5
+   },
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "random",
+   "clearance": 0.2,
+   "tints": [
+    [
+     0.95,
+     0.25,
+     0.2
+    ],
+    [
+     0.2,
+     0.5,
+     0.95
+    ],
+    [
+     1.0,
+     0.8,
+     0.15
+    ],
+    [
+     0.95,
+     0.45,
+     0.75
+    ],
+    [
+     0.25,
+     0.75,
+     0.45
+    ],
+    [
+     1,
+     1,
+     1
+    ]
+   ],
+   "occupy": "trunk",
+   "trunk": 0.25
+  },
+  {
+   "name": "beach_loungers_row_0",
+   "role": "lounger",
+   "where": "beach",
+   "within": "beach",
+   "places": "line",
+   "line": {
+    "along": "coastline",
+    "offset": -9.6,
+    "spacing": 2.75
+   },
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "face:sea",
+   "clearance": 0.1
+  },
+  {
+   "name": "beach_umbrella_row_0",
+   "note": "umbrellas in rows along the sand, in strong colors",
+   "role": "umbrella_open",
+   "where": "beach",
+   "within": "beach",
+   "places": "line",
+   "line": {
+    "along": "coastline",
+    "offset": -8.0,
+    "spacing": 5.5
+   },
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "random",
+   "clearance": 0.2,
+   "tints": [
+    [
+     0.95,
+     0.25,
+     0.2
+    ],
+    [
+     0.2,
+     0.5,
+     0.95
+    ],
+    [
+     1.0,
+     0.8,
+     0.15
+    ],
+    [
+     0.95,
+     0.45,
+     0.75
+    ],
+    [
+     0.25,
+     0.75,
+     0.45
+    ],
+    [
+     1,
+     1,
+     1
+    ]
+   ],
+   "occupy": "trunk",
+   "trunk": 0.25
+  },
+  {
+   "name": "beach_umbrellas",
+   "role": "beach_umbrella",
+   "where": "beach",
+   "within": "beach",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 12.0,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 3.5
+   },
+   "masks": [
+    {
+     "type": "distance",
+     "to": "sea",
+     "range": [
+      3.0,
+      7.0
+     ],
+     "invert": true
+    }
+   ],
+   "threshold": 0.95,
+   "yaw": "random",
+   "clearance": 0.3
+  },
+  {
+   "name": "driftwood",
+   "role": "driftwood",
+   "where": "beach",
+   "places": "poisson",
+   "spacing": 6.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "sea",
+     "range": [
+      1.0,
+      6.0
+     ]
+    },
+    {
+     "type": "noise",
+     "scale": 15,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.1
+  },
+  {
+   "name": "trash_beach",
+   "role": "trash",
+   "where": "beach",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 15.0,
+    "count": [
+     1,
+     3
+    ],
+    "radius": 2.0
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 20,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.05
+  },
+  {
+   "name": "seawall_rocks",
+   "role": "rock",
+   "where": "malecon",
+   "places": "line",
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    1.0,
+    1.8
+   ],
+   "clearance": 0.0,
+   "lift": -0.8,
+   "line": {
+    "along": "malecon_coastline",
+    "offset": -1.5,
+    "spacing": 1.2
+   }
+  },
+  {
+   "name": "malecon_bollards",
+   "role": "bollard",
+   "where": "malecon",
+   "places": "line",
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "along",
+   "clearance": 0.1,
+   "line": {
+    "along": "malecon_coastline",
+    "offset": 8.9,
+    "spacing": 2.4
+   }
+  },
+  {
+   "name": "malecon_statues",
+   "role": "statue",
+   "where": "malecon",
+   "places": "line",
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "fixed:315",
+   "scale": [
+    1.1,
+    1.3
+   ],
+   "clearance": 0.6,
+   "line": {
+    "along": "malecon_coastline",
+    "offset": 6.0,
+    "spacing": 15.0
+   }
+  },
+  {
+   "name": "palms_promenade",
+   "role": "palm",
+   "where": "promenade",
+   "places": "line",
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.9,
+    1.15
+   ],
+   "occupy": "trunk",
+   "trunk": 0.45,
+   "clearance": 0.6,
+   "line": {
+    "along": "coastline",
+    "offset": 3.2,
+    "spacing": 11.0
+   }
+  },
+  {
+   "name": "playground",
+   "role": "playground",
+   "where": "playground",
+   "places": "poisson",
+   "spacing": 3.5,
+   "threshold": 0.0,
+   "yaw": "snap90",
+   "clearance": 0.4
+  },
+  {
+   "name": "garden_trees",
+   "role": "street_tree",
+   "where": "garden",
+   "places": "poisson",
+   "spacing": 5.5,
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.55,
+    0.75
+   ],
+   "occupy": "trunk",
+   "clearance": 0.6,
+   "lift": 0.2,
+   "trunk": 0.45
+  },
+  {
+   "name": "garden_palms",
+   "role": "palm",
+   "where": "garden",
+   "places": "poisson",
+   "spacing": 9.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 15,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.85,
+    1.05
+   ],
+   "occupy": "trunk",
+   "clearance": 0.6,
+   "lift": 0.2
+  },
+  {
+   "name": "garden_bushes",
+   "role": "bush",
+   "where": "garden",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 3.0,
+    "count": [
+     1,
+     3
+    ],
+    "radius": 1.0
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.5,
+    0.8
+   ],
+   "clearance": 0.0,
+   "lift": 0.2,
+   "occupy": "footprint",
+   "within": "garden"
+  },
+  {
+   "name": "garden_flowers",
+   "role": "grass",
+   "where": "garden",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 2.2,
+    "count": [
+     3,
+     7
+    ],
+    "radius": 0.8
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "clearance": 0.0,
+   "lift": 0.2,
+   "occupy": "trunk",
+   "trunk": 0.2
+  },
+  {
+   "name": "plaza_benches",
+   "role": "bench",
+   "where": "plaza",
+   "within": "plaza",
+   "places": "perimeter",
+   "perimeter": {
+    "of": "garden",
+    "offset": 0.9,
+    "spacing": 24.0,
+    "count": [
+     1,
+     1
+    ],
+    "radius": 0.0
+   },
+   "masks": [
+    {
+     "type": "inside",
+     "region": "garden",
+     "invert": true
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "away:garden",
+   "clearance": 0.5
+  },
+  {
+   "name": "palms_hill",
+   "role": "palm_decor",
+   "where": "hill",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 18.0,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 7.0
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 40,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "occupy": "trunk",
+   "clearance": 0.5
+  },
+  {
+   "name": "palms_bank",
+   "role": "palm",
+   "where": "bank",
+   "places": "poisson",
+   "spacing": 10.0,
+   "threshold": 0.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 20,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "yaw": "random",
+   "occupy": "trunk",
+   "clearance": 0.5
+  },
+  {
+   "name": "street_lights",
+   "role": "street_light",
+   "where": "sidewalk",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue",
+     "street",
+     "hill_street"
+    ],
+    "offset": 0.5,
+    "spacing": 24.0,
+    "sides": [
+     -1,
+     1
+    ]
+   },
+   "yaw": "street",
+   "clearance": 0.3
+  },
+  {
+   "name": "trash_bins",
+   "role": "trash_bin",
+   "where": "sidewalk",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue",
+     "street"
+    ],
+    "offset": 0.6,
+    "spacing": 32.0,
+    "sides": [
+     -1,
+     1
+    ]
+   },
+   "yaw": "street",
+   "clearance": 0.3
+  },
+  {
+   "name": "avenue_trees_outside",
+   "note": "the avenues go on past the town's edge lined with trees: decoration only",
+   "role": "street_tree",
+   "where": "outside",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue"
+    ],
+    "offset": 2.2,
+    "spacing": 9.0,
+    "sides": [
+     -1,
+     1
+    ]
+   },
+   "masks": [
+    {
+     "type": "inside",
+     "region": "outside"
+    }
+   ],
+   "threshold": 0.5,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.1
+   ],
+   "occupy": "trunk",
+   "trunk": 0.4,
+   "clearance": 0.5
+  },
+  {
+   "name": "street_trees",
+   "role": "street_tree",
+   "where": "sidewalk",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue"
+    ],
+    "offset": 0.9,
+    "spacing": 6.5,
+    "sides": [
+     -1,
+     1
+    ],
+    "clear_crossing": 5.0
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 40,
+     "range": [
+      0.35,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "occupy": "trunk",
+   "trunk": 0.45,
+   "clearance": 0.3,
+   "scale": [
+    0.5,
+    0.62
+   ]
+  },
+  {
+   "name": "mailboxes",
+   "role": "mailbox",
+   "where": "sidewalk",
+   "places": "row",
+   "row": {
+    "edges": [
+     "street"
+    ],
+    "offset": 0.6,
+    "spacing": 55.0,
+    "sides": [
+     -1
+    ]
+   },
+   "yaw": "street",
+   "clearance": 0.3
+  },
+  {
+   "name": "promenade_lights",
+   "role": "street_light",
+   "where": "promenade",
+   "places": "line",
+   "masks": [],
+   "threshold": 0.0,
+   "yaw": "face:sea",
+   "clearance": 0.4,
+   "line": {
+    "along": "coastline",
+    "offset": 1.2,
+    "spacing": 20.0
+   }
+  },
+  {
+   "name": "promenade_benches",
+   "role": "bench",
+   "where": "promenade",
+   "within": "promenade",
+   "places": "line",
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.2,
+      0.5
+     ]
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "face:sea",
+   "clearance": 0.6,
+   "line": {
+    "along": "coastline",
+    "offset": 2.2,
+    "spacing": 15.0
+   }
+  },
+  {
+   "name": "stalls",
+   "role": "stall",
+   "where": "promenade",
+   "within": "promenade",
+   "places": "poisson",
+   "spacing": 40.0,
+   "threshold": 0.0,
+   "yaw": "face:road",
+   "clearance": 1.0
+  },
+  {
+   "name": "cafe",
+   "role": "cafe",
+   "where": "plaza",
+   "within": "plaza",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 30.0,
+    "count": [
+     2,
+     4
+    ],
+    "radius": 3.0
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "clearance": 0.4
+  },
+  {
+   "name": "dumpsters",
+   "role": "dumpster",
+   "where": "yard",
+   "within": "yard",
+   "places": "poisson",
+   "spacing": 25.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "road",
+     "range": [
+      3.0,
+      8.0
+     ]
+    }
+   ],
+   "threshold": 0.3,
+   "yaw": "street",
+   "clearance": 0.4
+  },
+  {
+   "name": "hydrants",
+   "role": "hydrant",
+   "where": "sidewalk",
+   "places": "row",
+   "row": {
+    "edges": [
+     "avenue",
+     "street"
+    ],
+    "offset": 0.5,
+    "spacing": 45.0,
+    "sides": [
+     1
+    ]
+   },
+   "yaw": "street",
+   "clearance": 0.3
+  },
+  {
+   "name": "planters",
+   "role": "planter",
+   "where": "sidewalk",
+   "within": "walk",
+   "places": "row",
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 15,
+     "range": [
+      0.45,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "street",
+   "clearance": 0.2,
+   "row": {
+    "edges": [
+     "avenue",
+     "street"
+    ],
+    "offset": 2.0,
+    "spacing": 7.0,
+    "sides": [
+     -1,
+     1
+    ]
+   }
+  },
+  {
+   "name": "yard_pots",
+   "note": "a well-off yard is kept: potted plants along the walls",
+   "role": "planter",
+   "where": "yard",
+   "within": "yard",
+   "places": "perimeter",
+   "perimeter": {
+    "of": "buildings",
+    "offset": 0.7,
+    "spacing": 3.0,
+    "count": [
+     1,
+     1
+    ],
+    "radius": 0.0
+   },
+   "masks": [
+    {
+     "type": "inside",
+     "region": "wealthy"
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "random",
+   "clearance": 0.2
+  },
+  {
+   "name": "clutter_yard",
+   "role": "clutter",
+   "where": "yard",
+   "within": "yard",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 14.0,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 2.5
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "clearance": 0.1
+  },
+  {
+   "name": "explosive_barrels",
+   "note": "barrels and gas cans that blow up when shot: traps in the alleys and yards, by twos and threes",
+   "role": "explosive_barrel",
+   "where": "walk",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 26.0,
+    "count": [
+     2,
+     3
+    ],
+    "radius": 1.2
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.45,
+      0.75
+     ]
+    },
+    {
+     "type": "inside",
+     "region": "wealthy",
+     "invert": true
+    }
+   ],
+   "threshold": 0.25,
+   "yaw": "random",
+   "clearance": 0.2
+  },
+  {
+   "name": "clutter_alley",
+   "role": "clutter",
+   "where": "alley",
+   "places": "poisson",
+   "spacing": 6.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 10,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.1
+  },
+  {
+   "name": "trash_sidewalk",
+   "role": "trash",
+   "where": "sidewalk",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 12.0,
+    "count": [
+     1,
+     4
+    ],
+    "radius": 1.2
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 18,
+     "range": [
+      0.45,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.15,
+   "yaw": "random",
+   "clearance": 0.05
+  },
+  {
+   "name": "flower_bushes_bank",
+   "note": "big flowering bushes along the river walk (a riverside garden): groups of them, thick where the noise says",
+   "role": "flower_bush",
+   "where": "bank",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 3.5,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 1.8
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 18,
+     "range": [
+      0.2,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.05,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.2
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "bushes_bank",
+   "role": "bush",
+   "where": "bank",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 2.0,
+    "count": [
+     3,
+     6
+    ],
+    "radius": 2.0
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.2
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "reeds_river",
+   "note": "the grass and flowers that crowd the water's edge: clumps along the river, thicker where the noise says",
+   "role": "grass",
+   "where": "bank",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 2.5,
+    "count": [
+     3,
+     7
+    ],
+    "radius": 1.3
+   },
+   "masks": [
+    {
+     "type": "distance",
+     "to": "river",
+     "range": [
+      0.5,
+      2.5
+     ]
+    },
+    {
+     "type": "noise",
+     "scale": 10,
+     "range": [
+      0.3,
+      0.65
+     ]
+    }
+   ],
+   "threshold": 0.15,
+   "yaw": "random",
+   "scale": [
+    1.0,
+    1.6
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "grass_bank",
+   "role": "grass",
+   "where": "bank",
+   "places": "poisson",
+   "spacing": 0.8,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 12,
+     "range": [
+      0.15,
+      0.75
+     ]
+    }
+   ],
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.4
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "trees_bank",
+   "note": "shade trees along the river walk, in groves (the noise), never on the water's edge",
+   "role": "tree",
+   "where": "bank",
+   "places": "poisson",
+   "spacing": 7.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 25,
+     "range": [
+      0.3,
+      0.6
+     ]
+    },
+    {
+     "type": "distance",
+     "to": "river",
+     "range": [
+      1.5,
+      3.0
+     ],
+     "invert": true
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.6,
+    0.85
+   ],
+   "occupy": "trunk",
+   "clearance": 0.6
+  },
+  {
+   "name": "jungle_river_hill",
+   "note": "the hill thickens into jungle toward the river (seen from the bridges and in the pans)",
+   "role": "tree",
+   "where": "hill",
+   "places": "poisson",
+   "spacing": 6.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "river",
+     "range": [
+      3.0,
+      30.0
+     ]
+    },
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.25,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.9,
+    1.4
+   ],
+   "occupy": "trunk",
+   "clearance": 0.5
+  },
+  {
+   "name": "bushes_hill",
+   "role": "bush",
+   "where": "hill",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 9.0,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 3.0
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.4
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "yard_trees",
+   "role": "tree",
+   "where": "yard",
+   "places": "poisson",
+   "spacing": 9.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "buildings",
+     "range": [
+      2.5,
+      4.0
+     ],
+     "invert": true
+    },
+    {
+     "type": "noise",
+     "scale": 20,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.5,
+    0.65
+   ],
+   "occupy": "trunk",
+   "trunk": 0.5,
+   "clearance": 0.8
+  },
+  {
+   "name": "yard_palms",
+   "role": "palm",
+   "where": "yard",
+   "places": "poisson",
+   "spacing": 11.0,
+   "masks": [
+    {
+     "type": "distance",
+     "to": "buildings",
+     "range": [
+      2.0,
+      3.5
+     ],
+     "invert": true
+    },
+    {
+     "type": "noise",
+     "scale": 25,
+     "range": [
+      0.35,
+      0.65
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.0
+   ],
+   "occupy": "trunk",
+   "clearance": 0.8
+  },
+  {
+   "name": "wall_plants",
+   "role": "grass",
+   "where": "walk",
+   "places": "perimeter",
+   "perimeter": {
+    "of": "buildings",
+    "offset": 0.45,
+    "spacing": 3.2,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 0.7
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 14,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.15,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "wall_bushes",
+   "role": "bush",
+   "where": "yard",
+   "places": "perimeter",
+   "perimeter": {
+    "of": "buildings",
+    "offset": 0.8,
+    "spacing": 4.0,
+    "count": [
+     1,
+     3
+    ],
+    "radius": 0.8
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 18,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.1,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.2
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "yard_patches",
+   "role": "grass",
+   "where": "yard",
+   "within": "yard",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 6.0,
+    "count": [
+     4,
+     9
+    ],
+    "radius": 1.2
+   },
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 10,
+     "range": [
+      0.35,
+      0.65
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.4
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "park_trees",
+   "role": "tree",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 10.0,
+    "count": [
+     2,
+     4
+    ],
+    "radius": 3.5
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.6,
+    0.85
+   ],
+   "occupy": "trunk",
+   "clearance": 0.8
+  },
+  {
+   "name": "park_palms",
+   "role": "palm",
+   "where": "park",
+   "places": "poisson",
+   "spacing": 9.0,
+   "threshold": 0.0,
+   "yaw": "random",
+   "occupy": "trunk",
+   "clearance": 0.8
+  },
+  {
+   "name": "park_benches",
+   "role": "bench",
+   "where": "park",
+   "within": "park",
+   "places": "poisson",
+   "spacing": 8.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 12,
+     "range": [
+      0.3,
+      0.6
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.6
+  },
+  {
+   "name": "park_flowers",
+   "role": "grass",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 4.0,
+    "count": [
+     4,
+     8
+    ],
+    "radius": 1.0
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "park_bushes",
+   "role": "bush",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 7.0,
+    "count": [
+     2,
+     4
+    ],
+    "radius": 1.5
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "clearance": 0.0
+  },
+  {
+   "name": "bushes_yard",
+   "role": "bush",
+   "where": "yard",
+   "within": "yard",
+   "places": "poisson",
+   "spacing": 5.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 12,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.0
+  },
+  {
+   "name": "grass_hill",
+   "role": "grass",
+   "where": "hill",
+   "places": "poisson",
+   "spacing": 3.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 14,
+     "range": [
+      0.35,
+      0.65
+     ]
+    },
+    {
+     "type": "slope",
+     "range": [
+      0.0,
+      0.6
+     ],
+     "fade": 0.3,
+     "weight": 0.7
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.5
+   ],
+   "clearance": 0.0
+  },
+  {
+   "name": "rocks_hill",
+   "role": "rock",
+   "where": "hill",
+   "places": "poisson",
+   "spacing": 12.0,
+   "threshold": 0.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 20,
+     "range": [
+      0.5,
+      0.8
+     ]
+    },
+    {
+     "type": "slope",
+     "range": [
+      0.12,
+      3.0
+     ],
+     "fade": 0.1,
+     "weight": 0.6
+    }
+   ],
+   "yaw": "random",
+   "scale": [
+    0.6,
+    1.2
+   ],
+   "clearance": 0.2
+  },
+  {
+   "name": "blood",
+   "role": "blood",
+   "where": "walk",
+   "places": "poisson",
+   "spacing": 15.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.55,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "yaw": "random",
+   "clearance": 0.0
+  },
+  {
+   "name": "potholes",
+   "decal": "pothole",
+   "where": "road",
+   "within": "road",
+   "places": "poisson",
+   "spacing": 5.0,
+   "size": [
+    0.6,
+    2.8
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 22,
+     "range": [
+      0.45,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.1,
+   "size_noise": {
+    "scale": 26
+   },
+   "stretch": [
+    1.0,
+    1.5
+   ]
+  },
+  {
+   "name": "road_bumps",
+   "decal": "bump",
+   "where": "road",
+   "within": "road",
+   "places": "poisson",
+   "spacing": 7.0,
+   "size": [
+    1.4,
+    3.4
+   ],
+   "size_noise": {
+    "scale": 34
+   },
+   "stretch": [
+    1.2,
+    2.2
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 40,
+     "range": [
+      0.5,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.15
+  },
+  {
+   "name": "road_patches",
+   "decal": "patch",
+   "where": "road",
+   "within": "road",
+   "places": "poisson",
+   "spacing": 9.0,
+   "size": [
+    1.8,
+    3.5
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 35,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.15,
+   "stretch": [
+    1.0,
+    1.8
+   ]
+  },
+  {
+   "name": "road_cracks",
+   "decal": "crack",
+   "where": "road",
+   "within": "road",
+   "places": "poisson",
+   "spacing": 4.0,
+   "size": [
+    2.0,
+    4.0
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 15,
+     "range": [
+      0.35,
+      0.65
+     ]
+    }
+   ],
+   "threshold": 0.2,
+   "stretch": [
+    1.0,
+    1.6
+   ]
+  },
+  {
+   "name": "road_stains",
+   "decal": "stain",
+   "where": "road",
+   "places": "poisson",
+   "spacing": 6.0,
+   "size": [
+    1.2,
+    3.0
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 20,
+     "range": [
+      0.4,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.2
+  },
+  {
+   "name": "sidewalk_broken",
+   "decal": "broken",
+   "where": "sidewalk",
+   "places": "poisson",
+   "spacing": 5.0,
+   "size": [
+    1.0,
+    2.0
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 12,
+     "range": [
+      0.5,
+      0.75
+     ]
+    }
+   ],
+   "threshold": 0.2
+  },
+  {
+   "name": "sidewalk_stains",
+   "decal": "stain",
+   "where": "sidewalk",
+   "places": "poisson",
+   "spacing": 5.0,
+   "size": [
+    0.8,
+    1.8
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 10,
+     "range": [
+      0.5,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.2
+  },
+  {
+   "name": "mud_paving",
+   "decal": "mud",
+   "where": "promenade",
+   "places": "poisson",
+   "spacing": 6.0,
+   "size": [
+    1.0,
+    2.5
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 18,
+     "range": [
+      0.5,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.2
+  },
+  {
+   "name": "mud_alley",
+   "decal": "mud",
+   "where": "alley",
+   "places": "poisson",
+   "spacing": 3.0,
+   "size": [
+    1.0,
+    2.5
+   ],
+   "threshold": 0.0
+  },
+  {
+   "name": "mud_plaza",
+   "decal": "mud",
+   "where": "plaza",
+   "places": "poisson",
+   "spacing": 6.0,
+   "size": [
+    1.0,
+    2.0
+   ],
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 12,
+     "range": [
+      0.5,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.2
+  },
+  {
+   "name": "curb_grime",
+   "decal": "stain",
+   "where": "road",
+   "within": "road",
+   "places": "poisson",
+   "spacing": 2.5,
+   "size": [
+    0.8,
+    1.8
+   ],
+   "masks": [
+    {
+     "type": "distance",
+     "to": "sidewalk",
+     "range": [
+      0.3,
+      1.2
+     ]
+    },
+    {
+     "type": "noise",
+     "scale": 30,
+     "range": [
+      0.3,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.25
+  },
+  {
+   "name": "path_wear",
+   "decal": "mud",
+   "where": "bank",
+   "places": "poisson",
+   "spacing": 3.0,
+   "size": [
+    1.2,
+    2.6
+   ],
+   "masks": [
+    {
+     "type": "distance",
+     "to": "walk",
+     "range": [
+      0.0,
+      4.0
+     ]
+    },
+    {
+     "type": "noise",
+     "scale": 14,
+     "range": [
+      0.35,
+      0.7
+     ]
+    }
+   ],
+   "threshold": 0.15
+  }
+ ],
+ "lots": {
+  "shop": [
+   {
+    "role": "awning",
+    "at": "wall",
+    "height": [
+     2.1,
+     2.3
+    ],
+    "center": true,
+    "chance": 0.75
+   },
+   {
+    "role": "letter",
+    "at": "word",
+    "height": 3.1,
+    "chance": 0.9,
+    "scale": 0.55,
+    "spacing": 0.06,
+    "margin": 0.5,
+    "words": [
+     "ABARROTES",
+     "TACOS",
+     "TORTAS",
+     "FARMACIA",
+     "PALETERIA",
+     "MARISCOS",
+     "CARNITAS",
+     "PANADERIA",
+     "TORTILLERIA",
+     "REFACCIONARIA",
+     "LAVANDERIA",
+     "CERVEZA",
+     "BIRRIA",
+     "POZOLE",
+     "ELOTES",
+     "MISCELANEA",
+     "PAPELERIA",
+     {
+      "word": "LA GUADALUPANA",
+      "weight": 0.5
+     },
+     {
+      "word": "DON PEPE",
+      "weight": 0.5
+     },
+     {
+      "word": "EL GUERO",
+      "weight": 0.5
+     }
+    ],
+    "corner_words": [
+     {
+      "word": "E-OZZO",
+      "only_on": "store_pristine",
+      "weight": 1.2,
+      "panel": {
+       "color": "sign_red",
+       "band": "sign_yellow",
+       "pad": 0.3,
+       "thickness": 0.08
+      },
+      "max_per_block": 1
+     },
+     "ABARROTES",
+     "MISCELANEA",
+     {
+      "word": "LA ESQUINITA",
+      "weight": 1
+     }
+    ]
+   },
+   {
+    "role": "roof_sign",
+    "at": "roof_front",
+    "inset": [
+     0.8,
+     1.4
+    ],
+    "chance": 0.55
+   },
+   {
+    "role": "aircon",
+    "at": "wall",
+    "height": [
+     2.8,
+     5.5
+    ],
+    "count": [
+     0,
+     2
+    ]
+   },
+   {
+    "role": "ivy",
+    "decay": true,
+    "at": "wall",
+    "height": 0.0,
+    "count": [
+     0,
+     2
+    ],
+    "chance": 0.5
+   },
+   {
+    "note": "bougainvillea: a draped vine over the wall, magenta",
+    "role": "ivy_draped",
+    "decay": true,
+    "at": "wall",
+    "height": [
+     1.6,
+     2.4
+    ],
+    "count": [
+     1,
+     2
+    ],
+    "chance": 0.3,
+    "tint": [
+     1.0,
+     0.28,
+     0.62
+    ],
+    "above": true,
+    "scale": [
+     1.6,
+     2.2
+    ]
+   },
+   {
+    "role": "shopfront",
+    "at": "front",
+    "out": [
+     0.3,
+     1.0
+    ],
+    "count": [
+     1,
+     3
+    ],
+    "chance": 0.8
+   },
+   {
+    "role": "table_set",
+    "at": "front",
+    "out": [
+     0.6,
+     1.2
+    ],
+    "chance": 0.3
+   },
+   {
+    "role": "planter",
+    "at": "front",
+    "out": [
+     0.2,
+     0.5
+    ],
+    "count": [
+     0,
+     2
+    ]
+   },
+   {
+    "role": "car",
+    "at": "curb",
+    "chance": 0.5
+   },
+   {
+    "role": "roof_clutter",
+    "decay": true,
+    "at": "roof",
+    "count": [
+     1,
+     3
+    ]
+   }
+  ],
+  "apartment": [
+   {
+    "role": "window_planter",
+    "at": "wall",
+    "height": [
+     3.0,
+     9.0
+    ],
+    "count": [
+     2,
+     5
+    ]
+   },
+   {
+    "role": "aircon",
+    "at": "wall",
+    "height": [
+     3.0,
+     9.0
+    ],
+    "count": [
+     1,
+     4
+    ]
+   },
+   {
+    "role": "fire_escape",
+    "at": "wall",
+    "height": 3.2,
+    "chance": 0.5,
+    "min_height": 8.0
+   },
+   {
+    "role": "ivy",
+    "decay": true,
+    "at": "wall",
+    "height": 0.0,
+    "count": [
+     0,
+     3
+    ],
+    "chance": 0.6
+   },
+   {
+    "note": "bougainvillea: a draped vine over the wall, magenta",
+    "role": "ivy_draped",
+    "decay": true,
+    "at": "wall",
+    "height": [
+     1.6,
+     2.4
+    ],
+    "count": [
+     1,
+     2
+    ],
+    "chance": 0.3,
+    "tint": [
+     1.0,
+     0.28,
+     0.62
+    ],
+    "above": true,
+    "scale": [
+     1.6,
+     2.2
+    ]
+   },
+   {
+    "role": "planter",
+    "at": "front",
+    "out": [
+     0.2,
+     0.6
+    ],
+    "count": [
+     0,
+     2
+    ]
+   },
+   {
+    "role": "trash_bin",
+    "at": "front",
+    "out": [
+     0.3,
+     0.8
+    ],
+    "chance": 0.3
+   },
+   {
+    "role": "car",
+    "at": "curb",
+    "chance": 0.6
+   },
+   {
+    "role": "washing_line",
+    "at": "back",
+    "out": [
+     1.0,
+     2.5
+    ],
+    "chance": 0.4
+   },
+   {
+    "role": "roof_clutter",
+    "decay": true,
+    "at": "roof",
+    "count": [
+     2,
+     4
+    ]
+   }
+  ],
+  "house": [
+   {
+    "role": "planter",
+    "at": "front",
+    "out": [
+     0.2,
+     0.6
+    ],
+    "count": [
+     1,
+     2
+    ]
+   },
+   {
+    "role": "street_tree",
+    "at": "front",
+    "out": [
+     1.2,
+     1.8
+    ],
+    "chance": 0.45
+   },
+   {
+    "role": "ivy",
+    "decay": true,
+    "at": "wall",
+    "height": 0.0,
+    "count": [
+     0,
+     2
+    ],
+    "chance": 0.6
+   },
+   {
+    "note": "bougainvillea: a draped vine over the wall, magenta",
+    "role": "ivy_draped",
+    "decay": true,
+    "at": "wall",
+    "height": [
+     1.6,
+     2.4
+    ],
+    "count": [
+     1,
+     2
+    ],
+    "chance": 0.5,
+    "tint": [
+     1.0,
+     0.28,
+     0.62
+    ],
+    "above": true,
+    "scale": [
+     1.6,
+     2.2
+    ]
+   },
+   {
+    "role": "aircon",
+    "at": "wall",
+    "height": [
+     2.3,
+     3.2
+    ],
+    "chance": 0.3
+   },
+   {
+    "role": "mailbox",
+    "at": "front",
+    "out": [
+     0.3,
+     0.8
+    ],
+    "chance": 0.25
+   },
+   {
+    "role": "doghouse",
+    "at": "back",
+    "out": [
+     0.8,
+     2.5
+    ],
+    "chance": 0.35
+   },
+   {
+    "role": "washing_line",
+    "at": "back",
+    "out": [
+     1.0,
+     2.5
+    ],
+    "chance": 0.35
+   },
+   {
+    "role": "car",
+    "at": "curb",
+    "chance": 0.55
+   }
+  ]
+ },
+ "setpieces": [
+  {
+   "name": "barricade",
+   "at": "crossing",
+   "count": 3,
+   "apart": 70.0,
+   "items": [
+    {
+     "role": "barrier",
+     "n": [
+      3,
+      5
+     ],
+     "x": [
+      -5,
+      5
+     ],
+     "y": [
+      -1.5,
+      1.5
+     ],
+     "yaw": "across",
+     "within": "road",
+     "line": true
+    },
+    {
+     "role": "car",
+     "n": [
+      1,
+      2
+     ],
+     "x": [
+      -7,
+      7
+     ],
+     "y": [
+      2,
+      6
+     ],
+     "yaw": "random",
+     "within": "road"
+    },
+    {
+     "role": "cone",
+     "n": [
+      2,
+      5
+     ],
+     "x": [
+      -7,
+      7
+     ],
+     "y": [
+      -4,
+      4
+     ]
+    },
+    {
+     "role": "trash",
+     "n": [
+      1,
+      3
+     ],
+     "x": [
+      -6,
+      6
+     ],
+     "y": [
+      -4,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "name": "crash",
+   "at": "street",
+   "count": 4,
+   "apart": 60.0,
+   "items": [
+    {
+     "role": "car",
+     "n": [
+      2,
+      3
+     ],
+     "x": [
+      -3,
+      3
+     ],
+     "y": [
+      -2,
+      2
+     ],
+     "yaw": "random",
+     "within": "road"
+    },
+    {
+     "role": "blood",
+     "n": [
+      1,
+      2
+     ],
+     "x": [
+      -3,
+      3
+     ],
+     "y": [
+      -3,
+      3
+     ]
+    },
+    {
+     "role": "trash",
+     "n": [
+      2,
+      4
+     ],
+     "x": [
+      -4,
+      4
+     ],
+     "y": [
+      -3,
+      3
+     ]
+    },
+    {
+     "role": "clutter",
+     "n": [
+      1,
+      3
+     ],
+     "x": [
+      -4,
+      4
+     ],
+     "y": [
+      -3,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "name": "checkpoint",
+   "at": "street",
+   "count": 1,
+   "apart": 100.0,
+   "items": [
+    {
+     "role": "barrier",
+     "n": [
+      4,
+      6
+     ],
+     "x": [
+      -1,
+      1
+     ],
+     "y": [
+      -6,
+      6
+     ],
+     "yaw": "along",
+     "within": "road"
+    },
+    {
+     "role": "cone",
+     "n": [
+      3,
+      5
+     ],
+     "x": [
+      -4,
+      4
+     ],
+     "y": [
+      -6,
+      6
+     ]
+    },
+    {
+     "role": "body",
+     "n": [
+      2,
+      4
+     ],
+     "x": [
+      2,
+      6
+     ],
+     "y": [
+      -4,
+      4
+     ]
+    },
+    {
+     "role": "clutter",
+     "n": [
+      2,
+      3
+     ],
+     "x": [
+      -5,
+      -2
+     ],
+     "y": [
+      -4,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "name": "looted_shop",
+   "at": "shop",
+   "count": 6,
+   "apart": 25.0,
+   "items": [
+    {
+     "role": "trash",
+     "n": [
+      3,
+      6
+     ],
+     "x": [
+      -3,
+      3
+     ],
+     "y": [
+      0.6,
+      3.0
+     ],
+     "within": "walk"
+    },
+    {
+     "role": "clutter",
+     "n": [
+      1,
+      3
+     ],
+     "x": [
+      -3,
+      3
+     ],
+     "y": [
+      0.5,
+      2.0
+     ],
+     "within": "walk"
+    },
+    {
+     "role": "blood",
+     "n": [
+      0,
+      1
+     ],
+     "x": [
+      -2,
+      2
+     ],
+     "y": [
+      1,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "name": "road_works",
+   "at": "river_end",
+   "count": 3,
+   "apart": 30.0,
+   "note": "a street left unfinished at the river: earth heaped where it ends, the works' stuff around, the way closed",
+   "items": [
+    {
+     "role": "dirt_pile",
+     "n": [
+      1,
+      2
+     ],
+     "x": [
+      -3,
+      0
+     ],
+     "y": [
+      -2.5,
+      2.5
+     ],
+     "yaw": "random"
+    },
+    {
+     "role": "construction",
+     "n": [
+      2,
+      4
+     ],
+     "x": [
+      -7,
+      -2
+     ],
+     "y": [
+      -3.5,
+      3.5
+     ],
+     "yaw": "random"
+    },
+    {
+     "role": "wheelbarrow",
+     "n": [
+      1,
+      1
+     ],
+     "x": [
+      -6,
+      -3
+     ],
+     "y": [
+      -3,
+      3
+     ],
+     "yaw": "random"
+    },
+    {
+     "role": "barrier",
+     "n": [
+      2,
+      3
+     ],
+     "x": [
+      -9,
+      -8
+     ],
+     "y": [
+      -3,
+      3
+     ],
+     "yaw": "across",
+     "within": "road",
+     "line": true
+    },
+    {
+     "role": "cone",
+     "n": [
+      2,
+      4
+     ],
+     "x": [
+      -10,
+      -6
+     ],
+     "y": [
+      -4,
+      4
+     ]
+    }
+   ]
+  }
+ ],
+ "overhead": {
+  "power": {
+   "edges": [
+    "street",
+    "avenue",
+    "hill_street"
+   ],
+   "side": 1,
+   "inset": 0.5,
+   "spacing": 24.0,
+   "attach": 0.9,
+   "across": 0.35,
+   "across_height": 5.2
+  },
+  "papel_picado": {
+   "edges": [
+    "street",
+    "avenue"
+   ],
+   "near": [
+    "plaza",
+    "promenade"
+   ],
+   "distance": 50.0,
+   "spacing": 9.0,
+   "height": [
+    4.6,
+    5.6
+   ],
+   "lines": [
+    1,
+    2
+   ],
+   "chance": 0.6
+  }
+ }
+}

@@ -12,6 +12,7 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include <array>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -25,7 +26,7 @@ namespace Pakal
 
 namespace Pakal::TopDown
 {
-	// The animated model of a character (player or zombie). Pose and color are worked out from the
+	// The animated model of a character (a player or an enemy). Pose and color are worked out from the
 	// other components when the frame is drawn.
 	class CharacterViewComponent : public Component
 	{
@@ -33,7 +34,7 @@ namespace Pakal::TopDown
 		struct Clips
 		{
 			std::vector<std::string> idle, move, attack, death;
-			std::vector<std::string> fast; // moving quickly (berserk zombies run, the player sprints)
+			std::vector<std::string> fast; // moving quickly (an enraged enemy runs, the player sprints)
 			std::vector<std::string> hit;  // played once when hurt
 			// Knocked back: thrown down, then up again within the stun (a short stun plays the hit clip instead)
 			std::vector<std::string> knockDown, getUp;
@@ -65,6 +66,15 @@ namespace Pakal::TopDown
 			bool hasGrip = false;
 			float grip[3] = { 0.0f, 0.0f, 0.0f };
 			bool twoHanded = false;
+			// Its own clips (a rifle's hold, a launcher on the shoulder...): those it names replace the look's while it is in
+			// hand; the rest are the look's
+			bool hasClips = false;
+			Clips clips;
+			// Where its shots leave it (its barrel's mouth, in the weapon's model); none: the look's muzzle bone and reach
+			bool hasMuzzle = false;
+			float muzzle[3] = { 0.0f, 0.0f, 0.0f };
+			// Its twin in the other hand (a pair of pistols): at most one, drawn with it; the shots leave each in turn
+			std::vector<Held> pair;
 
 			// Where it sits in the bone's frame (column-major): its offset, then its rotations (Z, Y, X, degrees), then its scale
 			std::array<float, 16> placement() const;
@@ -78,13 +88,23 @@ namespace Pakal::TopDown
 			Clips clips;
 			float height = 1.8f;
 			std::string model;      // model file of this type of enemy, relative to the level ("" for the level's enemy model)
-			std::vector<std::string> variants; // more models for the same type: each zombie gets one of them at random
+			std::vector<std::string> variants; // more models for the same type: each one gets one of them at random
 			int pool = 0;           // copies of its model made at load (0: the level's enemyPool)
 			float tint[3] = { 1.0f, 1.0f, 1.0f };
 			float walkRef = 1.5f;   // meters per second one cycle of the move clip covers
 			float runRef = 4.5f;    // ... of the fast clip
 			float fastAbove = 3.2f; // speed (m/s) from which the fast clip is used
+			float clipSpeedMax = 2.0f; // the legs never play faster than this (a fast mover past it slides a little)
+			float turnSpeed = 6.2831853f;   // radians per second the body turns toward where it goes or aims
+			float minFacingSpeed = 0.4f;    // slower than this (m/s) the body keeps its facing
+			float hitCooldown = 0.6f;       // seconds between two hit reactions of the same body
+			float backpedalCos = 0.35f;     // walking farther than this from the aim (the cosine; ~110 degrees) walks backwards
+			float knockDownAbove = 1.0f;    // a knockback stun this long or longer throws the body down
 			std::string overlayRoot = "Abdomen"; // the bone from which up the fire and reload clips play
+			// Where shots leave: this bone (the gun hand), 'muzzleAhead' meters further along the shot. Empty: the
+			// simulation's muzzle at the effects' gun height
+			std::string muzzleBone;
+			float muzzleAhead = 0.25f;
 			bool hasHeld = false;
 			Held held;
 			std::vector<std::pair<int, Held>> weapons; // melee weapons by consumable id: what the hand holds while one is lent
@@ -94,6 +114,9 @@ namespace Pakal::TopDown
 			// A look from JSON (a level's "visuals" entry, a game's data) over 'defaults': what it leaves out keeps the default
 			static Look from_json(const nlohmann::json& json, const Look& defaults);
 		};
+	private:
+		static inline std::function<float(const b2Vec2&)> s_floor;
+	public:
 
 		CharacterViewComponent(std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh, const Look& look);
 		~CharacterViewComponent() override;
@@ -102,29 +125,50 @@ namespace Pakal::TopDown
 		void set_held(std::unique_ptr<Pakal::MeshComponent3D_Bgfx> held);
 		// The model of a melee weapon, shown instead of the gun while that consumable is active
 		void add_weapon(int consumableId, std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh, const Held& held);
+		// The twin of a weapon in the other hand (0: of the gun the player starts with): its Held's 'pair'
+		void add_pair(int consumableId, std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh);
 		// The gun shown in the hand when nothing is lent: one of the added weapons (the player's equipped gun), 0 for the held one
 		void set_base_weapon(int consumableId) { m_baseWeapon = consumableId; }
 
+		// The height of the floor as the level draws it (level meters; the game's floor is flat at 0): characters are drawn
+		// on it, their soles on it. None set: 0. Shared by every character view.
+		static void set_floor(std::function<float(const b2Vec2&)> floor) { s_floor = std::move(floor); }
 		// Places the model and picks its clip (called once per drawn frame). 'alpha' is how far the frame is between the
 		// last simulation step and the next (Actor::drawn_position).
 		void sync(float dt, float alpha = 1.0f);
 		// Debug: plays this clip whatever the actor does ("" to go back to normal)
-		void force_clip(const std::string& name) { m_forced = name; }
+		void force_clip(const std::string& name) { m_forced = name; if (name.empty()) m_handsFree = false; }
+		// What the hands hold hidden while a forced clip plays (a celebration with both arms up); cleared with the clip
+		void set_hands_free(bool free) { m_handsFree = free; }
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> release_mesh();
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> release_held();
-		// Which pool the model came from (zombies of different types use different models)
+		// Which pool the model came from (characters of different types use different models)
 		void set_model_key(const std::string& key) { m_modelKey = key; }
 		const std::string& model_key() const { return m_modelKey; }
-		// The color of the type of zombie that uses this model next (pooled models change role)
+		// Where its looping clips (walk, run, idle) start, as a share of their cycle (0..1): whoever owns it may stagger a
+		// crowd so it does not step in time
+		void set_loop_phase(float share) { m_loopPhase = share; }
+		// The color of the type of character that uses this model next (pooled models change role)
 		void set_tint(float r, float g, float b) { m_look.tint[0] = r; m_look.tint[1] = g; m_look.tint[2] = b; }
 		float height() const { return m_look.height; }
 		// Frozen (the player is down): the clip stops where it is
 		void freeze(bool on) { m_frozen = on; }
+		// Where a shot toward 'direction' (level plane) leaves the gun, in render space: the look's muzzle bone as the
+		// clip has it now. False when the look names none.
+		bool muzzle_point(const b2Vec2& direction, float out[3]) const;
 
 	private:
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> m_mesh;
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> m_held;
 		int m_baseWeapon = 0;
+		const Held* m_inHand = nullptr;
+		bool m_handsFree = false;
+		std::map<int, std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_pairMeshes;   // the twins, by weapon (0: the start gun)
+		mutable unsigned m_shots = 0;   // the shots so far (a pair fires each gun in turn)
+		float m_aimTurn = 0.0f;           // radians the body is turned so its gun's barrel points along the aim   // what the hand shows (last drawn frame): its muzzle for the shots
+		// The clips of what is in hand: its own when it has them, else the look's
+		const Clips& clips_in_hand(int weaponId) const;
+		static Held read_held(const nlohmann::json& json, const Clips& clips);
 		std::map<int, std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_weaponMeshes;
 		std::map<int, Held> m_weaponHeld;   // how each of them sits in the hand (for the other hand's grip)
 		float m_reachWeight = 0.0f;         // the other hand on the gun, blended in and out
@@ -139,18 +183,24 @@ namespace Pakal::TopDown
 		int m_hurtClipsSeen = 0;      // an enemy's hurt clips already played
 		bool m_frozen = false;
 		int m_knockStep = 0;          // 1 thrown down, 2 getting up
+		bool m_emerging = false;      // its climb out of the floor started
 		float m_knockClipLeft = 0.0f;
 		bool m_wasKnocked = false;
-		bool m_wasSwinging = false;
+		unsigned m_swingsSeen = 0;   // the weapon's swings already shown
 		float m_attackClipSpeed = 1.0f;
 		float m_hitTimer = 0.0f;      // seconds left of the hit clip
+		float m_hitOverlayTimer = 0.0f;   // seconds left of a hit played on the upper body (the player on the run)
+		float m_swingOverlayTimer = 0.0f; // ... of a melee swing played on the upper body (on the run)
 		float m_hitCooldown = 0.0f;
 		float m_boostClock = 0.0f;   // the glow of a boost pulses with it
 		bool m_wasSwingClip = false;  // a melee swing clip is playing
 		float m_swingClipSeconds = 0.0f;
+		float m_swingClipLength = 0.0f;   // the last swing's clip (seconds)
+		bool m_swingQueued = false;       // a swing that waits for the last to be half shown
 		int m_actionSerial = 0;      // the special attack step being shown
 		float m_actionSpeed = 1.0f;
 		std::string m_forced;
 		std::string m_modelKey;
+		float m_loopPhase = 0.0f;
 	};
 }
