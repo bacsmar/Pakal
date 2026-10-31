@@ -396,6 +396,9 @@ namespace Pakal
 #if BX_PLATFORM_ANDROID
 		// The Android build has OpenGL ES only (the shaders are compiled for it)
 		if (init.type == bgfx::RendererType::Count) init.type = bgfx::RendererType::OpenGLES;
+#elif defined(PAKAL_LINUX_PLATFORM)
+        // The Linux build compiles the engine shaders for OpenGL.
+        if (init.type == bgfx::RendererType::Count) init.type = bgfx::RendererType::OpenGL;
 #endif
 		// Which GPU on a computer with two (a laptop's integrated one and a dedicated one): PAKAL_GPU=integrated|intel,
 		// discrete (the default: NVIDIA, else the system's choice), nvidia, amd. Direct3D picks the adapter by vendor.
@@ -546,6 +549,9 @@ namespace Pakal
 	void BgfxGraphicsSystem::on_update_graphics(long long dt)
 	{
 		const auto frameStart = std::chrono::steady_clock::now();
+        if (m_previousFrame.time_since_epoch().count())
+            m_frameTiming.add(std::chrono::duration<double, std::milli>(frameStart - m_previousFrame).count());
+        m_previousFrame = frameStart;
 		// Clear every frame
 		bgfx::setViewClear(
 			m_main_view_id,
@@ -709,6 +715,13 @@ namespace Pakal
 		}
 		const double frameMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - frameStart).count();
 		governor_frame(frameMs);
+        {
+            std::lock_guard<std::mutex> lock(m_performanceMutex);
+            const auto& g = m_governor;
+            m_performanceStatus = {g.enabled, m_governorHeld.load(), g.warmup > 0,
+                g.enabled && (g.cap < g.maxFps || get_render_scale() < g.baseScale - 0.01f || g.fsrDropped),
+                g.enabled ? g.cap : m_settings.max_fps, m_width, m_height, get_render_scale(), g.thermal};
+        }
 		log_frame_stats();
 		// telemetry (PAKAL_PROFILE): the frame, and what the GPU holds
 		Profiler& profiler = Profiler::get();

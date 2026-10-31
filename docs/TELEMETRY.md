@@ -44,3 +44,10 @@ On Android the variables go in `pakal_env.txt` (see ANDROID.md), and the file in
 Reading a run: a high `gfx.submit` with the rest low is the GPU (or the driver); run again with a smaller picture
 (`PAKAL_RENDER_HEIGHT`) or without FSR (`PAKAL_FSR=0`): if the frame rate goes up, the pixels are the cost. On a computer
 with two GPUs `PAKAL_GPU=integrated` shows the cost better than a dedicated one that has plenty to spare.
+
+Live overlays can read `BgfxGraphicsSystem::frame_timing()` without enabling a
+profile recording: `currentFps` covers the latest second; `fps` (average) and
+nearest-rank `p95Ms` cover five seconds of render-frame intervals.
+`performance_status()` returns a synchronized governor/cap/render-scale/thermal
+snapshot. Thermal -1 means unavailable. A reported thermal pressure level is not
+proof of CPU/GPU frequency throttling; governor adaptation is reported separately.

@@ -760,3 +760,8 @@ message(STATUS "SFML: ${SFML_FOUND}")
 message(STATUS "Box2D: ${BOX2D_FOUND}")
 message(STATUS "Lua: ${LUA_FOUND}")
 message(STATUS "================================================")
+
+# Rolling frame timing is available without profiling recordings.
+add_executable(FrameTimingTests tests/FrameTimingTests.cpp)
+target_include_directories(FrameTimingTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+add_test(NAME FrameTimingTests COMMAND FrameTimingTests)

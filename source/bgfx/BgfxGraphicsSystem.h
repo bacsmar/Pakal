@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "FrameTiming.h"
 #include "GraphicsSystem.h"
 #include "ICameraComponent_Bgfx.h"
 #include "BgfxDebugUI.h"
@@ -32,6 +33,20 @@ namespace Pakal
 	class _PAKALExport BgfxGraphicsSystem final : public GraphicsSystem
 	{		
 	public:
+        struct PerformanceStatus
+        {
+            bool governor = false, held = false, warming = false, reduced = false;
+            unsigned cap = 0, width = 0, height = 0;
+            float scale = 1.0f;
+            int thermal = -1;
+        };
+    private:
+        mutable std::mutex m_performanceMutex;
+        PerformanceStatus m_performanceStatus;
+    public:
+        PerformanceStatus performance_status() const
+        { std::lock_guard<std::mutex> lock(m_performanceMutex); return m_performanceStatus; }
+        FrameTiming::Snapshot frame_timing() const { return m_frameTiming.snapshot(); }
 		inline const char* get_system_name() override { return nameof(BgfxGraphicsSystem);  }
 
 		explicit BgfxGraphicsSystem(const Settings& settings);
@@ -39,6 +54,8 @@ namespace Pakal
 
 	protected:	
 		
+		FrameTiming m_frameTiming;
+		std::chrono::steady_clock::time_point m_previousFrame{};
 		EventId m_resized_callback_id;
 		EventId m_destroyed_callback_id;
 		EventId m_created_callback_id;
