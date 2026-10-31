@@ -3,7 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${DISPLAY:?An X11 display (or XWayland) is required}"
-args=(--rm --user "$(id -u):$(id -g)" -e DISPLAY
+# Mesa software rendering uses X11 MIT-SHM with the host X server.
+# Both processes must see the same System V shared-memory segments.
+args=(--rm --ipc=host --user "$(id -u):$(id -g)" -e DISPLAY
       -e ALSOFT_DRIVERS=pulse -e LIBGL_ALWAYS_SOFTWARE=1
       -v "$PWD:/workspace" -v /tmp/.X11-unix:/tmp/.X11-unix:ro
       -w "/workspace/${PAKAL_LINUX_BIN_DIR:-build-linux/bin}")
