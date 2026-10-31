@@ -415,3 +415,27 @@ After successfully building:
 - Check [BGFX_BACKEND.md](BGFX_BACKEND.md) for bgfx-specific features
 - Explore examples in `examples/` directory
 - Read [ARCHITECTURE.md](ARCHITECTURE.md) to understand engine design
+
+## Linux x64 (GCC, OpenGL)
+
+Run `tools/build_linux.sh` from the checkout. It builds an Ubuntu 24.04 Docker image
+with SFML 2, Assimp, Box2D, Lua, nlohmann-json and RmlUi 6.3, then builds bgfx,
+the engine, the desktop player, examples and tests. Set `PAKAL_BUILD_JOBS` to
+control parallelism (default: 4). Docker must be available to your user.
+
+Outputs are in `build-linux/bin` and `build-linux/lib`. With the same dependencies
+installed locally, use `cmake --preset linux-release`,
+`cmake --build --preset linux-release` and `ctest --test-dir build-linux --output-on-failure`.
+The bgfx libraries and `shadercRelease` must first be built from the submodules;
+the script shows the exact commands. Engine shaders are compiled for OpenGL 4.3.
+
+Private game data is supplied separately. For the workstation datapack layout,
+link `build-linux/bin/Assets` to `../../build-win64/bin/Assets`. Launch the player
+from `build-linux/bin`, passing the path to a Linux game module (`.so`). Windows
+DLLs and precompiled Windows libraries cannot be used by the Linux player.
+The Windows-only game targets have not been enabled by this build setup.
+
+On a Linux desktop with X11 or XWayland, `tools/run_linux.sh` runs ContraGame
+using the build image for runtime dependencies and software OpenGL. It forwards
+the existing X authority and PulseAudio socket when available. No host package
+installation is needed. Other modules can be passed as the first argument.

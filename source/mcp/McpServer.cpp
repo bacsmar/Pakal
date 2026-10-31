@@ -7,8 +7,19 @@
 
 #include "LogMgr.h"
 
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <strings.h>
+using SOCKET = int;
+constexpr SOCKET INVALID_SOCKET = -1;
+static int closesocket(SOCKET socket) { return close(socket); }
+static int _strnicmp(const char* a, const char* b, size_t n) { return strncasecmp(a, b, n); }
+#endif
 
 #include <chrono>
 #include <cstdlib>
@@ -95,7 +106,12 @@ namespace Pakal
 			size_t sent = 0;
 			while (sent < text.size())
 			{
-				const int n = send(socket, text.data() + sent, static_cast<int>(text.size() - sent), 0);
+#ifdef _WIN32
+				constexpr int sendFlags = 0;
+#else
+				constexpr int sendFlags = MSG_NOSIGNAL;
+#endif
+				const int n = send(socket, text.data() + sent, static_cast<int>(text.size() - sent), sendFlags);
 				if (n <= 0)
 				{
 					return;
@@ -121,6 +137,7 @@ namespace Pakal
 		{
 			return true;
 		}
+#ifdef _WIN32
 		WSADATA wsa;
 		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		{
@@ -128,13 +145,15 @@ namespace Pakal
 			return false;
 		}
 
+#endif
+
 		const SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (listener == kInvalidSocket)
 		{
 			error = "cannot create the socket";
 			return false;
 		}
-		BOOL reuse = TRUE;
+		int reuse = 1;
 		setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuse), sizeof(reuse));
 
 		sockaddr_in address{};
@@ -172,7 +191,9 @@ namespace Pakal
 			closesocket(static_cast<SOCKET>(m_listenSocket));
 			m_listenSocket = ~static_cast<uintptr_t>(0);
 		}
+#ifdef _WIN32
 		WSACleanup();
+#endif
 	}
 
 	void McpServer::serve()
@@ -184,7 +205,12 @@ namespace Pakal
 			FD_ZERO(&readable);
 			FD_SET(listener, &readable);
 			timeval timeout{ 0, 200000 }; // 200 ms: lets stop() take effect quickly
-			if (select(0, &readable, nullptr, nullptr, &timeout) <= 0)
+#ifdef _WIN32
+			constexpr int socketCount = 0; // ignored by Winsock
+#else
+			const int socketCount = listener + 1;
+#endif
+			if (select(socketCount, &readable, nullptr, nullptr, &timeout) <= 0)
 			{
 				continue;
 			}

@@ -81,5 +81,10 @@ examples/zombies_module/assets/generated/
 android/local_paths.json
 tools/bench_budgets.local.json
 
+# Private workstation datapack (licensed assets and local signing key)
+/.local/datapack/
+/assets_zip/
+/games/zombimex/docs/reference/
+
 # An open level editor's request folder (tools/level_doc/LiveEditing)
 *.live/

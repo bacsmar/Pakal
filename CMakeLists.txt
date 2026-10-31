@@ -27,7 +27,7 @@ enable_testing()
 # Create a config.h compatibility header for case-insensitive systems.
 # Not on Windows: there it would resolve to itself, since the filesystem ignores case.
 if(NOT WIN32)
-    file(WRITE "${CMAKE_BINARY_DIR}/config.h" "#include \"Config.h\"\n")
+    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
 endif()
 
 # The engine's core alone (no backends, the dummy systems), built with every build so that the core stays apart from
@@ -216,11 +216,21 @@ else()
     message(WARNING "⚠️  bgfx library not found in ${BGFX_BUILD_DIR}")
 endif()
 
-# Engine shaders for the 3D mesh and sky programs (Direct3D 11 on Windows)
-if(WIN32)
-    set(PAKAL_SHADERC ${BGFX_DIR}/.build/win64_vs2022/bin/shadercRelease.exe)
+# Engine shaders: Direct3D 11 on Windows, OpenGL on Linux.
+if(WIN32 OR (UNIX AND NOT APPLE))
+    if(WIN32)
+        set(PAKAL_SHADERC ${BGFX_DIR}/.build/win64_vs2022/bin/shadercRelease.exe)
+        set(PAKAL_SHADER_PLATFORM windows)
+        set(PAKAL_SHADER_PROFILE s_5_0)
+        set(PAKAL_SHADER_BACKEND dx11)
+    else()
+        set(PAKAL_SHADERC ${BGFX_BUILD_DIR}/shadercRelease)
+        set(PAKAL_SHADER_PLATFORM linux)
+        set(PAKAL_SHADER_PROFILE 430)
+        set(PAKAL_SHADER_BACKEND glsl)
+    endif()
     set(PAKAL_SHADER_SRC ${CMAKE_SOURCE_DIR}/source/bgfx/shaders)
-    set(PAKAL_SHADER_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/dx11)
+    set(PAKAL_SHADER_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${PAKAL_SHADER_BACKEND})
     if(EXISTS ${PAKAL_SHADERC})
         function(pakal_compile_shader name type varying)
             set(out ${PAKAL_SHADER_DIR}/${name}.bin)
@@ -229,7 +239,7 @@ if(WIN32)
                 COMMAND ${PAKAL_SHADERC}
                     -f ${PAKAL_SHADER_SRC}/${name}.sc
                     -o ${out}
-                    --type ${type} --platform windows -p s_5_0
+                    --type ${type} --platform ${PAKAL_SHADER_PLATFORM} -p ${PAKAL_SHADER_PROFILE}
                     --varyingdef ${PAKAL_SHADER_SRC}/${varying}
                     -i ${BGFX_DIR}/src
                     -i ${PAKAL_SHADER_SRC}
@@ -268,7 +278,7 @@ if(WIN32)
         add_custom_target(PakalShaders ALL DEPENDS ${PAKAL_SHADER_OUTPUTS})
         add_dependencies(Pakal PakalShaders)
     else()
-        message(WARNING "shadercRelease.exe not found at ${PAKAL_SHADERC}; 3D meshes will not render")
+        message(WARNING "Shader compiler not found at ${PAKAL_SHADERC}; 3D meshes will not render")
     endif()
 endif()
 
