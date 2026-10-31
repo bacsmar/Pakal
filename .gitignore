@@ -82,7 +82,7 @@ android/local_paths.json
 tools/bench_budgets.local.json
 
 # Private workstation datapack (licensed assets and local signing key)
-/.local/datapack/
+/.local/
 /assets_zip/
 /games/zombimex/docs/reference/
 

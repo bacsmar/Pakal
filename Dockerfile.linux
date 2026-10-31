@@ -2,7 +2,7 @@ FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake ninja-build git ca-certificates pkg-config \
     libsfml-dev libx11-dev libgl1-mesa-dev libassimp-dev libbox2d-dev \
-    liblua5.3-dev nlohmann-json3-dev libfreetype-dev python3 xvfb xauth \
+    liblua5.4-dev nlohmann-json3-dev libfreetype-dev python3 xvfb xauth \
     && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 --branch 6.3 https://github.com/mikke89/RmlUi.git /tmp/rmlui \
     && cmake -S /tmp/rmlui -B /tmp/rmlui-build -G Ninja \

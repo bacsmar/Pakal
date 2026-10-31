@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 args=(--rm --user "$(id -u):$(id -g)" -e DISPLAY
       -e ALSOFT_DRIVERS=pulse -e LIBGL_ALWAYS_SOFTWARE=1
       -v "$PWD:/workspace" -v /tmp/.X11-unix:/tmp/.X11-unix:ro
-      -w /workspace/build-linux/bin)
+      -w "/workspace/${PAKAL_LINUX_BIN_DIR:-build-linux/bin}")
 auth=${XAUTHORITY:-$HOME/.Xauthority}
 if [[ -f "$auth" ]]; then
     args+=(-v "$auth:/tmp/pakal-xauth:ro" -e XAUTHORITY=/tmp/pakal-xauth)
