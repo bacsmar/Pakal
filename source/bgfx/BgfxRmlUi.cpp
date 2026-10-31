@@ -76,15 +76,22 @@ namespace Pakal
 		bool create(bgfx::ViewId view)
 		{
 			m_view = view;
+			// OpenGL resolves user uniforms when the program is linked. Register them first.
+			m_u_offset = bgfx::createUniform("u_uiOffset", bgfx::UniformType::Vec4);
+			m_s_texture = bgfx::createUniform("s_uiTexture", bgfx::UniformType::Sampler);
 			m_program = m_graphics->load_program("vs_ui", "fs_ui");
-			if (!bgfx::isValid(m_program)) return false;
+			if (!bgfx::isValid(m_program))
+			{
+				bgfx::destroy(m_u_offset);
+				bgfx::destroy(m_s_texture);
+				m_u_offset = m_s_texture = BGFX_INVALID_HANDLE;
+				return false;
+			}
 			m_layout.begin()
 				.add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
 				.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 				.end();
-			m_u_offset = bgfx::createUniform("u_uiOffset", bgfx::UniformType::Vec4);
-			m_s_texture = bgfx::createUniform("s_uiTexture", bgfx::UniformType::Sampler);
 			const uint32_t white = 0xffffffff;
 			m_white = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 0, bgfx::copy(&white, 4));
 			return true;
