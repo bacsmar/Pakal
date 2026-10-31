@@ -33,8 +33,23 @@ WindowArgs WindowCreatorSFML::setup_window(unsigned windowId, const tmath::vecto
 	auto videoMode = sf::VideoMode(dimensions.x, dimensions.y, bitsPerPixel);
 	auto contextSettings = sf::ContextSettings(8,8);	// z buffer, stencil buffer
 	
+#if defined(PAKAL_LINUX_PLATFORM)
+    // SFML owns the window and events; bgfx alone owns the graphics context.
+    if (m_manage_context)
+    {
+        auto* window = new sf::Window();
+        window->create(videoMode, "Pakal", windowScreenStyle, contextSettings);
+        m_window = window;
+    }
+    else
+    {
+        m_window = new sf::WindowBase();
+        m_window->create(videoMode, "Pakal", windowScreenStyle);
+    }
+#else
 	m_window = new sf::Window();
 	m_window->create(videoMode, "", windowScreenStyle, contextSettings);
+#endif
 	m_window->setSize({ static_cast<unsigned>(dimensions.x), static_cast<unsigned>(dimensions.y) });	
 
 	m_window_created = true;
@@ -232,7 +247,11 @@ void WindowCreatorSFML::set_title(const std::string& title)
 void WindowCreatorSFML::flush()
 {
 	if(m_manage_context)
+#if defined(PAKAL_LINUX_PLATFORM)
+        static_cast<sf::Window*>(m_window)->display();
+#else
 		m_window->display();
+#endif
 }
 
 tmath::vector2di WindowCreatorSFML::get_position()

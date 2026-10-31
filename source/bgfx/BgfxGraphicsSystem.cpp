@@ -438,6 +438,10 @@ namespace Pakal
 		#endif
 		
 		// Set resolution
+#if defined(PAKAL_LINUX_PLATFORM)
+		// The X11 window uses the desktop's opaque RGB visual.
+		init.resolution.formatColor = bgfx::TextureFormat::RGB8;
+#endif
 		init.resolution.width = get_output_width();
 		init.resolution.height = get_output_height();
 		init.resolution.reset = m_settings.vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
@@ -479,11 +483,11 @@ namespace Pakal
 		create_mesh_resources();
 		create_post_resources();
 		create_shadow_resources();
-		m_easu_program = load_program("vs_post", "fs_fsr_easu");
-		m_rcas_program = load_program("vs_post", "fs_fsr_rcas");
 		const char* fsrNames[5] = { "u_fsrCon0", "u_fsrCon1", "u_fsrCon2", "u_fsrCon3", "u_fsrRcas" };
 		for (int i = 0; i < 5; ++i) m_u_fsr[i] = bgfx::createUniform(fsrNames[i], bgfx::UniformType::Vec4);
 		m_s_fsr_input = bgfx::createUniform("s_fsrInput", bgfx::UniformType::Sampler);
+		m_easu_program = load_program("vs_post", "fs_fsr_easu");
+		m_rcas_program = load_program("vs_post", "fs_fsr_rcas");
 
 		// Setup main view
 		bgfx::setViewClear(m_main_view_id, 
@@ -1186,6 +1190,16 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::create_mesh_resources()
 	{
+		MeshComponent3D_Bgfx::acquire_graphics_resources();
+		m_u_light_dir = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
+		m_u_light_color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4);
+		m_u_ambient = bgfx::createUniform("u_ambient", bgfx::UniformType::Vec4);
+		m_u_ambient_ground = bgfx::createUniform("u_ambientGround", bgfx::UniformType::Vec4);
+		m_u_sky_top = bgfx::createUniform("u_skyTop", bgfx::UniformType::Vec4);
+		m_u_sky_horizon = bgfx::createUniform("u_skyHorizon", bgfx::UniformType::Vec4);
+		m_u_sky_sun = bgfx::createUniform("u_skySun", bgfx::UniformType::Vec4);
+		m_u_sky_sun_color = bgfx::createUniform("u_skySunColor", bgfx::UniformType::Vec4);
+
 		m_mesh_program = load_program("vs_mesh", "fs_mesh");
 		m_skin_program = load_program("vs_skin", "fs_mesh");
 		m_pbr_program = load_program("vs_pbr", "fs_pbr");
@@ -1203,14 +1217,6 @@ namespace Pakal
 		m_s_particle = bgfx::createUniform("s_texParticle", bgfx::UniformType::Sampler);
 		m_particle_program = load_program("vs_particle", "fs_particle_sprite");
 
-		m_u_light_dir = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
-		m_u_light_color = bgfx::createUniform("u_lightColor", bgfx::UniformType::Vec4);
-		m_u_ambient = bgfx::createUniform("u_ambient", bgfx::UniformType::Vec4);
-		m_u_ambient_ground = bgfx::createUniform("u_ambientGround", bgfx::UniformType::Vec4);
-		m_u_sky_top = bgfx::createUniform("u_skyTop", bgfx::UniformType::Vec4);
-		m_u_sky_horizon = bgfx::createUniform("u_skyHorizon", bgfx::UniformType::Vec4);
-		m_u_sky_sun = bgfx::createUniform("u_skySun", bgfx::UniformType::Vec4);
-		m_u_sky_sun_color = bgfx::createUniform("u_skySunColor", bgfx::UniformType::Vec4);
 
 		// Unit cube used as sky dome; the sky shader ignores the camera position.
 		static const float skyVertices[] = {
@@ -1264,11 +1270,11 @@ namespace Pakal
 		if (bgfx::isValid(m_sky_ib)) bgfx::destroy(m_sky_ib);
 		m_sky_vb = BGFX_INVALID_HANDLE;
 		m_sky_ib = BGFX_INVALID_HANDLE;
+		MeshComponent3D_Bgfx::release_graphics_resources();
 	}
 
 	void BgfxGraphicsSystem::create_post_resources()
 	{
-		m_post_program = load_program("vs_post", "fs_post");
 		for (int i = 0; i < 11; ++i)
 		{
 			const std::string name = "u_post" + std::to_string(i);
@@ -1276,6 +1282,7 @@ namespace Pakal
 		}
 		m_s_post_color = bgfx::createUniform("s_postColor", bgfx::UniformType::Sampler);
 		m_s_post_depth = bgfx::createUniform("s_postDepth", bgfx::UniformType::Sampler);
+		m_post_program = load_program("vs_post", "fs_post");
 		m_post_layout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
 	}
 

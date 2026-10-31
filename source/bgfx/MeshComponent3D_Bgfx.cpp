@@ -759,6 +759,9 @@ namespace Pakal
 			.end();
 	}
 
+	void MeshComponent3D_Bgfx::acquire_graphics_resources() { acquire_shared_handles(); }
+	void MeshComponent3D_Bgfx::release_graphics_resources() { release_shared_handles(); }
+
 	MeshComponent3D_Bgfx::MeshComponent3D_Bgfx(BgfxGraphicsSystem* graphicsSystem) : MeshComponent3D_Bgfx(Detached{})
 	{
 		m_graphics_system = graphicsSystem;

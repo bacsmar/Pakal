@@ -5,6 +5,7 @@ if(POLICY CMP0091)
 endif()
 
 project(Pakal)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Dynamic CRT on MSVC: bgfx is built with /MD (genie --with-dynamic-runtime) and
 # the vcpkg packages use the x64-windows-static-md triplet (see CMakePresets.json).
@@ -85,13 +86,14 @@ elseif(WIN32)
 endif()
 
 # Create the main library.
-# On Windows it is a DLL so that game modules (ContraGameModule.dll) share one
-# instance of the engine singletons with PakalPlayer.exe. Elsewhere it stays static.
+# Desktop game modules and their player share one instance of the engine singletons.
 if(WIN32)
     add_library(Pakal SHARED ${PAKAL_SOURCES})
     set_target_properties(Pakal PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     # Building the engine: export the PAKAL_API_* symbols; consumers import them.
     target_compile_definitions(Pakal PRIVATE PAKAL_NONCLIENT_BUILD)
+elseif(UNIX AND NOT APPLE)
+    add_library(Pakal SHARED ${PAKAL_SOURCES})
 else()
     add_library(Pakal STATIC ${PAKAL_SOURCES})
 endif()
@@ -322,10 +324,15 @@ else()
 endif()
 
 # Lua (optional, for scripting)
-find_package(Lua QUIET)
+find_package(Lua 5.4 QUIET)
 if(LUA_FOUND)
     target_include_directories(Pakal PRIVATE ${LUA_INCLUDE_DIR})
     target_link_libraries(Pakal PRIVATE ${LUA_LIBRARIES})
+    if(NOT WIN32)
+        add_library(PakalScripting STATIC ${CMAKE_SOURCE_DIR}/source/scripting/ScriptHost.cpp)
+        target_include_directories(PakalScripting PUBLIC ${CMAKE_SOURCE_DIR}/source ${LUA_INCLUDE_DIR})
+        target_link_libraries(PakalScripting PUBLIC Pakal ${LUA_LIBRARIES})
+    endif()
 endif()
 
 # Platform-specific libraries
@@ -741,7 +748,7 @@ target_link_libraries(ComponentSchemaTests PakalTopDown)
 add_test(NAME ComponentSchemaTests COMMAND ComponentSchemaTests)
 
 # Games kept outside the engine's examples (a folder only some checkouts have)
-if(WIN32 AND TARGET PakalScripting AND EXISTS ${CMAKE_SOURCE_DIR}/games/CMakeLists.txt)
+if(TARGET PakalScripting AND EXISTS ${CMAKE_SOURCE_DIR}/games/CMakeLists.txt)
     add_subdirectory(${CMAKE_SOURCE_DIR}/games)
 endif()
 

@@ -29,7 +29,10 @@ ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / 'build-android'
 DESKTOP_ASSETS = ROOT / 'build-win64' / 'bin' / 'Assets'
 # bgfx's texture tool (external/bgfx/.build/projects/vs2022/texturec.vcxproj, Release x64)
-TEXTUREC = ROOT / 'external' / 'bgfx' / '.build' / 'win64_vs2022' / 'bin' / 'texturecRelease.exe'
+HOST_WINDOWS = os.name == 'nt'
+EXE = '.exe' if HOST_WINDOWS else ''
+SCRIPT = '.bat' if HOST_WINDOWS else ''
+TEXTUREC = ROOT / 'external' / 'bgfx' / '.build' / ('win64_vs2022' if HOST_WINDOWS else 'linux64_gcc') / 'bin' / ('texturecRelease' + EXE)
 
 
 # Each game: its app's package and name, its library (android/CMakeLists.txt) and what else its manifest needs
@@ -86,14 +89,15 @@ def run(command, **kwargs):
 
 def build_native(games, cheats=False):
     env = dict(os.environ, PATH=str(CMAKE_BIN) + os.pathsep + os.environ['PATH'])
-    run([CMAKE_BIN / 'cmake.exe', '-S', ROOT / 'android', '-B', BUILD, '-G', 'Ninja',
+    run([CMAKE_BIN / ('cmake' + EXE), '-S', ROOT / 'android', '-B', BUILD, '-G', 'Ninja',
          f'-DPAKAL_GAME_CHEATS={"ON" if cheats else "OFF"}',   # a game's cheats (its android.cmake reads it)
          f'-DCMAKE_TOOLCHAIN_FILE={NDK / "build/cmake/android.toolchain.cmake"}',
          '-DANDROID_ABI=arm64-v8a', '-DANDROID_PLATFORM=android-26', '-DANDROID_STL=c++_static',
          '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON', '-DCMAKE_BUILD_TYPE=Release',
-         f'-DCMAKE_MAKE_PROGRAM={CMAKE_BIN / "ninja.exe"}'], env=env)
+         *([f'-DPAKAL_BOX2D_SRC={os.environ["PAKAL_BOX2D_SRC"]}'] if os.environ.get('PAKAL_BOX2D_SRC') else []),
+         f'-DCMAKE_MAKE_PROGRAM={CMAKE_BIN / ("ninja" + EXE)}'], env=env)
     targets = [arg for game in games for arg in ('--target', GAMES[game]['library'])]
-    run([CMAKE_BIN / 'cmake.exe', '--build', BUILD, *targets, '--target', 'PakalShadersEssl'], env=env)
+    run([CMAKE_BIN / ('cmake' + EXE), '--build', BUILD, *targets, '--target', 'PakalShadersEssl'], env=env)
 
 
 def referenced_files(level_dirs, shared_roots, documents=()):
@@ -278,10 +282,10 @@ def build_java():
         shutil.rmtree(out)
     (out / 'classes').mkdir(parents=True)
     sources = sorted(str(p) for p in (ROOT / 'android' / 'java').rglob('*.java'))
-    run([JDK / 'bin/javac.exe', '-source', '8', '-target', '8', '-Xlint:-options', '-bootclasspath', PLATFORM / 'android.jar',
+    run([JDK / 'bin' / ('javac' + EXE), '-source', '8', '-target', '8', '-Xlint:-options', '-bootclasspath', PLATFORM / 'android.jar',
          '-d', out / 'classes', *sources])
     classes = sorted(str(p) for p in (out / 'classes').rglob('*.class'))
-    run([BUILD_TOOLS / 'd8.bat', '--min-api', '26', '--lib', PLATFORM / 'android.jar', '--output', out, *classes],
+    run([BUILD_TOOLS / ('d8' + SCRIPT), '--min-api', '26', '--lib', PLATFORM / 'android.jar', '--output', out, *classes],
         env=dict(os.environ, JAVA_HOME=str(JDK)))
     return out / 'classes.dex'
 
@@ -320,7 +324,7 @@ def compile_icon(game):
         folder.mkdir(parents=True)
         image.resize((size, size), Image.LANCZOS).save(folder / 'ic_launcher.png')
     compiled = BUILD / f'res_{game}.zip'
-    run([BUILD_TOOLS / 'aapt2.exe', 'compile', '--dir', res, '-o', compiled])
+    run([BUILD_TOOLS / ('aapt2' + EXE), 'compile', '--dir', res, '-o', compiled])
     return compiled
 
 
@@ -334,13 +338,13 @@ def make_apk(game='zombies', raw_textures=False, cheats=False):
 
     unsigned = BUILD / 'pakal-unsigned.apk'
     icon = compile_icon(game)
-    run([BUILD_TOOLS / 'aapt2.exe', 'link', '-o', unsigned, '--manifest', write_manifest(game),
+    run([BUILD_TOOLS / ('aapt2' + EXE), 'link', '-o', unsigned, '--manifest', write_manifest(game),
          '-I', PLATFORM / 'android.jar', '-A', stage, '--min-sdk-version', '26', '--target-sdk-version', '34',
          *([icon] if icon else [])])
 
     name = GAMES[game]['library']
     library = BUILD / f'lib{name}-stripped.so'
-    run([NDK / 'toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-strip.exe', '-o', library, BUILD / f'lib{name}.so'])
+    run([NDK / 'toolchains/llvm/prebuilt' / ('windows-x86_64' if HOST_WINDOWS else 'linux-x86_64') / 'bin' / ('llvm-strip' + EXE), '-o', library, BUILD / f'lib{name}.so'])
     dex = build_java()
     with zipfile.ZipFile(unsigned, 'a') as apk:
         apk.write(library, f'lib/arm64-v8a/lib{name}.so', compress_type=zipfile.ZIP_STORED)
@@ -349,17 +353,17 @@ def make_apk(game='zombies', raw_textures=False, cheats=False):
     aligned = BUILD / 'pakal-aligned.apk'
     if aligned.exists():
         aligned.unlink()
-    run([BUILD_TOOLS / 'zipalign.exe', '-P', '16', '-f', '4', unsigned, aligned])
+    run([BUILD_TOOLS / ('zipalign' + EXE), '-P', '16', '-f', '4', unsigned, aligned])
 
     keystore = BUILD / 'debug.keystore'
     if not keystore.exists():
-        run([JDK / 'bin/keytool.exe', '-genkeypair', '-keystore', keystore, '-storepass', 'android', '-keypass', 'android',
+        run([JDK / 'bin' / ('keytool' + EXE), '-genkeypair', '-keystore', keystore, '-storepass', 'android', '-keypass', 'android',
              '-alias', 'debug', '-keyalg', 'RSA', '-keysize', '2048', '-validity', '10000', '-dname', 'CN=Pakal Debug'])
     final = BUILD / f'pakal-{game}.apk'
     env = dict(os.environ, JAVA_HOME=str(JDK))
-    run([BUILD_TOOLS / 'apksigner.bat', 'sign', '--ks', keystore, '--ks-pass', 'pass:android', '--key-pass', 'pass:android',
+    run([BUILD_TOOLS / ('apksigner' + SCRIPT), 'sign', '--ks', keystore, '--ks-pass', 'pass:android', '--key-pass', 'pass:android',
          '--ks-key-alias', 'debug', '--out', final, aligned], env=env)
-    run([BUILD_TOOLS / 'apksigner.bat', 'verify', '--verbose', final], env=env)
+    run([BUILD_TOOLS / ('apksigner' + SCRIPT), 'verify', '--verbose', final], env=env)
     for step in (unsigned, aligned):   # only the signed one stays (an earlier step looks installable and is not)
         step.unlink(missing_ok=True)
     print(f'{final} ({final.stat().st_size / 1e6:.1f} MB)')

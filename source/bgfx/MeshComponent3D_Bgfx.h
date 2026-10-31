@@ -252,6 +252,10 @@ namespace Pakal
 		bool uses_pbr() const { return m_pbr; }
 
 	private:
+		friend class BgfxGraphicsSystem;
+		// Hold one graphics-system reference so uniforms exist before OpenGL links its programs.
+		static void acquire_graphics_resources();
+		static void release_graphics_resources();
 		struct Vertex
 		{
 			float x, y, z;

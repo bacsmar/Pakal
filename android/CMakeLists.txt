@@ -11,11 +11,18 @@ project(PakalAndroid LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
+include_directories(${CMAKE_BINARY_DIR})
 
 get_filename_component(PAKAL_ROOT ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
 set(PAKAL_VCPKG_ANDROID ${CMAKE_BINARY_DIR}/vcpkg_installed/arm64-android CACHE PATH "vcpkg arm64-android install tree")
 set(PAKAL_BOX2D_SRC "$ENV{USERPROFILE}/vcpkg/buildtrees/box2d/src/64c16f51bc-7b27809cb5.clean" CACHE PATH "Box2D 2.4.1 source (the one vcpkg extracted)")
-set(PAKAL_SHADERC ${PAKAL_ROOT}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe CACHE FILEPATH "shaderc of bgfx (host tool)")
+if(CMAKE_HOST_WIN32)
+    set(PAKAL_SHADERC_DEFAULT ${PAKAL_ROOT}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe)
+else()
+    set(PAKAL_SHADERC_DEFAULT ${PAKAL_ROOT}/external/bgfx/.build/linux64_gcc/bin/shadercRelease)
+endif()
+set(PAKAL_SHADERC ${PAKAL_SHADERC_DEFAULT} CACHE FILEPATH "shaderc of bgfx (host tool)")
 
 set(BX_DIR ${PAKAL_ROOT}/external/bx)
 set(BIMG_DIR ${PAKAL_ROOT}/external/bimg)
@@ -74,7 +81,7 @@ target_include_directories(box2d PUBLIC ${PAKAL_BOX2D_SRC}/include PRIVATE ${PAK
 # ---------------------------------------------------------------------------------------------------
 # The engine (without SFML, the Windows clock, the MCP server and the desktop player)
 # ---------------------------------------------------------------------------------------------------
-file(GLOB_RECURSE PAKAL_SOURCES
+file(GLOB_RECURSE PAKAL_SOURCES FOLLOW_SYMLINKS
     ${PAKAL_ROOT}/source/*.cpp
     ${PAKAL_ROOT}/source/components/*.cpp
     ${PAKAL_ROOT}/source/resources/*.cpp)

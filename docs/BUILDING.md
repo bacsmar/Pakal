@@ -439,3 +439,10 @@ On a Linux desktop with X11 or XWayland, `tools/run_linux.sh` runs ContraGame
 using the build image for runtime dependencies and software OpenGL. It forwards
 the existing X authority and PulseAudio socket when available. No host package
 installation is needed. Other modules can be passed as the first argument.
+
+Linux runtime notes: bgfx should own the graphics context; the SFML backend uses
+WindowBase when it only supplies window events. The desktop X11 visual is opaque,
+so the Linux backbuffer uses RGB. OpenGL user uniforms must be registered before
+their program is linked. If NVIDIA EGL/XWayland stalls on vblank, set
+`PAKAL_VSYNC=0`; Pakal's own FPS cap remains active. The Docker launcher is a
+software-rendering fallback; a native build uses the host GPU driver.
