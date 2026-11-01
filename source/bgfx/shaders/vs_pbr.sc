@@ -4,6 +4,7 @@ $output v_normal, v_texcoord0, v_worldpos, v_tangent, v_texcoord1
 #include <bgfx_shader.sh>
 
 uniform vec4 u_lightmap; // x: scale, yz: corner of this instance's place in the lightmap atlas
+uniform vec4 u_uvScroll; // xy: the texture's offset now (a material that flows, as water); 0 for the rest; z: water
 
 void main()
 {
@@ -12,6 +13,7 @@ void main()
 	v_worldpos = worldPos.xyz;
 	v_normal = normalize(mul(u_model[0], vec4(a_normal, 0.0)).xyz);
 	v_tangent = normalize(mul(u_model[0], vec4(a_tangent, 0.0)).xyz);
-	v_texcoord0 = a_texcoord0;
-	v_texcoord1 = u_lightmap.yz + a_texcoord1 * u_lightmap.x;
+	v_texcoord0 = a_texcoord0 + u_uvScroll.xy;
+	// water has no lightmap: its second coordinates are how shallow it is there (the sea's, by the shore), as they are
+	v_texcoord1 = u_uvScroll.z > 0.0 ? a_texcoord1 : u_lightmap.yz + a_texcoord1 * u_lightmap.x;
 }

@@ -24,6 +24,7 @@ namespace Pakal::TopDown
 		float ambientGround[3] = { 0.16f, 0.15f, 0.14f };
 		float skyTop[3] = { 0.25f, 0.45f, 0.75f };
 		float skyHorizon[3] = { 0.75f, 0.82f, 0.9f };
+		float skyClouds = 0.55f;   // lighting.skyClouds: how much of the sky the clouds cover (0: clear)
 		float gloss = kDefaultGloss;
 		Pakal::BgfxGraphicsSystem::ShadowSettings shadows;
 		Pakal::BgfxGraphicsSystem::PostSettings post;

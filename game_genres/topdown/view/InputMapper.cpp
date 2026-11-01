@@ -13,6 +13,7 @@
 #include "OSManager.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace Pakal::TopDown
 {
@@ -51,6 +52,7 @@ namespace Pakal::TopDown
 
 	void InputMapper::stop()
 	{
+		touch_sticks(false);
 		if (m_focusId != 0 && m_os)
 		{
 			m_os->event_window_focused.remove_listener(m_focusId);
@@ -64,6 +66,119 @@ namespace Pakal::TopDown
 		m_input->event_mouse_pressed.remove_listener(m_mousePressedId);
 		m_input->event_mouse_released.remove_listener(m_mouseReleasedId);
 		m_mouseMovedId = m_mousePressedId = m_mouseReleasedId = 0;
+	}
+
+	void InputMapper::touch_sticks(bool on, bool aims)
+	{
+		if (!m_input) return;
+		{
+			std::lock_guard<std::mutex> lock(m_touchMutex);
+			m_touchAims = aims;
+			if (on == m_touchOn) return;
+			m_touchOn = on;
+			m_fingers.clear();
+		}
+		m_input->set_game_touches(on);
+		if (on)
+		{
+			m_touchBeganId = m_input->event_touch_began.add_listener([this](const TouchArgs& args) { finger_down(args.finger, float(args.x), float(args.y)); });
+			m_touchMovedId = m_input->event_touch_moved.add_listener([this](const TouchArgs& args) { finger_moved(args.finger, float(args.x), float(args.y)); });
+			m_touchEndedId = m_input->event_touch_ended.add_listener([this](const TouchArgs& args) { finger_up(args.finger); });
+		}
+		else
+		{
+			m_input->event_touch_began.remove_listener(m_touchBeganId);
+			m_input->event_touch_moved.remove_listener(m_touchMovedId);
+			m_input->event_touch_ended.remove_listener(m_touchEndedId);
+			m_touchBeganId = m_touchMovedId = m_touchEndedId = 0;
+		}
+	}
+
+	void InputMapper::finger_down(unsigned id, float x, float y)
+	{
+		const tmath::vector2di area = m_input->get_touch_area();
+		std::lock_guard<std::mutex> lock(m_touchMutex);
+		if (!m_touchOn || area.x <= 0) return;
+		Finger finger{ id, x < area.x * 0.5f ? 0 : (m_touchAims ? 1 : -1), x, y, x, y };
+		for (const Finger& other : m_fingers)
+		{
+			if (other.stick == finger.stick) finger.stick = -1;   // one thumb per stick
+		}
+		m_fingers.push_back(finger);
+	}
+
+	void InputMapper::finger_moved(unsigned id, float x, float y)
+	{
+		std::lock_guard<std::mutex> lock(m_touchMutex);
+		for (Finger& finger : m_fingers)
+		{
+			if (finger.id != id) continue;
+			finger.x = x;
+			finger.y = y;
+		}
+	}
+
+	void InputMapper::finger_up(unsigned id)
+	{
+		std::lock_guard<std::mutex> lock(m_touchMutex);
+		m_fingers.erase(std::remove_if(m_fingers.begin(), m_fingers.end(), [id](const Finger& f) { return f.id == id; }), m_fingers.end());
+	}
+
+	bool InputMapper::stick_value(int stick, b2Vec2& value) const
+	{
+		const tmath::vector2di area = m_input ? m_input->get_touch_area() : tmath::vector2di(0, 0);
+		std::lock_guard<std::mutex> lock(m_touchMutex);
+		value = b2Vec2(0.0f, 0.0f);
+		if (!m_touchOn || area.y <= 0) return false;
+		for (const Finger& finger : m_fingers)
+		{
+			if (finger.stick != stick) continue;
+			const float radius = m_settings.touchStickRadius * float(area.y);
+			value = b2Vec2((finger.x - finger.originX) / radius, (finger.originY - finger.y) / radius);   // up on the screen is positive
+			const float length = value.Length();
+			if (length < m_settings.touchDeadZone) value = b2Vec2(0.0f, 0.0f);
+			else if (length > 1.0f) value *= 1.0f / length;
+			return true;
+		}
+		return false;
+	}
+
+	InputMapper::TouchSticks InputMapper::touch_sticks_view() const
+	{
+		TouchSticks view;
+		const tmath::vector2di area = m_input ? m_input->get_touch_area() : tmath::vector2di(0, 0);
+		if (area.x <= 0 || area.y <= 0) return view;
+		const float w = float(area.x), h = float(area.y);
+		std::lock_guard<std::mutex> lock(m_touchMutex);
+		view.on = m_touchOn;
+		view.aims = m_touchAims;
+		view.radius = m_settings.touchStickRadius;
+		view.aspect = w / h;
+		// the hints where the thumbs usually rest
+		view.move.baseX = view.move.thumbX = 0.16f;
+		view.aim.baseX = view.aim.thumbX = 0.84f;
+		view.move.baseY = view.move.thumbY = view.aim.baseY = view.aim.thumbY = 0.72f;
+		for (const Finger& finger : m_fingers)
+		{
+			if (finger.stick < 0) continue;
+			TouchStick& stick = finger.stick == 0 ? view.move : view.aim;
+			stick.held = true;
+			stick.baseX = finger.originX / w;
+			stick.baseY = finger.originY / h;
+			// the thumb's disc moves at most 60% of the radius
+			float dx = finger.x - finger.originX, dy = finger.y - finger.originY;
+			const float length = std::sqrt(dx * dx + dy * dy), limit = 0.6f * m_settings.touchStickRadius * h;
+			if (length > limit) { dx *= limit / length; dy *= limit / length; }
+			stick.thumbX = (finger.originX + dx) / w;
+			stick.thumbY = (finger.originY + dy) / h;
+			if (finger.stick == 1)
+			{
+				const float push = std::sqrt((finger.x - finger.originX) * (finger.x - finger.originX) + (finger.y - finger.originY) * (finger.y - finger.originY))
+					/ (m_settings.touchStickRadius * h);
+				view.firing = std::min(push, 1.0f) > m_settings.stickFireThreshold;
+			}
+		}
+		return view;
 	}
 
 	bool InputMapper::key_down(Pakal::Key key) const
@@ -155,23 +270,28 @@ namespace Pakal::TopDown
 		input.pressed = input.held & ~m_lastHeld;
 		m_lastHeld = input.held;
 
-		// Sticks (the touch screen's, a gamepad's): axes 0-1 move, 2-3 aim (y up). Aiming past a third of the way fires.
+		// Sticks (a gamepad's, the platform's: axes 0-1 move, 2-3 aim, y up; the touch screen's, read here). Aiming past
+		// the fire threshold fires.
+		b2Vec2 move(0.0f, 0.0f), stick(0.0f, 0.0f);
 		if (Pakal::IAxisDevice* sticks = m_input->get_axis_device(0))
 		{
-			const b2Vec2 move(sticks->get_axis_state(0), sticks->get_axis_state(1));
-			if (move.LengthSquared() > 0.0f)
-			{
-				input.move = camera_relative(move);
-			}
-			b2Vec2 stick(sticks->get_axis_state(2), sticks->get_axis_state(3));
-			const float push = stick.Length();
-			if (push > m_settings.stickAimMinimum)
-			{
-				stick *= 1.0f / push;
-				input.aimDirection = camera_relative(stick);
-				input.hasAimPoint = false;
-				input.fire = input.fire || push > m_settings.stickFireThreshold;
-			}
+			move = b2Vec2(sticks->get_axis_state(0), sticks->get_axis_state(1));
+			stick = b2Vec2(sticks->get_axis_state(2), sticks->get_axis_state(3));
+		}
+		b2Vec2 touched;
+		if (stick_value(0, touched)) move = touched;
+		if (stick_value(1, touched)) stick = touched;
+		if (move.LengthSquared() > 0.0f)
+		{
+			input.move = camera_relative(move);
+		}
+		const float push = stick.Length();
+		if (push > m_settings.stickAimMinimum)
+		{
+			stick *= 1.0f / push;
+			input.aimDirection = camera_relative(stick);
+			input.hasAimPoint = false;
+			input.fire = input.fire || push > m_settings.stickFireThreshold;
 		}
 		return input;
 	}

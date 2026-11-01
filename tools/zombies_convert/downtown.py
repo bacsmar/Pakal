@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
 import citykit  # noqa: E402
+import collision_shapes  # noqa: E402
 
 CROSSING = 24.66626          # Street_4WayIntersection, both sides, with its crosswalks
 CROSSING_ASPHALT = 18.0      # the same without them: the crosswalks reach 3.3 m past its asphalt, over the street
@@ -62,6 +63,7 @@ class Level:
         self.objects = []
         self.walls = []                       # props with an id: axis aligned boxes and circles (bullets break them)
         self.polygons = []                    # solid colliders (convex, up to 8 corners)
+        self.outlines = []                    # closed chains (any shape): nothing crosses them (water, a hill's foot)
         self.destructibles = []
         self.footprints = []                  # (name, AABB) of the big things, to catch overlaps
         self.boxes = []                       # (x0, y0, x1, y1, height) of what blocks light: the baked global illumination
@@ -69,6 +71,10 @@ class Level:
         self.next_id = 1000
         self.keep_clear = []                  # (x, y, radius): spots taken (trees) where props are not put
         self.static = True                    # what is placed now stays put: it counts for the baked light
+        # whose objects and colliders these are (a scene entity's id): written as the object's "key" and the collider's
+        # "of", so a mission layer can hide a base object with its collision (LevelLayers)
+        self.owner = None
+        self.keys = set()
 
     def model(self, name):
         if name not in self.bounds:
@@ -76,25 +82,59 @@ class Level:
         return self.bounds[name]
 
     def mesh_path(self, name):
+        if '/' in name:   # a model already under Assets/: named from the level's folder
+            return Path(os.path.relpath(citykit.find_model(name), self.asset_dir)).as_posix()
         citykit.export_model(name, self.shared)
         relative = os.path.relpath(self.shared / 'meshes' / name / f'{name}.gltf', self.asset_dir)
         return Path(relative).as_posix()
 
-    def place(self, name, x, y, yaw=0.0, z=0.0, scale=1.0, object_id=-1, label=None):
+    def place(self, name, x, y, yaw=0.0, z=0.0, scale=1.0, object_id=-1, label=None, tilt=0.0):
+        """'tilt': degrees about the level's X before the yaw (a sign modeled lying down, stood up)."""
         low, high = self.model(name)
-        self.objects.append({
+        entry = {
             'name': label or name, 'id': object_id, 'mesh': self.mesh_path(name),
-            'x': round(x * 100, 2), 'y': round(y * 100, 2), 'z': round(z * 100, 2), 'rot': [0, 0, yaw], 'scale': scale,
-        })
+            'x': round(x * 100, 2), 'y': round(y * 100, 2), 'z': round(z * 100, 2), 'rot': [round(tilt, 2), 0, yaw], 'scale': scale,
+        }
+        if self.owner:
+            key, n = self.owner, 1
+            while key in self.keys:
+                n += 1
+                key = f'{self.owner}_{n}'
+            self.keys.add(key)
+            entry = {'key': key, **entry}
+        self.objects.append(entry)
 
     def solid(self, corners, label=''):
         """A solid collider (convex polygon of up to 8 corners, meters)."""
-        self.polygons.append([[round(cx * 100, 2), round(cy * 100, 2)] for cx, cy in corners])
+        self.polygons.append(([[round(cx * 100, 2), round(cy * 100, 2)] for cx, cy in corners], self.owner))
 
-    def collide(self, name, x, y, yaw=0.0, scale=1.0, shrink=0.1):
+    def outline(self, points, layer='solid'):
+        """A closed chain (meters): a line nothing crosses, of any shape (concave is fine)."""
+        entry = {'layer': layer, 'filled': False, 'points': [[round(px * 100, 2), round(py * 100, 2)] for px, py in points]}
+        if self.owner:
+            entry['of'] = self.owner
+        self.outlines.append(entry)
+
+    def collide(self, name, x, y, yaw=0.0, scale=1.0, shrink=0.1, detail=True):
+        """The collider of a model placed: with 'detail', what it has at body height (collision_shapes: a prefab's
+        colliders or its own geometry: a gazebo's posts, nothing for an awning); else, or when that is unknown, the box
+        of its footprint. The box still counts for the baked light."""
         low, high = self.model(name)
         corners = citykit.footprint(low, high, x, y, yaw, scale, shrink)
-        self.solid(corners, name)
+        shapes = collision_shapes.shapes_at(citykit.find_model(name), x, y, yaw, scale) if detail else None
+        if shapes is None:
+            self.solid(corners, name)
+        else:
+            from shapely.geometry import Polygon
+            for points in shapes:
+                poly = Polygon(points)
+                hull = poly.convex_hull
+                if len(points) <= 8 and poly.area >= hull.area * 0.97:
+                    self.solid(list(hull.exterior.coords)[:-1], name)
+                elif hull.area <= poly.area * 1.15 and len(hull.exterior.coords) <= 9:
+                    self.solid(list(hull.exterior.coords)[:-1], name)
+                else:
+                    self.outline(points)
         self.add_box(corners, high[1] * scale)
         return corners
 
@@ -118,7 +158,7 @@ class Level:
         return False
 
     def building(self, name, x, y, yaw):
-        corners = self.collide(name, x, y, yaw, shrink=0.15)
+        corners = self.collide(name, x, y, yaw, shrink=0.15, detail=False)
         box = self.aabb(corners)
         if self.overlaps(box):
             print(f'warning: {name} at ({x:.1f}, {y:.1f}) overlaps another building')
@@ -135,8 +175,11 @@ class Level:
             'script': {'order': script['order'], 'points': {k: [round(v[0] * 100, 2), round(v[1] * 100, 2)] for k, v in points.items()},
                        'anchors': {k: [round(v[0] * 100, 2), round(v[1] * 100, 2), round(v[2] * 100, 2)] for k, v in anchors.items()},
                        'objectives': script['objectives']},
-            'spawners': [{'x': round(sx * 100, 2), 'y': round(sy * 100, 2)} for sx, sy in spawners],
-            'collision': {'segments': [{'layer': 'solid', 'filled': True, 'points': poly} for poly in self.polygons]},
+            # (x, y) or (x, y, manhole): a zombie climbs out of a manhole there
+            'spawners': [dict({'x': round(s[0] * 100, 2), 'y': round(s[1] * 100, 2)}, **({'manhole': True} if len(s) > 2 and s[2] else {}))
+                         for s in spawners],
+            'collision': {'segments': [dict({'layer': 'solid', 'filled': True, 'points': poly}, **({'of': owner} if owner else {}))
+                                       for poly, owner in self.polygons] + self.outlines},
             'ambientActors': [], 'pickupSources': [],
             'destructibles': self.destructibles,
             'rules': base_level['rules'],

@@ -21,7 +21,15 @@
 //! compile with Irrlicht
 #define PAKAL_USE_IRRLICHT 0
 //! compile with bgfx
-#define PAKAL_USE_BGFX 1
+// (PAKAL_CORE_ONLY: the core alone, the PakalCore target: no bgfx, no Box2D, no SFML; the dummy systems take their place)
+#ifdef PAKAL_CORE_ONLY
+	#define PAKAL_USE_BGFX 0
+	#ifndef PAKAL_NO_SFML
+		#define PAKAL_NO_SFML
+	#endif
+#else
+	#define PAKAL_USE_BGFX 1
+#endif
 
 #if PAKAL_USE_BGFX == 1 && PAKAL_USE_IRRLICHT == 1
 	#error "Cannot use both BGFX and Irrlicht simultaneously"
@@ -50,7 +58,11 @@
 #define PAKAL_USE_BULLET 0
 
 //! compile with BOX2D physics
-#define PAKAL_USE_BOX2D 1
+#ifdef PAKAL_CORE_ONLY
+	#define PAKAL_USE_BOX2D 0
+#else
+	#define PAKAL_USE_BOX2D 1
+#endif
 
 //! compile with Rocket GUI
 #define PAKAL_USE_ROCKET 0

@@ -18,8 +18,6 @@ namespace Pakal::TopDown
 {
 	namespace
 	{
-		const float kSpawnerIntervalSeconds = 5.0f; // ZombieSpawner.SpawnIntervalTime in the game data
-		const int kMoanEvery = 4;                   // EnemyComponent: every 4th zombie that appears moans
 		const size_t kRouteChecks = 6;              // reachable points gathered per attempt (nearest first)
 	}
 
@@ -66,7 +64,7 @@ namespace Pakal::TopDown
 			{
 				continue;
 			}
-			// As EnemyManagementSystem: the interval counts from the last zombie that came out; when no spawner is ready
+			// As EnemyManagementSystem: the interval counts from the last one that came out; when no spawner is ready
 			// it tries again on the next step
 			if (try_spawn(game, order))
 			{
@@ -105,12 +103,14 @@ namespace Pakal::TopDown
 		std::vector<size_t> reachable;
 		for (size_t p : byDistance)
 		{
-			if (m_points[p].readyAt > m_clock || game.world().static_within(m_points[p].position, m_clearance, game.layers.wall))
+			if (m_points[p].readyAt > m_clock || (m_activeGroup >= 0 && m_points[p].group >= 0 && m_points[p].group != m_activeGroup)
+				|| m_shutGroups.count(m_points[p].group)
+				|| game.world().static_within(m_points[p].position, m_clearance, game.layers.wall))
 			{
 				continue;
 			}
-			std::vector<b2Vec2> route;
-			if (game.nav().find_path(m_points[p].position, target, route))
+			// (a walk exists: the nav grid's regions, not a search of the route, which cleared a buffer the size of the town)
+			if (game.nav().connected(m_points[p].position, target))
 			{
 				reachable.push_back(p);
 				if (reachable.size() >= kRouteChecks)
@@ -143,9 +143,10 @@ namespace Pakal::TopDown
 		{
 			return false;
 		}
-		point.readyAt = m_clock + kSpawnerIntervalSeconds;
+		point.readyAt = m_clock + game.rules().spawn.intervalSeconds;
 		order.spawned.push_back(id);
-		if (++m_spawnedCount % kMoanEvery == 0)
+		const int moanEvery = game.rules().spawn.moanEvery;
+		if (moanEvery > 0 && ++m_spawnedCount % moanEvery == 0)
 		{
 			game.play(game.rules().sound("enemyMoan"), point.position);
 		}

@@ -10,7 +10,8 @@ Brief (JSON, todo opcional):
 Trazado: "layout": "grid" (el de siempre: los tipos de manzana de "blocks") o "historic" (un centro histórico de
 ciudad española o mexicana: cuadrícula de 3 x 3 manzanas, la plaza mayor al centro con su kiosco; la iglesia al norte de
 la plaza, el palacio de gobierno al oriente, portales al poniente; en las esquinas "parks" jardines (2) y "parking"
-estacionamientos (1), y las demás manzanas mixtas de casas y oficinas bajas con patios arbolados).
+estacionamientos (1), y las demás manzanas mixtas de casas y oficinas bajas con patios arbolados) o "coastal" (un
+pueblo costero sin cuadrícula: la red de calles por curvas, mallas propias, lotes, spawners; ver coastal.py).
 
 Tipos de manzana:
   park      parque (pasto, caminos, árboles, arbustos) con la torre de agua y la caja de regalo
@@ -38,6 +39,8 @@ def read_brief(text):
     brief = json.loads(json.dumps(DEFAULT))
     if text:
         given = json.loads(text)
+        if given.get('layout') == 'coastal':
+            return dict({'seed': 1}, **given)   # coastal.py lleva sus propios valores por omisión
         brief.update({k: v for k, v in given.items() if k != 'blocks'})
         if 'blocks' in given:
             brief['blocks'] = given['blocks']
@@ -138,6 +141,9 @@ def build_block(scene, catalog, zone, kind, rng, report):
 
 def generate(scene, catalog, brief):
     """Arma la escena (debe estar vacía) según el brief. Devuelve un resumen como texto."""
+    if brief.get('layout') == 'coastal':
+        import coastal
+        return coastal.generate(scene, catalog, brief)
     rng = random.Random(brief.get('seed', 1))
     historic = brief.get('layout') == 'historic'
     cols, rows = brief.get('grid', [4, 4]) if historic else brief['grid']

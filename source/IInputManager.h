@@ -69,5 +69,10 @@ namespace Pakal
 		// Whether the game aims with the right half of a touch screen (on at the start): a game that does not (a brawler,
 		// whose buttons are there) turns it off, and that half is neither drawn as a stick nor read as one
 		virtual void set_touch_aim(bool aims) { (void)aims; }
+		// A game that reads the touch screen itself (its own sticks, drawn by its interface): every finger off the interface
+		// goes to event_touch_began/moved/ended, and the platform's sticks are neither read nor drawn
+		virtual void set_game_touches(bool on) { (void)on; }
+		// The screen's size in the pixels event_touch_* come in ({0, 0}: no touch screen)
+		virtual tmath::vector2di get_touch_area() const { return { 0, 0 }; }
 	};
 }

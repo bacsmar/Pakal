@@ -119,6 +119,7 @@ namespace Pakal::TopDown
 		std::unique_ptr<CharacterController2D> m_body;
 		std::vector<b2Vec2> m_path;
 		float m_pathTimer;
+		bool m_noRoute = false;      // the last search found none: the next one waits for the timer
 		float m_attackTimer;
 		float m_windup = 0.0f;       // seconds left before the hit of the attack in progress
 		float m_attacking = 0.0f;    // seconds left of the attack in progress after its hit

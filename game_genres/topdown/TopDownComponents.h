@@ -50,7 +50,10 @@ namespace Pakal::TopDown
 		bool burst = false;                // blown to pieces: no body is left
 		float lift = 0.0f, tumble = 0.0f;  // a body flung into the air: meters up, radians turned over
 		float sink = 0.0f;                 // dead and sinking into the floor (0..1)
-		bool enraged = false;              // its hurt flash is red, not white (berserk zombies)
+		bool enraged = false;              // its hurt flash is red, not white (an enraged enemy)
+		// Climbing out of the floor (a spawn: out of a manhole or the grass): seconds of it left, of emergeSeconds in all; it
+		// rises from under the floor (lift < 0), facing the way it will go, and plays its getting-up clip over that time
+		float emergeLeft = 0.0f, emergeSeconds = 0.0f;
 		// A special attack: its steps have clips of their own, and it faces the way its brain turns it
 		bool special = false;
 		const CharacterAction* action = nullptr;
@@ -87,6 +90,7 @@ namespace Pakal::TopDown
 			m_health.current = share * maximum;
 		}
 		bool hurt_recently() const { return m_hurtTimer > 0.0f; }
+		float hurtFlashSeconds = 0.15f;  // how long a hit shows (the view flashes the body)
 
 		void update(TopDownGame& game, float dt) override;
 
@@ -126,12 +130,21 @@ namespace Pakal::TopDown
 		State state() const { return m_state; }
 		size_t next_point() const { return m_next; }
 		void update(TopDownGame& game, float dt) override;
+		// Back on its feet after a revive: it goes on from where it fell
+		void revive() { if (m_state == State::Dead) m_state = State::Waiting; }
+
+		float speed = 2.2f;              // m/s
+		bool waitsForPlayer = true;      // false: it walks on its own (the original's wandering boy)
+		bool held = false;               // stopped by the script (eating, a blocker in its way)
+		float waitDistance = 7.0f;       // it waits while the nearest player is farther than this (m)
+		float pointReach = 1.5f;         // it reaches a point of its route within this (m)
 
 	private:
 		std::vector<b2Vec2> m_route;
 		size_t m_next = 0;
 		std::vector<b2Vec2> m_path;
 		float m_pathTimer = 0.0f;
+		bool m_noRoute = false;   // the last search found none: the next one waits for the timer
 		State m_state = State::Waiting;
 	};
 
@@ -176,6 +189,7 @@ namespace Pakal::TopDown
 		virtual ~WeaponPose() = default;
 		virtual bool firing() const = 0;          // in a fire cycle
 		virtual bool swinging() const = 0;        // a swing of a melee weapon
+		virtual unsigned swings() const = 0;      // how many swings it has started (a new one while the last still shows)
 		virtual bool reloading() const = 0;
 		virtual float recoil() const = 0;         // 1 right after a shot, back to 0 in a moment
 		virtual float reload_seconds() const = 0; // how long a reload takes
@@ -193,7 +207,7 @@ namespace Pakal::TopDown
 		b2Vec2 facing() const { return m_facing; }
 		// Turns it to face this way (where it starts, a cut scene); its input turns it again
 		void face(const b2Vec2& direction);
-		// A paparazzi's flash: the player walks at 'factor' of its speed for 'seconds' (a modifier of its speed stat with that
+		// A slowing hit (a flash): the player walks at 'factor' of its speed for 'seconds' (a modifier of its speed stat with that
 		// duration, the one of a flash before it replaced; without stats, its move is scaled meanwhile)
 		void slow_down(float factor, float seconds);
 		bool slowed() const;
@@ -213,6 +227,10 @@ namespace Pakal::TopDown
 		virtual ~PropView() = default;
 		// 'drawn': shown and enabled; 'broken': flattened and dark
 		virtual void show_state(bool drawn, bool broken) = 0;
+		// Where it stands now (a render matrix): the level's object was moved while the level runs
+		virtual void set_placement(const std::array<float, 16>& placement) { (void)placement; }
+		// A hit lands on it: 'left' goes from 1 (just hit) to 0 (over), so the player learns it breaks
+		virtual void show_hit(float left) { (void)left; }
 	};
 
 	// A thing placed in the level. Visibility (Show/Hide) and logical state (Enable/Disable) are
@@ -230,6 +248,12 @@ namespace Pakal::TopDown
 		// Broken: the model stays (its collision stays too, KeepCollisionDead) but flattened and dark
 		void set_broken() { m_broken = true; apply(); }
 		void set_repaired() { m_broken = false; apply(); }   // a barricade put back up
+		// It was moved while the level runs: its view stands there now
+		void set_placement(const std::array<float, 16>& placement) { if (m_view) { m_view->set_placement(placement); apply(); } }
+		// A hit landed (DestructibleComponent): its view shows it for 'seconds' (the game's; 0, the default: not shown)
+		void set_hit_seconds(float seconds) { m_hitSeconds = seconds; }
+		void hit() { if (m_hitSeconds > 0.0f && m_view && !m_broken) m_hitLeft = m_hitSeconds; }
+		void update(TopDownGame& game, float dt) override;
 
 	private:
 		void apply();
@@ -238,6 +262,8 @@ namespace Pakal::TopDown
 		bool m_visible = true;
 		bool m_enabled = true;
 		bool m_broken = false;
+		float m_hitSeconds = 0.0f;
+		float m_hitLeft = 0.0f;
 	};
 
 	// A prop that breaks under fire: drops, and may explode
@@ -258,6 +284,8 @@ namespace Pakal::TopDown
 		// A barricade: repaired while the player stands next to it; how much of it is up while broken (0..1)
 		float repair_share() const { return m_rules.health > 0.0f ? std::max(0.0f, m_health) / m_rules.health : 0.0f; }
 		void update(TopDownGame& game, float dt) override;
+		// Whole again (a revive brings back what was defended)
+		void restore(TopDownGame& game);
 		bool explosive() const { return m_rules.explosive; }
 		// ReelObject: when it breaks, it also drops this pickup (0: nothing extra)
 		void set_hidden_pickup(int pickupId) { m_hiddenPickup = pickupId; }
@@ -298,6 +326,7 @@ namespace Pakal::TopDown
 		explicit PickupComponent(const PickupRules& rules, float lifeSeconds = 0.0f);
 		const PickupRules& rules() const { return m_rules; }
 		float seconds_left() const { return m_secondsLeft; }
+		float lying_seconds() const { return m_lying; }   // since it fell (a view makes it hop out, then bob)
 		void update(TopDownGame& game, float dt) override;
 
 	private:

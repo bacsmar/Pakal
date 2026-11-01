@@ -65,6 +65,8 @@ def parser():
     s.add_argument('--brief-file', dest='brief_file', help='el brief en un archivo JSON')
     s.add_argument('--seed', type=int, help='cambia la semilla del brief')
     s.add_argument('--force', action='store_true', help='reemplaza una escena que ya existe (sus versiones quedan)')
+    s.add_argument('--only-block', dest='only_block',
+                   help='solo esa manzana sale nueva (block_overrides del brief); lo demás queda como está en la escena')
 
     s = scene_cmd('sign', 'el letrero del pueblo en una entrada (una salida de calle), en la banqueta')
     s.add_argument('--side', choices=('n', 's', 'e', 'w'))
@@ -231,6 +233,9 @@ def main(argv=None):
         return 0
 
     scene = Scene(a.scene)
+    if scene.exists() and scene.data.get('layout') == 'coastal':
+        import coastal
+        coastal.extend_catalog(scene, cat)   # su tema y sus mallas generadas
     if a.command == 'new':
         if scene.exists() and not a.force:
             sys.exit(f'la escena {a.scene} ya existe (usa --force)')
@@ -249,11 +254,20 @@ def main(argv=None):
             brief['seed'] = a.seed
         scene.folder.mkdir(parents=True, exist_ok=True)
         version = scene.data['version'] if scene.exists() else None
+        old = scene.data
+        if a.only_block and (old is None or a.only_block not in old.get('zones', {})):
+            sys.exit(f'--only-block: la escena {a.scene} no tiene la manzana {a.only_block}')
         scene.data = empty(a.scene, 120.0, 120.0)
         if version is not None:
             scene.data['version'] = version
         print(generate.generate(scene, cat, brief))
-        print(f'escena {a.scene}: versión {scene.save(a.note or "generada: " + json.dumps(brief))}')
+        note = a.note or "generada: " + json.dumps(brief)
+        if a.only_block:
+            import coastal
+            before, after = coastal.keep_outside(old, scene.data, a.only_block)
+            print(f'{a.only_block}: {before} cosas antes, {after} ahora; lo demás, como estaba')
+            note = a.note or f'{a.only_block} de nuevo: ' + json.dumps((brief.get('block_overrides') or {}).get(a.only_block, {}))
+        print(f'escena {a.scene}: versión {scene.save(note)}')
         return 0
     if not scene.exists():
         sys.exit(f'no hay escena {a.scene} (créala con: lb.py new {a.scene})')

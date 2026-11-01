@@ -7,6 +7,7 @@
 #include "topdown/view/AudioCues.h"
 
 #include "LogMgr.h"
+#include "ResourceManager.h"
 #if PAKAL_USE_SFML_AUDIO == 1
 #include "sfml/SoundManagerSFML.h"
 #elif defined(__ANDROID__)
@@ -17,6 +18,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 
 namespace Pakal::TopDown
 {
@@ -35,13 +37,14 @@ namespace Pakal::TopDown
 			LOG_WARNING("[TopDown] no sound manager of the platform: the level plays without sound");
 			return;
 		}
-		std::ifstream file(levelDir + "audio.json");
-		if (!file)
+		bool found = false;
+		const std::string text = ResourceMgr.read_text(levelDir + "audio.json", &found);   // a folder, a zip, the APK
+		if (!found)
 		{
 			LOG_WARNING("[TopDown] %saudio.json not found: run extract_audio.py", levelDir.c_str());
 			return;
 		}
-		const nlohmann::json bank = nlohmann::json::parse(file, nullptr, false);
+		const nlohmann::json bank = nlohmann::json::parse(text, nullptr, false);
 		if (!bank.is_object())
 		{
 			LOG_ERROR("[TopDown] audio.json is not valid");
@@ -54,11 +57,12 @@ namespace Pakal::TopDown
 			{
 				const std::string path = levelDir + entry.get<std::string>();
 #if PAKAL_USE_SFML_AUDIO == 1
-				auto stream = std::make_shared<std::ifstream>(path, std::ios::binary);
-				if (!*stream)
+				const auto bytes = ResourceMgr.read_bytes(path);
+				if (!bytes)
 				{
 					continue;
 				}
+				auto stream = std::make_shared<std::istringstream>(std::string(bytes->begin(), bytes->end()), std::ios::binary);
 				if (auto buffer = m_manager->load_sfx(stream, path))
 #else
 				if (auto buffer = m_manager->load_wav(path))

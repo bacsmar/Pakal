@@ -16,6 +16,9 @@ file(GLOB_RECURSE CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
 )
+# Asset archives may contain third-party source trees for other platforms.
+list(FILTER CONTRA_SOURCES EXCLUDE REGEX "/Assets/")
+
 # Explicitly add the new Projectile component
 list(APPEND CONTRA_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/Components/Projectile.cpp"

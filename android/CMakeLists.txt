@@ -11,15 +11,37 @@ project(PakalAndroid LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
+include_directories(${CMAKE_BINARY_DIR})
 
 get_filename_component(PAKAL_ROOT ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
 set(PAKAL_VCPKG_ANDROID ${CMAKE_BINARY_DIR}/vcpkg_installed/arm64-android CACHE PATH "vcpkg arm64-android install tree")
 set(PAKAL_BOX2D_SRC "$ENV{USERPROFILE}/vcpkg/buildtrees/box2d/src/64c16f51bc-7b27809cb5.clean" CACHE PATH "Box2D 2.4.1 source (the one vcpkg extracted)")
-set(PAKAL_SHADERC ${PAKAL_ROOT}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe CACHE FILEPATH "shaderc of bgfx (host tool)")
+if(CMAKE_HOST_WIN32)
+    set(PAKAL_SHADERC_DEFAULT ${PAKAL_ROOT}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe)
+else()
+    set(PAKAL_SHADERC_DEFAULT ${PAKAL_ROOT}/external/bgfx/.build/linux64_gcc/bin/shadercRelease)
+endif()
+set(PAKAL_SHADERC ${PAKAL_SHADERC_DEFAULT} CACHE FILEPATH "shaderc of bgfx (host tool)")
 
 set(BX_DIR ${PAKAL_ROOT}/external/bx)
 set(BIMG_DIR ${PAKAL_ROOT}/external/bimg)
 set(BGFX_DIR ${PAKAL_ROOT}/external/bgfx)
+
+# Our fixes to bgfx (patches/bgfx/*.patch), applied to the submodule when it does not have them yet
+find_package(Git QUIET)
+file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
+foreach(patch ${PAKAL_BGFX_PATCHES})
+    execute_process(COMMAND ${GIT_EXECUTABLE} apply --reverse --check --ignore-whitespace ${patch}
+        WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE applied OUTPUT_QUIET ERROR_QUIET)
+    if(NOT applied EQUAL 0)
+        execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${patch} WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed)
+        if(failed)
+            message(FATAL_ERROR "bgfx: ${patch} does not apply (a newer bgfx may have it, or need it redone)")
+        endif()
+        message(STATUS "bgfx: applied ${patch}")
+    endif()
+endforeach()
 
 # ---------------------------------------------------------------------------------------------------
 # bx, bimg, bgfx
@@ -28,7 +50,8 @@ set(PAKAL_BGFX_DEBUG 0 CACHE STRING "1: bgfx traces (shader link errors, ...) an
 set(BGFX_DEFINES
     BX_CONFIG_DEBUG=${PAKAL_BGFX_DEBUG}
     BGFX_CONFIG_DEBUG=${PAKAL_BGFX_DEBUG}
-    BGFX_CONFIG_RENDERER_OPENGLES=30
+    # GLES 3.1: compute shaders (the GPU particles); OpenGL ES 3.1 phones and later have it
+    BGFX_CONFIG_RENDERER_OPENGLES=31
     __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS)
 
 add_library(bx STATIC ${BX_DIR}/src/amalgamated.cpp)
@@ -58,7 +81,7 @@ target_include_directories(box2d PUBLIC ${PAKAL_BOX2D_SRC}/include PRIVATE ${PAK
 # ---------------------------------------------------------------------------------------------------
 # The engine (without SFML, the Windows clock, the MCP server and the desktop player)
 # ---------------------------------------------------------------------------------------------------
-file(GLOB_RECURSE PAKAL_SOURCES
+file(GLOB_RECURSE PAKAL_SOURCES FOLLOW_SYMLINKS
     ${PAKAL_ROOT}/source/*.cpp
     ${PAKAL_ROOT}/source/components/*.cpp
     ${PAKAL_ROOT}/source/resources/*.cpp)
@@ -87,6 +110,7 @@ set(PAKAL_DEFINITIONS PAKAL_STATIC_LIB PAKAL_NO_SFML PAKAL_STATIC_MODULE RMLUI_S
 set(PAKAL_INCLUDES
     ${PAKAL_ROOT}/source ${PAKAL_ROOT}/game_genres ${PAKAL_ROOT}/tools ${PAKAL_ROOT}/tools/level_doc ${CMAKE_CURRENT_LIST_DIR}
     ${BGFX_DIR}/examples/common ${BGFX_DIR}/3rdparty ${BGFX_DIR}/3rdparty/native_app_glue ${BGFX_DIR}/3rdparty/meshoptimizer/src
+    ${BIMG_DIR}/3rdparty/tinyexr/deps/miniz
     ${PAKAL_VCPKG_ANDROID}/include)
 
 # Assimp and what it needs
@@ -107,6 +131,10 @@ add_library(pakal_core OBJECT
     ${PAKAL_SOURCES} ${PAKAL_GENRE_SOURCES}
     ${PAKAL_ROOT}/tools/level_doc/LevelDocument.cpp
     ${PAKAL_ROOT}/tools/level_doc/LevelEditor.cpp
+    ${PAKAL_ROOT}/tools/level_doc/PrefabLibrary.cpp
+    ${PAKAL_ROOT}/tools/level_doc/LevelLayers.cpp
+    ${PAKAL_ROOT}/tools/level_doc/LiveEditing.cpp
+    ${PAKAL_ROOT}/tools/level_doc/LevelLayerEditing.cpp
     ${CMAKE_CURRENT_LIST_DIR}/main_android.cpp
     ${CMAKE_CURRENT_LIST_DIR}/SoundManagerAAudio.cpp
     ${BGFX_DIR}/3rdparty/native_app_glue/android_native_app_glue.c)
@@ -157,6 +185,15 @@ pakal_game(pakal_dungeon ${DUNGEON_DIR}
     ${DUNGEON_DIR}/DungeonGame.cpp ${DUNGEON_DIR}/DungeonNet.cpp)
 target_link_libraries(pakal_dungeon PRIVATE pakal_net)
 
+# The games kept outside the engine's examples (games/<name>/, a folder only some checkouts have): each one builds its
+# library in its own android.cmake, with pakal_game; PAKAL_GAME_CHEATS asks for its cheats (its tester's builds)
+option(PAKAL_GAME_CHEATS "A game's cheats menu and the debug switches that give an advantage (testers' builds)" OFF)
+file(GLOB PAKAL_GAME_RECIPES ${PAKAL_ROOT}/games/*/android.cmake)
+foreach(recipe ${PAKAL_GAME_RECIPES})
+    get_filename_component(GAME_DIR ${recipe} DIRECTORY)
+    include(${recipe})
+endforeach()
+
 # ---------------------------------------------------------------------------------------------------
 # Shaders for OpenGL ES 3 (ESSL 300), by the same list as the Windows build
 # ---------------------------------------------------------------------------------------------------
@@ -164,11 +201,16 @@ set(PAKAL_SHADER_SRC ${PAKAL_ROOT}/source/bgfx/shaders)
 set(PAKAL_SHADER_DIR ${CMAKE_BINARY_DIR}/apk_assets/Assets/shaders/essl)
 function(pakal_compile_shader name type varying)
     set(out ${PAKAL_SHADER_DIR}/${name}.bin)
+    # compute needs ESSL 3.10 (GLES 3.1); the rest stays on 3.00
+    set(profile 300_es)
+    if(type STREQUAL "compute")
+        set(profile 310_es)
+    endif()
     add_custom_command(OUTPUT ${out}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PAKAL_SHADER_DIR}
         COMMAND ${PAKAL_SHADERC}
             -f ${PAKAL_SHADER_SRC}/${name}.sc -o ${out}
-            --type ${type} --platform android -p 300_es
+            --type ${type} --platform android -p ${profile}
             --varyingdef ${PAKAL_SHADER_SRC}/${varying}
             -i ${BGFX_DIR}/src -i ${PAKAL_SHADER_SRC}
         DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
@@ -184,6 +226,11 @@ pakal_compile_shader(fs_mesh fragment varying_mesh.def.sc)
 pakal_compile_shader(vs_sky vertex varying_sky.def.sc)
 pakal_compile_shader(fs_sky fragment varying_sky.def.sc)
 pakal_compile_shader(vs_shadow vertex varying_shadow.def.sc)
+pakal_compile_shader(vs_pbr_inst vertex varying_pbr.def.sc)
+pakal_compile_shader(vs_mesh_inst vertex varying_mesh.def.sc)
+pakal_compile_shader(vs_shadow_inst vertex varying_shadow.def.sc)
+pakal_compile_shader(vs_gpu_particle vertex varying_particle.def.sc)
+pakal_compile_shader(cs_particles compute varying_particle.def.sc)
 pakal_compile_shader(vs_shadow_skin vertex varying_shadow.def.sc)
 pakal_compile_shader(fs_shadow fragment varying_shadow.def.sc)
 pakal_compile_shader(vs_post vertex varying_post.def.sc)
@@ -192,6 +239,9 @@ pakal_compile_shader(fs_fsr_easu fragment varying_post.def.sc)
 pakal_compile_shader(fs_fsr_rcas fragment varying_post.def.sc)
 pakal_compile_shader(vs_particle vertex varying_particle.def.sc)
 pakal_compile_shader(fs_particle fragment varying_particle.def.sc)
+pakal_compile_shader(fs_particle_sprite fragment varying_particle.def.sc)
+pakal_compile_shader(vs_sprite_simple vertex varying_sprite.def.sc)
+pakal_compile_shader(fs_sprite_simple fragment varying_sprite.def.sc)
 pakal_compile_shader(vs_ui vertex varying_ui.def.sc)
 pakal_compile_shader(fs_ui fragment varying_ui.def.sc)
 add_custom_target(PakalShadersEssl ALL DEPENDS ${PAKAL_SHADER_OUTPUTS})

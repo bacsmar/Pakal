@@ -14,6 +14,9 @@ uniform vec4 u_post6; // x: quality (the share of the samples taken), y: the ske
 uniform vec4 u_post7; // xyz: the view's translation (the world's origin in the view: the sketch's strokes stay on the scene)
 uniform vec4 u_post5; // rgb: fade color, w: how much of the picture the fade covers
 uniform vec4 u_post4; // x: projection scale x, y: projection scale y, z: occlusion bias (meters), w: occlusion range (meters)
+uniform vec4 u_post8; // rgb: fog color, w: fog density per meter (0: off)
+uniform vec4 u_post9; // x: fog start (meters), y: the most fog, z: the most fog on the sky, w: the horizon (meters, 0: none)
+uniform vec4 u_post10; // rgb: the sky's color at the horizon
 
 // The pass thinks of uv as running downward from the top of the picture. Render targets of OpenGL start at the bottom.
 vec2 target_uv(vec2 uv)
@@ -184,6 +187,22 @@ void main()
 	if (u_post6.y > 0.0)
 	{
 		color = sketch(uv, color, gl_FragCoord.xy);
+	}
+	// Fog by the distance from the camera: depth to the scene, and the horizon's haze over the sky
+	if (u_post8.w > 0.0)
+	{
+		float z = linear_depth(uv);
+		float fog = 1.0 - exp(-u_post8.w * max(z - u_post9.x, 0.0));
+		fog = min(fog, z >= u_post3.w * 0.98 ? u_post9.z : u_post9.y);
+		color = mix(color, u_post8.rgb, fog);
+		// what stands toward the horizon fades wholly into what the sky shows there (its horizon color with the sky's share
+		// of fog), so the far end of the world leaves no edge against it
+		if (u_post9.w > 0.0 && z < u_post3.w * 0.98)
+		{
+			float horizon = min(u_post9.w, u_post3.w * 0.97);
+			vec3 sky = mix(u_post10.rgb, u_post8.rgb, u_post9.z);
+			color = mix(color, sky, smoothstep(horizon * 0.55, horizon, z));
+		}
 	}
 
 	// Color: exposure, contrast around mid grey, saturation, gain, vignette

@@ -30,3 +30,10 @@ README.md
 
 # OS
 .codeql_detected_source_root
+
+# Private datapack and all local build trees must stay out of build contexts.
+.local/
+assets_zip/
+build-*/
+docker-build/
+games/zombimex/docs/reference/

@@ -4,7 +4,7 @@
 // Purpose: What a top-down action game gives its components: the actors, the physics world and the
 //          walkable grid, the player's input, damage, bullets, blasts and drops, sounds and the events
 //          the presentation draws. The generic components (TopDownComponents.h) see only this; a game
-//          (ZombiesGame) implements it and keeps its own rules to itself, answering through the hooks.
+//          implements it and keeps its own rules to itself, answering through the hooks.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -53,7 +53,7 @@ namespace Pakal::TopDown
 		uint16_t player;
 		uint16_t enemy;       // EnemyAI2D's bodies
 		uint16_t playerWall;  // walls that stop only the player
-		// Barricades: they stop bodies, but bullets, sight and the walkable grid go through them (zombies walk up to them
+		// Barricades: they stop bodies, but bullets, sight and the walkable grid go through them (enemies walk up to them
 		// and break them)
 		uint16_t barricade;
 	};
@@ -83,13 +83,15 @@ namespace Pakal::TopDown
 		float damage;
 		float secondsLeft;
 		bool hit = false; // stopped by something this step (drawn once more, then dropped)
-		bool knockback = false;             // shotgun bullets knock zombies back
-		float piercingLeft = 1.0f;          // each zombie it goes through takes 'piercing' from it
+		bool knockback = false;             // its bullets knock enemies back
+		float piercingLeft = 1.0f;          // each body it goes through takes 'piercing' from it
 		float piercing = 1.0f;
-		std::vector<uintptr_t> pierced;     // the zombies it went through (not hit again)
-		bool fromEnemy = false;             // a boomer's shot: it flies through zombies and hits the player
+		std::vector<uintptr_t> pierced;     // the bodies it went through (not hit again)
+		bool fromEnemy = false;             // an enemy's shot: it flies through enemies and hits the player
 		int faction = Factions::None;       // the shooter's: it pierces the characters hostile to it
 		float height = 1.0f;                // meters over the floor: it passes over (or under) a body not at that height
+		float blastRadius = 0.0f;           // a grenade: it bursts where it lands (or at the end of its flight), meters...
+		float blastDamage = 0.0f;           // ... hurting everything within that much
 	};
 
 	// A TopDown game is a SimWorld: it owns the actors (SyncEntities) and steps them
@@ -153,6 +155,8 @@ namespace Pakal::TopDown
 		bool damage(Actor& target, float amount) { return damage(target, DamageInfo{ .amount = amount }); }
 		// The services of the components that shoot, blow up and drop things. A game without them (a brawler) leaves them
 		// as they are: they do nothing.
+		// The bullet fired last bursts where it lands (a grenade launcher's): a game that has blasts gives it this
+		virtual void make_last_bullet_burst(float radius, float damage) { (void)radius; (void)damage; }
 		// A bullet of the shooter's 'faction' (meters, seconds), flying 'height' meters over the floor
 		virtual void fire_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range, float piercing = 1.0f, bool knockback = false, int faction = Factions::None, float height = 1.0f)
 		{ (void)from; (void)direction; (void)speed; (void)damage; (void)range; (void)piercing; (void)knockback; (void)faction; (void)height; }

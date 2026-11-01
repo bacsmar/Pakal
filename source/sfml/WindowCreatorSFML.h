@@ -7,7 +7,11 @@ namespace Pakal
 	class WindowCreatorSFML : public OSManager::IWindowManager
 	{
 		OSManager* m_os_manager;
+#if defined(PAKAL_LINUX_PLATFORM)
+		sf::WindowBase* m_window = nullptr;
+#else
 		sf::Window* m_window = nullptr;
+#endif
 		void* m_window_handle = nullptr;
 		void* m_x11_display = nullptr;
 		bool m_window_created = false;

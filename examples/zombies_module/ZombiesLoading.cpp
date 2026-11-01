@@ -226,10 +226,11 @@ namespace Zombies
 				MeshComponent3D_Bgfx::take_load_stats().c_str());
 			last = now;
 		};
-		// The level data (any version of the file, upgraded on read) lives in a LevelDocument
+		// The level data (any version of the file, upgraded on read) lives in a LevelDocument; a layer over a base comes
+		// composed with it (LevelLayers)
 		LevelDocument doc;
 		std::string loadError;
-		if (!doc.load(m_levelPath, loadError))
+		if (!load_level(m_levelPath, doc, loadError))
 		{
 			LOG_ERROR("[ZombiesLevel] %s", loadError.c_str());
 			return false;
@@ -305,9 +306,14 @@ namespace Zombies
 			const std::string levelDir = LevelDocument::directory_of(m_levelPath);
 			std::set<std::string> files;
 			const char* only = std::getenv("ZOMBIES_ONLY"); // debug filter
+			m_prefabs.open(m_levelPath, doc);
 			for (const auto& object : doc.objects)
 			{
-				if (!only || object.mesh.find(only) != std::string::npos) files.insert(levelDir + object.mesh);
+				// an object made from a prefab has the prefab's model
+				std::string error;
+				const std::string mesh = object.prefab.empty() ? object.mesh : m_prefabs.resolve(object, error).value("mesh", std::string());
+				if (mesh.empty()) continue;
+				if (!only || mesh.find(only) != std::string::npos) files.insert(levelDir + mesh);
 			}
 			// and the heroes' (the player is one of them, and so is someone escorted)
 			const Json heroes = doc.extra.value("visuals", Json::object()).value("heroes", Json::object());
@@ -360,6 +366,8 @@ namespace Zombies
 				MeshComponent3D_Bgfx::take_load_stats().c_str());
 			last = now;
 		};
+		// a readable key for each object, the same ones the level's editor gives: the objects are known by them
+		m_loadDoc->assign_keys();
 		const LevelDocument& doc = *m_loadDoc;
 		build_objects(doc);
 		mark("objects");
@@ -512,7 +520,7 @@ namespace Zombies
 		mark("scripts, light, GI, post, camera");
 
 		LOG_INFO("[ZombiesLevel] '%s' loaded: %zu actors, %zu models, walkable grid %dx%d", m_levelPath.c_str(),
-			m_game->actors().size(), m_objects.size(), m_nav->get_width(), m_nav->get_height());
+			m_game->actors().size(), m_levelObjects.instances().size(), m_nav->get_width(), m_nav->get_height());
 		LOG_INFO("[ZombiesLevel] controls: move WASD, aim with the mouse (or IJKL), fire with the left button (or Space)");
 #if !defined(__ANDROID__)
 		// the level's document stays for the editor (the dev panel's "Edit level"), with each object's model
@@ -520,7 +528,7 @@ namespace Zombies
 		{
 			mesh.set_matrix(placement_matrix(object).data());
 		});
-		for (size_t i = 0; i < m_objectMeshes.size(); ++i) m_edit->set_mesh(i, m_objectMeshes[i]);
+		for (size_t i = 0; i < m_levelObjects.instances().size(); ++i) m_edit->set_mesh(i, m_levelObjects.mesh_at(i));
 		m_edit->set_live_reload(m_carried.edit.keep ? m_carried.edit.liveReload : std::getenv("ZOMBIES_LIVE_RELOAD") != nullptr);
 		m_edit->set_editing(m_carried.edit.keep ? m_carried.edit.editing : std::getenv("ZOMBIES_EDIT") != nullptr);
 		if (m_carried.edit.keep)
@@ -553,33 +561,27 @@ namespace Zombies
 			propRules[rules.id] = &rules;
 		}
 		const std::string giftName = "GiftBox";
-		size_t failed = 0;
-		m_objectMeshes.assign(doc.objects.size(), nullptr);
-		for (size_t index = 0; index < doc.objects.size(); ++index)
+		m_schema = ComponentSchema();
+		ComponentSchema::add_topdown_kinds(m_schema);
+		const char* only = std::getenv("ZOMBIES_ONLY");   // debug filter: only the models whose file has this
+		m_levelObjects.setup(levelDir, doc.unitsPerMeter, &m_prefabs, &m_schema, [this, only](const std::string& file) -> std::unique_ptr<MeshComponent3D_Bgfx>
 		{
-			const LevelObject& object = doc.objects[index];
-			if (const char* only = std::getenv("ZOMBIES_ONLY")) { if (object.mesh.find(only) == std::string::npos) continue; } // debug filter
-			auto mesh = create_instance(levelDir + object.mesh);
-			if (!mesh->is_loaded())
+			if (only && file.find(only) == std::string::npos) return nullptr;
+			return create_instance(file);
+		});
+		// What the converted levels' objects are: buildings and trees fade, an object with a game id is a prop (breakable
+		// when its rules say), the gift box waits hidden. An object with components (a prefab's) is LevelObjects' own. Kept: an
+		// object added while the level runs (live reload) goes through it too.
+		const double unitsPerMeter = doc.unitsPerMeter;
+		m_objectHandle = [this, propRules, giftName, unitsPerMeter](size_t, const LevelObject& object, const Json& resolved, MeshComponent3D_Bgfx& mesh,
+			const std::array<float, 16>& placement, uintptr_t& made) -> bool
+		{
+			// Buildings, trees and anything else tall and wide fade when they hide the player (OccluderFade: tested in the model's frame)
+			float lo[3], hi[3];
+			mesh.get_bounds(lo, hi);
+			if (OccluderFade::may_hide(object.name, placement.data(), lo, hi))
 			{
-				++failed;
-				continue;
-			}
-			m_objectMeshes[index] = mesh.get();   // the level editor moves it
-			const Mat4 placement = placement_matrix(object);
-			mesh->set_matrix(placement.data());
-			if (object.lightmap[0] > 0.0)
-			{
-				mesh->set_lightmap_rect(float(object.lightmap[0]), float(object.lightmap[1]), float(object.lightmap[2]));
-			}
-			mesh->set_shadow_baked(object.baked);
-			if (object.name.rfind("Building", 0) == 0 || object.name.rfind("Tree", 0) == 0) // they fade when they hide the player
-			{
-				// World box of the building: the corners of its model box through the placement
-				float lo[3], hi[3];
-				mesh->get_bounds(lo, hi);
-				OccluderFade::Occluder occluder;
-				occluder.mesh = mesh.get();
+				OccluderFade::Occluder occluder = OccluderFade::make(&mesh, placement.data(), lo, hi);
 				// Trees fade by dithering (solid, leaving pixels out): blending their many layers of leaves cost 10-15 ms. Buildings
 				// keep blending: dithered, a building that fills the screen cost as much (the discard turns off the early depth
 				// test). ZOMBIES_FADE=dither (debug) dithers them too, to compare.
@@ -587,41 +589,27 @@ namespace Zombies
 				if (object.name.rfind("Tree", 0) == 0)
 				{
 					occluder.faded = 0.4f;
-					mesh->set_fade_dither(true);
+					mesh.set_fade_dither(true);
 				}
 				else if (ditherBuildings)
 				{
 					occluder.faded = 0.3f;
-					mesh->set_fade_dither(true);
-				}
-				occluder.low = { 1e9f, 1e9f, 1e9f };
-				occluder.high = { -1e9f, -1e9f, -1e9f };
-				for (int corner = 0; corner < 8; ++corner)
-				{
-					const float px = (corner & 1) ? hi[0] : lo[0], py = (corner & 2) ? hi[1] : lo[1], pz = (corner & 4) ? hi[2] : lo[2];
-					const float wx = placement[0] * px + placement[4] * py + placement[8] * pz + placement[12];
-					const float wy = placement[1] * px + placement[5] * py + placement[9] * pz + placement[13];
-					const float wz = placement[2] * px + placement[6] * py + placement[10] * pz + placement[14];
-					occluder.low = { std::min(occluder.low.x, wx), std::min(occluder.low.y, wy), std::min(occluder.low.z, wz) };
-					occluder.high = { std::max(occluder.high.x, wx), std::max(occluder.high.y, wy), std::max(occluder.high.z, wz) };
+					mesh.set_fade_dither(true);
 				}
 				m_occluders.add(occluder);
 			}
-			if (object.id < 0)
-			{
-				m_objects.push_back(std::move(mesh));
-				continue;
-			}
+			if (!resolved.value("components", Json::object()).empty()) return false;
+			if (object.id < 0) return true;   // scenery
 			Actor& prop = m_game->add_actor(ActorKind::Prop, object.name);
 			prop.gameId = object.id;
-			prop.position = b2Vec2(doc.meters(object.x), doc.meters(object.y));
-			PropComponent& view = prop.add<PropComponent>(std::make_unique<PropMesh>(mesh.get(), placement));
+			prop.position = b2Vec2(static_cast<float>(object.x / unitsPerMeter), static_cast<float>(object.y / unitsPerMeter));
+			PropComponent& view = prop.add<PropComponent>(std::make_unique<PropMesh>(&mesh, placement));
 			auto rules = propRules.find(object.id);
 			if (rules != propRules.end() && rules->second->health > 0.0f)
 			{
 				DestructibleComponent& breakable = prop.add<DestructibleComponent>(*rules->second);
 				float lo[3], hi[3];
-				mesh->get_bounds(lo, hi);
+				mesh.get_bounds(lo, hi);
 				const float scale = static_cast<float>(object.scale);
 				breakable.set_size(std::clamp(std::max(hi[0] - lo[0], hi[2] - lo[2]) * scale, 0.3f, 6.0f));
 				// its footprint on the floor (level x, y: render x, -z), where zombies stand to hit it
@@ -646,9 +634,26 @@ namespace Zombies
 				view.enable(false);
 			}
 			m_actorsByGameId[object.id].push_back(prop.id);
-			m_objects.push_back(std::move(mesh));
+			made = prop.id;
+			return true;
+		};
+		m_levelObjects.build(doc, m_game.get(), m_objectHandle);
+		// the props made from components: scripts find them by game id too, and barricades and the objective are the game's
+		for (const auto& instance : m_levelObjects.instances())
+		{
+			if (!instance.ownActor) continue;
+			const Actor* prop = m_game->find(instance.actor);
+			if (!prop) continue;
+			if (prop->gameId >= 0) m_actorsByGameId[prop->gameId].push_back(prop->id);
+			if (const auto* breakable = prop->get<DestructibleComponent>())
+			{
+				if (breakable->rules().repairable) m_game->barricades.push_back(prop->id);
+				if (breakable->rules().objective) m_game->objective = prop->id;
+			}
 		}
-		LOG_INFO("[ZombiesLevel] %zu models placed (%zu failed), %zu props by id", m_objects.size(), failed, m_actorsByGameId.size());
+		for (const auto& unknown : m_levelObjects.unknown()) LOG_WARNING("[ZombiesLevel] unknown component of %s", unknown.c_str());
+		LOG_INFO("[ZombiesLevel] %zu models placed (%zu failed), %zu props by id", m_levelObjects.instances().size() - m_levelObjects.failed(),
+			m_levelObjects.failed(), m_actorsByGameId.size());
 	}
 
 	void ZombiesLevelState::build_physics(const LevelDocument& doc)

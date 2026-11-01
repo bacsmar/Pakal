@@ -5,6 +5,7 @@ if(POLICY CMP0091)
 endif()
 
 project(Pakal)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Dynamic CRT on MSVC: bgfx is built with /MD (genie --with-dynamic-runtime) and
 # the vcpkg packages use the x64-windows-static-md triplet (see CMakePresets.json).
@@ -27,7 +28,15 @@ enable_testing()
 # Create a config.h compatibility header for case-insensitive systems.
 # Not on Windows: there it would resolve to itself, since the filesystem ignores case.
 if(NOT WIN32)
-    file(WRITE "${CMAKE_BINARY_DIR}/config.h" "#include \"Config.h\"\n")
+    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
+endif()
+
+# The engine's core alone (no backends, the dummy systems), built with every build so that the core stays apart from
+# them; PAKAL_BUILD_CORE_ONLY builds it and nothing else (no bgfx, SFML, Box2D, Assimp or RmlUi needed)
+option(PAKAL_BUILD_CORE_ONLY "Build only the engine's core (PakalCore and CoreTests)" OFF)
+include(${CMAKE_SOURCE_DIR}/cmake/PakalCore.cmake)
+if(PAKAL_BUILD_CORE_ONLY)
+    return()
 endif()
 
 # Include directories
@@ -77,13 +86,14 @@ elseif(WIN32)
 endif()
 
 # Create the main library.
-# On Windows it is a DLL so that game modules (ContraGameModule.dll) share one
-# instance of the engine singletons with PakalPlayer.exe. Elsewhere it stays static.
+# Desktop game modules and their player share one instance of the engine singletons.
 if(WIN32)
     add_library(Pakal SHARED ${PAKAL_SOURCES})
     set_target_properties(Pakal PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     # Building the engine: export the PAKAL_API_* symbols; consumers import them.
     target_compile_definitions(Pakal PRIVATE PAKAL_NONCLIENT_BUILD)
+elseif(UNIX AND NOT APPLE)
+    add_library(Pakal SHARED ${PAKAL_SOURCES})
 else()
     add_library(Pakal STATIC ${PAKAL_SOURCES})
 endif()
@@ -112,6 +122,8 @@ target_include_directories(Pakal PUBLIC ${CMAKE_SOURCE_DIR}/external/bgfx/3rdpar
 file(GLOB PAKAL_MESHOPT_SOURCES ${CMAKE_SOURCE_DIR}/external/bgfx/3rdparty/meshoptimizer/src/*.cpp)
 target_sources(Pakal PRIVATE ${PAKAL_MESHOPT_SOURCES})
 target_include_directories(Pakal PRIVATE ${CMAKE_SOURCE_DIR}/external/bgfx/3rdparty/meshoptimizer/src)
+# miniz (bundled with bimg, compiled into bimg_decode): ResourceManager's zip source (source/bgfx/ZipSourceMiniz.cpp)
+target_include_directories(Pakal PRIVATE ${CMAKE_SOURCE_DIR}/external/bimg/3rdparty/tinyexr/deps/miniz)
 
 # Set include paths for the library
 target_include_directories(Pakal PUBLIC
@@ -206,26 +218,48 @@ else()
     message(WARNING "⚠️  bgfx library not found in ${BGFX_BUILD_DIR}")
 endif()
 
-# Engine shaders for the 3D mesh and sky programs (Direct3D 11 on Windows)
-if(WIN32)
-    set(PAKAL_SHADERC ${BGFX_DIR}/.build/win64_vs2022/bin/shadercRelease.exe)
+# Engine shaders: Direct3D 11 on Windows; OpenGL and Vulkan on Linux.
+if(WIN32 OR (UNIX AND NOT APPLE))
+    if(WIN32)
+        set(PAKAL_SHADERC ${BGFX_DIR}/.build/win64_vs2022/bin/shadercRelease.exe)
+        set(PAKAL_SHADER_PLATFORM windows)
+        set(PAKAL_SHADER_PROFILE s_5_0)
+        set(PAKAL_SHADER_BACKEND dx11)
+    else()
+        set(PAKAL_SHADERC ${BGFX_BUILD_DIR}/shadercRelease)
+        set(PAKAL_SHADER_PLATFORM linux)
+        set(PAKAL_SHADER_PROFILE 430)
+        set(PAKAL_SHADER_BACKEND glsl)
+    endif()
     set(PAKAL_SHADER_SRC ${CMAKE_SOURCE_DIR}/source/bgfx/shaders)
-    set(PAKAL_SHADER_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/dx11)
+    set(PAKAL_SHADER_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${PAKAL_SHADER_BACKEND})
     if(EXISTS ${PAKAL_SHADERC})
         function(pakal_compile_shader name type varying)
-            set(out ${PAKAL_SHADER_DIR}/${name}.bin)
-            add_custom_command(OUTPUT ${out}
-                COMMAND ${CMAKE_COMMAND} -E make_directory ${PAKAL_SHADER_DIR}
-                COMMAND ${PAKAL_SHADERC}
-                    -f ${PAKAL_SHADER_SRC}/${name}.sc
-                    -o ${out}
-                    --type ${type} --platform windows -p s_5_0
-                    --varyingdef ${PAKAL_SHADER_SRC}/${varying}
-                    -i ${BGFX_DIR}/src
-                    -i ${PAKAL_SHADER_SRC}
-                DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
-                VERBATIM)
-            set(PAKAL_SHADER_OUTPUTS ${PAKAL_SHADER_OUTPUTS} ${out} PARENT_SCOPE)
+            set(backends ${PAKAL_SHADER_BACKEND})
+            if(UNIX AND NOT APPLE)
+                list(APPEND backends spirv)
+            endif()
+            foreach(backend IN LISTS backends)
+                set(shader_profile ${PAKAL_SHADER_PROFILE})
+                if(backend STREQUAL "spirv")
+                    set(shader_profile spirv)
+                endif()
+                set(shader_dir ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${backend})
+                set(out ${shader_dir}/${name}.bin)
+                add_custom_command(OUTPUT ${out}
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${shader_dir}
+                    COMMAND ${PAKAL_SHADERC}
+                        -f ${PAKAL_SHADER_SRC}/${name}.sc
+                        -o ${out}
+                        --type ${type} --platform ${PAKAL_SHADER_PLATFORM} -p ${shader_profile}
+                        --varyingdef ${PAKAL_SHADER_SRC}/${varying}
+                        -i ${BGFX_DIR}/src
+                        -i ${PAKAL_SHADER_SRC}
+                    DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
+                    VERBATIM)
+                list(APPEND PAKAL_SHADER_OUTPUTS ${out})
+            endforeach()
+            set(PAKAL_SHADER_OUTPUTS ${PAKAL_SHADER_OUTPUTS} PARENT_SCOPE)
         endfunction()
 
         pakal_compile_shader(vs_mesh vertex varying_mesh.def.sc)
@@ -236,6 +270,11 @@ if(WIN32)
         pakal_compile_shader(vs_sky vertex varying_sky.def.sc)
         pakal_compile_shader(fs_sky fragment varying_sky.def.sc)
         pakal_compile_shader(vs_shadow vertex varying_shadow.def.sc)
+        pakal_compile_shader(vs_pbr_inst vertex varying_pbr.def.sc)
+        pakal_compile_shader(vs_mesh_inst vertex varying_mesh.def.sc)
+        pakal_compile_shader(vs_shadow_inst vertex varying_shadow.def.sc)
+        pakal_compile_shader(vs_gpu_particle vertex varying_particle.def.sc)
+        pakal_compile_shader(cs_particles compute varying_particle.def.sc)
         pakal_compile_shader(vs_shadow_skin vertex varying_shadow.def.sc)
         pakal_compile_shader(fs_shadow fragment varying_shadow.def.sc)
         pakal_compile_shader(vs_post vertex varying_post.def.sc)
@@ -244,13 +283,16 @@ if(WIN32)
         pakal_compile_shader(fs_fsr_rcas fragment varying_post.def.sc)
         pakal_compile_shader(vs_particle vertex varying_particle.def.sc)
         pakal_compile_shader(fs_particle fragment varying_particle.def.sc)
+        pakal_compile_shader(fs_particle_sprite fragment varying_particle.def.sc)
+        pakal_compile_shader(vs_sprite_simple vertex varying_sprite.def.sc)
+        pakal_compile_shader(fs_sprite_simple fragment varying_sprite.def.sc)
         pakal_compile_shader(vs_ui vertex varying_ui.def.sc)
         pakal_compile_shader(fs_ui fragment varying_ui.def.sc)
 
         add_custom_target(PakalShaders ALL DEPENDS ${PAKAL_SHADER_OUTPUTS})
         add_dependencies(Pakal PakalShaders)
     else()
-        message(WARNING "shadercRelease.exe not found at ${PAKAL_SHADERC}; 3D meshes will not render")
+        message(WARNING "Shader compiler not found at ${PAKAL_SHADERC}; 3D meshes will not render")
     endif()
 endif()
 
@@ -294,10 +336,15 @@ else()
 endif()
 
 # Lua (optional, for scripting)
-find_package(Lua QUIET)
+find_package(Lua 5.4 QUIET)
 if(LUA_FOUND)
     target_include_directories(Pakal PRIVATE ${LUA_INCLUDE_DIR})
     target_link_libraries(Pakal PRIVATE ${LUA_LIBRARIES})
+    if(NOT WIN32)
+        add_library(PakalScripting STATIC ${CMAKE_SOURCE_DIR}/source/scripting/ScriptHost.cpp)
+        target_include_directories(PakalScripting PUBLIC ${CMAKE_SOURCE_DIR}/source ${LUA_INCLUDE_DIR})
+        target_link_libraries(PakalScripting PUBLIC Pakal ${LUA_LIBRARIES})
+    endif()
 endif()
 
 # Platform-specific libraries
@@ -426,11 +473,7 @@ if(WIN32)
     target_link_libraries(ZombiesConvert nlohmann_json::nlohmann_json)
     add_executable(LevelReachabilityTests ${CMAKE_SOURCE_DIR}/tests/LevelReachabilityTests.cpp)
     target_link_libraries(LevelReachabilityTests Pakal nlohmann_json::nlohmann_json)
-    # Needs a converted level (not in the repository): runs when one is next to the player
-    set(PAKAL_REACHABILITY_LEVEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/zombies/hollywood_s01t01/level.json)
-    if(EXISTS ${PAKAL_REACHABILITY_LEVEL})
-        add_test(NAME LevelReachabilityTests COMMAND LevelReachabilityTests ${PAKAL_REACHABILITY_LEVEL})
-    endif()
+    # It needs a converted level (not in the repository): a game that has one adds the test with it
     add_executable(ActorOrientationTests ${CMAKE_SOURCE_DIR}/tests/ActorOrientationTests.cpp)
     target_link_libraries(ActorOrientationTests PRIVATE ${BGFX_BUILD_DIR}/bxRelease.lib)
     target_compile_options(ActorOrientationTests PRIVATE /Zc:preprocessor /Zc:__cplusplus)
@@ -454,6 +497,11 @@ target_include_directories(PakalTopDown PUBLIC ${CMAKE_SOURCE_DIR}/source ${CMAK
 file(GLOB PAKAL_TOPDOWN_VIEW_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/topdown/view/*.cpp)
 add_library(PakalTopDownView STATIC ${PAKAL_TOPDOWN_VIEW_SOURCES})
 target_link_libraries(PakalTopDownView PUBLIC PakalTopDown)
+# The level editor (game_genres/topdown/editor): a game module opens it with PAKAL_EDIT=<level> (PakalPlayer <module> --edit
+# <level>) and gives it the state that plays a level (Play)
+file(GLOB PAKAL_TOPDOWN_EDITOR_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/topdown/editor/*.cpp)
+add_library(PakalTopDownEditor STATIC ${PAKAL_TOPDOWN_EDITOR_SOURCES})
+target_link_libraries(PakalTopDownEditor PUBLIC PakalTopDownView)
 
 # The network: ENet (external/enet, a submodule), the engine's host over it (source/net: PakalNet), and TopDown played
 # over it (game_genres/topdown/net: a server, its clients, snapshots; PakalTopDownNet). Draws nothing: a headless server
@@ -496,7 +544,7 @@ if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesModule.cp
     add_library(PakalScripting STATIC ${CMAKE_SOURCE_DIR}/source/scripting/ScriptHost.cpp)
     target_link_libraries(PakalScripting PUBLIC Pakal unofficial::lua::lua)
     target_include_directories(PakalScripting PUBLIC ${CMAKE_SOURCE_DIR}/source)
-    target_link_libraries(ZombiesModule PakalTopDownView PakalScripting PakalLevelDoc nlohmann_json::nlohmann_json)
+    target_link_libraries(ZombiesModule PakalTopDownView PakalTopDownEditor PakalScripting PakalLevelDoc nlohmann_json::nlohmann_json)
     target_include_directories(ZombiesModule PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/zombies_module)
     # The game's interface (documents, style sheets, fonts) goes to Assets/ui next to the player, the campaign to Assets/game
     file(GLOB_RECURSE ZOMBIES_UI_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ui/* ${CMAKE_SOURCE_DIR}/examples/zombies_module/game/*)
@@ -531,6 +579,11 @@ if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesModule.cp
     target_include_directories(ZombieRulesTests PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/zombies_module)
     add_test(NAME ZombieRulesTests COMMAND ZombieRulesTests)
     add_test(NAME CameraInputTests COMMAND CameraInputTests)
+    # The level reachability check on the Zombies example's converted level, when it is next to the player
+    set(ZOMBIES_REACHABILITY_LEVEL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/zombies/hollywood_s01t01/level.json)
+    if(TARGET LevelReachabilityTests AND EXISTS ${ZOMBIES_REACHABILITY_LEVEL})
+        add_test(NAME LevelReachabilityTests COMMAND LevelReachabilityTests ${ZOMBIES_REACHABILITY_LEVEL})
+    endif()
 endif()
 
 # Brawler prototype: a second game on TopDown (one arena, hand to hand), to try the module. Its simulation is tested
@@ -609,7 +662,10 @@ endif()
 # Level document: versioned level data shared by the game module, the converter and the editor
 # (no engine dependency)
 # and its editor (operations with undo), and pakal-level, the level's command line for people and agents
-add_library(PakalLevelDoc STATIC ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelDocument.cpp ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelEditor.cpp)
+add_library(PakalLevelDoc STATIC ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelDocument.cpp ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelEditor.cpp
+    ${CMAKE_SOURCE_DIR}/tools/level_doc/PrefabLibrary.cpp ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelLayers.cpp
+    ${CMAKE_SOURCE_DIR}/tools/level_doc/LiveEditing.cpp
+    ${CMAKE_SOURCE_DIR}/tools/level_doc/LevelLayerEditing.cpp)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(PakalLevelDoc PUBLIC nlohmann_json::nlohmann_json)
 target_include_directories(PakalLevelDoc PUBLIC ${CMAKE_SOURCE_DIR}/tools/level_doc)
@@ -624,6 +680,16 @@ endif()
 add_executable(LevelEditorTests ${CMAKE_SOURCE_DIR}/tests/LevelEditorTests.cpp)
 target_link_libraries(LevelEditorTests PakalLevelDoc)
 add_test(NAME LevelEditorTests COMMAND LevelEditorTests)
+add_executable(PrefabTests ${CMAKE_SOURCE_DIR}/tests/PrefabTests.cpp)
+target_link_libraries(PrefabTests PakalLevelDoc)
+add_test(NAME PrefabTests COMMAND PrefabTests)
+add_executable(LevelLayerEditingTests ${CMAKE_SOURCE_DIR}/tests/LevelLayerEditingTests.cpp)
+target_link_libraries(LevelLayerEditingTests PakalLevelDoc)
+target_include_directories(LevelLayerEditingTests PRIVATE ${CMAKE_SOURCE_DIR}/game_genres)
+add_test(NAME LevelLayerEditingTests COMMAND LevelLayerEditingTests)
+add_executable(LiveEditingTests ${CMAKE_SOURCE_DIR}/tests/LiveEditingTests.cpp)
+target_link_libraries(LiveEditingTests PakalLevelDoc)
+add_test(NAME LiveEditingTests COMMAND LiveEditingTests)
 
 # Gameplay core on level data: navigation, enemy chase, weapons, objective, pickups
 if(EXISTS ${CMAKE_SOURCE_DIR}/tests/GameplayTests.cpp)
@@ -689,6 +755,14 @@ add_test(NAME AnimationMarksTests COMMAND AnimationMarksTests)
 add_executable(RpgKitTests ${CMAKE_SOURCE_DIR}/tests/RpgKitTests.cpp)
 target_link_libraries(RpgKitTests PakalTopDown)
 add_test(NAME RpgKitTests COMMAND RpgKitTests)
+add_executable(ComponentSchemaTests ${CMAKE_SOURCE_DIR}/tests/ComponentSchemaTests.cpp)
+target_link_libraries(ComponentSchemaTests PakalTopDown)
+add_test(NAME ComponentSchemaTests COMMAND ComponentSchemaTests)
+
+# Games kept outside the engine's examples (a folder only some checkouts have)
+if(TARGET PakalScripting AND EXISTS ${CMAKE_SOURCE_DIR}/games/CMakeLists.txt)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/games)
+endif()
 
 # Print configuration summary
 message(STATUS "========== Pakal Engine Configuration ==========")
@@ -698,3 +772,8 @@ message(STATUS "SFML: ${SFML_FOUND}")
 message(STATUS "Box2D: ${BOX2D_FOUND}")
 message(STATUS "Lua: ${LUA_FOUND}")
 message(STATUS "================================================")
+
+# Rolling frame timing is available without profiling recordings.
+add_executable(FrameTimingTests tests/FrameTimingTests.cpp)
+target_include_directories(FrameTimingTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+add_test(NAME FrameTimingTests COMMAND FrameTimingTests)

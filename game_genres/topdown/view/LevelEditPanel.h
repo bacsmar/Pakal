@@ -59,6 +59,10 @@ namespace Pakal::TopDown
 		// When the panel last saved the file (a reload watcher ignores its own saves)
 		std::filesystem::file_time_type saved_at() const { return m_savedAt; }
 		const std::string& path() const { return m_path; }
+		// The document as the panel has it, and one read again from the file (the level changed outside and the game
+		// brought its objects in line without building the level again): the panel edits it from now on
+		const Pakal::LevelDocument& document() const { return *m_document; }
+		void replace_document(const Pakal::LevelDocument& document);
 
 	private:
 		bool apply(const Pakal::Json& operation);

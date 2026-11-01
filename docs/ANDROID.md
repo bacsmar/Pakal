@@ -19,7 +19,15 @@ loads it. Only the dungeon takes the network (`pakal_net`: ENet, `source/net`, `
 vcpkg install --triplet arm64-android --x-manifest-root=android/vcpkg --x-install-root=build-android/vcpkg_installed
 python android/build_apk.py                  # every game: builds, packs, aligns (16 KB) and signs (debug key)
 python android/build_apk.py --game dungeon   # one game
+python android/build_apk.py --game <game> --cheats    # with the game's cheats, for testers (never a release)
 ```
+
+A game kept outside the engine (in `games/<name>/`) builds the same way. Its folder says what it is:
+- `android.json`: package, label, library, permissions, and optionally an `icon` and a `stager` (files of its folder).
+  `"staging": "zombies"` packs it as the Zombies module does, with its own `Assets/<name>`. A `stager` is a Python file
+  with `stage(stage, raw_textures, apk)` that packs it its own way, using `build_apk`'s helpers (`apk`).
+- `android.cmake`: its library, built with `pakal_game` (android/CMakeLists.txt includes it, `GAME_DIR` set to its
+  folder). `PAKAL_GAME_CHEATS` (`--cheats`) asks for its cheats: the game turns it into its own define.
 
 It needs NDK r27, the SDK (build-tools, platform), JDK 17 and the SDK's cmake/ninja: point `ANDROID_NDK`, `ANDROID_SDK`
 and `JAVA_HOME` to them, or write those three in `android/local_paths.json` (a file Git ignores).
@@ -31,7 +39,7 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
 
 ## What changes compared to Windows
 
-- `android/CMakeLists.txt` builds bx/bimg/bgfx (OpenGL ES 3, no Vulkan), Box2D 2.4.1 (the sources vcpkg extracted: its
+- `android/CMakeLists.txt` builds bx/bimg/bgfx (OpenGL ES 3.1, for compute shaders: a phone with only 3.0 does not run it; no Vulkan), Box2D 2.4.1 (the sources vcpkg extracted: its
   port tries to build glfw/X11 and fails on Android), the engine, the module and `android/main_android.cpp`.
 - `PAKAL_NO_SFML` (Config.h): no SFML; the window, input and sound are provided by the platform. `PAKAL_STATIC_MODULE`
   (GameModuleLoader): the module is linked in, not loaded with `dlopen`.
@@ -45,7 +53,15 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
   the brawler's HIT, HEAVY, JUMP, DODGE and GUARD. A game turns the sticks on while it is played
   (`IInputManager::set_touch_controls`); one that does not aim (the brawler) turns the right half's stick off
   (`set_touch_aim`), where its buttons are.
-- The APK assets are copied once to internal storage (`assets.list` is the content version).
+- A game can read the sticks itself instead (`IInputManager::set_game_touches`): every finger off the interface then
+  goes to `event_touch_began/moved/ended` (screen pixels, `get_touch_area` is the screen's size) and the platform
+  neither reads nor draws its sticks. TopDown games do this: `InputMapper::touch_sticks` turns the fingers into the
+  move and aim sticks, and `TouchSticksPanel` draws them with an RmlUi document of the game's (its elements
+  `move_base`, `move_thumb`, `aim_base`, `aim_thumb`; the body's classes `moving`, `aiming`, `firing`).
+- The game reads its assets straight out of the APK through the resource manager (`AndroidAssetSource`). Nothing is
+  copied to the app's storage. `PAKAL_EXTRACT=1` copies them as before (`assets.list` is the content version). Copies
+  left by an older build are removed once.
+- `build_apk.py` resamples the sounds to 22 kHz (`PAKAL_APK_FULL_AUDIO=1` keeps them as they are).
 
 ## Runtime
 
@@ -53,11 +69,11 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
   `pakal_env.txt` (a full path) plays one level on its own instead.
 - Debugging without a shell: whatever is put in `/sdcard/Android/data/<package>/files/pakal_env.txt` (`KEY=VALUE`
   per line) becomes an environment variable: `ZOMBIES_POST/SHADOWS/GI=off`, `ZOMBIES_AO`, `ZOMBIES_TILT`, `PAKAL_FPS_LOG=1`,
-  `PAKAL_RENDER_HEIGHT`. Assets are extracted again only if their hash changes (`assets.list`).
+  `PAKAL_RENDER_HEIGHT`. With `PAKAL_EXTRACT=1`, assets are extracted again only if their hash changes (`assets.list`).
 - The picture is drawn smaller than the screen (720 px high, 1080 at Ultra: `PAKAL_RENDER_HEIGHT`) and scaled up to the
   screen with FSR 1 (EASU rebuilds the edges, RCAS sharpens); the interface is drawn after it, at the screen's size, so its
   text stays sharp. The game's OPTIONS (menu and pause panel, saved in the profile) turn FSR off: the picture is then drawn
-  at the screen's height up to the quality's cap (720, 1080 at Ultra) and stretched plainly. `PAKAL_FSR=0` leaves the scaling to the compositor (bilinear, the interface included). The screen's
+  at the screen's height up to the quality's cap (720, 1080 at Ultra) and stretched plainly. `PAKAL_FSR=0` leaves the scaling to the compositor (bilinear, the interface included); it wins over the game's saved FSR option for that launch. The screen's
   size is the window's (it extends under the navigation bar), not the content rect.
 - Touch: the sticks and the aim work in the picture's pixels, the interface in the screen's. A menu touch that moves less
   than 3.5% of the screen's height is a tap where it started, and one that lands that close to a button takes the nearest
@@ -101,7 +117,8 @@ of the file the model names. Normal and ORM maps are stored as linear data. Ther
 - APK from 247 MB to 118 MB; on the GPU each 2048 texture went from ~21 MB (RGBA8 with mips) to ~1.3 MB (1024, ASTC 4x4).
 - ASTC 6x6 does not work: 1024 is not a multiple of 6, the tool pads to 1026 and the image comes out shifted diagonally.
 - texturec's `-n` option (normal map) stores a different encoding (without z) that the shaders do not read: dark blotches appear.
-- When extracting, the game deletes the files from the previous extraction that the package no longer contains.
+- When extracting (`PAKAL_EXTRACT=1`), the game deletes the files from the previous extraction that the package no longer
+  contains.
 
 ## Orientation
 
@@ -120,6 +137,10 @@ redoes the geometry and hands the surface to bgfx again (which clears the debug 
 - Without a light volume (original level) nothing was drawn: a 3D sampler with no texture bound cancels the draw on Adreno; now
   a 1x1x1 volume is bound.
 - Performance: static meshes outside the camera (and the shadow volume) are no longer drawn (`set_cull_frustum`).
+  A camera's draw distance by size (`MeshComponent3D_Bgfx::set_draw_distance(perMeter, minimum)`): a model farther than
+  its size times `perMeter`, and than `minimum`, is left out (a low camera shot sees the whole level; the top-down view never
+  reaches it). A game sets it from its data (for example its effects' "drawDistance"); a camera shot's `far` (camera_shots.json, per
+  quality) ends the view sooner, with the horizon's fog at that edge.
 
 ## The window at the start
 
@@ -132,7 +153,10 @@ window that was gone and the game crashed in `ANativeWindow_setBuffersGeometry`.
 When a phone cannot hold the frame rate (three seconds under 87% of it, or hot), `BgfxGraphicsSystem` steps down, one
 step at a time: first the picture is stretched plainly instead of by FSR (a little sharpness, far cheaper on a phone's
 GPU), then 30 FPS, then a smaller picture. With room to spare it steps back up, and a step up that does not hold makes
-it wait longer before the next try. `PAKAL_MAX_FPS` fixes the rate (and turns it off); `PAKAL_GOVERNOR=0` too.
+it wait longer before the next try.
+- **What doesn't count:** the first six seconds after a level loads (a phone's driver draws a new level slowly at first),
+  and any time the game holds it (`hold_governor(true)`), e.g. while its camera pans over a whole town.
+- **Turning it off:** `PAKAL_MAX_FPS` fixes the rate and turns it off; `PAKAL_GOVERNOR=0` turns it off too.
 
 ## Sound, lifecycle and controls
 
@@ -144,7 +168,8 @@ it wait longer before the next try. `PAKAL_MAX_FPS` fixes the rate (and turns it
   each stick appears where the thumb lands (120 px radius on a 1080-high screen, 15 % dead zone). The aim
   stick fires past 41 % (its disc turns red); without it, the hero faces where it walks. The screen is the engine's
   axis device 0 (`IAxisDevice`: axes 0-1 move, 2-3 aim), so a gamepad could use the same thing. Restarting is in
-  the pause panel (the button at the top right). They are drawn with `BgfxGraphicsSystem::draw_screen_line`. `adb shell input swipe` drives them
+  the pause panel (the button at the top right). The platform draws them with `BgfxGraphicsSystem::draw_screen_line`, unless the game reads the fingers itself (see
+  `set_game_touches` above). `adb shell input swipe` drives them
   (in the coordinates of the phone's current resolution, not its panel's).
 - **Movement** (same on PC): any tilt walks at full speed, starting accelerates (63 % in 0.1 s), on
   release it stops dead; the camera follows the hero with a short lag (SmoothDamp of 0.15 s) and the mouse does not turn it within

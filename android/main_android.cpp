@@ -11,6 +11,7 @@
 //              the development panels.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "AndroidAssetSource.h"
 #include "Engine.h"
 #include "GameModuleLoader.h"
 #include "IInputManager.h"
@@ -109,12 +110,14 @@ namespace
 		void set_aim_scale(float scale) { m_aim_scale = scale; }
 		void set_touch_controls(bool shown) override { m_controls.store(shown); }
 		void set_touch_aim(bool aims) override { m_aim.store(aims); }
+		void set_game_touches(bool on) override { m_gameTouches.store(on); }
+		tmath::vector2di get_touch_area() const override { return { g_screen_width, g_screen_height }; }
 
 		// The touch controls drawn over the picture (pixels of the render): each stick is a ring with the thumb's disc in it, and
 		// the strip that restarts the level is a square with an R. Hints stay while nothing touches them.
 		void draw_overlay(BgfxGraphicsSystem& graphics, int screenWidth, int screenHeight)
 		{
-			if (!m_controls.load()) return;   // a menu or a viewer: no sticks
+			if (!m_controls.load() || m_gameTouches.load()) return;   // a menu or a viewer, or the game draws its own
 			const float s = static_cast<float>(graphics.get_height()) / static_cast<float>(screenHeight);
 			const float w = static_cast<float>(screenWidth), h = static_cast<float>(screenHeight);
 			const uint32_t dim = 0x55ffffff, bright = 0xe0ffffff;
@@ -190,8 +193,12 @@ namespace
 			}
 		}
 
+		// A key the system gives (its Back, as Escape)
+		void set_key(Key key, bool value) { m_keys[static_cast<int>(key)].store(value); }
+
 	private:
-		enum class Role { None, Stick, Aim, Ui, Debug };
+		// Free: a finger off the buttons of a menu, for the state to read (event_touch_*: a viewer turns its model with it)
+		enum class Role { None, Stick, Aim, Ui, Debug, Free };
 		struct Touch
 		{
 			int32_t id = -1;
@@ -229,8 +236,6 @@ namespace
 		static float stick_radius(float screenHeight) { return screenHeight * (120.0f / 1080.0f); }
 		static constexpr float kDeadZone = 0.15f;      // of the radius
 		static constexpr float kFireThreshold = 0.41f; // only for the drawing: the game decides when the aim stick fires
-
-		void set_key(Key key, bool value) { m_keys[static_cast<int>(key)].store(value); }
 
 		// The stick's value from where the thumb is: the offset over the radius, at most 1, zero inside the dead zone
 		void update_stick(const Touch& touch)
@@ -286,9 +291,10 @@ namespace
 				touch.ui_dy = static_cast<float>(uy - ry);
 				gui->touch(id, ux, uy, 0);
 			}
-			else if (!m_controls.load())
+			else if (!m_controls.load() || m_gameTouches.load())
 			{
-				touch.role = Role::None;   // off the buttons of a menu: nothing
+				touch.role = Role::Free;   // off the buttons: the state's (a drag, the game's own sticks)
+				event_touch_began.notify(TouchArgs{ static_cast<unsigned>(id), int(x), int(y) });
 			}
 			else
 			{
@@ -297,6 +303,8 @@ namespace
 				{
 					if (other.role == touch.role) touch.role = Role::None; // one thumb per stick
 				}
+				// a finger landed while it is played (a skippable cutscene ends with it): told to the state as well
+				event_touch_began.notify(TouchArgs{ static_cast<unsigned>(id), int(x), int(y) });
 			}
 			m_touches.push_back(touch);
 		}
@@ -311,6 +319,11 @@ namespace
 				if (touch.role == Role::Stick || touch.role == Role::Aim)
 				{
 					update_stick(touch);
+					return;
+				}
+				if (touch.role == Role::Free)
+				{
+					event_touch_moved.notify(TouchArgs{ static_cast<unsigned>(id), int(x), int(y) });
 					return;
 				}
 				// Menus and panels: the pointer stays where the finger landed until it moves past the slop (a drag)
@@ -372,6 +385,9 @@ namespace
 				}
 				break;
 			}
+			case Role::Free:
+				event_touch_ended.notify(TouchArgs{ static_cast<unsigned>(touch.id), int(touch.x), int(touch.y) });
+				break;
 			default:
 				break;
 			}
@@ -380,6 +396,7 @@ namespace
 		std::array<std::atomic<bool>, 256> m_keys{};
 		std::atomic<bool> m_controls{ false };   // the sticks, while a level is played (set_touch_controls)
 		std::atomic<bool> m_aim{ true };         // the right half aims (set_touch_aim)
+		std::atomic<bool> m_gameTouches{ false }; // the game reads the fingers itself (set_game_touches)
 		std::array<std::atomic<float>, 4> m_axes{};
 		float m_screen_height = 1080.0f;
 		std::vector<Touch> m_touches;
@@ -603,6 +620,15 @@ namespace
 
 	int32_t on_input(android_app* app, AInputEvent* event)
 	{
+		// The system's Back is the game's Escape (each screen says what it does: back one screen, the pause); left to the
+		// system it sent the app to the background from any screen
+		if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY && AKeyEvent_getKeyCode(event) == AKEYCODE_BACK && g_input)
+		{
+			const int32_t action = AKeyEvent_getAction(event);
+			if (action == AKEY_EVENT_ACTION_DOWN) g_input->set_key(Key::Escape, true);
+			else if (action == AKEY_EVENT_ACTION_UP) g_input->set_key(Key::Escape, false);
+			return 1;
+		}
 		if (AInputEvent_getType(event) != AINPUT_EVENT_TYPE_MOTION || !g_input || !app->window)
 		{
 			return 0;
@@ -704,6 +730,56 @@ namespace
 		LOG_INFO("[Android] %zu assets extracted to %s, %zu old ones removed", count, root.c_str(), removed);
 	}
 
+	// The copies an earlier version extracted (assets.list's files under the app's storage) go away once: read before the
+	// APK's, an old copy would hide the new one
+	void forget_extracted_assets(const std::string& root)
+	{
+		const std::string stamp_path = root + "/assets.stamp";
+		std::ifstream in(stamp_path, std::ios::binary);
+		if (!in) return;
+		size_t removed = 0;
+		for (std::string line; std::getline(in, line);)
+		{
+			const std::string path = line.substr(0, line.find('\t'));
+			if (!path.empty() && std::remove((root + "/" + path).c_str()) == 0) ++removed;
+		}
+		in.close();
+		std::remove(stamp_path.c_str());
+		LOG_INFO("[Android] %zu extracted assets removed: the game reads them from the APK", removed);
+	}
+
+	// The activity's share sheet for a file (PakalActivity.shareFile), from any thread
+	bool share_with_activity(const std::string& path, const std::string& title)
+	{
+		if (!g_app || !g_app->activity) return false;
+		JavaVM* vm = g_app->activity->vm;
+		JNIEnv* env = nullptr;
+		bool attached = false;
+		if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
+		{
+			if (vm->AttachCurrentThread(&env, nullptr) != JNI_OK) return false;
+			attached = true;
+		}
+		bool shared = false;
+		jobject activity = g_app->activity->clazz;
+		jclass type = env->GetObjectClass(activity);
+		jmethodID method = env->GetMethodID(type, "shareFile", "(Ljava/lang/String;Ljava/lang/String;)V");
+		if (method)
+		{
+			jstring jpath = env->NewStringUTF(path.c_str());
+			jstring jtitle = env->NewStringUTF(title.c_str());
+			env->CallVoidMethod(activity, method, jpath, jtitle);
+			shared = !env->ExceptionCheck();
+			env->DeleteLocalRef(jpath);
+			env->DeleteLocalRef(jtitle);
+		}
+		if (env->ExceptionCheck()) env->ExceptionClear();
+		env->DeleteLocalRef(type);
+		if (attached) vm->DetachCurrentThread();
+		LOG_INFO("[Android] share %s: %s", path.c_str(), shared ? "the share sheet" : "failed");
+		return shared;
+	}
+
 	// Debug switches without a shell: KEY=VALUE lines of <external files dir>/pakal_env.txt become environment variables
 	// (ZOMBIES_POST=off, ZOMBIES_SHADOWS=off, ZOMBIES_GI=off, PAKAL_FPS_LOG=1, ...)
 	void load_env_file(android_app* app)
@@ -725,9 +801,24 @@ namespace
 	{
 		load_env_file(app);
 		const std::string root = app->activity->internalDataPath;
-		extract_assets(app, root);
+		// The game reads its files straight from the APK (AndroidAssetSource, through the resource manager); the app's
+		// storage keeps only what it writes (saves). PAKAL_EXTRACT=1 copies them out first, as before.
+		const char* extractText = std::getenv("PAKAL_EXTRACT");
+		if (extractText && std::string(extractText) == "1")
+		{
+			extract_assets(app, root);
+		}
+		else
+		{
+			forget_extracted_assets(root);
+		}
 		chdir(root.c_str());
 		ResourceMgr.set_root_path(root);
+		if (!ResourceMgr.has_source_factory<AndroidAssetSource>())
+		{
+			ResourceMgr.register_source<AndroidAssetSource>([]() { return new AndroidAssetSource(); });
+		}
+		ResourceMgr.add_source<AndroidAssetSource>(app->activity->assetManager, root);
 		// The game opens on its menu; ZOMBIES_LEVEL in pakal_env.txt (a full path) plays one level on its own instead
 
 		if (!app->window)
@@ -763,9 +854,11 @@ namespace
 		settings.graphic_system_settings.governor = governor;
 		settings.graphic_system_settings.resolution = { width, height };
 		if (g_fsr) settings.graphic_system_settings.output_resolution = { g_screen_width, g_screen_height };
-		// the player's FSR option (the game's options; on at first): with it the height above, without it the screen's up to the cap
-		settings.graphic_system_settings.fsr_scale = static_cast<float>(height) / static_cast<float>(g_screen_height);
-		settings.graphic_system_settings.plain_scale = static_cast<float>(std::min(cap, g_screen_height)) / static_cast<float>(g_screen_height);
+		// the player's FSR option (the game's options; on at first): with it the height above, without it the screen's up to the
+		// cap. Both are of the output: the screen when this launch upscales; the buffers themselves when it does not (they are
+		// already that height: the screen's scale again drew 720 lines at 480), and FSR turned on later draws two thirds of them
+		settings.graphic_system_settings.fsr_scale = g_fsr ? static_cast<float>(height) / static_cast<float>(g_screen_height) : 2.0f / 3.0f;
+		settings.graphic_system_settings.plain_scale = g_fsr ? static_cast<float>(std::min(cap, g_screen_height)) / static_cast<float>(g_screen_height) : 1.0f;
 		settings.graphic_system_settings.vsync = true;
 		settings.graphic_system_settings.full_screen = false;
 		settings.physic_system_settings.gravity = tmath::vector3df(0.0f, -20.0f, 0.0f);
@@ -784,6 +877,10 @@ namespace
 		};
 
 		Engine engine(settings);
+		// files for the person to take away (a profiling session) go to the app's external folder, and are handed over
+		// with the share sheet (PakalActivity.shareFile: a copy in Downloads, then e-mail, chat...)
+		if (g_app->activity->externalDataPath) OSMgr.set_data_folder(std::string(g_app->activity->externalDataPath) + "/");
+		OSMgr.set_share_handler([](const std::string& path, const std::string& title) { return share_with_activity(path, title); });
 		GameModuleLoader module;
 		if (!module.load("static"))
 		{
@@ -835,4 +932,8 @@ void android_main(android_app* app)
 			source->process(app, source);
 		}
 	}
+	// The game is over with its activity: the process ends here. Left to linger, Android 8 crashed it seconds
+	// later in a binder thread letting go of an object already gone ("the app stopped" after quitting)
+	LOG_INFO("[Android] the activity is gone: the process ends");
+	_exit(0);
 }

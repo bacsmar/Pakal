@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 int main(int argc, char** argv)
 {
@@ -24,6 +25,20 @@ int main(int argc, char** argv)
 #endif
 
 	const char* module_path = argc > 1 ? argv[1] : default_module_path;
+	// The options after the module, for it to read as variables: --edit [level.json] opens a TopDown module's level editor
+	// (without a level: on its chooser, PAKAL_EDIT=*)
+	for (int i = 2; i < argc; ++i)
+	{
+		if (std::string(argv[i]) == "--edit")
+		{
+			const char* level = i + 1 < argc && std::string(argv[i + 1]).rfind("--", 0) != 0 ? argv[i + 1] : "*";
+#if defined(_WIN32)
+			_putenv_s("PAKAL_EDIT", level);
+#else
+			setenv("PAKAL_EDIT", level, 1);
+#endif
+		}
+	}
 
 	namespace fs = std::filesystem;
 	fs::path root_path = fs::current_path();

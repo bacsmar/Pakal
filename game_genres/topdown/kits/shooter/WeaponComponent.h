@@ -29,6 +29,7 @@ namespace Pakal::TopDown
 		bool reloading() const override { return m_reload.busy(); }
 		bool firing() const override { return m_fireClipTimer > 0.0f; }   // for the firing pose
 		bool swinging() const override { return m_swingTimer > 0.0f; }
+		unsigned swings() const override { return m_swings; }
 		// 1 right after a shot, back to 0 in a moment: the body kicks back with it
 		float recoil() const override { return m_recoil; }
 		float reload_seconds() const override { return gun().reloadMs / 1000.0f; }
@@ -57,6 +58,7 @@ namespace Pakal::TopDown
 		size_t m_nextTrigger = 0;     // the next shot of the cycle
 		float m_fireClipTimer = 0.0f;
 		float m_swingTimer = 0.0f;
+		unsigned m_swings = 0;
 		float m_recoil = 0.0f;
 		bool m_leftMuzzle = false;
 	};

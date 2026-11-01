@@ -6,6 +6,7 @@
 #include "LevelEditor.h"
 
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 
@@ -57,6 +58,14 @@ namespace Pakal
 			"zone    name, kind, rect: [x0, y0, x1, y1]                (adds or changes a zone; meters)",
 			"unzone  name",
 			"spawn   x, y                                              (where the player starts)",
+			"camera  [path,] data                                      (a camera path as JSON, \"intro\" by default; data null removes it)",
+			"place   object [, x, y, z, rot: [x, y, z], scale, basis: [9]]  (meters, degrees; what a gizmo does; rot or scale drop a basis)",
+			"instantiate  prefab, x, y [, z, yaw, scale, key, zone, role]  (an object made from a prefab)",
+			"override     object, path, value                         (path: a JSON pointer into its prefab, \"/components/Destructible/health\")",
+			"revert       object [, path]                             (one override, or all of them)",
+			"apply-to-prefab  object                                  (its overrides go into its prefab's file; every object made from it changes)",
+			"make-prefab  object, name                                (a prefab file from the object; the object is made from it)",
+			"insert       data [, at]                                 (an object as JSON, as the level file writes it; at: its index)",
 			"keys                                                      (a readable key for every object without one)",
 			"zoning  [all]                                             (each object's zone from where it stands)",
 		};
@@ -174,9 +183,24 @@ namespace Pakal
 		{
 			if (std::string error = object(index); !error.empty()) return error;
 			LevelObject& o = doc.objects[static_cast<size_t>(index)];
+			const double before = o.rot[2];
 			if (number(op, "yaw", value)) o.rot[2] = value;
 			else if (number(op, "by", value)) o.rot[2] += value;
 			else return "turn needs yaw or by";
+			// its own collision turns with it, about the object
+			if (o.id >= 0 && o.rot[2] != before)
+			{
+				const double turn = (o.rot[2] - before) * 3.14159265358979 / 180.0;
+				const double c = std::cos(turn), s = std::sin(turn);
+				for (auto& wall : doc.walls)
+				{
+					if (wall.id != o.id) continue;
+					const double rx = wall.x - o.x, ry = wall.y - o.y;
+					wall.x = o.x + rx * c - ry * s;
+					wall.y = o.y + rx * s + ry * c;
+					if (wall.shape == "rect") wall.angle += o.rot[2] - before;
+				}
+			}
 			return std::string();
 		}
 		if (name == "scale")
@@ -248,6 +272,11 @@ namespace Pakal
 				o.zone = text();
 			}
 			else if (field == "mesh") o.mesh = text();
+			else if (field == "prefab")
+			{
+				if (!text().empty() && m_prefabs && !m_prefabs->exists(text())) return "no prefab '" + text() + "'";
+				o.prefab = text();
+			}
 			else if (field == "baked") o.baked = given.is_boolean() ? given.get<bool>() : text() == "true";
 			else if (field == "id") o.id = given.is_number() ? given.get<int>() : std::atoi(text().c_str());
 			else return "set cannot change '" + field + "'";
@@ -297,6 +326,182 @@ namespace Pakal
 			if (!number(op, "x", x) || !number(op, "y", y)) return "spawn needs x and y";
 			doc.hasSpawn = true;
 			doc.spawn = { x * units, y * units };
+			return std::string();
+		}
+		if (name == "camera")
+		{
+			const std::string path = op.value("path", std::string("intro"));
+			if (path.empty()) return "camera needs a path's name";
+			if (!op.contains("data")) return "camera needs data (null removes the path)";
+			const Json& data = op["data"];
+			Json& camera = doc.extra["camera"];
+			if (!camera.is_object()) camera = Json::object();
+			if (data.is_null())
+			{
+				camera.erase(path);
+				if (camera.empty()) doc.extra.erase("camera");
+				return std::string();
+			}
+			if (!data.is_object() || !data.contains("shots") || !data["shots"].is_array()) return "a camera path is an object with \"shots\"";
+			for (const auto& shot : data["shots"])
+			{
+				auto point = [&shot](const char* name) { return shot.contains(name) && shot[name].is_array() && shot[name].size() == 3; };
+				if (!point("eye") || !point("look")) return "each shot has \"eye\" and \"look\" as [x, y, z]";
+			}
+			camera[path] = data;
+			return std::string();
+		}
+		if (name == "place")
+		{
+			if (std::string error = object(index); !error.empty()) return error;
+			LevelObject& o = doc.objects[static_cast<size_t>(index)];
+			double dx = 0.0, dy = 0.0;
+			if (number(op, "x", x)) { dx = x * units - o.x; o.x = x * units; }
+			if (number(op, "y", y)) { dy = y * units - o.y; o.y = y * units; }
+			if (number(op, "z", z)) o.z = z * units;
+			const Json rot = op.value("rot", Json());
+			if (rot.is_array())
+			{
+				if (rot.size() != 3) return "rot must be three angles";
+				for (size_t i = 0; i < 3; ++i)
+				{
+					if (!rot[i].is_number()) return "rot must be three angles";
+					o.rot[i] = rot[i].get<double>();
+				}
+			}
+			if (number(op, "scale", value))
+			{
+				if (value <= 0.0) return "the scale must be positive";
+				o.scale = value;
+			}
+			// a rotation or a scale given replaces the model's own matrix; a basis given is the matrix
+			if (rot.is_array() || op.contains("scale")) o.has_basis = false;
+			const Json basis = op.value("basis", Json());
+			if (basis.is_array())
+			{
+				if (basis.size() != 9) return "basis must be nine numbers";
+				for (size_t i = 0; i < 9; ++i)
+				{
+					if (!basis[i].is_number()) return "basis must be nine numbers";
+					o.basis[i] = basis[i].get<double>();
+				}
+				o.has_basis = true;
+			}
+			if (o.id >= 0 && (dx != 0.0 || dy != 0.0))
+			{
+				for (auto& wall : doc.walls)
+				{
+					if (wall.id == o.id) { wall.x += dx; wall.y += dy; }
+				}
+			}
+			return std::string();
+		}
+		if (name == "instantiate")
+		{
+			LevelObject o;
+			o.prefab = op.value("prefab", std::string());
+			if (o.prefab.empty()) return "instantiate needs a prefab";
+			if (m_prefabs && !m_prefabs->exists(o.prefab)) return "no prefab '" + o.prefab + "'";
+			if (!number(op, "x", x) || !number(op, "y", y)) return "instantiate needs x and y";
+			o.name = op.value("name", o.prefab);
+			o.role = op.value("role", std::string());
+			o.zone = op.value("zone", std::string());
+			if (!o.zone.empty() && !doc.zone(o.zone)) return "no zone '" + o.zone + "'";
+			o.x = x * units;
+			o.y = y * units;
+			if (number(op, "z", z)) o.z = z * units;
+			if (number(op, "yaw", value)) o.rot[2] = value;
+			if (number(op, "scale", value))
+			{
+				if (value <= 0.0) return "the scale must be positive";
+				o.scale = value;
+			}
+			o.key = op.value("key", std::string());
+			if (!key_free(o.key, -1)) return "the key '" + o.key + "' is taken";
+			doc.objects.push_back(o);
+			if (doc.objects.back().key.empty()) doc.assign_keys();
+			return std::string();
+		}
+		if (name == "override" || name == "revert")
+		{
+			if (std::string error = object(index); !error.empty()) return error;
+			LevelObject& o = doc.objects[static_cast<size_t>(index)];
+			const std::string path = op.value("path", std::string());
+			if (name == "override" && (path.empty() || path[0] != '/')) return "override needs a path that starts with '/'";
+			if (name == "override" && !op.contains("value")) return "override needs a value";
+			try
+			{
+				if (name == "override") PrefabLibrary::set_override(o.overrides, path, op["value"]);
+				else PrefabLibrary::revert_override(o.overrides, path);
+			}
+			catch (const Json::exception& e)
+			{
+				return std::string("the path '") + path + "' does not fit: " + e.what();
+			}
+			return std::string();
+		}
+		if (name == "apply-to-prefab" || name == "make-prefab")
+		{
+			if (!m_prefabs) return name + " needs the level's prefabs";
+			if (std::string error = object(index); !error.empty()) return error;
+			LevelObject& o = doc.objects[static_cast<size_t>(index)];
+			if (name == "apply-to-prefab")
+			{
+				if (o.prefab.empty()) return "the object is not made from a prefab";
+				if (o.overrides.contains("mesh")) return "a changed model goes into the prefab by hand (its path is the level's)";
+				Json prefab = m_prefabs->raw(o.prefab);
+				if (prefab.is_null()) return "no prefab '" + o.prefab + "'";
+				prefab.merge_patch(o.overrides);
+				std::string error;
+				if (!m_prefabs->save(o.prefab, prefab, error)) return error;
+				o.overrides = Json::object();
+				return std::string();
+			}
+			const std::string prefabName = op.value("name", std::string());
+			if (prefabName.empty()) return "make-prefab needs a name";
+			if (m_prefabs->exists(prefabName)) return "the prefab '" + prefabName + "' exists";
+			std::string error;
+			Json prefab = m_prefabs->resolve(o, error);
+			if (!error.empty()) return error;
+			if (!o.prefab.empty()) prefab["base"] = o.prefab;   // a variant of the one it was made from
+			if (prefab["mesh"].get<std::string>().empty()) prefab.erase("mesh");
+			else prefab["mesh"] = m_prefabs->level_to_prefab_path(prefab["mesh"].get<std::string>());
+			if (prefab["collision"].is_null()) prefab.erase("collision");
+			if (prefab["components"].empty()) prefab.erase("components");
+			if (prefab["role"].get<std::string>().empty()) prefab.erase("role");
+			if (!o.prefab.empty())
+			{
+				// a variant holds only what differs from its base
+				Json base = m_prefabs->prefab(o.prefab, error);
+				if (!error.empty()) return error;
+				if (base.contains("mesh") && base["mesh"].is_string()) base["mesh"] = m_prefabs->level_to_prefab_path(base["mesh"].get<std::string>());
+				Json variant = PrefabLibrary::diff(base, prefab);
+				variant.erase("base");
+				prefab = Json{ { "base", o.prefab } };
+				for (auto it = variant.begin(); it != variant.end(); ++it) prefab[it.key()] = it.value();   // nulls kept: they remove
+			}
+			if (!m_prefabs->save(prefabName, prefab, error)) return error;
+			o.prefab = prefabName;
+			o.mesh.clear();
+			o.role.clear();
+			o.overrides = Json::object();
+			return std::string();
+		}
+		if (name == "insert")
+		{
+			const Json data = op.value("data", Json());
+			if (!data.is_object()) return "insert needs data: an object as the level file writes it";
+			// read through the document's own reader: one object, in a document of one
+			LevelDocument one;
+			std::string error;
+			if (!one.from_json(Json{ { "format", LevelDocument::kFormat }, { "version", LevelDocument::kCurrentVersion }, { "units_per_meter", doc.unitsPerMeter },
+				{ "objects", Json::array({ data }) } }, error) || one.objects.size() != 1) return "insert: " + error;
+			LevelObject o = one.objects.front();
+			if (!key_free(o.key, -1)) return "the key '" + o.key + "' is taken";
+			const int at = op.value("at", -1);
+			if (at >= 0 && at <= static_cast<int>(doc.objects.size())) doc.objects.insert(doc.objects.begin() + at, o);
+			else doc.objects.push_back(o);
+			if (o.key.empty()) doc.assign_keys();
 			return std::string();
 		}
 		if (name == "keys")

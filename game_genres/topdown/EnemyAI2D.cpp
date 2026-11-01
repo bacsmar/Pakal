@@ -190,9 +190,10 @@ namespace Pakal::TopDown
 		}
 
 		m_state = EnemyState::Chase;
-		if (m_pathTimer <= 0.0f || m_path.empty())
+		if (m_pathTimer <= 0.0f || (m_path.empty() && !m_noRoute))
 		{
-			if (!nav.find_path(position, target, m_path))
+			m_noRoute = !nav.find_path(position, target, m_path);
+			if (m_noRoute)
 			{
 				m_path.clear(); // no route: go straight for the target
 			}
@@ -249,7 +250,9 @@ namespace Pakal::TopDown
 
 		const float startRange = m_config.attackStartRange >= 0.0f ? m_config.attackStartRange : m_config.attackRange;
 		const bool canAttack = distance <= startRange && m_attackTimer <= 0.0f && m_holdAttacks <= 0.0f && sees && facesTarget;
-		if (canAttack || (distance <= m_config.attackRange && distance <= stopDistance))
+		// Close enough it stands, but only seeing the target: with a wall between them it keeps walking round (a flash at a
+		// barricade's mouth used to wait there for ever)
+		if (canAttack || (sees && distance <= m_config.attackRange && distance <= stopDistance))
 		{
 			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
 			float wait = m_config.attackCooldown;

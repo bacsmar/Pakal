@@ -26,6 +26,8 @@ void GameStateManager::terminate()
 
 void GameStateManager::update(unsigned long dtMilliseconds)
 {
+	for (int asked = m_popRequests.exchange(0); asked > 0 && !states.empty(); --asked)
+		pop_state();
 	if (states.empty())
 		return;
 	peek_state()->on_update(dtMilliseconds);
