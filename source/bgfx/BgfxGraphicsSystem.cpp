@@ -442,8 +442,11 @@ namespace Pakal
 		
 		// Set resolution
 #if defined(PAKAL_LINUX_PLATFORM)
-		// The X11 window uses the desktop's opaque RGB visual.
-		init.resolution.formatColor = bgfx::TextureFormat::RGB8;
+		// The X11 window uses the desktop's opaque RGB visual (OpenGL only; Vulkan picks its own surface format).
+		if (init.type == bgfx::RendererType::OpenGL)
+		{
+			init.resolution.formatColor = bgfx::TextureFormat::RGB8;
+		}
 #endif
 		init.resolution.width = get_output_width();
 		init.resolution.height = get_output_height();

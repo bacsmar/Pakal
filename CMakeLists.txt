@@ -218,7 +218,7 @@ else()
     message(WARNING "⚠️  bgfx library not found in ${BGFX_BUILD_DIR}")
 endif()
 
-# Engine shaders: Direct3D 11 on Windows, OpenGL on Linux.
+# Engine shaders: Direct3D 11 on Windows; OpenGL and Vulkan on Linux.
 if(WIN32 OR (UNIX AND NOT APPLE))
     if(WIN32)
         set(PAKAL_SHADERC ${BGFX_DIR}/.build/win64_vs2022/bin/shadercRelease.exe)
@@ -235,19 +235,31 @@ if(WIN32 OR (UNIX AND NOT APPLE))
     set(PAKAL_SHADER_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${PAKAL_SHADER_BACKEND})
     if(EXISTS ${PAKAL_SHADERC})
         function(pakal_compile_shader name type varying)
-            set(out ${PAKAL_SHADER_DIR}/${name}.bin)
-            add_custom_command(OUTPUT ${out}
-                COMMAND ${CMAKE_COMMAND} -E make_directory ${PAKAL_SHADER_DIR}
-                COMMAND ${PAKAL_SHADERC}
-                    -f ${PAKAL_SHADER_SRC}/${name}.sc
-                    -o ${out}
-                    --type ${type} --platform ${PAKAL_SHADER_PLATFORM} -p ${PAKAL_SHADER_PROFILE}
-                    --varyingdef ${PAKAL_SHADER_SRC}/${varying}
-                    -i ${BGFX_DIR}/src
-                    -i ${PAKAL_SHADER_SRC}
-                DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
-                VERBATIM)
-            set(PAKAL_SHADER_OUTPUTS ${PAKAL_SHADER_OUTPUTS} ${out} PARENT_SCOPE)
+            set(backends ${PAKAL_SHADER_BACKEND})
+            if(UNIX AND NOT APPLE)
+                list(APPEND backends spirv)
+            endif()
+            foreach(backend IN LISTS backends)
+                set(shader_profile ${PAKAL_SHADER_PROFILE})
+                if(backend STREQUAL "spirv")
+                    set(shader_profile spirv)
+                endif()
+                set(shader_dir ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/${backend})
+                set(out ${shader_dir}/${name}.bin)
+                add_custom_command(OUTPUT ${out}
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${shader_dir}
+                    COMMAND ${PAKAL_SHADERC}
+                        -f ${PAKAL_SHADER_SRC}/${name}.sc
+                        -o ${out}
+                        --type ${type} --platform ${PAKAL_SHADER_PLATFORM} -p ${shader_profile}
+                        --varyingdef ${PAKAL_SHADER_SRC}/${varying}
+                        -i ${BGFX_DIR}/src
+                        -i ${PAKAL_SHADER_SRC}
+                    DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
+                    VERBATIM)
+                list(APPEND PAKAL_SHADER_OUTPUTS ${out})
+            endforeach()
+            set(PAKAL_SHADER_OUTPUTS ${PAKAL_SHADER_OUTPUTS} PARENT_SCOPE)
         endfunction()
 
         pakal_compile_shader(vs_mesh vertex varying_mesh.def.sc)
