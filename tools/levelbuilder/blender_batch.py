@@ -114,6 +114,9 @@ def lightmap_uv(obj, out):
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
+    # glTF comes with every triangle's corners apart: unwelded, each triangle would be an island of a texel or two (the
+    # floor shows its triangles and fans). Welded, keeping the normals' hard edges as sharp edges.
+    bpy.ops.mesh.remove_doubles(threshold=0.0001, use_sharp_edge_from_normals=True)
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.01, area_weight=0.0, correct_aspect=True,
                              scale_to_bounds=False)
     bpy.ops.uv.pack_islands(rotate=True, margin=0.01)

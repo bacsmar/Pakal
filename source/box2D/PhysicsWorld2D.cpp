@@ -22,11 +22,12 @@ namespace Pakal
 
 	PhysicsWorld2D::~PhysicsWorld2D() = default;
 
-	void PhysicsWorld2D::add_static_box(const b2Vec2& center, const b2Vec2& halfSize, uint16 categoryBits, uintptr_t userData)
+	void PhysicsWorld2D::add_static_box(const b2Vec2& center, const b2Vec2& halfSize, uint16 categoryBits, uintptr_t userData, float angle)
 	{
 		b2BodyDef def;
 		def.type = b2_staticBody;
 		def.position = center;
+		def.angle = angle;
 		def.userData.pointer = userData;
 		b2Body* body = m_world.CreateBody(&def);
 

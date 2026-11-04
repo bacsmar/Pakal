@@ -75,7 +75,30 @@ namespace Pakal::TopDown
 		DamageResult result;
 	};
 
-	// A prop shows an effect of the game's data ("Hydrant  Water", "GazelleGlassBreak_swap_01", "FireBurning"...), or
+	// A consumable starts on an actor (ConsumableComponent::apply): a boost, a melee weapon or a gun lent, health, an effect
+	// (an air strike). The view shows the moment (a power-up's flash, its pan, its aura while it lasts).
+	struct ConsumableEvent
+	{
+		uintptr_t actor;
+		b2Vec2 at;
+		int id;
+		float seconds;          // how long it lasts (0: instant)
+		bool melee, firearm;
+		float speedFactor, damageFactor, defenceFactor;
+		float health;           // health it gives
+		std::string effect;     // an effect that is not a stat ("airstrike"), or empty
+	};
+
+	// Something on the floor was taken (the view makes it fly to the one who took it)
+	struct PickupEvent
+	{
+		uintptr_t taker;
+		b2Vec2 at;
+		int pickupId;
+		std::string type;   // the pickup's type ("Money", "Token", ...)
+	};
+
+	// A prop shows an effect of the game's data (a name the game's EffectsSystem settings map to water, fire, glass or debris), or
 	// "Break" when it breaks; 'size' is about how wide it is (meters)
 	struct PropEffectEvent
 	{

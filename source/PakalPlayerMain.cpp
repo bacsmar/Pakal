@@ -4,7 +4,7 @@
 #include "ResourceManager.h"
 #include "GraphicsSystem.h"
 #include "bgfx/BgfxGraphicsSystem.h"
-#include "mcp/McpServer.h"
+#include "mcp/EngineTools.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 int main(int argc, char** argv)
 {
@@ -24,6 +25,20 @@ int main(int argc, char** argv)
 #endif
 
 	const char* module_path = argc > 1 ? argv[1] : default_module_path;
+	// The options after the module, for it to read as variables: --edit [level.json] opens a TopDown module's level editor
+	// (without a level: on its chooser, PAKAL_EDIT=*)
+	for (int i = 2; i < argc; ++i)
+	{
+		if (std::string(argv[i]) == "--edit")
+		{
+			const char* level = i + 1 < argc && std::string(argv[i + 1]).rfind("--", 0) != 0 ? argv[i + 1] : "*";
+#if defined(_WIN32)
+			_putenv_s("PAKAL_EDIT", level);
+#else
+			setenv("PAKAL_EDIT", level, 1);
+#endif
+		}
+	}
 
 	namespace fs = std::filesystem;
 	fs::path root_path = fs::current_path();
@@ -89,43 +104,10 @@ int main(int argc, char** argv)
 		LOG_INFO("[PakalPlayer] Loaded module: %s", module.module_name());
 		module.register_game_factories(&engine);
 
-		// Optional MCP server for AI clients: PAKAL_MCP_PORT=<port> (127.0.0.1 only); PAKAL_MCP_TOKEN
-		// makes it require "Authorization: Bearer <token>". Off by default.
-		std::unique_ptr<McpServer> mcp;
-		if (const char* portText = std::getenv("PAKAL_MCP_PORT"))
-		{
-			GraphicsSystem* graphics = engine.graphics_system();
-			mcp = std::make_unique<McpServer>();
-			mcp->add_tool("get_status", { "Frame rates of the engine and of the graphics system", nlohmann::json{ { "type", "object" }, { "properties", nlohmann::json::object() } },
-				[&engine, graphics](const nlohmann::json&)
-				{
-					return nlohmann::json{ { "engine_fps", engine.get_fps() }, { "graphics_fps", graphics ? graphics->get_fps() : 0u } };
-				} });
-			mcp->add_tool("screenshot", { "Saves the next presented frame as a TGA file. Returns the path; the file appears on the following frame",
-				nlohmann::json{ { "type", "object" }, { "properties", { { "path", { { "type", "string" }, { "description", "Destination .tga file" } } } } }, { "required", { "path" } } },
-				[graphics](const nlohmann::json& arguments)
-				{
-					const std::string path = arguments.at("path").get<std::string>();
-					if (path.size() < 5 || path.substr(path.size() - 4) != ".tga")
-					{
-						throw std::runtime_error("the path must end in .tga");
-					}
-					auto* bgfx = static_cast<BgfxGraphicsSystem*>(graphics);
-					if (!bgfx)
-					{
-						throw std::runtime_error("no graphics system");
-					}
-					graphics->execute_block([bgfx, path]() { bgfx->request_screenshot(path.c_str()); });
-					return nlohmann::json{ { "path", path } };
-				} });
-			std::string error;
-			const unsigned short port = static_cast<unsigned short>(std::atoi(portText));
-			const char* token = std::getenv("PAKAL_MCP_TOKEN");
-			if (!mcp->start(port, token ? token : "", error))
-			{
-				LOG_ERROR("[PakalPlayer] MCP server not started: %s", error.c_str());
-			}
-		}
+		// Optional MCP server with the engine's tools (stats, settings, camera, screenshots; source/mcp/EngineTools):
+		// PAKAL_MCP_PORT=<port> (127.0.0.1 only); PAKAL_MCP_TOKEN makes it require "Authorization: Bearer <token>". Off by
+		// default.
+		std::unique_ptr<McpServer> mcp = start_engine_tools(engine);
 
 		engine.run(module.application());
 	}

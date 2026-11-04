@@ -130,8 +130,11 @@ namespace Pakal
 
 
 		template<class FN>
-		inline void unroll_stringer(FN &f) { }		
+		inline void unroll_stringer(FN &f) { }
 
+		// declared first: the bool one calls it for what follows (a string after a bool)
+		template<class T, class FN, typename ... Args>
+		inline void unroll_stringer(FN &f, const T& t, Args const& ... args);
 
 		template<class FN, typename ... Args>
 		inline void unroll_stringer(FN &f, const bool& t, Args const& ... args)

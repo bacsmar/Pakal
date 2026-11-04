@@ -524,6 +524,34 @@ int main()
 			check(!halfway && !planks.is_broken() && planks.repair_share() > 0.99f, "standing next to it, the player repairs the barricade");
 		}
 		{
+			// a hit on what breaks shows on its view for the game's seconds, then it stands as it was
+			struct Seen : PropView
+			{
+				float last = -1.0f; int hits = 0, states = 0;
+				void show_state(bool, bool) override { ++states; }
+				void show_hit(float left) override { last = left; ++hits; }
+			};
+			EnemyRules walker;
+			Arena field(walker, b2Vec2(-30.0f, 0.0f));
+			PropRules can;
+			can.health = 100.0f;
+			Actor& thing = field.game->add_actor(ActorKind::Prop, "Can");
+			auto seen = std::make_unique<Seen>();
+			Seen* view = seen.get();
+			PropComponent& prop = thing.add<PropComponent>(std::move(seen));
+			DestructibleComponent& body = thing.add<DestructibleComponent>(can);
+			body.damage(*field.game, 10.0f);
+			const bool unseen = view->hits == 0;   // no seconds given: not shown
+			prop.set_hit_seconds(0.2f);
+			body.damage(*field.game, 10.0f);
+			const int statesBefore = view->states;
+			field.game->step(dt, PlayerInput());
+			const float early = view->last;
+			for (int i = 0; i < 30; ++i) field.game->step(dt, PlayerInput());
+			check(unseen && early > 0.5f && early < 1.0f && view->last == 0.0f && view->states > statesBefore,
+				"a hit on a breakable shows on its view, fades out and puts it back");
+		}
+		{
 			EnemyRules walker;
 			walker.attackDamage = 10.0f;
 			Arena field(walker, b2Vec2(-7.0f, 0.0f));

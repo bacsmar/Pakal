@@ -15,6 +15,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +43,10 @@ def receives(catalog, e):
         return False
     if e['asset'] in mission_survival.TEMPLATE_OF and not e.get('unbreakable'):
         return False
+    # the generated floor (a coastal town's streets, sidewalks and ground, in cells): it is the floor even where a cell goes
+    # down to the sea
+    if e.get('role') == 'ground' and 'generated_mesh' in (e.get('tags') or []):
+        return not e['id'].startswith('backdrop')   # (the hill past the play area: the probes are enough there)
     # del piso, solo lo plano (calles, banquetas, losetas, marcas): las plantas chicas también se pisan, pero son hojas
     return kind(catalog, e['asset']) == 'ground' and flat(e['asset'])
 
@@ -66,21 +71,98 @@ def occludes(catalog, e):
 def uv_models(assets):
     """Las copias con el segundo juego de UV de los modelos (las que falten se hacen en Blender). Devuelve
     {modelo: (copia, área en m²)}."""
-    out = citykit.GENERATED
-    out.mkdir(parents=True, exist_ok=True)
     names = {a: f'{a}{SUFFIX}' for a in assets}
-    chunks = {n: [{'path': str(citykit.find_model(a)), 'x': 0.0, 'y': 0.0, 'z': 0.0, 'yaw': 0.0, 'scale': 1.0}]
-              for a, n in names.items() if not ((out / f'{n}.gltf').is_file() and (out / f'{n}.lm.json').is_file())}
-    if chunks:
-        plan = out / 'plan_lm.json'
+
+    def home(name):
+        # a model named by its path under Assets/ (a pack's, a generated mesh) gets its copy beside it, where find_model
+        # looks for it; the others in assets/generated
+        return citykit.ASSETS_ROOT if '/' in name else citykit.GENERATED
+
+    def fresh(a, n):
+        # a copy older than its model or than the script that unwraps it is made again
+        made = home(n) / f'{n}.lm.json'
+        if not ((home(n) / f'{n}.gltf').is_file() and made.is_file()):
+            return False
+        stamp = made.stat().st_mtime
+        return stamp >= citykit.find_model(a).stat().st_mtime and stamp >= (HERE / 'blender_batch.py').stat().st_mtime
+
+    for out in sorted({home(n) for n in names.values()}):
+        chunks = {n: [{'path': str(citykit.find_model(a)), 'x': 0.0, 'y': 0.0, 'z': 0.0, 'yaw': 0.0, 'scale': 1.0}]
+                  for a, n in names.items() if home(n) == out and not fresh(a, n)}
+        if not chunks:
+            continue
+        for n in chunks:
+            (out / n).parent.mkdir(parents=True, exist_ok=True)
+        citykit.GENERATED.mkdir(parents=True, exist_ok=True)
+        plan = citykit.GENERATED / 'plan_lm.json'
         plan.write_text(json.dumps({'chunks': chunks, 'lightmap_uv': True}), encoding='utf-8')
         result = subprocess.run([str(citykit.BLENDER), '--background', '--python', str(HERE / 'blender_batch.py'), '--',
                                  '--plan', str(plan), '--out', str(out)], capture_output=True, text=True)
         missing = [n for n in chunks if not (out / f'{n}.lm.json').is_file()]
         if missing:
             raise RuntimeError(f'Blender no hizo {missing}:\n' + (result.stdout + result.stderr)[-3000:])
-        print(f'modelos con UV de lightmap: {len(chunks)}')
-    return {a: (n, json.loads((out / f'{n}.lm.json').read_text(encoding='utf-8'))['area']) for a, n in names.items()}
+        print(f'modelos con UV de lightmap: {len(chunks)} en {out}')
+    # the material overrides beside a model (<model>.gltf.materials.xml: water that flows, wet sand, blends) go with its copy
+    for a, n in names.items():
+        source = citykit.find_model(a)
+        sidecar = source.with_name(source.name + '.materials.xml')
+        if sidecar.is_file():
+            (home(n) / f'{n}.gltf.materials.xml').write_bytes(sidecar.read_bytes())
+            keep_materials(source, home(n) / f'{n}.gltf')
+    return {a: (n, json.loads((home(n) / f'{n}.lm.json').read_text(encoding='utf-8'))['area']) for a, n in names.items()}
+
+
+def keep_materials(source, copy):
+    """What Blender's copy must keep of the model for its overrides to apply: its materials' names (Blender adds '.001'
+    when a name is taken), and the primitives that carry their own second UV (a coastal town's water: how near the shore
+    each point is) as the model had them; those do not take the lightmap."""
+    original = json.loads(source.read_text(encoding='utf-8'))
+    doc = json.loads(copy.read_text(encoding='utf-8'))
+    if doc.get('extras', {}).get('materialsKept'):
+        return   # (done when the copy was made)
+    for material in doc.get('materials', []):
+        name = re.sub(r'\.\d{3}$', '', material.get('name', ''))
+        if name != material.get('name'):
+            material['name'] = name
+    names = [m.get('name') for m in original.get('materials', [])]
+    own_uv = {names[p['material']]: p for m in original['meshes'] for p in m['primitives']
+              if 'TEXCOORD_1' in p['attributes'] and p.get('material') is not None}
+    if own_uv:
+        data = bytearray((copy.parent / doc['buffers'][0]['uri']).read_bytes())
+        source_data = (source.parent / original['buffers'][0]['uri']).read_bytes()
+        views = {}
+
+        def take(index):
+            """The model's accessor, its data appended to the copy's buffer: its index in the copy."""
+            accessor = dict(original['accessors'][index])
+            view_index = accessor['bufferView']
+            if view_index not in views:
+                view = dict(original['bufferViews'][view_index])
+                start, length = view.get('byteOffset', 0), view['byteLength']
+                while len(data) % 4:
+                    data.append(0)
+                view['byteOffset'] = len(data)
+                view['buffer'] = 0
+                data.extend(source_data[start:start + length])
+                doc['bufferViews'].append(view)
+                views[view_index] = len(doc['bufferViews']) - 1
+            accessor['bufferView'] = views[view_index]
+            doc['accessors'].append(accessor)
+            return len(doc['accessors']) - 1
+
+        materials = [m.get('name') for m in doc.get('materials', [])]
+        for mesh in doc['meshes']:
+            for primitive in mesh['primitives']:
+                kept = own_uv.get(materials[primitive['material']]) if primitive.get('material') is not None else None
+                if kept is None:
+                    continue
+                primitive['attributes'] = {k: take(v) for k, v in kept['attributes'].items()}
+                if 'indices' in kept:
+                    primitive['indices'] = take(kept['indices'])
+        doc['buffers'][0]['byteLength'] = len(data)
+        (copy.parent / doc['buffers'][0]['uri']).write_bytes(bytes(data))
+    doc.setdefault('extras', {})['materialsKept'] = True
+    copy.write_text(json.dumps(doc), encoding='utf-8')
 
 
 def pack(sizes, side):
@@ -99,6 +181,12 @@ def pack(sizes, side):
         x += s
         shelf = max(shelf, s)
     return corners
+
+
+def relative(scene):
+    """Whether the atlas is the light relative to the open floor (1 there): the game scales each time of day's probes with
+    it. A coastal town's (its missions are played at several times of day); the others' atlas is the ambient light."""
+    return scene.data.get('layout') == 'coastal'
 
 
 def layout(scene, catalog, lighter=None):
@@ -130,6 +218,14 @@ def layout(scene, catalog, lighter=None):
 def bake(scene, catalog, placed):
     """Hornea el atlas (si no está ya) y devuelve su ruta. 'placed' es lo que dio layout()."""
     lighting = downtown.LIGHTING
+    # a game's own light: PAKAL_LIGHTMAP_LOOK names one of the looks in PAKAL_GI_LOOKS (a file with "looks": {name:
+    # {"lighting"}}, as the light probes take them)
+    looks_file, look = os.environ.get('PAKAL_GI_LOOKS'), os.environ.get('PAKAL_LIGHTMAP_LOOK')
+    if looks_file and look and Path(looks_file).is_file():
+        spec = json.loads(Path(looks_file).read_text(encoding='utf-8')).get('looks', {}).get(look)
+        if spec:
+            lighting = dict(lighting, **spec.get('lighting', {}))
+            print(f'lightmap: the light of "{look}"')
     sun_render = lighting['sunDirection']                       # ejes del juego: x este, y arriba, z sur
     sun_travel = (sun_render[0], -sun_render[2], sun_render[1])  # ejes del nivel: x este, y norte, z arriba
     receivers, occluders = [], []
@@ -141,11 +237,20 @@ def bake(scene, catalog, placed):
                                   reference=kind(catalog, e['asset']) == 'ground'))
         elif occludes(catalog, e):
             occluders.append(dict(where, path=str(citykit.find_model(e['asset']))))
-    plan = {'atlas': ATLAS, 'samples': SAMPLES, 'sun': {'travel': sun_travel, 'color': lighting['sunColor']},
+    # the receivers' water (its overrides say so) stays out: it keeps the light probes' light
+    skip = set()
+    for r in receivers:
+        sidecar = Path(r['path'] + '.materials.xml')
+        if sidecar.is_file():
+            skip.update(re.findall(r'<material name="([^"]+)"[^>]*water="', sidecar.read_text(encoding='utf-8')))
+    plan = {'atlas': ATLAS, 'samples': SAMPLES, 'relative': relative(scene), 'skip_materials': sorted(skip), 'sun': {'travel': sun_travel, 'color': lighting['sunColor']},
             'sky': {'top': lighting['skyTop'], 'horizon': lighting['skyHorizon']}, 'ambient': lighting['ambient'],
             'bounds': scene.data['bounds'], 'receivers': receivers, 'occluders': occluders}
     text = json.dumps(plan, sort_keys=True)
-    key = hashlib.sha1((text + (HERE / 'blender_lightmap.py').read_text(encoding='utf-8')).encode()).hexdigest()[:16]
+    # (the receivers' copies too: their second UV is where each face lands in the atlas)
+    copies = ''.join(sorted({hashlib.sha1(Path(r['path']).with_suffix('.bin').read_bytes()).hexdigest()
+                             for r in {r['path']: r for r in receivers}.values()}))
+    key = hashlib.sha1((text + copies + (HERE / 'blender_lightmap.py').read_text(encoding='utf-8')).encode()).hexdigest()[:16]
     folder = citykit_assets() / 'lightmaps'
     folder.mkdir(parents=True, exist_ok=True)
     atlas = folder / f'{scene.name}_{key}.png'
@@ -179,5 +284,5 @@ def citykit_assets():
     return HERE.parent.parent / 'build-win64' / 'bin' / 'Assets' / 'zombies'
 
 
-def relative(atlas, level_dir):
+def relative_path(atlas, level_dir):
     return Path(os.path.relpath(atlas, level_dir)).as_posix()

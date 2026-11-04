@@ -126,12 +126,27 @@ namespace
 		}
 		return false;
 	}
+
+	// A closed outline (a sea's, a river's) leaves its inside walkable but cut off: a target in it is reached at its
+	// shore, a target inside it from outside is no path
+	void check_closed_outline()
+	{
+		PhysicsWorld2D world(b2Vec2(0.0f, 0.0f));
+		world.add_static_chain({ b2Vec2(10.0f, -10.0f), b2Vec2(40.0f, -10.0f), b2Vec2(40.0f, 30.0f), b2Vec2(10.0f, 30.0f) }, true, kWallCategory);
+		NavGrid2D nav(0.5f);
+		nav.build(world, b2Vec2(0.0f, -15.0f), b2Vec2(45.0f, 35.0f), 0.3f);
+		std::vector<b2Vec2> route;
+		check(nav.find_path(b2Vec2(2.0f, 10.0f), b2Vec2(10.6f, 10.0f), route) && !route.empty() && route.back().x < 10.0f,
+			"a target just inside a closed outline is reached at its shore");
+		check(!nav.find_path(b2Vec2(2.0f, 10.0f), b2Vec2(25.0f, 10.0f), route), "a target deep inside a closed outline has no path");
+	}
 }
 
 int main(int argc, char* argv[])
 {
 	// Unbuffered: every early return keeps its output
 	std::setvbuf(stdout, nullptr, _IONBF, 0);
+	check_closed_outline();
 	if (argc < 4)
 	{
 		std::fprintf(stderr, "Usage: GameplayTests <collision.txt> <spawn.txt> <entities.txt>\n");

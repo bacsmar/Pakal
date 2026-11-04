@@ -17,6 +17,7 @@
 #include <concepts>
 #include <condition_variable>
 #include <deque>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <memory>
@@ -79,10 +80,12 @@ namespace Pakal
 		AssetCache(const AssetCache&) = delete;
 		AssetCache& operator=(const AssetCache&) = delete;
 
-		// The asset of this file: the one already held by someone, or a new one that starts loading now
+		// The asset of this file: the one already held by someone, or a new one that starts loading now. The same file
+		// named two ways ("a/../b/x.gltf", "b/x.gltf") is the same asset.
 		template <class T>
-		AssetHandle<T> load(const std::string& path)
+		AssetHandle<T> load(const std::string& file)
 		{
+			const std::string path = std::filesystem::path(file).lexically_normal().generic_string();
 			std::lock_guard<std::mutex> lock(m_mutex);
 			const Key key{ std::type_index(typeid(T)), path };
 			if (auto known = std::static_pointer_cast<Asset<T>>(m_assets[key].lock()))

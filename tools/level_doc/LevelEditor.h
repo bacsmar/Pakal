@@ -11,6 +11,7 @@
 
 #pragma once
 #include "LevelDocument.h"
+#include "PrefabLibrary.h"
 
 #include <string>
 #include <vector>
@@ -21,6 +22,9 @@ namespace Pakal
 	{
 	public:
 		explicit LevelEditor(LevelDocument& document) : m_document(document) {}
+		// The level's prefabs: instantiate checks the prefab exists, apply-to-prefab and make-prefab write prefab
+		// files (a prefab's file is not part of the undo history: undoing gives back the level, not the prefab)
+		void set_prefabs(PrefabLibrary* prefabs) { m_prefabs = prefabs; }
 
 		// Does an operation; "" when done (then undoable), else what is wrong (and the document is as it was)
 		std::string apply(const Json& operation);
@@ -47,6 +51,7 @@ namespace Pakal
 		void remember(const Json& operation);
 
 		LevelDocument& m_document;
+		PrefabLibrary* m_prefabs = nullptr;
 		std::vector<Json> m_undo, m_redo;          // the document before each operation done, and after each one undone
 		std::vector<Json> m_done, m_undoneOps;     // the operations themselves
 	};

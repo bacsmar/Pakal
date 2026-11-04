@@ -68,6 +68,14 @@ Simulation (the pieces a game's fixed-step simulation uses; none of them knows a
 - `ScriptHost` (`source/scripting/`, library `PakalScripting`): a game's Lua scripts as tasks that wait on the game
   clock, with the functions the game binds by name. The only part of the engine that links Lua; `Pakal.dll` does not.
 
+The core and the backends
+
+`source/` holds the core (the engine, its systems' interfaces, entities, tasks, resources, persistence, telemetry) and,
+in folders of their own, the backends: `bgfx/`, `box2D/`, `sfml/`, `android/`, plus `mcp/`, `net/`, `scripting/` and
+`gameplay/`. `Engine::Settings` picks each system's implementation; `PAKAL_CORE_ONLY` (Config.h) picks the dummy ones
+(`DummyGraphicsSystem`, `DummyPhysicsSystem`, `DummyUIManager`, `DummyWindowManager`, `DummyInputManager`). The
+`PakalCore` target builds the core that way with every build (see BUILDING.md, "The core alone").
+
 Quick references
 
 - Engine: `source/Engine.h`, `source/Engine.cpp`

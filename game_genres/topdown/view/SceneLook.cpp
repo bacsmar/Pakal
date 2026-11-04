@@ -29,6 +29,7 @@ namespace Pakal::TopDown
 		read_floats(json.value("ambientGround", nlohmann::json()), look.ambientGround, 3);
 		read_floats(json.value("skyTop", nlohmann::json()), look.skyTop, 3);
 		read_floats(json.value("skyHorizon", nlohmann::json()), look.skyHorizon, 3);
+		look.skyClouds = json.value("skyClouds", look.skyClouds);
 		look.gloss = json.value("gloss", kDefaultGloss);
 
 		auto& shadows = look.shadows;
@@ -39,6 +40,11 @@ namespace Pakal::TopDown
 		shadows.strength = sj.value("strength", shadows.strength);
 		shadows.bias = sj.value("bias", shadows.bias);
 		shadows.normalOffset = sj.value("normalOffset", shadows.normalOffset);
+		// "clouds": {"strength", "size", "wind": [x, z]}: their shadows drifting over the ground (drawn at Extreme)
+		const nlohmann::json cj = sj.value("clouds", nlohmann::json::object());
+		shadows.cloudStrength = cj.value("strength", shadows.cloudStrength);
+		shadows.cloudSize = cj.value("size", shadows.cloudSize);
+		read_floats(cj.value("wind", nlohmann::json()), shadows.cloudWind, 2);
 
 		auto& post = look.post;
 		const nlohmann::json pj = postJson.is_object() ? postJson : nlohmann::json::object();
@@ -55,6 +61,23 @@ namespace Pakal::TopDown
 		post.aoRadius = pj.value("aoRadius", post.aoRadius);
 		post.aoBias = pj.value("aoBias", post.aoBias);
 		post.aoRange = pj.value("aoRange", post.aoRange);
+		// "bloom": {"strength", "threshold", "knee"}: the glow of what is bright (drawn at Extreme)
+		const nlohmann::json bj = pj.value("bloom", nlohmann::json::object());
+		post.bloomStrength = bj.value("strength", post.bloomStrength);
+		post.bloomThreshold = bj.value("threshold", post.bloomThreshold);
+		post.bloomKnee = bj.value("knee", post.bloomKnee);
+		// "fog": {"density", "start", "max", "sky", "horizon", "color"}; its color, the sky's horizon unless it says one
+		const nlohmann::json fj = pj.value("fog", nlohmann::json::object());
+		if (fj.is_object() && !fj.empty())
+		{
+			for (int i = 0; i < 3; ++i) post.fogColor[i] = look.skyHorizon[i];
+			read_floats(fj.value("color", nlohmann::json()), post.fogColor, 3);
+			post.fogDensity = fj.value("density", post.fogDensity);
+			post.fogStart = fj.value("start", post.fogStart);
+			post.fogMax = fj.value("max", post.fogMax);
+			post.fogSky = fj.value("sky", post.fogSky);
+			post.fogHorizon = fj.value("horizon", post.fogHorizon);
+		}
 		return look;
 	}
 
@@ -64,6 +87,7 @@ namespace Pakal::TopDown
 		graphics.set_ambient_light(ambient[0], ambient[1], ambient[2]);
 		graphics.set_ground_ambient_light(ambientGround[0], ambientGround[1], ambientGround[2]);
 		graphics.set_sky_colors(skyTop[0], skyTop[1], skyTop[2], skyHorizon[0], skyHorizon[1], skyHorizon[2]);
+		graphics.set_sky_clouds(skyClouds);
 		Pakal::MeshComponent3D_Bgfx::set_style(gloss, kGlossShininess);
 		graphics.set_shadows(shadows);
 		graphics.set_post_process(post);

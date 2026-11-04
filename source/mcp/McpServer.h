@@ -6,7 +6,9 @@
 //          later level editing). The server runs on its own thread; a tool that needs the graphics
 //          thread marshals the work itself (GraphicsSystem::execute_block).
 //
-// Security: loopback only. When a token is set, every request must carry "Authorization: Bearer <token>".
+// Security: loopback only (on a phone, reached from a computer through `adb forward`). When a token is set, every
+// request must carry "Authorization: Bearer <token>". Off unless the host starts it (PAKAL_MCP_PORT: EngineTools).
+// Windows sockets or POSIX ones (Android, Linux).
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -18,6 +20,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -40,8 +43,11 @@ namespace Pakal
 		McpServer(const McpServer&) = delete;
 		McpServer& operator=(const McpServer&) = delete;
 
-		// Register before start(). Names must be unique.
+		// Before or after start() (a game adds its own when it starts); a name given again replaces the tool
 		void add_tool(const std::string& name, Tool tool);
+		void remove_tool(const std::string& name);
+		// The server the host started (null when none): where a game or a genre adds its tools
+		static McpServer* active();
 
 		// Binds 127.0.0.1:port and starts serving. Returns false with 'error' set when it cannot bind.
 		bool start(unsigned short port, const std::string& token, std::string& error);
@@ -57,6 +63,7 @@ namespace Pakal
 		void handle_connection(uintptr_t socket);
 
 		std::map<std::string, Tool> m_tools;
+		std::recursive_mutex m_toolsMutex;
 		std::string m_token;
 		std::thread m_thread;
 		std::atomic<bool> m_running{ false };

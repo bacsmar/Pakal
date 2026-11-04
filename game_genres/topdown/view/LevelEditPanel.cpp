@@ -52,6 +52,18 @@ namespace Pakal::TopDown
 		m_document->assign_keys();
 	}
 
+	void LevelEditPanel::replace_document(const Pakal::LevelDocument& document)
+	{
+		// the editor keeps editing the same object (it holds a reference to it), its history read again from the folder
+		*m_document = document;
+		m_document->assign_keys();
+		m_meshes.assign(m_document->objects.size(), nullptr);
+		const std::filesystem::path file(m_path);
+		std::string error;
+		m_editor.load_history((file.parent_path() / (file.stem().string() + ".history")).string(), error);
+		if (m_document->find(m_selected) < 0) m_selected.clear();
+	}
+
 	void LevelEditPanel::set_mesh(size_t index, Pakal::MeshComponent3D_Bgfx* mesh)
 	{
 		if (index < m_meshes.size()) m_meshes[index] = mesh;
@@ -94,6 +106,13 @@ namespace Pakal::TopDown
 	{
 		std::string error;
 		const std::filesystem::path file(m_path);
+		// a layer over a base (LevelLayers) is loaded composed with its base: saving that would turn the layer into a
+		// whole level. Editing a layer as a layer is the level editor's
+		if (m_document->meta.contains("layers"))
+		{
+			m_status = "a layer over a base: not saved (edit it in the level editor)";
+			return false;
+		}
 		if (!m_document->save(m_path, error) || !m_editor.save_history((file.parent_path() / (file.stem().string() + ".history")).string(), error))
 		{
 			m_status = error;

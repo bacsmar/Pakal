@@ -612,8 +612,9 @@ namespace Zombies
 			return;
 		}
 		const Actor* player = m_game ? m_game->find(m_playerId) : nullptr;
-		const Vec3 head{ player ? player->position.x : 0.0f, 1.3f, player ? -player->position.y : 0.0f };
-		m_occluders.update(m_rig->eye(), head, player && !m_rig->panning(), dt);
+		// the player's chest and head: hidden by something, that fades
+		const b2Vec2 at = player ? player->drawn_position(m_clock.alpha()) : b2Vec2(0.0f, 0.0f);
+		m_occluders.update(m_rig->eye(), OccluderFade::body_points(at.x, at.y), player && !m_rig->panning(), dt);
 	}
 
 	// The camera follows the player from above and behind, or flies a scripted pan (CameraRig)
@@ -763,7 +764,7 @@ namespace Zombies
 			m_effects.reset();
 			m_game.reset();
 			m_enemyPools.clear();
-			m_objects.clear();
+			m_levelObjects.clear(nullptr);   // the game is gone: its actors with it
 			m_prototypes.clear(); // after every instance that shares their buffers
 			m_camera.reset();
 		});

@@ -81,6 +81,10 @@ msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformTool
 
 `PlatformToolset=v145` is the toolset of Visual Studio 2026. Use `v143` with Visual Studio 2022. The libraries are written to `external\bgfx\.build\win64_vs2022\bin`.
 
+Pakal carries a few fixes to bgfx as patches (`patches/bgfx/*.patch`, e.g. the OpenGL barrier that lets draws read
+what a compute shader wrote). The Android build applies them to the submodule when it configures; for the desktop
+libraries apply them before building bgfx: `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+
 ### 3. Configure and build
 
 Set `VCPKG_ROOT` to your vcpkg folder, then from a Developer shell:
@@ -92,6 +96,19 @@ cmake --build --preset win64-release
 ```
 
 The build output is in `build-win64\bin`: `PakalPlayer.exe`, `Pakal.dll`, `ContraGameModule.dll`, and the bgfx shaders for Direct3D 11.
+
+### 3b. The core alone
+
+Every build also builds `PakalCore` (`cmake/PakalCore.cmake`): the engine's core without its backends (no bgfx, Box2D,
+SFML, Assimp or RmlUi; the dummy graphics, physics, UI, window and input systems take their place), and `CoreTests`,
+which starts the engine with it, runs its systems and ends it. The target only sees `source/`, so a core file that
+includes a backend breaks it. To build only the core (bgfx need not be built):
+
+```bat
+cmake --preset win64-core
+cmake --build --preset win64-core-release
+build-core\bin\CoreTests.exe
+```
 
 ### 4. Run ContraGame
 
@@ -160,7 +177,7 @@ PakalPlayer.exe ZombiesModule.dll
 ```
 
 - `PAKAL_MCP_TOKEN` (optional): every request must send `Authorization: Bearer <token>`. Without a token the port is still loopback-only.
-- Tools: `get_status` (engine and graphics frame rates) and `screenshot` (`{"path": "...tga"}`; the file is written on the next frame, so wait a moment before reading it).
+- Tools: the engine's (source/mcp/EngineTools): `get_status`, `screenshot` (`{"path": "...tga"}`; the file is written on the next frame, so wait a moment before reading it), and the profiling and tuning ones (`get_stats`, `get_profile`, `get_settings`, `set_settings`, `set_camera`, `record_start`/`record_stop`): docs/PROFILING.md, which `tools/pakal_device.py` drives.
 - Quick check: `curl -X POST http://127.0.0.1:8765/mcp -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}"`.
 
 ### 7. Audio
@@ -398,3 +415,34 @@ After successfully building:
 - Check [BGFX_BACKEND.md](BGFX_BACKEND.md) for bgfx-specific features
 - Explore examples in `examples/` directory
 - Read [ARCHITECTURE.md](ARCHITECTURE.md) to understand engine design
+
+## Linux x64 (GCC, OpenGL)
+
+Run `tools/build_linux.sh` from the checkout. It builds an Ubuntu 24.04 Docker image
+with SFML 2, Assimp, Box2D, Lua, nlohmann-json and RmlUi 6.3, then builds bgfx,
+the engine, the desktop player, examples and tests. Set `PAKAL_BUILD_JOBS` to
+control parallelism (default: 4). Docker must be available to your user.
+
+Outputs are in `build-linux/bin` and `build-linux/lib`. With the same dependencies
+installed locally, use `cmake --preset linux-release`,
+`cmake --build --preset linux-release` and `ctest --test-dir build-linux --output-on-failure`.
+The bgfx libraries and `shadercRelease` must first be built from the submodules;
+the script shows the exact commands. Engine shaders are compiled for OpenGL 4.3.
+
+Private game data is supplied separately. For the workstation datapack layout,
+link `build-linux/bin/Assets` to `../../build-win64/bin/Assets`. Launch the player
+from `build-linux/bin`, passing the path to a Linux game module (`.so`). Windows
+DLLs and precompiled Windows libraries cannot be used by the Linux player.
+The Windows-only game targets have not been enabled by this build setup.
+
+On a Linux desktop with X11 or XWayland, `tools/run_linux.sh` runs ContraGame
+using the build image for runtime dependencies and software OpenGL. It forwards
+the existing X authority and PulseAudio socket when available. No host package
+installation is needed. Other modules can be passed as the first argument.
+
+Linux runtime notes: bgfx should own the graphics context; the SFML backend uses
+WindowBase when it only supplies window events. The desktop X11 visual is opaque,
+so the Linux backbuffer uses RGB. OpenGL user uniforms must be registered before
+their program is linked. If NVIDIA EGL/XWayland stalls on vblank, set
+`PAKAL_VSYNC=0`; Pakal's own FPS cap remains active. The Docker launcher is a
+software-rendering fallback; a native build uses the host GPU driver.

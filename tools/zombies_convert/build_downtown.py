@@ -321,6 +321,8 @@ def build_level(name, build, args, base=True):
                     sys.exit(f'objective {objective} {hook}: WarpPlayer names point {point} that the level does not have')
     if 'enemyPool' in result:
         document['enemyPool'] = result['enemyPool']  # zombie models made at load (bigger waves need more)
+    if 'crowd' in result:
+        document['crowd'] = result['crowd']          # spots for people standing by (a boat's crew), the game's to fill
     if 'lightmap' in result:
         document['lightmap'] = result['lightmap']    # the baked atlas of the fixed base; its objects say where they are in it
     (out / 'level.json').write_text(json.dumps(document, indent=1), encoding='utf-8')
@@ -339,7 +341,8 @@ def build_level(name, build, args, base=True):
             xs = [o['x'] / 100 for o in level.objects] or [0.0]
             ys = [o['y'] / 100 for o in level.objects] or [0.0]
             bounds = (min(xs) - 12.0, min(ys) - 12.0, max(xs) + 12.0, max(ys) + 12.0)
-        key = hashlib.sha1(json.dumps([2, level.boxes, lighting, bounds], sort_keys=True).encode()).hexdigest()
+        # (the first number: the bake's version; 3: the probes inside buildings filled from the open ones, bake_gi.fill_inside)
+        key = hashlib.sha1(json.dumps([3, level.boxes, lighting, bounds], sort_keys=True).encode()).hexdigest()
         meta_path = out / 'gi.json'
         previous = json.loads(meta_path.read_text()) if meta_path.is_file() and (out / 'gi.bin').is_file() else {}
         # levels with the same fixed scene (the missions of one town) share their baked light: kept by its key
@@ -362,6 +365,35 @@ def build_level(name, build, args, base=True):
             shutil.copyfile(out / 'gi.bin', cache / f'{key}.bin')
             shutil.copyfile(meta_path, cache / f'{key}.json')
             print('gi: %dx%dx%d probes, normalization %.2f' % (dims[0], dims[1], dims[2], norm))
+        # the other times of day the game's missions use (PAKAL_GI_LOOKS: a file with "looks": {name: {"lighting"}}, the
+        # campaign's): each baked with its own sun and sky into gi_<name>, kept by its key like the level's
+        looks_file = os.environ.get('PAKAL_GI_LOOKS')
+        looks = json.loads(Path(looks_file).read_text(encoding='utf-8')).get('looks', {}) if looks_file and Path(looks_file).is_file() else {}
+        for name, spec in looks.items():
+            lit = dict(lighting, **spec.get('lighting', {}))
+            if lit == lighting:
+                continue
+            look_sun = lit.get('sunDirection', sun_render)
+            look_travel = (look_sun[0], -look_sun[2], look_sun[1])
+            look_key = hashlib.sha1(json.dumps([3, level.boxes, lit, bounds], sort_keys=True).encode()).hexdigest()
+            look_meta = out / f'gi_{name}.json'
+            done = json.loads(look_meta.read_text()) if look_meta.is_file() and (out / f'gi_{name}.bin').is_file() else {}
+            if done.get('key') == look_key:
+                continue
+            if (cache / f'{look_key}.json').is_file() and (cache / f'{look_key}.bin').is_file():
+                shutil.copyfile(cache / f'{look_key}.bin', out / f'gi_{name}.bin')
+                shutil.copyfile(cache / f'{look_key}.json', look_meta)
+                continue
+            print(f'gi: baking the {name} light...')
+            probes, dims, origin, cell = bake_gi.bake(level.boxes, look_travel, lit['sunColor'], lit['skyTop'], lit['skyHorizon'],
+                                                      (bounds[0], bounds[1], bounds[2], bounds[3]))
+            rgba, norm = bake_gi.pack(probes, lit['ambient'])
+            meta = bake_gi.write(str(out / f'gi_{name}'), rgba, dims, origin, cell, (0.6, 2.4, 4.2, 6.0), norm)
+            meta['key'] = look_key
+            look_meta.write_text(json.dumps(meta, indent=1))
+            cache.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(out / f'gi_{name}.bin', cache / f'{look_key}.bin')
+            shutil.copyfile(look_meta, cache / f'{look_key}.json')
 
     # The sounds of the Survival level are shared: the bank points into its folder
     bank = json.loads((survival / 'audio.json').read_text(encoding='utf-8'))
