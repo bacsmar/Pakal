@@ -93,7 +93,14 @@ set(PAKAL_IMGUI_SOURCES
     ${BGFX_DIR}/examples/common/imgui/imgui.cpp)
 list(APPEND PAKAL_SOURCES ${PAKAL_POLY2TRI_SOURCES} ${BGFX_DIR}/examples/common/debugdraw/debugdraw.cpp ${PAKAL_MESHOPT_SOURCES}
     ${PAKAL_IMGUI_SOURCES})
-list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/(android|win32|unix|sfml|mcp)/.*")
+# The engine's tools (source/mcp: a server on 127.0.0.1 that measures and tunes the running game, reached through adb
+# forward) only in a build that asks for them (build_apk.py --tools), never in a release
+option(PAKAL_ENGINE_TOOLS "The engine's MCP tools (profiling and tuning through adb forward; never a release)" OFF)
+if(PAKAL_ENGINE_TOOLS)
+    list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/(android|win32|unix|sfml)/.*")
+else()
+    list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/(android|win32|unix|sfml|mcp)/.*")
+endif()
 list(APPEND PAKAL_SOURCES ${PAKAL_ROOT}/source/unix/ClockImpl.cpp)
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/PakalPlayerMain\\.cpp$")
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/persist/pugixml/pugixml\\.cpp$")
@@ -107,6 +114,9 @@ list(FILTER PAKAL_GENRE_SOURCES EXCLUDE REGEX ".*/topdown/net/.*")
 list(FILTER PAKAL_GENRE_NET_SOURCES INCLUDE REGEX ".*/topdown/net/.*")
 
 set(PAKAL_DEFINITIONS PAKAL_STATIC_LIB PAKAL_NO_SFML PAKAL_STATIC_MODULE RMLUI_STATIC_LIB pugi=pugi_pakal p2t=p2t_pakal)
+if(PAKAL_ENGINE_TOOLS)
+    list(APPEND PAKAL_DEFINITIONS PAKAL_ENGINE_TOOLS)
+endif()
 set(PAKAL_INCLUDES
     ${PAKAL_ROOT}/source ${PAKAL_ROOT}/game_genres ${PAKAL_ROOT}/tools ${PAKAL_ROOT}/tools/level_doc ${CMAKE_CURRENT_LIST_DIR}
     ${BGFX_DIR}/examples/common ${BGFX_DIR}/3rdparty ${BGFX_DIR}/3rdparty/native_app_glue ${BGFX_DIR}/3rdparty/meshoptimizer/src
@@ -237,6 +247,10 @@ pakal_compile_shader(vs_post vertex varying_post.def.sc)
 pakal_compile_shader(fs_post fragment varying_post.def.sc)
 pakal_compile_shader(fs_fsr_easu fragment varying_post.def.sc)
 pakal_compile_shader(fs_fsr_rcas fragment varying_post.def.sc)
+pakal_compile_shader(fs_bloom_down fragment varying_post.def.sc)
+pakal_compile_shader(fs_bloom_blur fragment varying_post.def.sc)
+pakal_compile_shader(fs_ao fragment varying_post.def.sc)
+pakal_compile_shader(fs_ao_blur fragment varying_post.def.sc)
 pakal_compile_shader(vs_particle vertex varying_particle.def.sc)
 pakal_compile_shader(fs_particle fragment varying_particle.def.sc)
 pakal_compile_shader(fs_particle_sprite fragment varying_particle.def.sc)

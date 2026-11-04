@@ -9,6 +9,8 @@
 //          log) or PAKAL_FPS_LOG. PAKAL_PROFILE_SKIP=<s> leaves the first seconds (the loading) out of
 //          the summary; PAKAL_PROFILE_SECONDS=<s> ends the run then. tools/pakal_prof.py reads the file,
 //          tools/pakal_bench.py compares a run with a device's budget. Off, a scope costs one test of a flag.
+//          Live (set_live: the engine's tools, PAKAL_MCP_PORT): it measures without a file and keeps the last records in
+//          memory, for a program that asks for them (records_after) while the game runs.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -16,6 +18,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <deque>
 #include <map>
 #include <mutex>
 #include <string>
@@ -51,6 +54,15 @@ namespace Pakal
 		// PAKAL_PROFILE_SECONDS have passed: the program should end (the engine asks each frame)
 		bool time_is_up() const;
 
+		// Live: measuring always (a recording's stop leaves it on), each second's record kept in memory (the last
+		// kHistory), without the log's line each second unless the environment asked for it
+		void set_live(bool live);
+		bool live() const { return m_live; }
+		static constexpr size_t kHistory = 600;
+		// The records kept whose "clock" (seconds since the program started, in every record) is after 'clock', oldest
+		// first, each one JSON text
+		std::vector<std::string> records_after(double clock);
+
 	private:
 		Profiler();
 		void write_second(double seconds);
@@ -63,6 +75,9 @@ namespace Pakal
 
 		bool m_enabled = false;
 		bool m_recording = false;
+		bool m_live = false, m_quiet = false;
+		std::deque<std::string> m_history;
+		std::chrono::steady_clock::time_point m_born = std::chrono::steady_clock::now();
 		std::string m_recordingPath;
 		std::mutex m_mutex;
 		std::FILE* m_file = nullptr;

@@ -311,6 +311,7 @@ namespace Pakal
 			o.zone = object.value("zone", std::string());
 			o.mesh = object.value("mesh", std::string());
 			o.prefab = object.value("prefab", std::string());
+			o.parent = object.value("parent", std::string());
 			if (object.contains("overrides") && object["overrides"].is_object()) o.overrides = object["overrides"];
 			o.x = object.value("x", 0.0);
 			o.y = object.value("y", 0.0);
@@ -457,6 +458,7 @@ namespace Pakal
 			if (!o.role.empty()) item["role"] = o.role;
 			if (!o.zone.empty()) item["zone"] = o.zone;
 			if (!o.prefab.empty()) item["prefab"] = o.prefab;
+			if (!o.parent.empty()) item["parent"] = o.parent;
 			if (!o.mesh.empty() || o.prefab.empty()) item["mesh"] = o.mesh;
 			if (!o.overrides.empty()) item["overrides"] = o.overrides;
 			item["x"] = o.x;

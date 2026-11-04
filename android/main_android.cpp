@@ -21,6 +21,9 @@
 #include "SoundManagerAAudio.h"
 #include "IUIManager.h"
 #include "bgfx/BgfxGraphicsSystem.h"
+#if defined(PAKAL_ENGINE_TOOLS)
+#include "mcp/EngineTools.h"
+#endif
 
 #include <android/asset_manager.h>
 #include <android/input.h>
@@ -889,6 +892,11 @@ namespace
 		}
 		module.register_game_factories(&engine);
 		g_engine = &engine;
+#if defined(PAKAL_ENGINE_TOOLS)
+		// a build with the engine's tools (build_apk.py --tools): on when pakal_env.txt has PAKAL_MCP_PORT, on 127.0.0.1 only;
+		// a computer reaches it through `adb forward tcp:<port> tcp:<port>` (tools/pakal_device.py, docs/PROFILING.md)
+		std::unique_ptr<McpServer> tools = start_engine_tools(engine);
+#endif
 		engine.run(module.application());
 		g_engine = nullptr;
 	}

@@ -504,7 +504,7 @@ namespace Zombies
 		// With the light baked (light probes, a lightmap) the ambient occlusion is in it: the screen's (SSAO) runs only at ultra,
 		// where there is power to spare; ZOMBIES_AO sets it anyway, and the dev panel can turn it on
 		if ((m_graphics->has_gi() || m_graphics->has_lightmap()) && !std::getenv("ZOMBIES_AO")
-			&& m_graphics->get_quality() != BgfxGraphicsSystem::Quality::Ultra && m_levelPost.aoStrength > 0.0f)
+			&& m_graphics->get_quality() < BgfxGraphicsSystem::Quality::Ultra && m_levelPost.aoStrength > 0.0f)
 		{
 			m_devGraphics.ao = false;
 			apply_dev_graphics();

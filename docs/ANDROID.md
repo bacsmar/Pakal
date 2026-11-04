@@ -70,6 +70,9 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
 - Debugging without a shell: whatever is put in `/sdcard/Android/data/<package>/files/pakal_env.txt` (`KEY=VALUE`
   per line) becomes an environment variable: `ZOMBIES_POST/SHADOWS/GI=off`, `ZOMBIES_AO`, `ZOMBIES_TILT`, `PAKAL_FPS_LOG=1`,
   `PAKAL_RENDER_HEIGHT`. With `PAKAL_EXTRACT=1`, assets are extracted again only if their hash changes (`assets.list`).
+- Profiling and tuning from a computer: a build with `--tools` serves the engine's tools when `pakal_env.txt` has
+  `PAKAL_MCP_PORT=<port>` (127.0.0.1 only, reached through `adb forward`); `tools/pakal_device.py` and the editor's
+  Device window use them. A build without `--tools` (any release) has none. See docs/PROFILING.md.
 - The picture is drawn smaller than the screen (720 px high, 1080 at Ultra: `PAKAL_RENDER_HEIGHT`) and scaled up to the
   screen with FSR 1 (EASU rebuilds the edges, RCAS sharpens); the interface is drawn after it, at the screen's size, so its
   text stays sharp. The game's OPTIONS (menu and pause panel, saved in the profile) turn FSR off: the picture is then drawn
@@ -81,17 +84,41 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
 
 ## Quality levels
 
-Each level raises samples and resolution over the one before (`BgfxGraphicsSystem::Quality`):
+Each level raises samples and resolution over the one before (`BgfxGraphicsSystem::Quality`). What each level draws is a
+`BgfxGraphicsSystem::QualityPreset` (shadow map bounds, the map of only what moves under a lightmap, the shadow filter's
+taps and spacing, whole or simplified casters, the post-process's share of samples, FXAA, bloom, the clouds' shadows): the
+engine has the values below built in (`default_preset`), and a game can give its own with `set_quality_preset`, read
+from its data when it starts (for example a `game/quality.json`, which can also say per level whether the screen-space
+occlusion runs and how far models are drawn). Changing them needs no rebuild. The defaults:
 
 | Level | Shadows | Post-processing (ambient occlusion, blur) | Render height |
 |---|---|---|---|
-| Minimum | 2048 map | 30 % of the samples | 720 px |
-| Medium | 2048 map | 50 % | 720 px |
-| High | what the level asks for | all | 720 px |
-| Ultra | what the level asks for | all | 1080 px |
+| Minimum | 2048 map, edge over 3x3 texels, simplified casters | 30 % of the samples | 720 px |
+| Medium | 2048 map, edge over 3x3 texels, simplified casters | 50 % | 720 px |
+| High | what the level asks for, edge over 4x4 texels, whole casters | all | 720 px |
+| Ultra | 4096 map at least, edge over 4x4 texels, whole casters | all | 1080 px |
+| Extreme | as Ultra, and the clouds' shadows | as Ultra, and smoothed edges (FXAA) and bloom | 1080 px |
+
+Extreme is never a device's default: the player picks it (the options) or `PAKAL_QUALITY=extreme`. What it adds:
+- **Smoothed edges:** FXAA in the post pass, before the upscale (FSR rebuilds edges, it does not smooth them; MSAA would
+  not leave the scene's depth for the post pass to read).
+- **Bloom:** the frame's bright parts at a quarter of its size, blurred twice (a near glow and a wider one, views 9-13),
+  added in the post pass. Only where the look asks for it: the `post` section's `bloom` (`strength`, `threshold`: the
+  brightest channel 0..1 from which a pixel glows, `knee`: how softly).
+- **The clouds' shadows:** soft patches of shade drifting over the town, in the lit shaders' sun visibility. The
+  `lighting` section's `shadows.clouds` (`strength`: how much of the sun a cloud takes, `size`: meters, `wind`:
+  meters a second, x and z).
+
+The shadow's edge is filtered by the sampler's comparison (`u_shadowFilter`: taps on each side and their spacing): four
+taps at every level: half a texel off the pixel at Minimum and Medium (an edge over 3x3 texels; an old phone's GPU spent
+half its frame on nine plain ones), a texel off from High up (over 4x4). Sixteen looked the same and, with the screen full
+of leaves, cost a tablet's GPU about an eighth of its frame rate.
+`PAKAL_SHADOW_FILTER=wide|narrow|<taps>x<spacing>` measures another filter. Below High a character casts a simplified mesh (a third of its
+triangles) and a tree's crown a clustered blob; at High and Ultra they cast all their triangles
+(`MeshComponent3D_Bgfx::set_full_shadows`; static models take it when they load).
 
 At Minimum, a level with a lightmap keeps only what moves in the shadow map (1024): the fixed scene's shadow on the floor
-is baked. `PAKAL_QUALITY=low|medium|high|ultra` sets it and `PAKAL_RENDER_HEIGHT` changes the height. Otherwise, on PC it is Ultra and on Android
+is baked. `PAKAL_QUALITY=low|medium|high|ultra|extreme` sets it and `PAKAL_RENDER_HEIGHT` changes the height. Otherwise, on PC it is Ultra and on Android
 it depends on the OS version: Android 8-9 Minimum, 10-13 High, 14 or later Ultra.
 
 What keeps the cost down:
@@ -152,8 +179,9 @@ window that was gone and the game crashed in `ANativeWindow_setBuffersGeometry`.
 
 When a phone cannot hold the frame rate (three seconds under 87% of it, or hot), `BgfxGraphicsSystem` steps down, one
 step at a time: first the picture is stretched plainly instead of by FSR (a little sharpness, far cheaper on a phone's
-GPU), then 30 FPS, then a smaller picture. With room to spare it steps back up, and a step up that does not hold makes
-it wait longer before the next try.
+GPU), then the frame cap one step down (60, 45, 30 by default; a game sets its own, `set_governor_steps`, for example from
+its `game/quality.json` "governor"), then a smaller picture. With room to spare (the frame's work fits well inside the next
+step up) it steps back up one step at a time, and a step up that does not hold makes it wait longer before the next try.
 - **What doesn't count:** the first six seconds after a level loads (a phone's driver draws a new level slowly at first),
   and any time the game holds it (`hold_governor(true)`), e.g. while its camera pans over a whole town.
 - **Turning it off:** `PAKAL_MAX_FPS` fixes the rate and turns it off; `PAKAL_GOVERNOR=0` turns it off too.

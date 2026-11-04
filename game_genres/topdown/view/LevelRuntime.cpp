@@ -95,6 +95,27 @@ namespace Pakal::TopDown
 		return instance;
 	}
 
+	std::unique_ptr<Pakal::MeshComponent3D_Bgfx> LevelRuntime::model_if_ready(const std::string& file, bool& failed)
+	{
+		failed = false;
+		Pakal::AssetHandle<Pakal::MeshComponent3D_Bgfx>& prototype = m_prototypes[file];
+		if (!prototype) prototype = m_assets->load<Pakal::MeshComponent3D_Bgfx>(file);
+		if (prototype->state() == Pakal::AssetState::Loading)
+		{
+			m_assets->pump(4.0);   // a little of the uploads each frame
+			if (prototype->state() == Pakal::AssetState::Loading) return nullptr;
+		}
+		const Pakal::MeshComponent3D_Bgfx* loaded = prototype->get();
+		if (!loaded || !loaded->is_loaded())
+		{
+			failed = true;
+			return nullptr;
+		}
+		auto instance = std::make_unique<Pakal::MeshComponent3D_Bgfx>(m_graphics);
+		instance->share_from(*loaded);
+		return instance;
+	}
+
 	void LevelRuntime::apply_look(const SceneLook& look)
 	{
 		look.apply(*m_graphics);

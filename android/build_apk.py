@@ -87,10 +87,11 @@ def run(command, **kwargs):
     subprocess.check_call([str(part) for part in command], **kwargs)
 
 
-def build_native(games, cheats=False):
+def build_native(games, cheats=False, tools=False):
     env = dict(os.environ, PATH=str(CMAKE_BIN) + os.pathsep + os.environ['PATH'])
     run([CMAKE_BIN / ('cmake' + EXE), '-S', ROOT / 'android', '-B', BUILD, '-G', 'Ninja',
          f'-DPAKAL_GAME_CHEATS={"ON" if cheats else "OFF"}',   # a game's cheats (its android.cmake reads it)
+         f'-DPAKAL_ENGINE_TOOLS={"ON" if tools else "OFF"}',   # the engine's MCP tools (docs/PROFILING.md)
          f'-DCMAKE_TOOLCHAIN_FILE={NDK / "build/cmake/android.toolchain.cmake"}',
          '-DANDROID_ABI=arm64-v8a', '-DANDROID_PLATFORM=android-26', '-DANDROID_STL=c++_static',
          '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON', '-DCMAKE_BUILD_TYPE=Release',
@@ -290,11 +291,13 @@ def build_java():
     return out / 'classes.dex'
 
 
-def write_manifest(game):
-    """android/AndroidManifest.xml with the game's package, name, library and permissions."""
+def write_manifest(game, tools=False):
+    """android/AndroidManifest.xml with the game's package, name, library and permissions (a socket, even on 127.0.0.1,
+    needs INTERNET: a build with the engine's tools asks for it)."""
     info = GAMES[game]
     text = (ROOT / 'android' / 'AndroidManifest.xml').read_text(encoding='utf-8')
-    permissions = ''.join(f'    <uses-permission android:name="{name}" />\n' for name in info['permissions'])
+    wanted = list(info['permissions']) + (['android.permission.INTERNET'] if tools and 'android.permission.INTERNET' not in info['permissions'] else [])
+    permissions = ''.join(f'    <uses-permission android:name="{name}" />\n' for name in wanted)
     text = (text.replace('@PACKAGE@', info['package']).replace('@LABEL@', info['label'])
             .replace('@LIBRARY@', info['library']).replace('    @PERMISSIONS@\n', permissions))
     if info.get('icon'):
@@ -328,7 +331,7 @@ def compile_icon(game):
     return compiled
 
 
-def make_apk(game='zombies', raw_textures=False, cheats=False):
+def make_apk(game='zombies', raw_textures=False, cheats=False, tools=False):
     stage = BUILD / f'apk_stage_{game}'
     stage_assets(stage, game, raw_textures)
     if not cheats:
@@ -338,7 +341,7 @@ def make_apk(game='zombies', raw_textures=False, cheats=False):
 
     unsigned = BUILD / 'pakal-unsigned.apk'
     icon = compile_icon(game)
-    run([BUILD_TOOLS / ('aapt2' + EXE), 'link', '-o', unsigned, '--manifest', write_manifest(game),
+    run([BUILD_TOOLS / ('aapt2' + EXE), 'link', '-o', unsigned, '--manifest', write_manifest(game, tools),
          '-I', PLATFORM / 'android.jar', '-A', stage, '--min-sdk-version', '26', '--target-sdk-version', '34',
          *([icon] if icon else [])])
 
@@ -375,12 +378,14 @@ def main():
     parser.add_argument('--skip-native', action='store_true', help='pack without rebuilding the libraries')
     parser.add_argument('--raw-textures', action='store_true', help='keep the PNG/TGA textures as they are (no ASTC)')
     parser.add_argument('--cheats', action='store_true', help="with the game's cheats (its tester's builds; never a release)")
+    parser.add_argument('--tools', action='store_true',
+                        help="with the engine's MCP tools, to profile and tune it through adb forward (docs/PROFILING.md; never a release)")
     args = parser.parse_args()
     games = list(GAMES) if args.game == 'all' else [args.game]
     if not args.skip_native:
-        build_native(games, args.cheats)
+        build_native(games, args.cheats, args.tools)
     for game in games:
-        make_apk(game, args.raw_textures, args.cheats)
+        make_apk(game, args.raw_textures, args.cheats, args.tools)
 
 
 if __name__ == '__main__':

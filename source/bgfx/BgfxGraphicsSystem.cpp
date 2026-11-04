@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <cmath>
@@ -216,6 +217,15 @@ namespace Pakal
 	// minutes after). A thermal status of moderate or worse counts as too slow. The room to spare is the game thread's work
 	// (the GPU's is not measured on phones): a step up that does not hold for a minute doubles the waits (up to 8 times),
 	// so a phone that cannot keep 60 stops trying, and one that can stays there.
+	void BgfxGraphicsSystem::set_governor_steps(std::vector<unsigned> steps)
+	{
+		steps.erase(std::remove_if(steps.begin(), steps.end(), [](unsigned fps) { return fps < 10 || fps > 240; }), steps.end());
+		if (steps.empty()) return;
+		std::sort(steps.begin(), steps.end(), std::greater<unsigned>());
+		steps.erase(std::unique(steps.begin(), steps.end()), steps.end());
+		m_governor.steps = std::move(steps);
+	}
+
 	void BgfxGraphicsSystem::governor_frame(double workMs)
 	{
 		Governor& g = m_governor;
@@ -248,32 +258,43 @@ namespace Pakal
 		}
 		const bool hot = g.thermal >= 2;   // ATHERMAL_STATUS_MODERATE
 		const bool slow = hot || g.lastFps < g.cap * 0.87;
-		const bool spare = !hot && g.lastWorkMs < 14.0;
+		const float scale = get_render_scale();
+		// the next cap down and up among the steps (below the starting cap)
+		unsigned lower = 0, higher = 0;
+		for (unsigned step : g.steps)
+		{
+			if (step > g.maxFps) continue;
+			if (step < g.cap && step > lower) lower = step;
+			if (step > g.cap && (higher == 0 || step < higher)) higher = step;
+		}
+		if (higher == 0 && g.cap < g.maxFps) higher = g.maxFps;
+		// room to spare: the frame's work fits well inside the next step up (its own cap while the picture is smaller)
+		const unsigned roomFor = scale < g.baseScale - 0.01f || higher == 0 ? g.cap : higher;
+		const bool spare = !hot && g.lastWorkMs < 1000.0 / double(std::max(roomFor, 1u)) * 0.85;
 		g.slow = slow ? g.slow + 1 : 0;
 		g.spare = spare ? g.spare + 1 : 0;
-		const float scale = get_render_scale();
 		if (g.slow >= 3)
 		{
 			g.slow = g.spare = 0;
 			g.secondsSinceDown = 0.0;
 			if (g.secondsSinceUp < 60.0) g.backoff = std::min(8.0, g.backoff * 2.0);   // the last step up did not hold
-			if (g.cap > 30 && m_upscaler == Upscaler::Fsr && is_upscaling())
+			if (lower > 0 && m_upscaler == Upscaler::Fsr && is_upscaling())
 			{
 				// the cheapest step first: a little sharpness instead of half the frames
 				m_upscaler = Upscaler::Bilinear;
 				g.fsrDropped = true;
 				LOG_INFO("[Governor] %.0f FPS (thermal %d): the picture stretched plainly instead of FSR", g.lastFps, g.thermal);
 			}
-			else if (g.cap > 30)
+			else if (lower > 0)
 			{
-				g.cap = 30;
-				set_target_fps(30);
-				LOG_INFO("[Governor] %.0f FPS (thermal %d): the picture at 30", g.lastFps, g.thermal);
+				g.cap = lower;
+				set_target_fps(lower);
+				LOG_INFO("[Governor] %.0f FPS (thermal %d): the picture at %u", g.lastFps, g.thermal, lower);
 			}
 			else if (can_upscale() && m_fsr && scale > 0.51f)
 			{
 				set_render_scale(std::max(0.5f, scale * 0.88f));
-				LOG_INFO("[Governor] %.0f FPS at 30 (thermal %d): render scale %.0f%%", g.lastFps, g.thermal, std::max(0.5f, scale * 0.88f) * 100.0f);
+				LOG_INFO("[Governor] %.0f FPS at %u (thermal %d): render scale %.0f%%", g.lastFps, g.cap, g.thermal, std::max(0.5f, scale * 0.88f) * 100.0f);
 			}
 		}
 		else if (g.spare >= 20)
@@ -285,12 +306,13 @@ namespace Pakal
 				set_render_scale(std::min(g.baseScale, scale / 0.88f));
 				LOG_INFO("[Governor] room to spare (%.1f ms a frame): render scale %.0f%%", g.lastWorkMs, std::min(g.baseScale, scale / 0.88f) * 100.0f);
 			}
-			else if (scale >= g.baseScale - 0.01f && g.cap < g.maxFps && g.secondsSinceDown > 120.0 * g.backoff)
+			else if (scale >= g.baseScale - 0.01f && higher > 0 && g.secondsSinceDown > 120.0 * g.backoff)
 			{
+				// one step up (the frame's work fits in it: 'spare')
 				g.secondsSinceUp = 0.0;
-				g.cap = g.maxFps;
-				set_target_fps(g.maxFps);
-				LOG_INFO("[Governor] room to spare (%.1f ms a frame): trying %u FPS again", g.lastWorkMs, g.maxFps);
+				g.cap = higher;
+				set_target_fps(higher);
+				LOG_INFO("[Governor] room to spare (%.1f ms a frame): trying %u FPS", g.lastWorkMs, higher);
 			}
 			else if (g.fsrDropped && g.cap >= g.maxFps && g.secondsSinceDown > 60.0 * g.backoff)
 			{
@@ -368,9 +390,9 @@ namespace Pakal
 #if !BX_PLATFORM_ANDROID
 		else
 		{
-			// A desktop window: drawn at its size up to PAKAL_RENDER_HEIGHT lines (1080 by default), scaled up past that
+			// A desktop window: drawn at its own size, or up to PAKAL_RENDER_HEIGHT lines and scaled up past that
 			const char* lines = std::getenv("PAKAL_RENDER_HEIGHT");
-			m_auto_render_height = lines ? static_cast<uint32_t>(std::max(0, std::atoi(lines))) : 1080u;
+			m_auto_render_height = lines ? static_cast<uint32_t>(std::max(0, std::atoi(lines))) : 0u;
 			if (m_auto_render_height > 0)
 			{
 				m_output_width = m_width;
@@ -527,6 +549,8 @@ namespace Pakal
 			bgfx::destroy(m_sprite_program);
 		}
 
+		for (auto& job : m_pictureJobs) release_picture(job);
+		m_pictureJobs.clear();
 		clear_gi_volume();
 		clear_lightmap();
 		destroy_shadow_resources();
@@ -586,7 +610,16 @@ namespace Pakal
 		bgfx::setViewMode(m_transparent_view_id, bgfx::ViewMode::Sequential);
 		bgfx::setViewRect(m_transparent_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
 
-		// Apply camera matrices if we have an active camera
+		// Apply camera matrices if we have an active camera (held at a pose by a tool: there, whatever the game set)
+		if (m_active_camera && m_cameraHeld)
+		{
+			if (auto* camera = dynamic_cast<CameraComponent3D_Bgfx*>(m_active_camera))
+			{
+				camera->set_position(m_heldEye[0], m_heldEye[1], m_heldEye[2]);
+				camera->look_at(m_heldLook[0], m_heldLook[1], m_heldLook[2]);
+				camera->update(0.0f);
+			}
+		}
 		if (m_active_camera)
 		{
 			m_active_camera->apply_camera(m_main_view_id);
@@ -606,13 +639,17 @@ namespace Pakal
 
 		// The sun's view first (view 3 runs before the rest), so the lit meshes can read its depth
 		// The interface goes after the upscale (drawn at the screen's size, not scaled up with the picture)
-		const bgfx::ViewId order[] = { m_shadow_view_id, m_main_view_id, m_transparent_view_id, m_post_view_id, m_overlay_view_id,
-			m_easu_view_id, m_rcas_view_id, m_ui_view_id, m_debug_ui_view_id };
+		const bgfx::ViewId order[] = { m_shadow_view_id, m_main_view_id, m_transparent_view_id, m_bloom_view_id,
+			bgfx::ViewId(m_bloom_view_id + 1), bgfx::ViewId(m_bloom_view_id + 2), bgfx::ViewId(m_bloom_view_id + 3),
+			bgfx::ViewId(m_bloom_view_id + 4), m_ao_view_id, bgfx::ViewId(m_ao_view_id + 1), bgfx::ViewId(m_ao_view_id + 2),
+			m_post_view_id, m_overlay_view_id, m_easu_view_id, m_rcas_view_id, m_ui_view_id,
+			m_debug_ui_view_id };
 		bgfx::setViewOrder(0, BX_COUNTOF(order), order);
 		prepare_shadow();
 		const float giOrigin[4] = { m_gi_origin[0], m_gi_origin[1], m_gi_origin[2], m_gi_enabled ? m_gi_origin[3] : 0.0f };
 		MeshComponent3D_Bgfx::set_gi_state(m_gi_texture, giOrigin, m_gi_size);
-		MeshComponent3D_Bgfx::set_lightmap_state(m_lightmap_enabled ? m_lightmap_texture : bgfx::TextureHandle(BGFX_INVALID_HANDLE), m_lightmap_shadow);
+		MeshComponent3D_Bgfx::set_lightmap_state(m_lightmap_enabled ? m_lightmap_texture : bgfx::TextureHandle(BGFX_INVALID_HANDLE), m_lightmap_shadow,
+			m_lightmap_relative);
 		MeshComponent3D_Bgfx::set_depth_program(m_shadow_program);
 
 		// Sky first (depth test LEQUAL, drawn at the far plane), then the lit 3D meshes
@@ -677,6 +714,10 @@ namespace Pakal
 
 		if (m_post_active)
 		{
+			m_bloom_active = m_post.enabled && m_post.bloomStrength > 0.0f && prepare_bloom();
+			if (m_bloom_active) render_bloom();
+			m_ao_active = m_post.enabled && m_post.aoStrength > 0.0f && prepare_ao();
+			if (m_ao_active) render_ao();
 			render_post();
 		}
 
@@ -710,12 +751,14 @@ namespace Pakal
 		}
 		m_debug_ui.render(get_output_width(), get_output_height(), BGFX_INVALID_HANDLE);
 		if (m_upscale_active) render_upscale();
+		if (!m_pictureJobs.empty()) draw_model_picture();
 
 		// Advance to next frame
 		{
 			PAKAL_PROFILE_SCOPE("gfx.submit");   // bgfx hands the frame to the driver (and waits for the one before)
-			bgfx::frame();
+			m_frameNumber = bgfx::frame();
 		}
+		if (!m_pictureJobs.empty()) finish_model_pictures();
 		const double frameMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - frameStart).count();
 		governor_frame(frameMs);
         {
@@ -735,13 +778,81 @@ namespace Pakal
 			profiler.frame(std::chrono::duration<double, std::milli>(now - previous).count());   // from one frame to the next
 			previous = now;
 			profiler.add("gfx.frame", frameMs);   // the graphics thread's own work
-			const bgfx::Stats* stats = bgfx::getStats();
-			profiler.counter("gpu.textures_mb", stats->textureMemoryUsed / (1024.0 * 1024.0));
-			profiler.counter("gpu.targets_mb", stats->rtMemoryUsed / (1024.0 * 1024.0));
-			profiler.counter("gpu.draws", stats->numDraw);
-			profiler.counter("render.width", m_width);
-			profiler.counter("render.height", m_height);
+			// measured live (the engine's tools): the GPU's time per pass too, from the first frame
+			if (profiler.live() && !m_gpuProfilerAsked)
+			{
+				m_gpuProfilerAsked = true;
+				set_gpu_profiler(true);
+			}
+			profile_frame(frameMs);
 		}
+	}
+
+	void BgfxGraphicsSystem::profile_frame(double frameMs)
+	{
+		(void)frameMs;
+		Profiler& profiler = Profiler::get();
+		const bgfx::Stats* stats = bgfx::getStats();
+		profiler.counter("gpu.textures_mb", stats->textureMemoryUsed / (1024.0 * 1024.0));
+		profiler.counter("gpu.targets_mb", stats->rtMemoryUsed / (1024.0 * 1024.0));
+		profiler.counter("gpu.draws", stats->numDraw);
+		uint64_t primitives = 0;
+		for (uint32_t topology = 0; topology < bgfx::Topology::Count; ++topology) primitives += stats->numPrims[topology];
+		profiler.counter("gpu.primitives", double(primitives));
+		profiler.counter("render.width", m_width);
+		profiler.counter("render.height", m_height);
+		profiler.counter("render.scale", get_render_scale());
+		profiler.counter("render.quality", double(int(m_quality)));
+		profiler.counter("render.fsr", m_fsr ? 1.0 : 0.0);
+		profiler.counter("governor.on", m_governor.enabled ? 1.0 : 0.0);
+		profiler.counter("governor.cap_fps", m_governor.cap);
+		if (stats->cpuTimerFreq) profiler.counter("cpu.submit_ms", 1000.0 * double(stats->cpuTimeFrame) / double(stats->cpuTimerFreq));
+		if (stats->gpuTimerFreq && stats->gpuTimeEnd > stats->gpuTimeBegin)
+		{
+			profiler.counter("gpu.frame_ms", 1000.0 * double(stats->gpuTimeEnd - stats->gpuTimeBegin) / double(stats->gpuTimerFreq));
+		}
+		if (m_gpuProfiler && stats->gpuTimerFreq)
+		{
+			// the passes of several views (bloom, ambient occlusion) summed under one name
+			std::map<std::string, double> passes;
+			for (uint16_t i = 0; i < stats->numViews; ++i)
+			{
+				const bgfx::ViewStats& view = stats->viewStats[i];
+				if (view.gpuTimeEnd <= view.gpuTimeBegin) continue;
+				passes[view_name(view.view)] += 1000.0 * double(view.gpuTimeEnd - view.gpuTimeBegin) / double(stats->gpuTimerFreq);
+			}
+			for (const auto& [name, ms] : passes) profiler.counter("gpu.view." + name + "_ms", ms);
+		}
+	}
+
+	void BgfxGraphicsSystem::set_gpu_profiler(bool on)
+	{
+		m_gpuProfiler = on;
+		bgfx::setDebug(BGFX_DEBUG_TEXT | (on || std::getenv("PAKAL_FPS_LOG") ? BGFX_DEBUG_PROFILER : 0));
+	}
+
+	void BgfxGraphicsSystem::hold_camera(const float eye[3], const float look[3])
+	{
+		std::copy(eye, eye + 3, m_heldEye);
+		std::copy(look, look + 3, m_heldLook);
+		m_cameraHeld = true;
+	}
+
+	const char* BgfxGraphicsSystem::view_name(bgfx::ViewId view) const
+	{
+		if (view == m_main_view_id) return "main";
+		if (view == m_transparent_view_id) return "transparent";
+		if (view == m_post_view_id) return "post";
+		if (view == m_overlay_view_id) return "overlay";
+		if (view == m_shadow_view_id) return "shadow";
+		if (view == m_ui_view_id) return "ui";
+		if (view == m_debug_ui_view_id) return "debug_ui";
+		if (view == m_easu_view_id) return "fsr_easu";
+		if (view == m_rcas_view_id) return "fsr_rcas";
+		if (view >= m_bloom_view_id && view < m_bloom_view_id + 5) return "bloom";
+		if (view >= m_ao_view_id && view < m_ao_view_id + 3) return "ao";
+		if (view == m_picture_view_id || view == m_picture_view_id + 1) return "pictures";
+		return "other";
 	}
 
 	// One line per second with what the last frame cost (PAKAL_FPS_LOG=1): draws and triangles, CPU and GPU time,
@@ -1298,8 +1409,23 @@ namespace Pakal
 		}
 		m_s_post_color = bgfx::createUniform("s_postColor", bgfx::UniformType::Sampler);
 		m_s_post_depth = bgfx::createUniform("s_postDepth", bgfx::UniformType::Sampler);
-		m_post_program = load_program("vs_post", "fs_post");
+		m_s_post_bloom = bgfx::createUniform("s_postBloom", bgfx::UniformType::Sampler);
 		m_post_layout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
+		m_u_bloom = bgfx::createUniform("u_bloom", bgfx::UniformType::Vec4);
+		m_s_bloom_input = bgfx::createUniform("s_bloomInput", bgfx::UniformType::Sampler);
+		for (int i = 0; i < 3; ++i)
+		{
+			const std::string name = "u_ao" + std::to_string(i);
+			m_u_ao[i] = bgfx::createUniform(name.c_str(), bgfx::UniformType::Vec4);
+		}
+		m_s_ao_input = bgfx::createUniform("s_aoInput", bgfx::UniformType::Sampler);
+		m_s_ao_depth = bgfx::createUniform("s_aoDepth", bgfx::UniformType::Sampler);
+		m_s_post_ao = bgfx::createUniform("s_postAo", bgfx::UniformType::Sampler);
+		m_post_program = load_program("vs_post", "fs_post");
+		m_bloom_down_program = load_program("vs_post", "fs_bloom_down");
+		m_bloom_blur_program = load_program("vs_post", "fs_bloom_blur");
+		m_ao_program = load_program("vs_post", "fs_ao");
+		m_ao_blur_program = load_program("vs_post", "fs_ao_blur");
 	}
 
 	void BgfxGraphicsSystem::destroy_post_resources()
@@ -1316,8 +1442,168 @@ namespace Pakal
 		}
 		if (bgfx::isValid(m_s_post_color)) bgfx::destroy(m_s_post_color);
 		if (bgfx::isValid(m_s_post_depth)) bgfx::destroy(m_s_post_depth);
-		m_s_post_color = m_s_post_depth = BGFX_INVALID_HANDLE;
+		if (bgfx::isValid(m_s_post_bloom)) bgfx::destroy(m_s_post_bloom);
+		m_s_post_color = m_s_post_depth = m_s_post_bloom = BGFX_INVALID_HANDLE;
 		m_post_width = m_post_height = 0;
+		destroy_bloom();
+		for (bgfx::ProgramHandle* program : { &m_bloom_down_program, &m_bloom_blur_program })
+		{
+			if (bgfx::isValid(*program)) bgfx::destroy(*program);
+			*program = BGFX_INVALID_HANDLE;
+		}
+		for (bgfx::UniformHandle* uniform : { &m_u_bloom, &m_s_bloom_input })
+		{
+			if (bgfx::isValid(*uniform)) bgfx::destroy(*uniform);
+			*uniform = BGFX_INVALID_HANDLE;
+		}
+		destroy_ao();
+		for (bgfx::ProgramHandle* program : { &m_ao_program, &m_ao_blur_program })
+		{
+			if (bgfx::isValid(*program)) bgfx::destroy(*program);
+			*program = BGFX_INVALID_HANDLE;
+		}
+		for (bgfx::UniformHandle* uniform : { &m_u_ao[0], &m_u_ao[1], &m_u_ao[2], &m_s_ao_input, &m_s_ao_depth, &m_s_post_ao })
+		{
+			if (bgfx::isValid(*uniform)) bgfx::destroy(*uniform);
+			*uniform = BGFX_INVALID_HANDLE;
+		}
+	}
+
+	bool BgfxGraphicsSystem::prepare_bloom()
+	{
+		if (!bgfx::isValid(m_bloom_down_program) || !bgfx::isValid(m_bloom_blur_program)) return false;
+		const uint32_t width = std::max(1u, m_width / 4), height = std::max(1u, m_height / 4);
+		if (bgfx::isValid(m_bloom_target[0]) && m_bloom_width == width && m_bloom_height == height) return true;
+		destroy_bloom();
+		for (int i = 0; i < 2; ++i)
+		{
+			m_bloom_color[i] = bgfx::createTexture2D(uint16_t(width), uint16_t(height), false, 1, bgfx::TextureFormat::BGRA8,
+				BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
+			m_bloom_target[i] = bgfx::createFrameBuffer(1, &m_bloom_color[i], true);
+		}
+		m_bloom_width = width;
+		m_bloom_height = height;
+		LOG_INFO("[BgfxGraphicsSystem] Bloom targets %ux%u created", width, height);
+		return bgfx::isValid(m_bloom_target[0]) && bgfx::isValid(m_bloom_target[1]);
+	}
+
+	void BgfxGraphicsSystem::destroy_bloom()
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			if (bgfx::isValid(m_bloom_target[i])) bgfx::destroy(m_bloom_target[i]);   // its texture goes with it
+			m_bloom_target[i] = BGFX_INVALID_HANDLE;
+			m_bloom_color[i] = BGFX_INVALID_HANDLE;
+		}
+		m_bloom_width = m_bloom_height = 0;
+	}
+
+	// The bright parts a quarter of the size (into the first target), then blurred across and down twice: a step of one
+	// texel, then of two (a near glow and a wider one), ending in the first target, which the post pass adds
+	void BgfxGraphicsSystem::render_bloom()
+	{
+		const float bw = float(m_bloom_width), bh = float(m_bloom_height);
+		auto pass = [&](bgfx::ViewId view, int target, bgfx::ProgramHandle program, bgfx::TextureHandle input, const float params[4])
+		{
+			bgfx::setViewName(view, "Bloom");
+			bgfx::setViewFrameBuffer(view, m_bloom_target[target]);
+			bgfx::setViewClear(view, BGFX_CLEAR_NONE);
+			bgfx::setViewRect(view, 0, 0, uint16_t(m_bloom_width), uint16_t(m_bloom_height));
+			bgfx::TransientVertexBuffer triangle;
+			if (bgfx::getAvailTransientVertexBuffer(3, m_post_layout) < 3) return;
+			bgfx::allocTransientVertexBuffer(&triangle, 3, m_post_layout);
+			const float corners[9] = { -1.0f, -1.0f, 0.0f, 3.0f, -1.0f, 0.0f, -1.0f, 3.0f, 0.0f };
+			std::copy(corners, corners + 9, reinterpret_cast<float*>(triangle.data));
+			set_uniform(m_u_bloom, "u_bloom", params);
+			bgfx::setVertexBuffer(0, &triangle);
+			bgfx::setTexture(0, m_s_bloom_input, input);
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+			bgfx::submit(view, program);
+		};
+		const float down[4] = { 1.0f / float(m_width), 1.0f / float(m_height), m_post.bloomThreshold, std::max(0.01f, m_post.bloomKnee) };
+		pass(m_bloom_view_id, 0, m_bloom_down_program, m_post_color, down);
+		for (int i = 0; i < 2; ++i)
+		{
+			const float spread = float(i + 1);
+			const float across[4] = { spread / bw, 0.0f, 0.0f, 0.0f };
+			const float downward[4] = { 0.0f, spread / bh, 0.0f, 0.0f };
+			pass(bgfx::ViewId(m_bloom_view_id + 1 + i * 2), 1, m_bloom_blur_program, m_bloom_color[0], across);
+			pass(bgfx::ViewId(m_bloom_view_id + 2 + i * 2), 0, m_bloom_blur_program, m_bloom_color[1], downward);
+		}
+	}
+
+	bool BgfxGraphicsSystem::prepare_ao()
+	{
+		if (!bgfx::isValid(m_ao_program) || !bgfx::isValid(m_ao_blur_program) || !bgfx::isValid(m_post_depth)) return false;
+		const uint32_t width = std::max(1u, m_width / 2), height = std::max(1u, m_height / 2);
+		if (bgfx::isValid(m_ao_target[0]) && m_ao_width == width && m_ao_height == height) return true;
+		destroy_ao();
+		for (int i = 0; i < 2; ++i)
+		{
+			m_ao_color[i] = bgfx::createTexture2D(uint16_t(width), uint16_t(height), false, 1, bgfx::TextureFormat::BGRA8,
+				BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
+			m_ao_target[i] = bgfx::createFrameBuffer(1, &m_ao_color[i], true);
+		}
+		m_ao_width = width;
+		m_ao_height = height;
+		LOG_INFO("[BgfxGraphicsSystem] Occlusion targets %ux%u created", width, height);
+		return bgfx::isValid(m_ao_target[0]) && bgfx::isValid(m_ao_target[1]);
+	}
+
+	void BgfxGraphicsSystem::destroy_ao()
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			if (bgfx::isValid(m_ao_target[i])) bgfx::destroy(m_ao_target[i]);   // its texture goes with it
+			m_ao_target[i] = BGFX_INVALID_HANDLE;
+			m_ao_color[i] = BGFX_INVALID_HANDLE;
+		}
+		m_ao_width = m_ao_height = 0;
+	}
+
+	// The occlusion at half the size (into the first target), then blurred across (into the second) and down (back into the
+	// first, which the post pass reads)
+	void BgfxGraphicsSystem::render_ao()
+	{
+		float scaleX = 1.0f, scaleY = 1.0f, nearPlane = 0.1f, farPlane = 1000.0f;
+		if (m_active_camera)
+		{
+			m_active_camera->get_projection(scaleX, scaleY, nearPlane, farPlane);
+		}
+		const float ao0[4] = { 1.0f / float(m_width), 1.0f / float(m_height), nearPlane, farPlane };
+		const float ao1[4] = { scaleX, scaleY, m_post.aoRadius, m_post.aoBias };
+		const float taps = std::clamp(std::round(8.0f * m_post.quality), 4.0f, 8.0f);
+		auto pass = [&](bgfx::ViewId view, int target, bgfx::ProgramHandle program, bgfx::TextureHandle input, float stepX, float stepY)
+		{
+			bgfx::setViewName(view, "Occlusion");
+			bgfx::setViewFrameBuffer(view, m_ao_target[target]);
+			bgfx::setViewClear(view, BGFX_CLEAR_NONE);
+			bgfx::setViewRect(view, 0, 0, uint16_t(m_ao_width), uint16_t(m_ao_height));
+			bgfx::TransientVertexBuffer triangle;
+			if (bgfx::getAvailTransientVertexBuffer(3, m_post_layout) < 3) return;
+			bgfx::allocTransientVertexBuffer(&triangle, 3, m_post_layout);
+			const float corners[9] = { -1.0f, -1.0f, 0.0f, 3.0f, -1.0f, 0.0f, -1.0f, 3.0f, 0.0f };
+			std::copy(corners, corners + 9, reinterpret_cast<float*>(triangle.data));
+			const float ao2[4] = { m_post.aoStrength, taps, stepX, stepY };
+			set_uniform(m_u_ao[0], "u_ao0", ao0);
+			set_uniform(m_u_ao[1], "u_ao1", ao1);
+			set_uniform(m_u_ao[2], "u_ao2", ao2);
+			bgfx::setVertexBuffer(0, &triangle);
+			if (bgfx::isValid(input))
+			{
+				bgfx::setTexture(0, m_s_ao_input, input);
+				bgfx::setTexture(1, m_s_ao_depth, m_post_depth);
+			}
+			else
+			{
+				bgfx::setTexture(0, m_s_ao_depth, m_post_depth);
+			}
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+			bgfx::submit(view, program);
+		};
+		pass(m_ao_view_id, 0, m_ao_program, BGFX_INVALID_HANDLE, 0.0f, 0.0f);
+		pass(bgfx::ViewId(m_ao_view_id + 1), 1, m_ao_blur_program, m_ao_color[0], 1.0f / float(m_ao_width), 0.0f);
+		pass(bgfx::ViewId(m_ao_view_id + 2), 0, m_ao_blur_program, m_ao_color[1], 0.0f, 1.0f / float(m_ao_height));
 	}
 
 	bool BgfxGraphicsSystem::prepare_post_target()
@@ -1442,11 +1728,11 @@ namespace Pakal
 			bgfx::allocTransientVertexBuffer(&triangle, 3, m_post_layout);
 			const float corners[9] = { -1.0f, -1.0f, 0.0f, 3.0f, -1.0f, 0.0f, -1.0f, 3.0f, 0.0f };
 			std::copy(corners, corners + 9, reinterpret_cast<float*>(triangle.data));
-			bgfx::setUniform(m_u_fsr[0], con0);
-			bgfx::setUniform(m_u_fsr[1], con1);
-			bgfx::setUniform(m_u_fsr[2], con2);
-			bgfx::setUniform(m_u_fsr[3], con3);
-			bgfx::setUniform(m_u_fsr[4], rcas);
+			set_uniform(m_u_fsr[0], "u_fsr0", con0);
+			set_uniform(m_u_fsr[1], "u_fsr1", con1);
+			set_uniform(m_u_fsr[2], "u_fsr2", con2);
+			set_uniform(m_u_fsr[3], "u_fsr3", con3);
+			set_uniform(m_u_fsr[4], "u_fsr4", rcas);
 			bgfx::setVertexBuffer(0, &triangle);
 			bgfx::setTexture(0, m_s_fsr_input, input);
 			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
@@ -1460,6 +1746,20 @@ namespace Pakal
 		}
 		pass(m_easu_view_id, m_easu_target, m_easu_program, m_frame_color);
 		pass(m_rcas_view_id, BGFX_INVALID_HANDLE, m_rcas_program, m_easu_color);
+	}
+
+	void BgfxGraphicsSystem::set_uniform(bgfx::UniformHandle handle, const char* name, const float* value)
+	{
+		bgfx::setUniform(handle, value);
+		if (!m_record_uniforms) return;
+		std::lock_guard<std::mutex> lock(m_recorded_mutex);
+		m_recorded_uniforms[name] = { value[0], value[1], value[2], value[3] };
+	}
+
+	std::map<std::string, std::array<float, 4>> BgfxGraphicsSystem::recorded_uniforms()
+	{
+		std::lock_guard<std::mutex> lock(m_recorded_mutex);
+		return m_recorded_uniforms;
 	}
 
 	void BgfxGraphicsSystem::render_post()
@@ -1477,21 +1777,21 @@ namespace Pakal
 		const PostSettings& s = m_post.enabled ? m_post : neutral;
 		const float p0[4] = { s.exposure, s.contrast, s.saturation, s.vignette };
 		const float p1[4] = { s.gain[0], s.gain[1], s.gain[2], s.tiltBlur };
-		const float p2[4] = { s.tiltFocus, s.tiltBand, s.aoStrength, s.aoRadius };
+		const float p2[4] = { s.tiltFocus, s.tiltBand, m_ao_active ? 1.0f : 0.0f, s.aoRadius };
 		const float p3[4] = { 1.0f / float(m_width), 1.0f / float(m_height), nearPlane, farPlane };
 		const float p4[4] = { scaleX, scaleY, s.aoBias, s.aoRange };
 		bgfx::setViewFrameBuffer(m_post_view_id, get_screen_target());
 		bgfx::setViewClear(m_post_view_id, BGFX_CLEAR_NONE);
 		bgfx::setViewRect(m_post_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
 		// (a touch would discard the uniforms set before it, so the draw state is set after the view is set up)
-		bgfx::setUniform(m_u_post[0], p0);
-		bgfx::setUniform(m_u_post[1], p1);
-		bgfx::setUniform(m_u_post[2], p2);
-		bgfx::setUniform(m_u_post[3], p3);
-		bgfx::setUniform(m_u_post[4], p4);
-		bgfx::setUniform(m_u_post[5], m_fade);
-		const float p6[4] = { s.quality, m_sketch, 0.0f, 0.0f };
-		bgfx::setUniform(m_u_post[6], p6);
+		set_uniform(m_u_post[0], "u_post0", p0);
+		set_uniform(m_u_post[1], "u_post1", p1);
+		set_uniform(m_u_post[2], "u_post2", p2);
+		set_uniform(m_u_post[3], "u_post3", p3);
+		set_uniform(m_u_post[4], "u_post4", p4);
+		set_uniform(m_u_post[5], "u_post5", m_fade);
+		const float p6[4] = { s.quality, m_sketch, m_antialias ? 1.0f : 0.0f, m_bloom_active ? s.bloomStrength : 0.0f };
+		set_uniform(m_u_post[6], "u_post6", p6);
 		// the view's translation: where the world's origin is in the view (the sketch's strokes are fixed to the scene)
 		float p7[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		const float* view = nullptr;
@@ -1502,13 +1802,13 @@ namespace Pakal
 			p7[1] = view[13];
 			p7[2] = view[14];
 		}
-		bgfx::setUniform(m_u_post[7], p7);
+		set_uniform(m_u_post[7], "u_post7", p7);
 		const float p8[4] = { s.fogColor[0], s.fogColor[1], s.fogColor[2], m_post.enabled ? s.fogDensity : 0.0f };
 		const float p9[4] = { s.fogStart, s.fogMax, s.fogSky, s.fogHorizon };
-		bgfx::setUniform(m_u_post[8], p8);
-		bgfx::setUniform(m_u_post[9], p9);
+		set_uniform(m_u_post[8], "u_post8", p8);
+		set_uniform(m_u_post[9], "u_post9", p9);
 		const float p10[4] = { m_sky_horizon[0], m_sky_horizon[1], m_sky_horizon[2], 0.0f };
-		bgfx::setUniform(m_u_post[10], p10);
+		set_uniform(m_u_post[10], "u_post10", p10);
 
 		bgfx::TransientVertexBuffer triangle;
 		if (bgfx::getAvailTransientVertexBuffer(3, m_post_layout) < 3)
@@ -1522,6 +1822,9 @@ namespace Pakal
 		bgfx::setVertexBuffer(0, &triangle);
 		bgfx::setTexture(0, m_s_post_color, m_post_color);
 		bgfx::setTexture(1, m_s_post_depth, m_post_depth);
+		// (a sampler is always bound: without bloom, the frame itself, unread)
+		bgfx::setTexture(2, m_s_post_bloom, m_bloom_active ? m_bloom_color[0] : m_post_color);
+		bgfx::setTexture(3, m_s_post_ao, m_ao_active ? m_ao_color[0] : m_post_color);
 		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
 		bgfx::submit(m_post_view_id, m_post_program);
 	}
@@ -1551,7 +1854,7 @@ namespace Pakal
 		m_gi_origin[3] = 0.0f;
 	}
 
-	bool BgfxGraphicsSystem::set_lightmap(const std::string& path, float shadowStrength)
+	bool BgfxGraphicsSystem::set_lightmap(const std::string& path, float shadowStrength, bool relative)
 	{
 		clear_lightmap();
 		m_lightmap_texture = MeshComponent3D_Bgfx::load_level_texture(path);
@@ -1561,6 +1864,7 @@ namespace Pakal
 			return false;
 		}
 		m_lightmap_shadow = shadowStrength;
+		m_lightmap_relative = relative;
 		apply_quality();
 		LOG_INFO("[BgfxGraphicsSystem] Lightmap '%s' loaded", path.c_str());
 		return true;
@@ -1594,19 +1898,27 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::prepare_shadow()
 	{
+		{
+			// the clouds' shadows, carried by the wind (the clock wraps: the noise does not repeat, its coordinates stay small)
+			static const auto clockStart = std::chrono::steady_clock::now();
+			const float seconds = std::fmod(std::chrono::duration<float>(std::chrono::steady_clock::now() - clockStart).count(), 20000.0f);
+			const float clouds[4] = { m_shadows.cloudStrength, 1.0f / std::max(1.0f, m_shadows.cloudSize),
+				m_shadows.cloudWind[0] * seconds, m_shadows.cloudWind[1] * seconds };
+			MeshComponent3D_Bgfx::set_clouds(clouds);
+		}
 		m_shadow_active = false;
 		const float off[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		float identity[16];
 		bx::mtxIdentity(identity);
 		if (!m_shadows.enabled || !m_active_camera || !bgfx::isValid(m_shadow_program))
 		{
-			MeshComponent3D_Bgfx::set_shadow_state(BGFX_INVALID_HANDLE, identity, off);
+			MeshComponent3D_Bgfx::set_shadow_state(BGFX_INVALID_HANDLE, identity, off, off);
 			return;
 		}
 		float fx = 0.0f, fy = 0.0f, fz = 0.0f;
 		if (!m_active_camera->get_focus(fx, fy, fz))
 		{
-			MeshComponent3D_Bgfx::set_shadow_state(BGFX_INVALID_HANDLE, identity, off);
+			MeshComponent3D_Bgfx::set_shadow_state(BGFX_INVALID_HANDLE, identity, off, off);
 			return;
 		}
 
@@ -1675,7 +1987,8 @@ namespace Pakal
 		bx::mtxMul(lightViewProj, view, proj);
 		bx::mtxMul(shadowMatrix, lightViewProj, crop);
 		const float params[4] = { m_shadows.strength, m_shadows.bias, 1.0f / float(m_shadow_size), m_shadows.normalOffset };
-		MeshComponent3D_Bgfx::set_shadow_state(m_shadow_depth, shadowMatrix, params);
+		const float filter[4] = { float(m_shadow_taps), m_shadow_spacing, 0.0f, 0.0f };
+		MeshComponent3D_Bgfx::set_shadow_state(m_shadow_depth, shadowMatrix, params, filter);
 		MeshComponent3D_Bgfx::set_cull_frustum(1, lightViewProj, caps->homogeneousDepth);
 		m_shadow_active = true;
 	}
@@ -1759,6 +2072,7 @@ namespace Pakal
 			if (name == "medium") return Quality::Medium;
 			if (name == "high") return Quality::High;
 			if (name == "ultra") return Quality::Ultra;
+			if (name == "extreme") return Quality::Extreme;
 		}
 #if defined(__ANDROID__)
 		// The system's version stands for the phone's age: Android 8-9 low, 10-13 high, 14 and later ultra
@@ -1779,6 +2093,7 @@ namespace Pakal
 		case Quality::Low: return "low";
 		case Quality::Medium: return "medium";
 		case Quality::High: return "high";
+		case Quality::Extreme: return "extreme";
 		default: return "ultra";
 		}
 	}
@@ -1789,27 +2104,77 @@ namespace Pakal
 		m_shadows = m_shadowsWanted;
 		m_post = m_postWanted;
 		m_shadow_moving_only = false;
-		switch (m_quality)
+		const QualityPreset& preset = m_presets[size_t(m_quality)];
+		if (preset.shadowMapMax > 0) m_shadows.mapSize = std::min(m_shadows.mapSize, preset.shadowMapMax);
+		if (preset.shadowMapMin > 0) m_shadows.mapSize = std::max(m_shadows.mapSize, preset.shadowMapMin);
+		// with a lightmap the fixed scene's shadow on the floor is baked: the map can hold only what moves (characters, props
+		// that break), smaller
+		if (preset.movingOnlyMap > 0 && bgfx::isValid(m_lightmap_texture) && m_lightmap_enabled)
+		{
+			m_shadow_moving_only = true;
+			m_shadows.mapSize = std::min(m_shadows.mapSize, preset.movingOnlyMap);
+		}
+		m_post.quality = std::min(m_post.quality, preset.postQuality);
+		m_shadow_taps = std::clamp(preset.shadowTaps, 2, 4);
+		m_shadow_spacing = std::max(0.25f, preset.shadowSpacing);
+		bool fullCasters = preset.fullCasters;
+		// to measure what each costs: PAKAL_SHADOW_FILTER=wide|narrow|<taps>x<spacing> (3x1: nine taps a texel apart),
+		// PAKAL_SHADOW_CASTERS=full|simple, PAKAL_SHADOW_MAX=<texels>
+		if (const char* text = std::getenv("PAKAL_SHADOW_FILTER"))
+		{
+			const std::string filter(text);
+			int taps = 0;
+			float spacing = 1.0f;
+			if (filter == "wide") taps = 4;
+			else if (filter == "narrow") taps = 2;
+			else std::sscanf(text, "%dx%f", &taps, &spacing);
+			if (taps >= 2 && taps <= 4)
+			{
+				m_shadow_taps = taps;
+				m_shadow_spacing = std::max(0.25f, spacing);
+			}
+		}
+		if (const char* text = std::getenv("PAKAL_SHADOW_CASTERS")) fullCasters = std::string(text) == "full";
+		if (const char* text = std::getenv("PAKAL_SHADOW_MAX")) m_shadows.mapSize = std::min<uint32_t>(m_shadows.mapSize, std::max(256, std::atoi(text)));
+		MeshComponent3D_Bgfx::set_full_shadows(fullCasters);
+		m_antialias = preset.antialias;
+		if (!preset.bloom) m_post.bloomStrength = 0.0f;
+		if (!preset.clouds) m_shadows.cloudStrength = 0.0f;
+	}
+
+	// The built-in presets (a game may give its own: set_quality_preset). Four reads of the shadow map at every level:
+	// sixteen looked the same and a screen of leaves paid ~8 fps for them on a tablet
+	BgfxGraphicsSystem::QualityPreset BgfxGraphicsSystem::default_preset(Quality quality)
+	{
+		QualityPreset preset;
+		switch (quality)
 		{
 		case Quality::Low:
-			m_shadows.mapSize = std::min<uint32_t>(m_shadows.mapSize, 2048);
-			// With a lightmap the fixed scene's shadow on the floor is baked: the map only holds what moves (characters,
-			// props that break), at half the size
-			if (bgfx::isValid(m_lightmap_texture) && m_lightmap_enabled)
-			{
-				m_shadow_moving_only = true;
-				m_shadows.mapSize = std::min<uint32_t>(m_shadows.mapSize, 1024);
-			}
-			m_post.quality = std::min(m_post.quality, 0.3f);
+			preset.shadowMapMax = 2048;
+			preset.movingOnlyMap = 1024;
+			preset.postQuality = 0.3f;
 			break;
 		case Quality::Medium:
-			m_shadows.mapSize = std::min<uint32_t>(m_shadows.mapSize, 2048);
-			m_post.quality = std::min(m_post.quality, 0.5f);
+			preset.shadowMapMax = 2048;
+			preset.postQuality = 0.5f;
 			break;
 		case Quality::High:
+			preset.shadowSpacing = 2.0f;
+			preset.fullCasters = true;
+			break;
 		case Quality::Ultra:
+			preset.shadowMapMin = 4096;
+			preset.shadowSpacing = 2.0f;
+			preset.fullCasters = true;
+			break;
+		case Quality::Extreme:
+			preset.shadowMapMin = 4096;
+			preset.shadowSpacing = 2.0f;
+			preset.fullCasters = true;
+			preset.antialias = preset.bloom = preset.clouds = true;
 			break;
 		}
+		return preset;
 	}
 
 	void BgfxGraphicsSystem::render_sky()
@@ -1819,8 +2184,8 @@ namespace Pakal
 			return;
 		}
 
-		bgfx::setUniform(m_u_sky_top, m_sky_top);
-		bgfx::setUniform(m_u_sky_horizon, m_sky_horizon);
+		set_uniform(m_u_sky_top, "u_skyTop", m_sky_top);
+		set_uniform(m_u_sky_horizon, "u_skyHorizon", m_sky_horizon);
 		{
 			// the sun where the light comes from, and the time the clouds drift with
 			static const auto clockStart = std::chrono::steady_clock::now();
@@ -1831,8 +2196,8 @@ namespace Pakal
 			// the light's color brought down to a color (its intensity may be over 1), and the clouds' cover
 			const float peak = std::max(1.0f, std::max(m_light_color[0], std::max(m_light_color[1], m_light_color[2])));
 			const float sunColor[4] = { m_light_color[0] / peak, m_light_color[1] / peak, m_light_color[2] / peak, m_sky_clouds };
-			bgfx::setUniform(m_u_sky_sun, sun);
-			bgfx::setUniform(m_u_sky_sun_color, sunColor);
+			set_uniform(m_u_sky_sun, "u_skySun", sun);
+			set_uniform(m_u_sky_sun_color, "u_skySunColor", sunColor);
 		}
 		bgfx::setVertexBuffer(0, m_sky_vb);
 		bgfx::setIndexBuffer(m_sky_ib);
@@ -2011,10 +2376,10 @@ namespace Pakal
 				}
 				if (!seen.empty() && drawn)
 				{
-					bgfx::setUniform(m_u_light_dir, m_light_dir);
-					bgfx::setUniform(m_u_light_color, m_light_color);
-					bgfx::setUniform(m_u_ambient, m_ambient);
-					bgfx::setUniform(m_u_ambient_ground, m_ambient_ground);
+					set_uniform(m_u_light_dir, "u_lightDir", m_light_dir);
+					set_uniform(m_u_light_color, "u_lightColor", m_light_color);
+					set_uniform(m_u_ambient, "u_ambient", m_ambient);
+					set_uniform(m_u_ambient_ground, "u_ambientGround", m_ambient_ground);
 					drawn = MeshComponent3D_Bgfx::render_instances(m_main_view_id,
 						taken.front()->uses_pbr() ? m_pbr_inst_program : m_mesh_inst_program, seen, false);
 				}
@@ -2055,10 +2420,10 @@ namespace Pakal
 			// Light uniforms are set before each draw, so every mesh gets the same values (only for the ones drawn: most of a
 			// town is out of the frame)
 			if (!mesh->drawn_in_main_view()) continue;
-			bgfx::setUniform(m_u_light_dir, m_light_dir);
-			bgfx::setUniform(m_u_light_color, m_light_color);
-			bgfx::setUniform(m_u_ambient, m_ambient);
-			bgfx::setUniform(m_u_ambient_ground, m_ambient_ground);
+			set_uniform(m_u_light_dir, "u_lightDir", m_light_dir);
+			set_uniform(m_u_light_color, "u_lightColor", m_light_color);
+			set_uniform(m_u_ambient, "u_ambient", m_ambient);
+			set_uniform(m_u_ambient_ground, "u_ambientGround", m_ambient_ground);
 			mesh->render(m_main_view_id, program);
 		}
 
@@ -2091,10 +2456,10 @@ namespace Pakal
 			{
 				continue;
 			}
-			bgfx::setUniform(m_u_light_dir, m_light_dir);
-			bgfx::setUniform(m_u_light_color, m_light_color);
-			bgfx::setUniform(m_u_ambient, m_ambient);
-			bgfx::setUniform(m_u_ambient_ground, m_ambient_ground);
+			set_uniform(m_u_light_dir, "u_lightDir", m_light_dir);
+			set_uniform(m_u_light_color, "u_lightColor", m_light_color);
+			set_uniform(m_u_ambient, "u_ambient", m_ambient);
+			set_uniform(m_u_ambient_ground, "u_ambientGround", m_ambient_ground);
 			mesh->render(m_transparent_view_id, program, true);
 		}
 	}

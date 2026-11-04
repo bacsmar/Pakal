@@ -65,6 +65,9 @@ namespace Pakal::TopDown
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> model(const std::string& file);
 		// Any thread: start decoding these files now
 		void prefetch(const std::vector<std::string>& files);
+		// Graphics thread: the same without waiting: nullptr while the file is still decoding in the background (ask again
+		// next frame), and 'failed' set when it does not load
+		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> model_if_ready(const std::string& file, bool& failed);
 		// Graphics thread: the scene's light and picture
 		void apply_look(const SceneLook& look);
 		// Graphics thread: models standing on the floor, each centered on its point: [{ "model", "at": [x, y], "yaw" }]

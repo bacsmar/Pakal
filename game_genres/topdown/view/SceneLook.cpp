@@ -40,6 +40,11 @@ namespace Pakal::TopDown
 		shadows.strength = sj.value("strength", shadows.strength);
 		shadows.bias = sj.value("bias", shadows.bias);
 		shadows.normalOffset = sj.value("normalOffset", shadows.normalOffset);
+		// "clouds": {"strength", "size", "wind": [x, z]}: their shadows drifting over the ground (drawn at Extreme)
+		const nlohmann::json cj = sj.value("clouds", nlohmann::json::object());
+		shadows.cloudStrength = cj.value("strength", shadows.cloudStrength);
+		shadows.cloudSize = cj.value("size", shadows.cloudSize);
+		read_floats(cj.value("wind", nlohmann::json()), shadows.cloudWind, 2);
 
 		auto& post = look.post;
 		const nlohmann::json pj = postJson.is_object() ? postJson : nlohmann::json::object();
@@ -56,6 +61,11 @@ namespace Pakal::TopDown
 		post.aoRadius = pj.value("aoRadius", post.aoRadius);
 		post.aoBias = pj.value("aoBias", post.aoBias);
 		post.aoRange = pj.value("aoRange", post.aoRange);
+		// "bloom": {"strength", "threshold", "knee"}: the glow of what is bright (drawn at Extreme)
+		const nlohmann::json bj = pj.value("bloom", nlohmann::json::object());
+		post.bloomStrength = bj.value("strength", post.bloomStrength);
+		post.bloomThreshold = bj.value("threshold", post.bloomThreshold);
+		post.bloomKnee = bj.value("knee", post.bloomKnee);
 		// "fog": {"density", "start", "max", "sky", "horizon", "color"}; its color, the sky's horizon unless it says one
 		const nlohmann::json fj = pj.value("fog", nlohmann::json::object());
 		if (fj.is_object() && !fj.empty())

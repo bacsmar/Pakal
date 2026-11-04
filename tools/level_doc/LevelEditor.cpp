@@ -54,13 +54,13 @@ namespace Pakal
 			"add     mesh, x, y [, z, yaw, scale, name, key, role, zone]",
 			"copy    object, x, y [, key]                             (a copy without the game id)",
 			"delete  object                                            (and its collision)",
-			"set     object, field, value                              (field: key, name, role, zone, mesh, baked, id)",
+			"set     object, field, value                              (field: key, name, role, zone, mesh, baked, id, parent)",
 			"zone    name, kind, rect: [x0, y0, x1, y1]                (adds or changes a zone; meters)",
 			"unzone  name",
 			"spawn   x, y                                              (where the player starts)",
 			"camera  [path,] data                                      (a camera path as JSON, \"intro\" by default; data null removes it)",
 			"place   object [, x, y, z, rot: [x, y, z], scale, basis: [9]]  (meters, degrees; what a gizmo does; rot or scale drop a basis)",
-			"instantiate  prefab, x, y [, z, yaw, scale, key, zone, role]  (an object made from a prefab)",
+			"instantiate  prefab, x, y [, z, yaw, rot: [x, y, z], scale, key, zone, role]  (an object made from a prefab)",
 			"override     object, path, value                         (path: a JSON pointer into its prefab, \"/components/Destructible/health\")",
 			"revert       object [, path]                             (one override, or all of them)",
 			"apply-to-prefab  object                                  (its overrides go into its prefab's file; every object made from it changes)",
@@ -68,6 +68,8 @@ namespace Pakal
 			"insert       data [, at]                                 (an object as JSON, as the level file writes it; at: its index)",
 			"keys                                                      (a readable key for every object without one)",
 			"zoning  [all]                                             (each object's zone from where it stands)",
+			"batch   ops: [...]                                        (several operations as one: one undo; all done or none)",
+			"prefab-library  folder                                   (a shared prefab folder the level looks in, relative to it)",
 		};
 		return lines;
 	}
@@ -248,7 +250,13 @@ namespace Pakal
 		{
 			if (std::string error = object(index); !error.empty()) return error;
 			const int id = doc.objects[static_cast<size_t>(index)].id;
+			const LevelObject gone = doc.objects[static_cast<size_t>(index)];
 			doc.objects.erase(doc.objects.begin() + index);
+			// its children hang from its parent now (or from nothing)
+			for (auto& o : doc.objects)
+			{
+				if (!gone.key.empty() && o.parent == gone.key) o.parent = gone.parent;
+			}
 			if (id >= 0) doc.walls.erase(std::remove_if(doc.walls.begin(), doc.walls.end(), [id](const LevelWall& w) { return w.id == id; }), doc.walls.end());
 			return std::string();
 		}
@@ -262,6 +270,11 @@ namespace Pakal
 			if (field == "key")
 			{
 				if (text().empty() || !key_free(text(), index)) return "the key '" + text() + "' is empty or taken";
+				// its children follow the new key
+				for (auto& child : doc.objects)
+				{
+					if (!o.key.empty() && child.parent == o.key) child.parent = text();
+				}
 				o.key = text();
 			}
 			else if (field == "name") o.name = text();
@@ -279,6 +292,30 @@ namespace Pakal
 			}
 			else if (field == "baked") o.baked = given.is_boolean() ? given.get<bool>() : text() == "true";
 			else if (field == "id") o.id = given.is_number() ? given.get<int>() : std::atoi(text().c_str());
+			else if (field == "parent")
+			{
+				const std::string parent = given.is_null() ? std::string() : text();
+				if (!parent.empty())
+				{
+					const int at = doc.find(parent);
+					if (at < 0) return "no object '" + parent + "'";
+					if (at == index) return "an object cannot hang from itself";
+					// not under one of its own children
+					std::string up = doc.objects[static_cast<size_t>(at)].key;
+					for (size_t depth = 0; !up.empty() && depth <= doc.objects.size(); ++depth)
+					{
+						if (up == o.key) return "'" + parent + "' hangs from '" + o.key + "': that would be a loop";
+						const int next = doc.find(up);
+						up = next >= 0 ? doc.objects[static_cast<size_t>(next)].parent : std::string();
+					}
+					if (o.key.empty()) return "an object without a key cannot hang from another";
+					o.parent = doc.objects[static_cast<size_t>(at)].key;
+				}
+				else
+				{
+					o.parent.clear();
+				}
+			}
 			else return "set cannot change '" + field + "'";
 			return std::string();
 		}
@@ -411,6 +448,12 @@ namespace Pakal
 			o.y = y * units;
 			if (number(op, "z", z)) o.z = z * units;
 			if (number(op, "yaw", value)) o.rot[2] = value;
+			const Json rot = op.value("rot", Json());
+			if (rot.is_array())
+			{
+				if (rot.size() != 3 || !rot[0].is_number() || !rot[1].is_number() || !rot[2].is_number()) return "rot must be three angles";
+				for (size_t i = 0; i < 3; ++i) o.rot[i] = rot[i].get<double>();
+			}
 			if (number(op, "scale", value))
 			{
 				if (value <= 0.0) return "the scale must be positive";
@@ -420,6 +463,29 @@ namespace Pakal
 			if (!key_free(o.key, -1)) return "the key '" + o.key + "' is taken";
 			doc.objects.push_back(o);
 			if (doc.objects.back().key.empty()) doc.assign_keys();
+			return std::string();
+		}
+		if (name == "batch")
+		{
+			// one operation made of several: apply() keeps the state before all of them, so one undo takes them all back,
+			// and the first that fails leaves the document as it was
+			const Json ops = op.value("ops", Json());
+			if (!ops.is_array()) return "batch needs ops: an array of operations";
+			for (size_t i = 0; i < ops.size(); ++i)
+			{
+				if (!ops[i].is_object()) return "batch: operation " + std::to_string(i + 1) + " is not an object";
+				if (ops[i].value("op", std::string()) == "batch") return "batch: a batch inside a batch";
+				if (std::string error = run(ops[i]); !error.empty()) return "batch: operation " + std::to_string(i + 1) + ": " + error;
+			}
+			return std::string();
+		}
+		if (name == "prefab-library")
+		{
+			const std::string folder = op.value("folder", std::string());
+			if (folder.empty()) return "prefab-library needs a folder (relative to the level)";
+			Json& libraries = doc.meta[PrefabLibrary::kLibrariesKey];
+			if (!libraries.is_array()) libraries = Json::array();
+			if (std::find(libraries.begin(), libraries.end(), Json(folder)) == libraries.end()) libraries.push_back(folder);
 			return std::string();
 		}
 		if (name == "override" || name == "revert")

@@ -117,6 +117,29 @@ int main()
 		std::filesystem::remove_all(folder);
 	}
 
+	// a hierarchy: "parent" names the object one hangs from; places stay the level's; loops and unknown parents refused
+	{
+		LevelDocument doc = sample();
+		doc.assign_keys();
+		LevelEditor editor(doc);
+		const std::string cone = doc.objects[0].key, other = doc.objects[1].key, house = doc.objects[2].key;
+		check(editor.apply({ { "op", "set" }, { "object", cone }, { "field", "parent" }, { "value", house } }).empty() && doc.objects[0].parent == house,
+			"an object hangs from another");
+		check(editor.apply({ { "op", "set" }, { "object", house }, { "field", "parent" }, { "value", cone } }).size() > 0, "a loop is refused");
+		check(editor.apply({ { "op", "set" }, { "object", cone }, { "field", "parent" }, { "value", "nothing" } }).size() > 0, "an unknown parent is refused");
+		LevelDocument back;
+		std::string error;
+		check(back.from_json(doc.to_json(), error) && back.objects[0].parent == house && back.objects[1].parent.empty()
+			&& !doc.to_json()["objects"][1].contains("parent"), "it is written only when there is one, and read back");
+		check(editor.apply({ { "op", "set" }, { "object", house }, { "field", "key" }, { "value", "house_main" } }).empty() && doc.objects[0].parent == "house_main",
+			"a parent's new key is followed");
+		check(editor.apply({ { "op", "set" }, { "object", other }, { "field", "parent" }, { "value", cone } }).empty()
+			&& editor.apply({ { "op", "delete" }, { "object", cone } }).empty() && doc.objects[0].parent == "house_main",
+			"a deleted parent's children hang from its own parent");
+		check(editor.apply({ { "op", "set" }, { "object", other }, { "field", "parent" }, { "value", nullptr } }).empty() && doc.objects[0].parent.empty(),
+			"null takes it off");
+	}
+
 	std::printf("%s (%d failures)\n", failures == 0 ? "ALL PASSED" : "FAILED", failures);
 	return failures == 0 ? 0 : 1;
 }

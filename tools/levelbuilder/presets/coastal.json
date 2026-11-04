@@ -32,8 +32,7 @@
    ],
    "threshold": 0.15,
    "yaw": "along",
-   "clearance": 0.4,
-   "unbreakable": true
+   "clearance": 0.4
   },
   {
    "name": "boats_beach",

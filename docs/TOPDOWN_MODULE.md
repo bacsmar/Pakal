@@ -152,7 +152,8 @@ muzzle's light flickering around the shooter, blood pools and splats that stay a
 pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`; SFML on desktops, AAudio on
 Android), `CameraRig` (the camera at a fixed offset from what it follows, scripted pans, the shake; its `rest_pose` is
 what the simulation may use), `InputMapper` (the step's `PlayerInput` from the keys, the mouse and the sticks, relative to
-the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections), `LevelRuntime` (what a
+the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections; the clouds' shadows
+(`lighting.shadows.clouds`) and the bloom (`post.bloom`) are drawn at the Extreme quality only, docs/ANDROID.md), `LevelRuntime` (what a
 level state does around its game: the camera and the input, models as instances of prototypes in an `AssetCache`, the
 scenery and the look, each character's animated model, the fixed steps and the views drawn between them, and letting it all
 go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand), `UiPanel` (a
@@ -161,7 +162,7 @@ on it),
 `LevelObjects` (a level document's objects by key: each one's model from its prefab or its own mesh, and for one with
 components a prop actor made with the `ComponentSchema`; brought in line with an edited document object by object;
 `LevelPlacement.h` places them), `LevelEditPanel` (the running level's editor: an ImGui panel over its document and `LevelEditor`, picking and dragging
-on the floor, gizmos; docs/LEVEL_EDITOR.md), `OccluderFade` (models between the camera and the player fade out) and `RenderSpace.h` (`floor_point`: the
+on the floor, gizmos; docs/LEVEL_EDITOR.md), `OccluderFade` (models between the camera and the player fade out: the camera's lines to the player's chest and head are tested against each model's box in its own frame, then, inside the box, against the model's columns, `MeshComponent3D_Bgfx::Columns`, the lowest and highest surface in each of up to 64 x 64 cells seen from above, so the air beside an awning or under a sign does not make a building fade) and `RenderSpace.h` (`floor_point`: the
 plane to render space).
 
 `ComponentSchema` (the components a level's object can carry: fields with their types, defaults and ranges, and how each

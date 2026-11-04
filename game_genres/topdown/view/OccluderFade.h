@@ -4,10 +4,13 @@
 // Purpose: Buildings, trees and other tall things fade while they stand between the camera and the
 //          player, and come back after. Each keeps the box of its model and its placement: the camera's
 //          line to the player is tested in the model's own frame, so a turned building fades only when
-//          the building itself is in the way, not the room around it.
+//          the building itself is in the way, not the room around it; and, inside the box, against the
+//          model's columns (MeshComponent3D_Bgfx::Columns), so the air beside an awning or under a
+//          sign does not count.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "topdown/MouseAim.h"
+#include "bgfx/MeshComponent3D_Bgfx.h"
 
 #include <string>
 #include <vector>
@@ -50,6 +53,9 @@ namespace Pakal::TopDown
 		// when not watching) come back
 		void update(const Vec3& eye, const std::vector<Vec3>& targets, bool watching, float dt);
 		void update(const Vec3& eye, const Vec3& target, bool watching, float dt) { update(eye, std::vector<Vec3>{ target }, watching, dt); }
+
+		static bool segment_hits_columns(const Pakal::MeshComponent3D_Bgfx::Columns& columns, const Vec3& from, const Vec3& to,
+			const Vec3& low, const Vec3& high);
 
 	private:
 		std::vector<Occluder> m_occluders;

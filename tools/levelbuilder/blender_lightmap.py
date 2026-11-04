@@ -110,6 +110,21 @@ def world_sky(scene, top, horizon, strength):
     return background
 
 
+def drop_faces(obj, materials):
+    """The faces of the named materials (water: its second UV is its own, not a place in the atlas) out of the bake."""
+    import bmesh
+    import re
+    slots = {i for i, slot in enumerate(obj.material_slots)
+             if slot.material and re.sub(r'\.\d{3}$', '', slot.material.name) in materials}
+    if not slots:
+        return
+    mesh = bmesh.new()
+    mesh.from_mesh(obj.data)
+    bmesh.ops.delete(mesh, geom=[f for f in mesh.faces if f.material_index in slots], context='FACES')
+    mesh.to_mesh(obj.data)
+    mesh.free()
+
+
 def main():
     args = args_after_dashes()
     plan = json.loads(open(args.plan, encoding='utf-8').read())
@@ -151,6 +166,7 @@ def main():
             data[0::2] = u0 + data[0::2] * scale
             data[1::2] = v0 + data[1::2] * scale
             layer.data.foreach_set('uv', data)
+            drop_faces(obj, set(plan.get('skip_materials', [])))
             receivers.append(obj)
     for entity in plan['occluders']:
         place(mold(entity['path']), entity, collection, own_mesh=False)
@@ -241,7 +257,8 @@ def main():
     level = indirect[mask].mean(axis=1) if mask.any() else indirect.reshape(-1, 3).mean(axis=1)
     level = level[level > 1e-4]
     typical = float(np.median(level)) if len(level) else 1.0
-    norm = float(np.mean(plan['ambient'])) / max(typical, 1e-4)
+    # (a relative atlas: the open floor at 1, the game's probes give the light's level and color)
+    norm = (1.0 if plan.get('relative') else float(np.mean(plan['ambient']))) / max(typical, 1e-4)
     out = np.empty((size, size, 4), dtype=np.float32)
     out[..., :3] = np.sqrt(np.clip(indirect * norm * 0.5, 0.0, 1.0))
     out[..., 3] = np.clip(shadow.mean(axis=2), 0.0, 1.0)

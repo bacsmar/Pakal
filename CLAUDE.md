@@ -9,5 +9,6 @@ C++20 game engine (bgfx, Box2D, Lua) with a Zombies example module. See README.m
   The standalone editor (gizmos, inspector, prefabs, Play): docs/EDITOR.md (`PakalPlayer <module> --edit <level.json>`).
 - The TopDown module (game_genres/topdown, what top-down games share): docs/TOPDOWN_MODULE.md.
 - The Zombies module and its debug variables: docs/ZOMBIES_MODULE.md. Downtown levels: docs/ZOMBIES_DOWNTOWN.md.
-- Android: docs/ANDROID.md. Network play (ENet, a headless server, snapshots): docs/NETWORK.md.
+- Android: docs/ANDROID.md. Network play (ENet, a headless server, snapshots): docs/NETWORK.md. Measuring and tuning a
+  running game, desktop or phone (the engine's MCP tools, tools/pakal_device.py): docs/PROFILING.md.
 - Documentation in this repository is in English.

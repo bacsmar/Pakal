@@ -67,9 +67,12 @@ fires past 41% of its travel) and the top center square restarts (see [ANDROID.m
 - Script functions for missions: `DropPickup(pickup, point)` (9002 is a token: it stays until taken and counts in
   `pickupCount`), `Fail(text)` (the mission is lost: the panel says why, the game stops), `IsPlayerNear(point, radiusCm)`,
   `ShowMarker(point, on)` (a beacon; an arrow by the player points to the nearest beacon, or else the nearest token).
-- Options (OPTIONS on the main menu, and in the pause panel): the picture's quality (AUTO is the device's default) and FSR
-  upscaling (by default the device's: on, the picture drawn at 67% and rebuilt with FSR 1, except where the quality starts
-  low, an old phone's GPU, where FSR cost a third of the frame rate; off: at the screen's size; saved as `fsrMode`), and the look: CLEAN
+- Options (OPTIONS on the main menu, and in the pause panel): the picture's quality (AUTO is the device's default;
+  EXTREME, above Ultra, adds smoothed edges, bloom and the clouds' shadows, as each time of day in campaign.json `looks`
+  sets them) and FSR
+  upscaling (by default the device's: on a phone, the picture drawn at 67% and rebuilt with FSR 1, except where the quality
+  starts low, an old phone's GPU, where FSR cost a third of the frame rate; off on a desktop and there: at the screen's
+  size; saved as `fsrMode`; `PAKAL_QUALITY` and `PAKAL_FSR` win over the saved options), and the look: CLEAN
   or SKETCH (the town as an etching on warm paper: pen strokes along each surface's plane, more and crossed in the dark,
   a speckled grain; `BgfxGraphicsSystem::set_sketch`, in the post-process pass). Saved in the profile
   (`options`) and given to the graphics at the start (`Session::apply_options`, `BgfxGraphicsSystem::set_fsr`).
@@ -166,9 +169,9 @@ Engine:
 | `PAKAL_FPS_LOG=1` | One line per second: FPS of each system, and `[GPU]` with draws, triangles and models per pass |
 | `PAKAL_GPU=discrete\|integrated\|nvidia\|amd\|intel\|any` | Which GPU on a computer with two (Direct3D picks the adapter by vendor; the default is the dedicated NVIDIA one, the log names the one in use) |
 | `PAKAL_DEV_UI=1` | Shows the development panels (Dear ImGui) from the start; F1 toggles them |
-| `PAKAL_RENDER_HEIGHT=<lines>` | Desktop: the most lines the picture is drawn at (1080 by default, 0: the window's); a taller window gets it scaled up by FSR. Android: the picture's height (720, 1080 at ultra) |
+| `PAKAL_RENDER_HEIGHT=<lines>` | Desktop: the most lines the picture is drawn at (by default the window's); a taller window gets it scaled up by FSR. Android: the picture's height (720, 1080 at ultra) |
 | `PAKAL_SHARPNESS=<stops>\|off` | FSR's sharpening (RCAS): stops below the most; `off` leaves its pass out |
-| `ZOMBIES_AO=<strength>` | The screen's ambient occlusion (SSAO). A level with baked light (light probes, a lightmap) has it baked: without this variable SSAO runs only at ultra (the dev panel can turn it on) |
+| `ZOMBIES_AO=<strength>` | The screen's ambient occlusion (SSAO). A level with baked light (light probes, a lightmap) has it baked: without this variable SSAO runs only at ultra and extreme (the dev panel can turn it on) |
 | `PAKAL_DEPTH_SORT=0` | Sends solid models by program instead of nearest first (to compare) |
 | `PAKAL_FPS_CAP=<n>`, `PAKAL_VSYNC=0` | The picture's rate on the desktop player (60 by default, 0 = no cap); vsync off |
 | `PAKAL_LOGIC_FPS=<n>`, `PAKAL_PHYSICS_FPS=<n>` | The game logic's and the physics' rates (120 by default; each system runs at its own rate, physics one step per update) |
@@ -199,13 +202,13 @@ Zombies:
 | `ZOMBIES_START=x,y` | Warps go to that point (meters) |
 | `ZOMBIES_DEBUG_KILL_EVERY=<s>` | Removes a living zombie at that interval |
 | `ZOMBIES_WIN_AT=<s>` | Wins the mission at that game time (to see its end: the win's camera shot, the result; a game may keep it to its cheats builds) |
-| `ZOMBIES_DRAW_DISTANCE=off` | Draws every model the camera sees, however far (game/effects.json "drawDistance" off) |
+| `ZOMBIES_DRAW_DISTANCE=off` | Draws every model the camera sees, however far (game/effects.json "drawDistance" off; game/quality.json's `drawScale` scales it per quality level, with what each level draws) |
 | `ZOMBIES_DEBUG_BREAK=<m>` | Breaks every prop that close to the player 3 s into the game (to see their effects; a game may keep it to its cheats builds) |
 | `ZOMBIES_SCREENSHOT=<file.tga>`, `ZOMBIES_SCREENSHOT_AT=<s>` | One capture at that time |
 | `ZOMBIES_LIVE_RELOAD=1`, `ZOMBIES_EDIT=1`, `ZOMBIES_EDIT_SELECT=<key>` | The level is built again when its file changes; the level panel open, editing; an object selected (docs/LEVEL_EDITOR.md) |
 | `ZOMBIES_PAUSE_AT=<s>` | Pauses at that time (to look at the pause panel) |
 | `ZOMBIES_PROFILE=<file.json>` | Another profile file (tests) |
-| `ZOMBIES_MENU_CLICKS=<id>,<id>,...`, `ZOMBIES_MENU_SHOT=<file.tga>` | Clicks menu elements one per half second (`nav_play,mission_0`), then captures the screen. With `\|`, one list per visit to the menu (`nav_play,mission_1\|nav_play,mission_2`: a mission, back to the menu, another) |
+| `ZOMBIES_MENU_CLICKS=<event>:<argument>,...`, `ZOMBIES_MENU_SHOT=<file.tga>` | Raises the menu view's events one per half second (`nav:missions,play:1`: the missions, then the second one; `buy:SMG`), then captures the screen. With `\|`, one list per visit to the menu (`nav:missions,play:1\|nav:missions,play:2`: a mission, back to the menu, another) |
 | `ZOMBIES_SCREENSHOT_LOADING=<file.tga>` | Captures the loading screen halfway |
 | `ZOMBIES_NO_FADE=1` | Nothing fades (also in the development panel) |
 | `ZOMBIES_SHOTS=<prefix>,<start>,<interval>,<count>` | A series of captures |
