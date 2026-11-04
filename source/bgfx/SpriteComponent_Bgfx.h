@@ -103,7 +103,14 @@ namespace Pakal
 		};
 		
 		// Texture
+		// The texture is shared: sprites that show the same file (or the plain white one) hold one GPU texture between them,
+		// kept by a count of the sprites using it (see 'acquire_texture' in the .cpp); only the sprite's last release destroys it
+		enum class TextureOwner { None, Cached, White };
+		void release_texture();                       // lets go of the texture this sprite holds (destroying it if it was the last)
+		void acquire_white_texture();                 // holds the shared 1x1 white texture
 		bgfx::TextureHandle m_texture;
+		TextureOwner m_textureOwner = TextureOwner::None;
+		std::string m_textureKey;                     // the cache's key (the resolved file) while the owner is Cached
 		bool m_textureLoaded;
 		std::string m_texturePath;
 		int m_textureWidth;

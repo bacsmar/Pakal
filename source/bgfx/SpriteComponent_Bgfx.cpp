@@ -8,6 +8,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include "SpriteComponent_Bgfx.h"
 #include "BgfxGraphicsSystem.h"
 #include "LogMgr.h"
@@ -18,6 +19,8 @@
 #include <bimg/decode.h>
 #include <cmath>
 #include <fstream>
+#include <mutex>
+#include <unordered_map>
 #include <vector>
 
 namespace Pakal
@@ -26,6 +29,63 @@ namespace Pakal
 	{
 		bgfx::UniformHandle s_texColorUniform = BGFX_INVALID_HANDLE;
 		uint32_t s_spriteInstanceCount = 0;
+
+		// Textures shared by the sprites: loading a file reads and decodes it and makes a GPU texture, so a file shown by many
+		// sprites (every enemy of a kind, every particle) is loaded once. Keyed by the resolved path; destroyed with its last sprite.
+		struct SharedTexture
+		{
+			bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+			int width = 0, height = 0;
+			int users = 0;
+		};
+		std::mutex s_textureMutex;
+		std::unordered_map<std::string, SharedTexture> s_textures;
+		SharedTexture s_white;   // the 1x1 white texture of the solid colors and the placeholders
+	}
+
+	void SpriteComponent_Bgfx::release_texture()
+	{
+		std::lock_guard<std::mutex> lock(s_textureMutex);
+		switch (m_textureOwner)
+		{
+		case TextureOwner::Cached:
+		{
+			auto found = s_textures.find(m_textureKey);
+			if (found != s_textures.end() && --found->second.users <= 0)
+			{
+				if (bgfx::isValid(found->second.handle)) bgfx::destroy(found->second.handle);
+				s_textures.erase(found);
+			}
+			break;
+		}
+		case TextureOwner::White:
+			if (--s_white.users <= 0)
+			{
+				if (bgfx::isValid(s_white.handle)) bgfx::destroy(s_white.handle);
+				s_white = SharedTexture();
+			}
+			break;
+		case TextureOwner::None:
+			break;
+		}
+		m_textureOwner = TextureOwner::None;
+		m_textureKey.clear();
+		m_texture = BGFX_INVALID_HANDLE;
+	}
+
+	void SpriteComponent_Bgfx::acquire_white_texture()
+	{
+		release_texture();
+		std::lock_guard<std::mutex> lock(s_textureMutex);
+		if (!bgfx::isValid(s_white.handle))
+		{
+			const bgfx::Memory* mem = bgfx::alloc(4);
+			mem->data[0] = mem->data[1] = mem->data[2] = mem->data[3] = 0xFF;
+			s_white.handle = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
+		}
+		++s_white.users;
+		m_textureOwner = TextureOwner::White;
+		m_texture = s_white.handle;
 	}
 
 
@@ -140,10 +200,7 @@ namespace Pakal
 				}
 			}
 
-			if (bgfx::isValid(m_texture))
-			{
-				bgfx::destroy(m_texture);
-			}
+			release_texture();
 
 			if (bgfx::isValid(m_vertexBuffer))
 			{
@@ -188,21 +245,40 @@ namespace Pakal
 
 		auto set_placeholder_texture = [this]()
 		{
-			const bgfx::Memory* mem = bgfx::alloc(4);
-			mem->data[0] = mem->data[1] = mem->data[2] = mem->data[3] = 0xFF;
-
-			if (bgfx::isValid(m_texture))
-			{
-				bgfx::destroy(m_texture);
-			}
-
-			m_texture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
-				BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
+			acquire_white_texture();
 			m_textureLoaded = bgfx::isValid(m_texture);
 			m_textureWidth = 1;
 			m_textureHeight = 1;
 			update_texture_coords();
 		};
+
+		// a file some sprite already shows: its texture is shared (nothing is read, decoded or uploaded again)
+		if (m_textureOwner == TextureOwner::Cached && m_textureKey == resolved_path && bgfx::isValid(m_texture))
+		{
+			return;
+		}
+		SharedTexture hit;
+		{
+			std::lock_guard<std::mutex> lock(s_textureMutex);
+			auto found = s_textures.find(resolved_path);
+			if (found != s_textures.end() && bgfx::isValid(found->second.handle))
+			{
+				++found->second.users;
+				hit = found->second;
+			}
+		}
+		if (bgfx::isValid(hit.handle))
+		{
+			release_texture();
+			m_textureOwner = TextureOwner::Cached;
+			m_textureKey = resolved_path;
+			m_texture = hit.handle;
+			m_textureLoaded = true;
+			m_textureWidth = hit.width;
+			m_textureHeight = hit.height;
+			update_texture_coords();
+			return;
+		}
 
 		std::ifstream input(resolved_path, std::ios::binary | std::ios::ate);
 		if (!input.is_open())
@@ -239,13 +315,10 @@ namespace Pakal
 			return;
 		}
 
-		if (bgfx::isValid(m_texture))
-		{
-			bgfx::destroy(m_texture);
-		}
+		release_texture();
 
 		const bgfx::Memory* mem = bgfx::copy(image->m_data, image->m_size);
-		m_texture = bgfx::createTexture2D(
+		bgfx::TextureHandle created = bgfx::createTexture2D(
 			static_cast<uint16_t>(image->m_width),
 			static_cast<uint16_t>(image->m_height),
 			image->m_numMips > 1,
@@ -254,10 +327,31 @@ namespace Pakal
 			BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT,
 			mem);
 
-		m_textureLoaded = bgfx::isValid(m_texture);
+		m_textureLoaded = bgfx::isValid(created);
 		m_textureWidth = image->m_width;
 		m_textureHeight = image->m_height;
 		bimg::imageFree(image);
+		if (m_textureLoaded)
+		{
+			// the first sprite to show the file puts its texture in the cache (another thread may have been faster: its one is used)
+			std::lock_guard<std::mutex> lock(s_textureMutex);
+			SharedTexture& shared = s_textures[resolved_path];
+			if (bgfx::isValid(shared.handle))
+			{
+				bgfx::destroy(created);
+				created = shared.handle;
+			}
+			else
+			{
+				shared.handle = created;
+				shared.width = m_textureWidth;
+				shared.height = m_textureHeight;
+			}
+			++shared.users;
+			m_textureOwner = TextureOwner::Cached;
+			m_textureKey = resolved_path;
+			m_texture = created;
+		}
 
 		if (!m_textureLoaded)
 		{
@@ -272,17 +366,8 @@ namespace Pakal
 	
 	void SpriteComponent_Bgfx::create_solid_color(uint32_t color, int width, int height)
 	{
-		// Create 1x1 white texture
-		const bgfx::Memory* mem = bgfx::alloc(4); // RGBA
-		mem->data[0] = mem->data[1] = mem->data[2] = mem->data[3] = 0xFF;
-		
-		if (bgfx::isValid(m_texture))
-		{
-			bgfx::destroy(m_texture);
-		}
-		
-		m_texture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
-			BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
+		// the shared 1x1 white texture, colored and scaled
+		acquire_white_texture();
 		m_textureLoaded = true;
 		m_textureWidth = 1;
 		m_textureHeight = 1;
@@ -454,8 +539,10 @@ namespace Pakal
 		if (m_frameWidth > 0 && m_frameHeight > 0 && m_textureWidth > 0 && m_textureHeight > 0)
 		{
 			// Sprite sheet animation
-			int frameX = (m_currentFrame % m_framesPerRow) * m_frameWidth;
-			int frameY = (m_currentFrame / m_framesPerRow) * m_frameHeight;
+			// From the texture now: a texture that did not load is a 1x1 placeholder narrower than one frame (0 per row)
+			const int framesPerRow = std::max(1, m_textureWidth / m_frameWidth);
+			int frameX = (m_currentFrame % framesPerRow) * m_frameWidth;
+			int frameY = (m_currentFrame / framesPerRow) * m_frameHeight;
 			
 			u0 = (float)frameX / (float)m_textureWidth;
 			v0 = (float)frameY / (float)m_textureHeight;
