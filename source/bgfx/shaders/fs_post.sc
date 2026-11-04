@@ -5,12 +5,15 @@ $input v_texcoord0
 
 SAMPLER2D(s_postColor, 0);
 PAKAL_SAMPLER2D_HIGH(s_postDepth, 1);
+SAMPLER2D(s_postBloom, 2);   // the bloom: the bright parts blurred, a quarter of the size (BgfxGraphicsSystem::render_bloom)
+SAMPLER2D(s_postAo, 3);      // the ambient occlusion: the light left, half the size, blurred (BgfxGraphicsSystem::render_ao)
 
 uniform vec4 u_post0; // x: exposure, y: contrast, z: saturation, w: vignette
 uniform vec4 u_post1; // rgb: color gain, w: tilt-shift blur (pixels at the far edge)
-uniform vec4 u_post2; // x: tilt-shift focus line (0..1 from the top), y: sharp half band, z: ambient occlusion strength, w: radius (meters)
+uniform vec4 u_post2; // x: tilt-shift focus line (0..1 from the top), y: sharp half band, z: 1 darkens by the occlusion
 uniform vec4 u_post3; // x: 1/width, y: 1/height, z: near plane, w: far plane
-uniform vec4 u_post6; // x: quality (the share of the samples taken), y: the sketch look's strength (0: off)
+uniform vec4 u_post6; // x: quality (the share of the samples taken), y: the sketch look's strength (0: off), z: 1 smooths
+                      // the edges (FXAA), w: the bloom's strength (0: off)
 uniform vec4 u_post7; // xyz: the view's translation (the world's origin in the view: the sketch's strokes stay on the scene)
 uniform vec4 u_post5; // rgb: fade color, w: how much of the picture the fade covers
 uniform vec4 u_post4; // x: projection scale x, y: projection scale y, z: occlusion bias (meters), w: occlusion range (meters)
@@ -39,6 +42,39 @@ vec3 view_position(vec2 uv, float z)
 {
 	vec2 ndc = vec2(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
 	return vec3(ndc.x * z / u_post4.x, ndc.y * z / u_post4.y, z);
+}
+
+vec3 frame_color(vec2 uv)
+{
+	return texture2D(s_postColor, target_uv(uv)).rgb;
+}
+
+// The edges smoothed (FXAA, its fast form): where the brightness changes sharply, the pixel is blended along the edge's
+// direction, found from its four diagonal neighbors. Before the upscale: FSR rebuilds edges, it does not smooth them
+vec3 antialiased(vec2 uv)
+{
+	vec2 t = u_post3.xy;
+	vec3 middle = frame_color(uv);
+	vec3 luma = vec3(0.299, 0.587, 0.114);
+	float lumaNW = dot(frame_color(uv + vec2(-1.0, -1.0) * t), luma);
+	float lumaNE = dot(frame_color(uv + vec2(1.0, -1.0) * t), luma);
+	float lumaSW = dot(frame_color(uv + vec2(-1.0, 1.0) * t), luma);
+	float lumaSE = dot(frame_color(uv + vec2(1.0, 1.0) * t), luma);
+	float lumaM = dot(middle, luma);
+	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+	if (lumaMax - lumaMin < max(0.0312, lumaMax * 0.125))
+	{
+		return middle;   // no edge here
+	}
+	vec2 dir = vec2(-((lumaNW + lumaNE) - (lumaSW + lumaSE)), (lumaNW + lumaSW) - (lumaNE + lumaSE));
+	float reduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * 0.03125, 1.0 / 128.0);
+	float scale = 1.0 / (min(abs(dir.x), abs(dir.y)) + reduce);
+	dir = clamp(dir * scale, vec2_splat(-8.0), vec2_splat(8.0)) * t;
+	vec3 nearBlend = 0.5 * (frame_color(uv + dir * (1.0 / 3.0 - 0.5)) + frame_color(uv + dir * (2.0 / 3.0 - 0.5)));
+	vec3 farBlend = nearBlend * 0.5 + 0.25 * (frame_color(uv - dir * 0.5) + frame_color(uv + dir * 0.5));
+	float lumaFar = dot(farBlend, luma);
+	return (lumaFar < lumaMin || lumaFar > lumaMax) ? nearBlend : farBlend;
 }
 
 float noise(vec2 pixel)
@@ -107,52 +143,6 @@ vec3 sketch(vec2 uv, vec3 color, vec2 pixel)
 	return mix(color, paper * (1.0 - 0.7 * ink), u_post6.y);
 }
 
-// Ambient occlusion from the depth: samples around the pixel, each one that sits in front of the surface (above it,
-// within range) darkens it a little. The surface orientation comes from the depth of the neighbors.
-float ambient_occlusion(vec2 uv, vec2 pixel)
-{
-	float z = linear_depth(uv);
-	if (z > u_post3.w * 0.98)
-	{
-		return 1.0; // sky
-	}
-	vec3 p = view_position(uv, z);
-	vec2 texel = u_post3.xy;
-	vec3 px = view_position(uv + vec2(texel.x, 0.0), linear_depth(uv + vec2(texel.x, 0.0)));
-	vec3 nx = view_position(uv - vec2(texel.x, 0.0), linear_depth(uv - vec2(texel.x, 0.0)));
-	vec3 py = view_position(uv + vec2(0.0, texel.y), linear_depth(uv + vec2(0.0, texel.y)));
-	vec3 ny = view_position(uv - vec2(0.0, texel.y), linear_depth(uv - vec2(0.0, texel.y)));
-	vec3 dx = abs(px.z - p.z) < abs(p.z - nx.z) ? px - p : p - nx;
-	vec3 dy = abs(py.z - p.z) < abs(p.z - ny.z) ? py - p : p - ny;
-	vec3 n = normalize(cross(dy, dx));
-	if (n.z > 0.0) n = -n; // facing the camera
-
-	// radius in pixels for a radius in meters at this depth
-	float radiusPx = u_post2.w * u_post4.y * 0.5 / (u_post3.y * z);
-	radiusPx = min(radiusPx, 64.0);
-	float angle = noise(pixel) * 6.2831853;
-	float occlusion = 0.0;
-	const int maxTaps = 14;
-	int taps = int(max(4.0, float(maxTaps) * u_post6.x));
-	for (int i = 0; i < maxTaps; ++i)
-	{
-		if (i >= taps) break;
-		float t = (float(i) + 0.5) / float(taps);
-		float a = angle + float(i) * 2.399963;
-		vec2 offset = vec2(cos(a), sin(a)) * (radiusPx * sqrt(t)) * texel;
-		vec2 suv = uv + offset;
-		float sz = linear_depth(suv);
-		vec3 s = view_position(suv, sz);
-		vec3 v = s - p;
-		float dist = length(v);
-		float facing = max(dot(n, v / max(dist, 0.0001)) - u_post4.z, 0.0);
-		float range = 1.0 - smoothstep(u_post4.w * 0.5, u_post4.w, dist);
-		occlusion += facing * range;
-	}
-	occlusion /= float(taps);
-	return 1.0 - clamp(occlusion * 2.2 * u_post2.z, 0.0, 0.85);
-}
-
 void main()
 {
 	vec2 uv = v_texcoord0;
@@ -161,7 +151,7 @@ void main()
 	// Tilt-shift: blur grows with the distance from the focus line (a ring of taps, rotating each pixel)
 	float away = max(abs(uv.y - u_post2.x) - u_post2.y, 0.0) / max(0.5 - u_post2.y, 0.01);
 	float blur = u_post1.w * clamp(away, 0.0, 1.0);
-	vec3 color = texture2D(s_postColor, target_uv(uv)).rgb;
+	vec3 color = u_post6.z > 0.0 ? antialiased(uv) : frame_color(uv);
 	if (blur > 0.5)
 	{
 		float angle = noise(gl_FragCoord.xy) * 6.2831853;
@@ -182,7 +172,7 @@ void main()
 
 	if (u_post2.z > 0.0)
 	{
-		color *= ambient_occlusion(uv, gl_FragCoord.xy);
+		color *= texture2D(s_postAo, target_uv(uv)).r;
 	}
 	if (u_post6.y > 0.0)
 	{
@@ -203,6 +193,12 @@ void main()
 			vec3 sky = mix(u_post10.rgb, u_post8.rgb, u_post9.z);
 			color = mix(color, sky, smoothstep(horizon * 0.55, horizon, z));
 		}
+	}
+
+	// The bloom: the glow of what is bright, over the fog (a lamp shines through the haze)
+	if (u_post6.w > 0.0)
+	{
+		color += texture2D(s_postBloom, target_uv(uv)).rgb * u_post6.w;
 	}
 
 	// Color: exposure, contrast around mid grey, saturation, gain, vignette

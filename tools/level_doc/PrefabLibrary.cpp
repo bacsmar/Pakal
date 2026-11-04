@@ -67,6 +67,23 @@ namespace Pakal
 		std::string folder = "prefabs";
 		if (document.meta.contains("prefabs") && document.meta["prefabs"].is_string()) folder = document.meta["prefabs"].get<std::string>();
 		set_folder(levelDir + folder, levelDir);
+		std::vector<std::string> libraries;
+		const auto listed = document.meta.find(kLibrariesKey);
+		if (listed != document.meta.end() && listed->is_array())
+		{
+			for (const auto& library : *listed)
+			{
+				if (library.is_string() && !library.get<std::string>().empty()) libraries.push_back(levelDir + library.get<std::string>());
+			}
+		}
+		set_libraries(libraries);
+	}
+
+	void PrefabLibrary::set_libraries(const std::vector<std::string>& folders)
+	{
+		m_libraries.clear();
+		for (const auto& folder : folders) m_libraries.push_back(with_separator(folder));
+		m_cache.clear();
 	}
 
 	void PrefabLibrary::set_folder(const std::string& folder, const std::string& levelDir)
@@ -79,23 +96,40 @@ namespace Pakal
 	std::vector<std::string> PrefabLibrary::names() const
 	{
 		std::vector<std::string> found;
-		std::error_code code;
 		const std::string extension = kExtension;
-		for (const auto& entry : std::filesystem::directory_iterator(m_folder.empty() ? "." : m_folder, code))
+		std::vector<std::string> folders = { m_folder };
+		folders.insert(folders.end(), m_libraries.begin(), m_libraries.end());
+		for (const auto& folder : folders)
 		{
-			const std::string file = entry.path().filename().string();
-			if (entry.is_regular_file(code) && file.size() > extension.size() && file.compare(file.size() - extension.size(), extension.size(), extension) == 0)
+			std::error_code code;
+			for (const auto& entry : std::filesystem::directory_iterator(folder.empty() ? "." : folder, code))
 			{
-				found.push_back(file.substr(0, file.size() - extension.size()));
+				const std::string file = entry.path().filename().string();
+				if (entry.is_regular_file(code) && file.size() > extension.size() && file.compare(file.size() - extension.size(), extension.size(), extension) == 0)
+				{
+					found.push_back(file.substr(0, file.size() - extension.size()));
+				}
 			}
 		}
 		std::sort(found.begin(), found.end());
+		found.erase(std::unique(found.begin(), found.end()), found.end());
 		return found;
+	}
+
+	std::string PrefabLibrary::folder_of(const std::string& name) const
+	{
+		std::error_code code;
+		if (m_libraries.empty() || std::filesystem::is_regular_file(m_folder + name + kExtension, code)) return m_folder;
+		for (const auto& library : m_libraries)
+		{
+			if (std::filesystem::is_regular_file(library + name + kExtension, code)) return library;
+		}
+		return m_folder;
 	}
 
 	std::string PrefabLibrary::path_of(const std::string& name) const
 	{
-		return m_folder + name + kExtension;
+		return folder_of(name) + name + kExtension;
 	}
 
 	bool PrefabLibrary::exists(const std::string& name) const
@@ -112,6 +146,7 @@ namespace Pakal
 		std::ifstream in(path, std::ios::binary);
 		if (!in) return nullptr;
 		Entry entry;
+		entry.folder = folder_of(name);
 		entry.json = Json::parse(in, nullptr, false);
 		if (entry.json.is_discarded() || !entry.json.is_object()) return nullptr;
 		std::error_code code;
@@ -128,7 +163,7 @@ namespace Pakal
 	Json PrefabLibrary::prefab(const std::string& name, std::string& error)
 	{
 		// the chain of bases, the prefab last
-		std::vector<const Json*> chain;
+		std::vector<const Entry*> chain;
 		std::string current = name;
 		while (!current.empty())
 		{
@@ -143,17 +178,17 @@ namespace Pakal
 				error = "no prefab '" + current + "' (" + path_of(current) + ")";
 				return Json();
 			}
-			chain.push_back(&entry->json);
+			chain.push_back(entry);
 			current = entry->json.value("base", std::string());
 		}
 		Json merged = Json::object();
 		for (auto it = chain.rbegin(); it != chain.rend(); ++it)
 		{
-			Json layer = **it;
-			// each layer's mesh is relative to the folder of the prefabs (all in one folder)
+			Json layer = (*it)->json;
+			// each layer's mesh is relative to the folder its file is in
 			if (layer.contains("mesh") && layer["mesh"].is_string())
 			{
-				layer["mesh"] = relative_to(m_folder + layer["mesh"].get<std::string>(), m_levelDir);
+				layer["mesh"] = relative_to((*it)->folder + layer["mesh"].get<std::string>(), m_levelDir);
 			}
 			merged.merge_patch(layer);
 		}
@@ -185,7 +220,17 @@ namespace Pakal
 		return relative_to(m_levelDir + levelRelative, m_folder);
 	}
 
+	std::string PrefabLibrary::relative_path(const std::string& file, const std::string& folder)
+	{
+		return relative_to(file, folder);
+	}
+
 	bool PrefabLibrary::save(const std::string& name, const Json& prefab, std::string& error)
+	{
+		return save_in(folder_of(name), name, prefab, error);
+	}
+
+	bool PrefabLibrary::save_in(const std::string& folder, const std::string& name, const Json& prefab, std::string& error)
 	{
 		if (name.empty() || name.find_first_of("/\\:") != std::string::npos)
 		{
@@ -193,9 +238,9 @@ namespace Pakal
 			return false;
 		}
 		std::error_code code;
-		std::filesystem::create_directories(m_folder, code);
+		std::filesystem::create_directories(folder, code);
 		m_cache.erase(name);
-		return write_json(path_of(name), prefab, error);
+		return write_json(with_separator(folder) + name + kExtension, prefab, error);
 	}
 
 	std::vector<std::string> PrefabLibrary::refresh()

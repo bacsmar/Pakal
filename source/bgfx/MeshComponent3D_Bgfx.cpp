@@ -50,8 +50,12 @@ namespace Pakal
 		bgfx::UniformHandle s_tintUniform = BGFX_INVALID_HANDLE;     // u_tint: color multiplier
 		bgfx::UniformHandle s_uvScrollUniform = BGFX_INVALID_HANDLE; // u_uvScroll: xy, the texture's offset now; z, w: water, its clock
 		bgfx::UniformHandle s_groundUniform = BGFX_INVALID_HANDLE;   // u_ground: x, y: the ground's detiling and macro variation
+		bgfx::UniformHandle s_groundMixUniform[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };   // u_groundMix0, 1
+		bgfx::UniformHandle s_groundMixSampler[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };   // s_groundMix0, 1
 		bgfx::UniformHandle s_shadowMtxUniform = BGFX_INVALID_HANDLE;    // u_shadowMtx
 		bgfx::UniformHandle s_shadowParamsUniform = BGFX_INVALID_HANDLE; // u_shadowParams
+		bgfx::UniformHandle s_shadowFilterUniform = BGFX_INVALID_HANDLE; // u_shadowFilter
+		bgfx::UniformHandle s_cloudsUniform = BGFX_INVALID_HANDLE;       // u_clouds
 		bgfx::UniformHandle s_shadowSampler = BGFX_INVALID_HANDLE;       // s_shadowMap
 		bgfx::UniformHandle s_normalSampler = BGFX_INVALID_HANDLE;       // s_texNormal
 		bgfx::UniformHandle s_ormSampler = BGFX_INVALID_HANDLE;          // s_texOrm
@@ -70,6 +74,7 @@ namespace Pakal
 		float s_style[4] = { 0.0f, 32.0f, 0.0f, 0.0f };
 		bgfx::TextureHandle s_lightmapAtlas = BGFX_INVALID_HANDLE;
 		float s_lightmapShadow = 0.0f;
+		bool s_lightmapRelative = false;   // set_lightmap_state
 		bgfx::TextureHandle s_flatNormalTexture = BGFX_INVALID_HANDLE;   // a normal map that changes nothing
 		bgfx::TextureHandle s_plainOrmTexture = BGFX_INVALID_HANDLE;     // occlusion 1, roughness 1, metal 0
 		// A 1x1x1 volume for the light volume's sampler when the level has none: a draw whose 3D sampler has nothing bound
@@ -83,6 +88,8 @@ namespace Pakal
 		bgfx::TextureHandle s_shadowMap = BGFX_INVALID_HANDLE;
 		float s_shadowMatrix[16] = {};
 		float s_shadowParams[4] = {};
+		float s_shadowFilter[4] = { 2.0f, 1.0f, 0.0f, 0.0f };
+		float s_clouds[4] = {};   // set_clouds
 
 		struct CullFrustum
 		{
@@ -94,6 +101,8 @@ namespace Pakal
 		float s_sortRow[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool s_sortValid = false;
 		float s_shadowReach = -1.0f;   // negative: every model in the sun's view casts
+		bool s_fullShadows = false;    // set_full_shadows
+		std::atomic<bool> s_keepPick{ false };   // set_keep_pick_geometry
 		float s_cullEye[3] = { 0.0f, 0.0f, 0.0f };   // the camera's position (from its view matrix)
 		float s_drawPerMeter = 0.0f, s_drawMinimum = 0.0f;   // set_draw_distance: 0, off
 		std::atomic<bool> s_gridMoved{ false };   // a model in the graphics system's grid moved (take_grid_moved)
@@ -119,8 +128,14 @@ namespace Pakal
 				s_tintUniform = bgfx::createUniform("u_tint", bgfx::UniformType::Vec4);
 				s_uvScrollUniform = bgfx::createUniform("u_uvScroll", bgfx::UniformType::Vec4);
 				s_groundUniform = bgfx::createUniform("u_ground", bgfx::UniformType::Vec4);
+				s_groundMixUniform[0] = bgfx::createUniform("u_groundMix0", bgfx::UniformType::Vec4);
+				s_groundMixUniform[1] = bgfx::createUniform("u_groundMix1", bgfx::UniformType::Vec4);
+				s_groundMixSampler[0] = bgfx::createUniform("s_groundMix0", bgfx::UniformType::Sampler);
+				s_groundMixSampler[1] = bgfx::createUniform("s_groundMix1", bgfx::UniformType::Sampler);
 				s_shadowMtxUniform = bgfx::createUniform("u_shadowMtx", bgfx::UniformType::Mat4);
 				s_shadowParamsUniform = bgfx::createUniform("u_shadowParams", bgfx::UniformType::Vec4);
+				s_shadowFilterUniform = bgfx::createUniform("u_shadowFilter", bgfx::UniformType::Vec4);
+				s_cloudsUniform = bgfx::createUniform("u_clouds", bgfx::UniformType::Vec4);
 				s_shadowSampler = bgfx::createUniform("s_shadowMap", bgfx::UniformType::Sampler);
 				s_normalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 				s_giSampler = bgfx::createUniform("s_giVolume", bgfx::UniformType::Sampler);
@@ -164,6 +179,9 @@ namespace Pakal
 				if (bgfx::isValid(s_tintUniform)) bgfx::destroy(s_tintUniform);
 				if (bgfx::isValid(s_shadowMtxUniform)) bgfx::destroy(s_shadowMtxUniform);
 				if (bgfx::isValid(s_shadowParamsUniform)) bgfx::destroy(s_shadowParamsUniform);
+				if (bgfx::isValid(s_shadowFilterUniform)) bgfx::destroy(s_shadowFilterUniform);
+				if (bgfx::isValid(s_cloudsUniform)) bgfx::destroy(s_cloudsUniform);
+				s_cloudsUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_shadowSampler)) bgfx::destroy(s_shadowSampler);
 				if (bgfx::isValid(s_giSampler)) bgfx::destroy(s_giSampler);
 				if (bgfx::isValid(s_giOriginUniform)) bgfx::destroy(s_giOriginUniform);
@@ -186,7 +204,7 @@ namespace Pakal
 				s_dummyVolume = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_dummyShadow)) bgfx::destroy(s_dummyShadow);
 				s_dummyShadow = BGFX_INVALID_HANDLE;
-				s_shadowMtxUniform = s_shadowParamsUniform = s_shadowSampler = BGFX_INVALID_HANDLE;
+				s_shadowMtxUniform = s_shadowParamsUniform = s_shadowFilterUniform = s_shadowSampler = BGFX_INVALID_HANDLE;
 				s_normalSampler = s_ormSampler = BGFX_INVALID_HANDLE;
 				s_flatNormalTexture = s_plainOrmTexture = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_materialUniform)) bgfx::destroy(s_materialUniform);
@@ -194,6 +212,12 @@ namespace Pakal
 				s_uvScrollUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_groundUniform)) bgfx::destroy(s_groundUniform);
 				s_groundUniform = BGFX_INVALID_HANDLE;
+				for (int i = 0; i < 2; ++i)
+				{
+					if (bgfx::isValid(s_groundMixUniform[i])) bgfx::destroy(s_groundMixUniform[i]);
+					if (bgfx::isValid(s_groundMixSampler[i])) bgfx::destroy(s_groundMixSampler[i]);
+					s_groundMixUniform[i] = s_groundMixSampler[i] = BGFX_INVALID_HANDLE;
+				}
 				s_tintUniform = BGFX_INVALID_HANDLE;
 				s_materialUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_whiteTexture)) bgfx::destroy(s_whiteTexture);
@@ -655,10 +679,10 @@ namespace Pakal
 				simplified.resize(count);
 				solid.swap(simplified);
 			}
-			// Loose cards (a tree's leaves) share no edges to collapse and stay nearly whole: those are clustered instead,
-			// a blob of the crown is enough for the map
+			// Loose cards (a tree's leaves) share no edges to collapse and stay nearly whole: below High those are clustered
+			// instead, a blob of the crown is enough for the map
 			const size_t target = sourceTriangles * 3 / 4;
-			if (solid.size() > target * 3 / 2)
+			if (!s_fullShadows && solid.size() > target * 3 / 2)
 			{
 				std::vector<uint32_t> sloppy(solid.size());
 				const size_t sloppyCount = meshopt_simplifySloppy(sloppy.data(), solid.data(), solid.size(), welded.data(), unique,
@@ -843,11 +867,14 @@ namespace Pakal
 		m_shadowIndexBuffer = source.m_shadowIndexBuffer;
 		m_shadowIndexCount = source.m_shadowIndexCount;
 		m_geometry = source.m_geometry;
+		m_columns = source.m_columns;
+		m_pick = source.m_pick;
 		m_subMeshes = source.m_subMeshes;
 		for (auto& sub : m_subMeshes)
 		{
 			sub.ownsTexture = false;
 			sub.ownsExtraTextures = false;
+			sub.ownsMix = false;
 		}
 		m_pbr = source.m_pbr;
 		std::copy(source.m_boundsMin, source.m_boundsMin + 3, m_boundsMin);
@@ -894,9 +921,17 @@ namespace Pakal
 				if (bgfx::isValid(sub.normalTexture)) release_texture(sub.normalTexture);
 				if (bgfx::isValid(sub.ormTexture)) release_texture(sub.ormTexture);
 			}
+			if (m_ownsResources && sub.ownsMix)
+			{
+				for (auto texture : sub.mixTexture)
+				{
+					if (bgfx::isValid(texture)) release_texture(texture);
+				}
+			}
 		}
 		m_subMeshes.clear();
 		m_geometry.reset();
+		m_columns.reset();
 		m_pbr = false;
 		m_hasTransparent = false;
 
@@ -1008,7 +1043,8 @@ namespace Pakal
 				handle = cache_texture(request.path, request.shared.get());
 			}
 			SubMesh& sub = m_subMeshes[request.sub];
-			(request.slot == 0 ? sub.texture : request.slot == 1 ? sub.normalTexture : sub.ormTexture) = handle;
+			(request.slot == 0 ? sub.texture : request.slot == 1 ? sub.normalTexture : request.slot == 2 ? sub.ormTexture
+				: sub.mixTexture[request.slot - 8]) = handle;
 		}
 		for (auto& sub : m_subMeshes)
 		{
@@ -1281,6 +1317,8 @@ namespace Pakal
 
 			const size_t subIndex = m_subMeshes.size();
 			SubMesh sub{};
+			sub.material = mi;
+			sub.materialName = materialName.C_Str();
 			sub.indexStart = static_cast<uint32_t>(indices.size());
 			sub.indexCount = static_cast<uint32_t>(bucket.size());
 			sub.texture = s_whiteTexture;
@@ -1453,6 +1491,20 @@ namespace Pakal
 		else
 		{
 			build_shadow_mesh(staticVertices, indices, path);
+			m_columns = build_columns(staticVertices, indices);
+			if (s_keepPick)
+			{
+				auto pick = std::make_shared<PickGeometry>();
+				pick->positions.reserve(staticVertices.size() * 3);
+				for (const auto& v : staticVertices)
+				{
+					pick->positions.push_back(v.x);
+					pick->positions.push_back(v.y);
+					pick->positions.push_back(v.z);
+				}
+				pick->indices = indices;
+				m_pick = std::move(pick);
+			}
 			if (staticVertices.size() <= kKeptGeometry)
 			{
 				auto kept = std::make_shared<StaticGeometry>();
@@ -1940,6 +1992,135 @@ namespace Pakal
 
 	// Named clips from the <animation_clip> entries of the file (start and end in seconds).
 	// A file without them gets one clip covering the whole timeline.
+	std::shared_ptr<const MeshComponent3D_Bgfx::Columns> MeshComponent3D_Bgfx::build_columns(const std::vector<Vertex>& vertices,
+		const std::vector<uint32_t>& indices)
+	{
+		if (vertices.empty() || indices.size() < 3) return nullptr;
+		float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f };
+		for (const auto& v : vertices)
+		{
+			lo[0] = std::min(lo[0], v.x); lo[1] = std::min(lo[1], v.y); lo[2] = std::min(lo[2], v.z);
+			hi[0] = std::max(hi[0], v.x); hi[1] = std::max(hi[1], v.y); hi[2] = std::max(hi[2], v.z);
+		}
+		if (hi[1] - lo[1] < 2.0f) return nullptr;   // short things: their box is close enough
+		auto columns = std::make_shared<Columns>();
+		const float span = std::max(hi[0] - lo[0], hi[2] - lo[2]);
+		columns->cell = std::max(span / 64.0f, 1e-3f);
+		columns->x0 = lo[0];
+		columns->z0 = lo[2];
+		columns->nx = std::max(1, int(std::ceil((hi[0] - lo[0]) / columns->cell)));
+		columns->nz = std::max(1, int(std::ceil((hi[2] - lo[2]) / columns->cell)));
+		const size_t count = size_t(columns->nx) * size_t(columns->nz);
+		columns->low.assign(count, 1e30f);
+		columns->high.assign(count, -1e30f);
+		auto mark = [&](float x, float y, float z)
+		{
+			const int i = std::clamp(int((x - columns->x0) / columns->cell), 0, columns->nx - 1);
+			const int k = std::clamp(int((z - columns->z0) / columns->cell), 0, columns->nz - 1);
+			const size_t c = size_t(k) * size_t(columns->nx) + size_t(i);
+			columns->low[c] = std::min(columns->low[c], y);
+			columns->high[c] = std::max(columns->high[c], y);
+		};
+		// each triangle sampled at half a column apart (its corners, edges and inside)
+		const float step = columns->cell * 0.5f;
+		for (size_t t = 0; t + 2 < indices.size(); t += 3)
+		{
+			const Vertex& a = vertices[indices[t]];
+			const Vertex& b = vertices[indices[t + 1]];
+			const Vertex& c = vertices[indices[t + 2]];
+			auto length = [](const Vertex& p, const Vertex& q) { return std::sqrt((p.x - q.x) * (p.x - q.x) + (p.z - q.z) * (p.z - q.z)); };
+			const float edge = std::max({ length(a, b), length(b, c), length(c, a) });
+			const int n = std::clamp(int(std::ceil(edge / step)), 1, 256);
+			for (int i = 0; i <= n; ++i)
+			{
+				for (int j = 0; i + j <= n; ++j)
+				{
+					const float u = float(i) / float(n), w = float(j) / float(n), r = 1.0f - u - w;
+					mark(a.x * r + b.x * u + c.x * w, a.y * r + b.y * u + c.y * w, a.z * r + b.z * u + c.z * w);
+				}
+			}
+		}
+		return columns;
+	}
+
+	void MeshComponent3D_Bgfx::load_mix_layer(size_t subIndex, int layer, const std::string& modelPath, const char* text)
+	{
+		std::string resolved;
+		float values[4];
+		if (!parse_mix_layer(modelPath, text, resolved, values)) return;
+		bool ok = false;
+		SubMesh& sub = m_subMeshes[subIndex];
+		sub.mixTexture[layer] = request_texture(subIndex, 8 + layer, resolved, nullptr, 0, ok);
+		if (!ok) return;
+		sub.ownsMix = true;
+		std::copy(values, values + 4, sub.mix[layer]);
+	}
+
+	bool MeshComponent3D_Bgfx::parse_mix_layer(const std::string& modelPath, const char* text, std::string& texture, float values[4])
+	{
+		if (!*text) return false;
+		char name[512] = {};
+		float repeat = 4.0f, coverage = 0.0f, patch = 8.0f, softness = 0.08f;
+		if (std::sscanf(text, "%511s %f %f %f %f", name, &repeat, &coverage, &patch, &softness) < 3 || coverage <= 0.0f) return false;
+		texture = resolve_texture_path(fs::path(modelPath).parent_path(), name);
+		if (texture.empty())
+		{
+			LOG_WARNING("[MeshComponent3D_Bgfx] '%s': no texture '%s' for a ground layer", modelPath.c_str(), name);
+			return false;
+		}
+		// the share of the ground it covers, as the noise above which it shows (ground_patches' noise, measured: it gathers
+		// round 0.5, so a share is not its own threshold)
+		static const float shares[][2] = { { 0.0f, 0.965f }, { 0.01f, 0.797f }, { 0.02f, 0.769f }, { 0.05f, 0.723f },
+			{ 0.1f, 0.679f }, { 0.2f, 0.620f }, { 0.3f, 0.575f }, { 0.4f, 0.536f }, { 0.5f, 0.498f }, { 0.6f, 0.461f },
+			{ 0.7f, 0.421f }, { 0.8f, 0.376f }, { 0.9f, 0.318f }, { 0.95f, 0.274f }, { 0.98f, 0.228f }, { 1.0f, 0.037f } };
+		coverage = std::min(coverage, 1.0f);
+		float edge = shares[0][1];
+		for (size_t k = 1; k < sizeof(shares) / sizeof(shares[0]); ++k)
+		{
+			if (coverage <= shares[k][0])
+			{
+				const float t = (coverage - shares[k - 1][0]) / (shares[k][0] - shares[k - 1][0]);
+				edge = shares[k - 1][1] + t * (shares[k][1] - shares[k - 1][1]);
+				break;
+			}
+		}
+		values[0] = 1.0f / std::max(repeat, 0.01f);
+		values[1] = edge;
+		values[2] = 1.0f / std::max(patch, 0.1f);
+		values[3] = std::max(softness, 0.005f);
+		return true;
+	}
+
+	std::vector<MeshComponent3D_Bgfx::MaterialInfo> MeshComponent3D_Bgfx::get_materials() const
+	{
+		std::vector<MaterialInfo> materials;
+		for (const SubMesh& sub : m_subMeshes)
+		{
+			MaterialInfo& info = materials.emplace_back();
+			info.material = sub.material;
+			info.name = sub.materialName;
+			info.blend = sub.blend == MaterialBlend::AlphaTest ? "alphatest" : sub.blend == MaterialBlend::Alpha ? "alpha"
+				: sub.blend == MaterialBlend::Additive ? "additive" : sub.blend == MaterialBlend::Multiply ? "multiply" : "opaque";
+			std::copy(sub.tint, sub.tint + 4, info.tint);
+			info.doubleSided = sub.doubleSided;
+		}
+		return materials;
+	}
+
+	std::vector<std::vector<std::pair<std::string, std::string>>> MeshComponent3D_Bgfx::read_material_overrides(const std::string& modelPath)
+	{
+		std::vector<std::vector<std::pair<std::string, std::string>>> materials;
+		pugi::xml_document doc;
+		const auto overrides = ResourceMgr.read_bytes(modelPath + ".materials.xml");
+		if (!overrides || !doc.load_buffer(overrides->data(), overrides->size())) return materials;
+		for (pugi::xml_node material : doc.child("materials").children("material"))
+		{
+			auto& attributes = materials.emplace_back();
+			for (pugi::xml_attribute attribute : material.attributes()) attributes.emplace_back(attribute.name(), attribute.value());
+		}
+		return materials;
+	}
+
 	void MeshComponent3D_Bgfx::load_material_overrides(const std::string& modelPath, const std::vector<std::string>& materialNames)
 	{
 		m_hasTransparent = false;
@@ -1985,6 +2166,8 @@ namespace Pakal
 				if (material.attribute("water")) sub.water = material.attribute("water").as_float(0.0f);
 				const char* detileText = material.attribute("detile").value();
 				if (*detileText) std::sscanf(detileText, "%f %f", &sub.detile[0], &sub.detile[1]);
+				load_mix_layer(i, 0, modelPath, material.attribute("mix").value());
+				load_mix_layer(i, 1, modelPath, material.attribute("mix2").value());
 			}
 			if (!matched)
 			{
@@ -2237,6 +2420,12 @@ namespace Pakal
 			m_position[0], m_position[1], m_position[2]);
 	}
 
+	void MeshComponent3D_Bgfx::get_world_matrix(float out16[16])
+	{
+		set_transform();
+		std::copy(m_transform, m_transform + 16, out16);
+	}
+
 	void MeshComponent3D_Bgfx::set_gi_state(bgfx::TextureHandle volume, const float origin[4], const float size[4])
 	{
 		s_giVolume = volume;
@@ -2250,10 +2439,11 @@ namespace Pakal
 		s_style[1] = shininess;
 	}
 
-	void MeshComponent3D_Bgfx::set_lightmap_state(bgfx::TextureHandle atlas, float shadowStrength)
+	void MeshComponent3D_Bgfx::set_lightmap_state(bgfx::TextureHandle atlas, float shadowStrength, bool relative)
 	{
 		s_lightmapAtlas = atlas;
 		s_lightmapShadow = shadowStrength;
+		s_lightmapRelative = relative;
 	}
 
 	bgfx::TextureHandle MeshComponent3D_Bgfx::load_level_texture(const std::string& path)
@@ -2291,11 +2481,13 @@ namespace Pakal
 		s_depthProgram = program;
 	}
 
-	void MeshComponent3D_Bgfx::set_shadow_state(bgfx::TextureHandle map, const float matrix[16], const float params[4])
+	void MeshComponent3D_Bgfx::set_shadow_state(bgfx::TextureHandle map, const float matrix[16], const float params[4],
+		const float filter[4])
 	{
 		s_shadowMap = map;
 		std::copy(matrix, matrix + 16, s_shadowMatrix);
 		std::copy(params, params + 4, s_shadowParams);
+		std::copy(filter, filter + 4, s_shadowFilter);
 	}
 
 	void MeshComponent3D_Bgfx::set_cull_frustum(int slot, const float m[16], bool homogeneousDepth)
@@ -2369,6 +2561,7 @@ namespace Pakal
 			sub.indexCount = static_cast<uint32_t>(indices.size()) - sub.indexStart;
 			sub.ownsTexture = false;   // the model's: it outlives the merged one (the asset cache keeps it)
 			sub.ownsExtraTextures = false;
+			sub.ownsMix = false;
 		}
 		merged->m_pbr = first.m_pbr;
 		merged->m_hasTransparent = first.m_hasTransparent;
@@ -2416,6 +2609,16 @@ namespace Pakal
 		get_world_box(center, extent);
 		const float top = std::max(0.0f, center[1] + extent[1]);
 		return !outside_frustum(0, top * s_shadowReach + 0.5f);
+	}
+
+	void MeshComponent3D_Bgfx::set_clouds(const float clouds[4])
+	{
+		std::copy(clouds, clouds + 4, s_clouds);
+	}
+
+	void MeshComponent3D_Bgfx::set_full_shadows(bool full)
+	{
+		s_fullShadows = full;
 	}
 
 	void MeshComponent3D_Bgfx::set_shadow_reach(float perMeter)
@@ -2514,7 +2717,8 @@ namespace Pakal
 			set_transform();
 			transformCache = bgfx::setTransform(m_transform);
 		}
-		if (m_shadowIndexCount > 0)
+		// (a character casts its simplified mesh below High, else all its triangles, by its materials)
+		if (m_shadowIndexCount > 0 && !(m_skinned && s_fullShadows))
 		{
 			bgfx::setTransform(transformCache, transformCount);
 			bgfx::setVertexBuffer(0, m_skinned ? m_vertexBuffer : m_shadowVertexBuffer);
@@ -2570,6 +2774,13 @@ namespace Pakal
 			bgfx::setUniform(s_uvScrollUniform, scroll);
 			const float ground[4] = { sub.detile[0], sub.detile[1], 0.0f, 0.0f };
 			bgfx::setUniform(s_groundUniform, ground);
+			static const float noMix[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+			for (int i = 0; i < 2; ++i)
+			{
+				const bool layer = bgfx::isValid(sub.mixTexture[i]);
+				bgfx::setUniform(s_groundMixUniform[i], layer ? sub.mix[i] : noMix);
+				if (layer) bgfx::setTexture(uint8_t(8 + i), s_groundMixSampler[i], sub.mixTexture[i]);
+			}
 		}
 		if (m_pbr)
 		{
@@ -2587,8 +2798,10 @@ namespace Pakal
 			bgfx::setTexture(5, s_giSampler, s_dummyVolume);
 		}
 		// u_lightmap: xyz the place in the atlas, w: 0 no lightmap, 1 + how much the baked shadow darkens
-		const bool lightmapped = m_lightmapRect[0] > 0.0f && bgfx::isValid(s_lightmapAtlas);
-		const float lightmap[4] = { m_lightmapRect[0], m_lightmapRect[1], m_lightmapRect[2], lightmapped ? 1.0f + s_lightmapShadow : 0.0f };
+		// (water keeps the probes' light: the bake sees its surface as floor)
+		const bool lightmapped = m_lightmapRect[0] > 0.0f && bgfx::isValid(s_lightmapAtlas) && sub.water <= 0.0f;
+		const float lightmap[4] = { m_lightmapRect[0], m_lightmapRect[1], m_lightmapRect[2],
+			lightmapped ? (s_lightmapRelative ? -1.0f : 1.0f) * (1.0f + s_lightmapShadow) : 0.0f };
 		bgfx::setUniform(s_lightmapUniform, lightmap);
 		// the dents are drawn in the model's own units: per meter, times its scale
 		const float style[4] = { s_style[0], s_style[1], m_clay, m_clayDents * std::max(m_scale, 0.0001f) };
@@ -2602,9 +2815,11 @@ namespace Pakal
 		bgfx::setUniform(s_paintWallUniform, paintHere ? m_paintWall : unpainted);
 		bgfx::setUniform(s_paintRoofUniform, paintHere ? m_paintRoof : unpainted);
 		bgfx::setUniform(s_shadowParamsUniform, s_shadowParams);
+		bgfx::setUniform(s_cloudsUniform, s_clouds);
 		if (s_shadowParams[0] > 0.0f)
 		{
 			bgfx::setUniform(s_shadowMtxUniform, s_shadowMatrix);
+			bgfx::setUniform(s_shadowFilterUniform, s_shadowFilter);
 			bgfx::setTexture(4, s_shadowSampler, s_shadowMap);
 		}
 		else if (bgfx::isValid(s_dummyShadow))
@@ -2760,5 +2975,119 @@ namespace Pakal
 			s_passStats[transparentPass ? 2 : 1].triangles += sub.indexCount / 3;
 		}
 		++s_passStats[transparentPass ? 2 : 1].models;
+	}
+
+	void MeshComponent3D_Bgfx::render_alone(bgfx::ViewId viewId, bgfx::ProgramHandle program)
+	{
+		// what the scene's frame set, put back after
+		const bool visible = m_visible;
+		const CullFrustum cull = s_cullFrusta[0];
+		const bool sortValid = s_sortValid;
+		float shadowParams[4], giOrigin[4], clouds[4], lightmap[3];
+		std::copy(s_shadowParams, s_shadowParams + 4, shadowParams);
+		std::copy(s_giOrigin, s_giOrigin + 4, giOrigin);
+		std::copy(s_clouds, s_clouds + 4, clouds);
+		std::copy(m_lightmapRect, m_lightmapRect + 3, lightmap);
+		m_visible = true;
+		s_cullFrusta[0].valid = false;
+		s_sortValid = false;
+		std::fill(s_shadowParams, s_shadowParams + 4, 0.0f);
+		s_giOrigin[3] = 0.0f;
+		std::fill(s_clouds, s_clouds + 4, 0.0f);
+		m_lightmapRect[0] = 0.0f;
+		if (m_skinned) update(0.0f, true);   // its pose (a model never drawn has none yet)
+		render(viewId, program, false);
+		render(viewId, program, true);
+		m_visible = visible;
+		s_cullFrusta[0] = cull;
+		s_sortValid = sortValid;
+		std::copy(shadowParams, shadowParams + 4, s_shadowParams);
+		std::copy(giOrigin, giOrigin + 4, s_giOrigin);
+		std::copy(clouds, clouds + 4, s_clouds);
+		std::copy(lightmap, lightmap + 3, m_lightmapRect);
+	}
+
+	void MeshComponent3D_Bgfx::set_keep_pick_geometry(bool keep)
+	{
+		s_keepPick = keep;
+	}
+
+	bool MeshComponent3D_Bgfx::ray_hit(const float origin[3], const float direction[3], float& distance, float normal[3])
+	{
+		if (!m_pick || m_pick->indices.size() < 3) return false;
+		set_transform();
+		float inverse[16];
+		bx::mtxInverse(inverse, m_transform);
+		// the ray in the model's units (its direction not made unit: the parameter along it is the same in both spaces)
+		float o[3], d[3];
+		for (int i = 0; i < 3; ++i)
+		{
+			o[i] = inverse[i] * origin[0] + inverse[4 + i] * origin[1] + inverse[8 + i] * origin[2] + inverse[12 + i];
+			d[i] = inverse[i] * direction[0] + inverse[4 + i] * direction[1] + inverse[8 + i] * direction[2];
+		}
+		// its box first: most rays miss most models
+		float enter = -1e30f, leave = 1e30f;
+		for (int i = 0; i < 3; ++i)
+		{
+			if (std::fabs(d[i]) < 1e-12f)
+			{
+				if (o[i] < m_boundsMin[i] || o[i] > m_boundsMax[i]) return false;
+				continue;
+			}
+			float t0 = (m_boundsMin[i] - o[i]) / d[i], t1 = (m_boundsMax[i] - o[i]) / d[i];
+			if (t0 > t1) std::swap(t0, t1);
+			enter = std::max(enter, t0);
+			leave = std::min(leave, t1);
+			if (enter > leave || leave < 0.0f) return false;
+		}
+		// the nearest triangle (Moller-Trumbore, both sides)
+		const std::vector<float>& p = m_pick->positions;
+		const std::vector<uint32_t>& index = m_pick->indices;
+		float best = 1e30f;
+		size_t hit = SIZE_MAX;
+		for (size_t t = 0; t + 2 < index.size(); t += 3)
+		{
+			const float* a = &p[size_t(index[t]) * 3];
+			const float* b = &p[size_t(index[t + 1]) * 3];
+			const float* c = &p[size_t(index[t + 2]) * 3];
+			const float e1[3] = { b[0] - a[0], b[1] - a[1], b[2] - a[2] }, e2[3] = { c[0] - a[0], c[1] - a[1], c[2] - a[2] };
+			const float q[3] = { d[1] * e2[2] - d[2] * e2[1], d[2] * e2[0] - d[0] * e2[2], d[0] * e2[1] - d[1] * e2[0] };
+			const float det = e1[0] * q[0] + e1[1] * q[1] + e1[2] * q[2];
+			if (std::fabs(det) < 1e-12f) continue;
+			const float inv = 1.0f / det;
+			const float s[3] = { o[0] - a[0], o[1] - a[1], o[2] - a[2] };
+			const float u = (s[0] * q[0] + s[1] * q[1] + s[2] * q[2]) * inv;
+			if (u < 0.0f || u > 1.0f) continue;
+			const float r[3] = { s[1] * e1[2] - s[2] * e1[1], s[2] * e1[0] - s[0] * e1[2], s[0] * e1[1] - s[1] * e1[0] };
+			const float v = (d[0] * r[0] + d[1] * r[1] + d[2] * r[2]) * inv;
+			if (v < 0.0f || u + v > 1.0f) continue;
+			const float along = (e2[0] * r[0] + e2[1] * r[1] + e2[2] * r[2]) * inv;
+			if (along > 1e-5f && along < best)
+			{
+				best = along;
+				hit = t;
+			}
+		}
+		if (hit == SIZE_MAX) return false;
+		// the point and the triangle in render space
+		auto world = [&](const float* v, float out[3])
+		{
+			for (int i = 0; i < 3; ++i) out[i] = m_transform[i] * v[0] + m_transform[4 + i] * v[1] + m_transform[8 + i] * v[2] + m_transform[12 + i];
+		};
+		const float at[3] = { o[0] + d[0] * best, o[1] + d[1] * best, o[2] + d[2] * best };
+		float point[3], a[3], b[3], c[3];
+		world(at, point);
+		world(&p[size_t(index[hit]) * 3], a);
+		world(&p[size_t(index[hit + 1]) * 3], b);
+		world(&p[size_t(index[hit + 2]) * 3], c);
+		const float e1[3] = { b[0] - a[0], b[1] - a[1], b[2] - a[2] }, e2[3] = { c[0] - a[0], c[1] - a[1], c[2] - a[2] };
+		float n[3] = { e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0] };
+		const float length = std::sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+		if (length < 1e-12f) return false;
+		const float facing = (n[0] * direction[0] + n[1] * direction[1] + n[2] * direction[2]) > 0.0f ? -1.0f : 1.0f;
+		for (int i = 0; i < 3; ++i) normal[i] = n[i] / length * facing;
+		distance = std::sqrt((point[0] - origin[0]) * (point[0] - origin[0]) + (point[1] - origin[1]) * (point[1] - origin[1])
+			+ (point[2] - origin[2]) * (point[2] - origin[2]));
+		return true;
 	}
 }

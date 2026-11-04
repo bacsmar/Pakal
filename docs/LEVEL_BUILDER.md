@@ -162,7 +162,10 @@ A town that is not a grid, the way coastal towns grow (`coastal.py`, which `gene
    then decals. A ring of cheap background buildings (`background`) continues the town outside the playable area, for
    camera pans.
 8. **Wear** (`decals.py`): our own decal atlas (potholes, cracks, asphalt patches, stains, mud, broken sidewalk, drips and
-   fallen plaster for facades), placed by spawners on the ground and on building fronts, alpha-blended.
+   fallen plaster for facades), placed by spawners on the ground and on building fronts, alpha-blended. Along every curb
+   (an edge of the road with a sidewalk past it) a band of grime (`roadmesh.gutters`, `gutter_grime.png` made here):
+   0.7 m on the asphalt and 0.3 m on the sidewalk's edge, darkest at the curb, its far edge ragged, so the seam is not a
+   clean line.
 9. **Collision at body height** (`tools/zombies_convert/collision_shapes.py`): what a model has between 0.15 and 1.7 m
    above the floor, seen from above. A gazebo collides with its four posts and lets the player walk under its roof; an
    awning collides with nothing; a bench collides with its seat. It comes from `<model>.colliders.json` next to the
@@ -180,6 +183,11 @@ A town that is not a grid, the way coastal towns grow (`coastal.py`, which `gene
 when a level needs them. A theme JSON names its packs, the command that extracts models, and per role the packs and a
 name pattern; its models enter the catalog with their path under `Assets/` as id and are used where they are. A theme
 can also say which models break (as which game object). Without a theme, the roles fall back to the catalog's.
+A theme's `materials` replace the floors' textures, and a floor can list in `mix` up to two other surfaces it shows in
+patches (`{"color", "repeat", "coverage", "patch", "softness"}`: darker grass and fallen leaves over a park's lawn). They
+go into the cell's `<model>.gltf.materials.xml` as `mix="<texture> <meters a repeat> <coverage> <patch meters>
+<softness>"` and `mix2`; the engine mixes them by noise over the world (`ground_mix` in the lit shaders: a read more
+per layer, only on those floors).
 
 ## Building generator (`buildings.py`)
 
@@ -251,6 +259,14 @@ break), at half the size. Buildings were tried as receivers and came out patchy:
 small UV islands that each take a different value at this density, while the probes light them evenly. Small plants are
 walked over too, but they keep the probes. `build --no-lightmap` leaves everything to the probes;
 `ZOMBIES_LIGHTMAP=off` ignores the lightmap in the game.
+
+A coastal town's lightmap is **relative** (`"lightmap": {"texture", "relative": true}`): the bake sets the open floor at
+1, and the game scales the light probes' ambient by its brightness instead of replacing it, so a mission played at another
+time of day keeps its own light and color; the lightmap gives the occlusion and the baked shadow. Its receivers are the
+generated floor cells (role `ground`, tag `generated_mesh`; not the backdrop). Their copies keep the model's material names
+(Blender renames taken ones `.001`), so `<model>.gltf.materials.xml` still applies, and the water's own second UV (how
+near the shore it is); the water stays out of the bake and keeps the probes. `PAKAL_LIGHTMAP_LOOK=<look>` bakes with one
+of the `PAKAL_GI_LOOKS` file's lights.
 
 ## Missions
 

@@ -14,6 +14,11 @@ The standalone editor (a free camera, gizmos, an inspector, prefabs, Play) is do
 - **Role**: free text a tool filters by (`building`, `prop`, `light`).
 - **Zone**: a named rectangle with a kind (`street`, `park`, `spawn`). An object says which zone it is in; `zoning` fills
   that from where each object stands.
+- **Parent**: an object can hang from another, `"parent": "<key>"`. Its place stays its own, in the level (not relative
+  to the parent), so a reader that does not know the key (the game) places it as before; an old level without it loads
+  unchanged. The editor moves, turns and scales what hangs from an object with it. `set <object> parent <key>` hangs
+  it (a loop or an unknown key is refused; `do '{"op": "set", ..., "field": "parent", "value": null}'` lets it go); a
+  parent's new key is followed by its children, and a deleted parent's children hang from its own parent.
 
 Positions in operations and in what pakal-level prints are meters (x east, y north; the file keeps the level's units).
 Yaw is in degrees about the vertical axis.
@@ -41,6 +46,10 @@ pakal-level <level.json> do '{"op": "camera", "data": {"seconds": 8, "shots": [{
 pakal-level <level.json> prefabs                   the level's prefabs and how many objects use each
 pakal-level <level.json> prefab Barrel             a prefab with its bases merged in
 pakal-level <level.json> instantiate Barrel -10 30 yaw=90
+pakal-level <level.json> do '{"op": "batch", "ops": [{"op": "instantiate", "prefab": "Barrel", "x": 1, "y": 2, "rot": [0, 0, 45]}, ...]}'
+                                                   several operations as one: one undo, all done or none
+pakal-level <level.json> do '{"op": "prefab-library", "folder": "../prefabs"}'
+                                                   a shared prefab folder the level looks in (meta.prefabLibraries)
 pakal-level <level.json> override barrel_01 /components/Destructible/health 55
 pakal-level <level.json> revert barrel_01 [/components/Destructible/health]
 pakal-level <level.json> apply-to-prefab barrel_01 its overrides into the prefab's file

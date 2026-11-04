@@ -133,8 +133,8 @@ namespace Zombies
 		if (ImGui::CollapsingHeader("Graphics"))
 		{
 			int quality = static_cast<int>(m_graphics->get_quality());
-			const char* names[] = { "Low", "Medium", "High", "Ultra" };
-			if (ImGui::Combo("Quality", &quality, names, 4)) m_graphics->set_quality(static_cast<BgfxGraphicsSystem::Quality>(quality));
+			const char* names[] = { "Low", "Medium", "High", "Ultra", "Extreme" };
+			if (ImGui::Combo("Quality", &quality, names, 5)) m_graphics->set_quality(static_cast<BgfxGraphicsSystem::Quality>(quality));
 			// What the picture is made of, to compare looks and costs (the FPS line above)
 			bool changed = ImGui::Checkbox("Post-process", &m_devGraphics.post);
 			ImGui::BeginDisabled(!m_devGraphics.post);

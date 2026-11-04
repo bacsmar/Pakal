@@ -54,6 +54,9 @@ namespace Pakal
 		std::string zone; // the zone it belongs to (LevelZone::name), when it has one
 		std::string mesh; // path relative to the level file; empty for an object made from a prefab (the prefab's)
 		std::string prefab;                 // the prefab it is made from (PrefabLibrary), "" when none
+		// The object it hangs from (its key), "" when none: an editor moves, turns and scales it with its parent. Its place
+		// stays its own, in the level (not relative to the parent): a reader that does not know "parent" places it right.
+		std::string parent;
 		Json overrides = Json::object();    // what it changes of its prefab: a JSON merge patch on the prefab
 		double x = 0.0, y = 0.0, z = 0.0;
 		std::array<double, 3> rot = { 0.0, 0.0, 0.0 }; // degrees about X, Y, Z (Z up), applied as Rz*Ry*Rx

@@ -202,11 +202,12 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
                     # its walls and roof in its colors (paint.py: the atlas's mask; the engine paints it)
                     spec = e['paint']
                     source = Path(level.asset_dir) / level.objects[-1]['mesh']
-                    atlas = paint.atlas_of(source, spec.get('atlases') or [])
-                    painted = paint.mask(atlas, paint.building_models(atlas, spec.get('models') or '*.gltf')) if atlas else None
+                    # (its own name: 'atlas' is the lightmap's, written into the level at the end)
+                    paint_atlas = paint.atlas_of(source, spec.get('atlases') or [])
+                    painted = paint.mask(paint_atlas, paint.building_models(paint_atlas, spec.get('models') or '*.gltf')) if paint_atlas else None
                     if painted is not None:
                         level.objects[-1]['paint'] = {
-                            'atlas': atlas.stem, 'mask': Path(os.path.relpath(painted, level.asset_dir)).as_posix(),
+                            'atlas': paint_atlas.stem, 'mask': Path(os.path.relpath(painted, level.asset_dir)).as_posix(),
                             'wall': [round(c, 3) for c in spec['wall']], 'roof': [round(c, 3) for c in spec['roof']]}
             elif e.get('role') in OWN_PROPS:
                 object_ids[e['id']] = own_prop(level, asset, x, y, yaw, s, e['role'])
@@ -363,7 +364,9 @@ def make_build(scene, catalog, mission, batches=None, lighter=None, lightmap=Non
         if crowd:
             result['crowd'] = crowd
         if atlas:
-            result['lightmap'] = {'texture': lightmaps.relative(atlas, level.asset_dir)}
+            result['lightmap'] = {'texture': lightmaps.relative_path(atlas, level.asset_dir)}
+            if lightmaps.relative(scene):
+                result['lightmap']['relative'] = True
         # lo que se rompe suelta dinero, salud o un power-up (el juego original solo soltaba dinero); los autos, más
         for d in level.destructibles:
             components = dict(d['components'])

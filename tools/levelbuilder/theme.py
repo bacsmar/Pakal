@@ -71,6 +71,9 @@ def apply_materials(theme, materials):
     defaults stay in the public code and a game picks what it has licensed:
 
         "materials": {"grass": {"color": "<packs>/<pack>/textures/Grass_01.png", "normal": "...", "repeat": 4.0}}
+
+    "mix" lists up to two other surfaces the floor shows in patches (the engine mixes them by noise): [{"color": "...",
+    "repeat": meters, "coverage": 0..1, "patch": meters, "softness": the edge}].
     """
     for name, spec in theme.get('materials', {}).items():
         merged = dict(materials.get(name, {}))
@@ -84,6 +87,11 @@ def apply_materials(theme, materials):
                 if not path.is_file():
                     raise FileNotFoundError(f'theme material {name}: no {path}')
                 value = path
+            if key == 'mix':
+                value = [dict(layer, color=ASSETS / layer['color']) for layer in value]
+                for layer in value:
+                    if not layer['color'].is_file():
+                        raise FileNotFoundError(f'theme material {name}: no {layer["color"]}')
             merged[key] = value
         materials[name] = merged
 

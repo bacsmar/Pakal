@@ -46,6 +46,7 @@ void main()
 	{
 		texel = ground_detile(texel, texture2D(s_texColor, ground_second_uv(v_texcoord0)), v_worldpos.xz, u_ground);
 	}
+	texel = ground_mix(texel, v_worldpos.xz);
 	texel = paint_texel(texel, v_texcoord0);
 	vec4 albedo = texel * u_tint;
 	// the cutout follows the texture alone: a faded model (u_tint.a) keeps its leaves

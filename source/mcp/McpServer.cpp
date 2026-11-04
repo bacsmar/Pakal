@@ -7,24 +7,40 @@
 
 #include "LogMgr.h"
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
-#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <unistd.h>
 #include <strings.h>
-using SOCKET = int;
-constexpr SOCKET INVALID_SOCKET = -1;
-static int closesocket(SOCKET socket) { return close(socket); }
-static int _strnicmp(const char* a, const char* b, size_t n) { return strncasecmp(a, b, n); }
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #endif
 
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
+
+#if !defined(_WIN32)
+namespace
+{
+	using SOCKET = int;
+	const SOCKET INVALID_SOCKET = -1;
+	using BOOL = int;
+	const BOOL TRUE = 1;
+	int closesocket(SOCKET socket) { return close(socket); }
+	int _strnicmp(const char* a, const char* b, size_t count) { return strncasecmp(a, b, count); }
+	const int kSendFlags = MSG_NOSIGNAL;   // a closed peer is an error, not SIGPIPE
+}
+#else
+namespace
+{
+	const int kSendFlags = 0;
+}
+#endif
 
 namespace Pakal
 {
@@ -33,6 +49,7 @@ namespace Pakal
 		using json = nlohmann::json;
 		const char* const kProtocolVersion = "2024-11-05";
 		const SOCKET kInvalidSocket = INVALID_SOCKET;
+		std::atomic<McpServer*> s_active{ nullptr };
 
 		std::string json_error(const json& id, int code, const std::string& message)
 		{
@@ -106,12 +123,7 @@ namespace Pakal
 			size_t sent = 0;
 			while (sent < text.size())
 			{
-#ifdef _WIN32
-				constexpr int sendFlags = 0;
-#else
-				constexpr int sendFlags = MSG_NOSIGNAL;
-#endif
-				const int n = send(socket, text.data() + sent, static_cast<int>(text.size() - sent), sendFlags);
+				const int n = send(socket, text.data() + sent, static_cast<int>(text.size() - sent), kSendFlags);
 				if (n <= 0)
 				{
 					return;
@@ -126,9 +138,21 @@ namespace Pakal
 		stop();
 	}
 
+	McpServer* McpServer::active()
+	{
+		return s_active.load();
+	}
+
 	void McpServer::add_tool(const std::string& name, Tool tool)
 	{
+		std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
 		m_tools[name] = std::move(tool);
+	}
+
+	void McpServer::remove_tool(const std::string& name)
+	{
+		std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
+		m_tools.erase(name);
 	}
 
 	bool McpServer::start(unsigned short port, const std::string& token, std::string& error)
@@ -137,14 +161,13 @@ namespace Pakal
 		{
 			return true;
 		}
-#ifdef _WIN32
+#if defined(_WIN32)
 		WSADATA wsa;
 		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		{
 			error = "WSAStartup failed";
 			return false;
 		}
-
 #endif
 
 		const SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -153,7 +176,7 @@ namespace Pakal
 			error = "cannot create the socket";
 			return false;
 		}
-		int reuse = 1;
+		BOOL reuse = TRUE;
 		setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuse), sizeof(reuse));
 
 		sockaddr_in address{};
@@ -171,6 +194,7 @@ namespace Pakal
 		m_listenSocket = static_cast<uintptr_t>(listener);
 		m_running.store(true);
 		m_thread = std::thread([this]() { serve(); });
+		s_active.store(this);
 		LOG_INFO("[McpServer] listening on http://127.0.0.1:%u/mcp (%zu tools)%s", static_cast<unsigned>(port),
 			m_tools.size(), m_token.empty() ? "" : ", token required");
 		return true;
@@ -182,6 +206,8 @@ namespace Pakal
 		{
 			return;
 		}
+		McpServer* self = this;
+		s_active.compare_exchange_strong(self, nullptr);
 		if (m_thread.joinable())
 		{
 			m_thread.join();
@@ -191,7 +217,7 @@ namespace Pakal
 			closesocket(static_cast<SOCKET>(m_listenSocket));
 			m_listenSocket = ~static_cast<uintptr_t>(0);
 		}
-#ifdef _WIN32
+#if defined(_WIN32)
 		WSACleanup();
 #endif
 	}
@@ -205,12 +231,7 @@ namespace Pakal
 			FD_ZERO(&readable);
 			FD_SET(listener, &readable);
 			timeval timeout{ 0, 200000 }; // 200 ms: lets stop() take effect quickly
-#ifdef _WIN32
-			constexpr int socketCount = 0; // ignored by Winsock
-#else
-			const int socketCount = listener + 1;
-#endif
-			if (select(socketCount, &readable, nullptr, nullptr, &timeout) <= 0)
+			if (select(static_cast<int>(listener) + 1, &readable, nullptr, nullptr, &timeout) <= 0)
 			{
 				continue;
 			}
@@ -289,6 +310,7 @@ namespace Pakal
 			}
 			if (method == "tools/list")
 			{
+				std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
 				json tools = json::array();
 				for (const auto& entry : m_tools)
 				{
@@ -301,17 +323,23 @@ namespace Pakal
 			{
 				const json params = request.value("params", json::object());
 				const std::string name = params.value("name", std::string());
-				const auto found = m_tools.find(name);
-				if (found == m_tools.end())
+				Tool tool;
 				{
-					return json_error(id, -32602, "unknown tool '" + name + "'");
+					// called without the lock: a tool may wait for the graphics thread, which may be adding one
+					std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
+					const auto found = m_tools.find(name);
+					if (found == m_tools.end())
+					{
+						return json_error(id, -32602, "unknown tool '" + name + "'");
+					}
+					tool = found->second;
 				}
 				const json arguments = params.value("arguments", json::object());
 				json output;
 				bool isError = false;
 				try
 				{
-					output = found->second.call(arguments);
+					output = tool.call(arguments);
 				}
 				catch (const std::exception& e)
 				{

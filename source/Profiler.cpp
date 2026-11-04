@@ -157,6 +157,7 @@ namespace Pakal
 		const size_t frames = m_second.size();
 		nlohmann::json record;
 		record["t"] = std::chrono::duration<double>(std::chrono::steady_clock::now() - m_start).count();
+		record["clock"] = std::chrono::duration<double>(std::chrono::steady_clock::now() - m_born).count();
 		record["fps"] = frames / seconds;
 		std::vector<float> times = m_second;
 		record["frame_ms"] = { { "p50", percentile(times, 0.5) }, { "p95", percentile(times, 0.95) }, { "p99", percentile(times, 0.99) },
@@ -189,7 +190,12 @@ namespace Pakal
 			record["info"] = m_info;
 			m_infoWritten = true;
 		}
-		LOG_INFO("[Profile] %.1f fps, frame p50 %.1f p95 %.1f p99 %.1f ms, %.0f MB;%s", record["fps"].get<double>(),
+		if (m_live)
+		{
+			m_history.push_back(record.dump());
+			while (m_history.size() > kHistory) m_history.pop_front();
+		}
+		if (!m_quiet) LOG_INFO("[Profile] %.1f fps, frame p50 %.1f p95 %.1f p99 %.1f ms, %.0f MB;%s", record["fps"].get<double>(),
 			record["frame_ms"]["p50"].get<double>(), record["frame_ms"]["p95"].get<double>(), record["frame_ms"]["p99"].get<double>(),
 			m_counters["mem.process_mb"], line.c_str());
 		if (m_file)
@@ -236,7 +242,33 @@ namespace Pakal
 		finish();
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_recording = false;
-		m_enabled = false;   // what the environment asked for at the start is over by now (its file is closed)
+		m_enabled = m_live;   // what the environment asked for at the start is over by now (its file is closed); live goes on
+	}
+
+	void Profiler::set_live(bool live)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (live && !m_enabled) m_quiet = true;   // on only for the live records: no log line each second
+		m_live = live;
+		if (live) m_enabled = true;
+		else
+		{
+			m_history.clear();
+			if (m_quiet && !m_recording) m_enabled = false;
+			m_quiet = false;
+		}
+	}
+
+	std::vector<std::string> Profiler::records_after(double clock)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::vector<std::string> found;
+		for (const auto& text : m_history)
+		{
+			const nlohmann::json record = nlohmann::json::parse(text, nullptr, false);
+			if (record.is_object() && record.value("clock", 0.0) > clock) found.push_back(text);
+		}
+		return found;
 	}
 
 	double Profiler::recording_seconds() const

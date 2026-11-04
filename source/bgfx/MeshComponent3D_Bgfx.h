@@ -14,6 +14,7 @@
 #include <bgfx/bgfx.h>
 #include <assimp/matrix4x4.h>
 #include <array>
+#include <cmath>
 #include <functional>
 #include <map>
 #include <memory>
@@ -65,6 +66,26 @@ namespace Pakal
 		// Bounds of the model as loaded (bind pose for skinned models), before position, rotation and scale.
 		void get_bounds(float min[3], float max[3]) const;
 
+		// A tall static model seen from above, in columns (64 a side at most, over its box's x and z): in each, the lowest
+		// and highest point of its surfaces, in model units. What hides the player is tested against it: a box alone takes
+		// in the air beside an awning or under a sign.
+		struct Columns
+		{
+			float x0 = 0.0f, z0 = 0.0f, cell = 1.0f;
+			int nx = 0, nz = 0;
+			std::vector<float> low, high;   // per column (row-major along z); low > high: nothing there
+			// whether (x, y, z), model units, is within 'margin' of the surfaces of its column
+			bool solid_at(float x, float y, float z, float margin) const
+			{
+				const int i = int(std::floor((x - x0) / cell)), k = int(std::floor((z - z0) / cell));
+				if (i < 0 || k < 0 || i >= nx || k >= nz) return false;
+				const size_t c = size_t(k) * size_t(nx) + size_t(i);
+				return low[c] <= high[c] && y >= low[c] - margin && y <= high[c] + margin;
+			}
+		};
+		// Its columns (static models 2 units tall or more), or null
+		const Columns* get_columns() const { return m_columns.get(); }
+
 		void set_position(float x, float y, float z);
 		void set_rotation(float pitch, float yaw, float roll); // radians, applied in X, Y, Z order
 		void set_scale(float uniform);
@@ -78,6 +99,24 @@ namespace Pakal
 		// Full object transform, column-major (bgfx layout). Replaces position, rotation and scale.
 		void set_matrix(const float* matrix16);
 		void clear_matrix() { m_hasMatrix = false; mark_moved(); }
+		// Its world matrix as drawn (column-major): the one set, or its position, rotation and scale
+		void get_world_matrix(float out16[16]);
+
+		// A ground layer's text (materials.xml mix or mix2) as its texture's path and the shader's values (u_groundMix0/1:
+		// 1 / meters a repeat, the noise threshold its coverage needs, 1 / patch size, edge softness); false when it names none
+		static bool parse_mix_layer(const std::string& modelPath, const char* text, std::string& texture, float values[4]);
+		// Its materials as drawn, one per submesh: the file's material (index, name), the color multiplier (a glTF base
+		// color factor, with materials.xml's tint in its place), how it blends and whether both sides show
+		struct MaterialInfo
+		{
+			unsigned material = 0;
+			std::string name, blend;
+			float tint[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			bool doubleSided = false;
+		};
+		std::vector<MaterialInfo> get_materials() const;
+		// The model's <model>.materials.xml as read: each material's attributes (name, blend, tint, mix...), in file order
+		static std::vector<std::vector<std::pair<std::string, std::string>>> read_material_overrides(const std::string& modelPath);
 
 		// Animation (skinned models only). Clips come from the animations stored in the file.
 		int get_animation_count() const { return static_cast<int>(m_animations.size()); }
@@ -194,12 +233,17 @@ namespace Pakal
 		// Draws only the depth of the solid materials (the sun's shadow map). Small flat models (ground, decals) are left out.
 		void render_depth(bgfx::ViewId viewId, bgfx::ProgramHandle program);
 		// The sun's shadow map and what the shaders need to read it; every draw after this sees it. Strength 0 turns it off.
-		static void set_shadow_state(bgfx::TextureHandle map, const float matrix[16], const float params[4]);
+		// filter: x the taps on each side (2 to 4), y their spacing in texels.
+		static void set_shadow_state(bgfx::TextureHandle map, const float matrix[16], const float params[4], const float filter[4]);
+		// The clouds' shadows drifting over the ground: x how much of the sun a cloud takes (0: none), y 1 / a cloud's size
+		// (meters), zw how far the wind has carried them (meters, x and z)
+		static void set_clouds(const float clouds[4]);
 		// The baked ambient light (a 3D grid in world space); origin.w is how much of the ambient comes from it, 0 for none
 		static void set_gi_state(bgfx::TextureHandle volume, const float origin[4], const float size[4]);
 		// The level's lightmap atlas (RGB: the square root of half the ambient light, A: the sun's baked visibility) and how
-		// much the baked shadow darkens (0: none). An invalid texture turns lightmaps off.
-		static void set_lightmap_state(bgfx::TextureHandle atlas, float shadowStrength);
+		// much the baked shadow darkens (0: none). 'relative': the atlas is the light relative to the open floor (1 there), and
+		// scales the probes' ambient instead of replacing it. An invalid texture turns lightmaps off.
+		static void set_lightmap_state(bgfx::TextureHandle atlas, float shadowStrength, bool relative = false);
 		// The plastic toy look of the models without their own material maps: the strength of a tight highlight of the sun
 		// (0: none) and its shininess
 		static void set_style(float gloss, float shininess);
@@ -225,6 +269,10 @@ namespace Pakal
 		// How far a shadow reaches sideways per meter of height (the sun's horizontal over its vertical): a model casts into
 		// the shadow map only when its shadow can fall in the camera's view (its box grown by its height times this)
 		static void set_shadow_reach(float perMeter);
+		// Whole shadow casters (High and Ultra): a character casts with all its triangles, and a big static model is only
+		// simplified, never clustered (a tree's crown keeps its leaves). Else a character casts a simplified mesh and loose
+		// cards a blob. Static models take it when they load
+		static void set_full_shadows(bool full);
 		// One model made of many placed copies of a small static one (a floor's tiles, the props of a room): their vertices
 		// moved where each copy stands, its textures shared. Drawn in one call per material instead of one per copy, and
 		// culled as a whole. The copies must share one model (copies of one prototype) and keep its geometry (a static
@@ -250,6 +298,26 @@ namespace Pakal
 		static void take_pass_stats(PassStats out[3]);
 		// The model has normal maps and ORM textures: it is drawn with the metal-rough shader (static models only)
 		bool uses_pbr() const { return m_pbr; }
+
+		// Draws it by itself in a view of its own (a picture of the model: BgfxGraphicsSystem::request_model_picture):
+		// shown even when hidden, without the scene's culling, shadows, light volume, lightmap or clouds; its solid
+		// materials, then its blended ones. The light uniforms are the caller's. Graphics thread.
+		void render_alone(bgfx::ViewId viewId, bgfx::ProgramHandle program);
+
+		// Tools that aim at surfaces (an editor dropping a model on a roof, snapping to a vertex): static models keep their
+		// triangles' positions, shared by their copies. Set before the models load; off by default (a game does not need them).
+		static void set_keep_pick_geometry(bool keep);
+		struct PickGeometry
+		{
+			std::vector<float> positions;   // x, y, z per vertex, model units
+			std::vector<uint32_t> indices;  // three per triangle
+		};
+		// Its triangles (static models loaded while set_keep_pick_geometry was on), or null
+		const PickGeometry* get_pick_geometry() const { return m_pick.get(); }
+		// Where a ray (render space, a unit direction) first meets its triangles, either side, through its placement: the
+		// distance along the ray and the surface's unit normal there (render space, turned toward the ray's origin). False
+		// when it misses or keeps no triangles.
+		bool ray_hit(const float origin[3], const float direction[3], float& distance, float normal[3]);
 
 	private:
 		friend class BgfxGraphicsSystem;
@@ -298,18 +366,28 @@ namespace Pakal
 			float tint[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			float scroll[2] = { 0.0f, 0.0f };   // its texture slides this much a second (texture widths): water
 			float detile[2] = { 0.0f, 0.0f };   // ground: a second, turned read against its tiling, and macro variation (detile="a b")
+			// ground: up to two other surfaces mixed in patches (mix="<texture> <repeat m> <coverage> <patch m> <softness>",
+			// mix2="..."): their textures and { repeats a meter, coverage, 1 / patch size, softness }
+			bgfx::TextureHandle mixTexture[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
+			float mix[2][4] = { { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f } };
+			bool ownsMix = false;
 			float water = 0.0f;   // its ripples wobble and it reflects the sky (materials.xml water="strength", 0: not water)
 			// glTF metal-rough materials: the normal map and the ORM texture (occlusion, roughness, metalness)
 			bgfx::TextureHandle normalTexture = BGFX_INVALID_HANDLE;
 			bgfx::TextureHandle ormTexture = BGFX_INVALID_HANDLE;
 			bool ownsExtraTextures = false;
 			std::string textureName;   // its color texture's file name without the extension (a paint mask names it)
+			unsigned material = 0;     // the file's material it draws (its index and name)
+			std::string materialName;
 		};
 
 		// Optional <model>.materials.xml next to the model:
 		//   <materials><material name="..." blend="opaque|alphatest|alpha|additive|multiply"
 		//                        doubleSided="true|false" tint="r g b a" scroll="u v"/></materials>
 		//   scroll: the texture slides u, v texture widths a second (water that flows)
+		//   mix, mix2: another surface in patches over the ground: "<texture beside the model> <meters a repeat> <coverage 0..1>
+		//   <patch size, meters> <edge softness>"
+		void load_mix_layer(size_t subIndex, int layer, const std::string& modelPath, const char* text);
 		void load_material_overrides(const std::string& modelPath, const std::vector<std::string>& materialNames);
 
 		// One entry of the palette: a bone (with its offset matrix) or an unskinned mesh node.
@@ -362,6 +440,9 @@ namespace Pakal
 		bgfx::VertexBufferHandle m_shadowVertexBuffer = BGFX_INVALID_HANDLE;
 		bgfx::IndexBufferHandle m_shadowIndexBuffer = BGFX_INVALID_HANDLE;
 		std::shared_ptr<const StaticGeometry> m_geometry;   // a small static model's, shared by its copies (merge)
+		std::shared_ptr<const Columns> m_columns;           // a tall static model's (get_columns), shared by its copies
+		std::shared_ptr<const PickGeometry> m_pick;         // its triangles (set_keep_pick_geometry), shared by its copies
+		static std::shared_ptr<const Columns> build_columns(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 		uint32_t m_shadowIndexCount = 0;
 		std::vector<SubMesh> m_subMeshes;
 		bool m_loaded;

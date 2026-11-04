@@ -177,7 +177,7 @@ PakalPlayer.exe ZombiesModule.dll
 ```
 
 - `PAKAL_MCP_TOKEN` (optional): every request must send `Authorization: Bearer <token>`. Without a token the port is still loopback-only.
-- Tools: `get_status` (engine and graphics frame rates) and `screenshot` (`{"path": "...tga"}`; the file is written on the next frame, so wait a moment before reading it).
+- Tools: the engine's (source/mcp/EngineTools): `get_status`, `screenshot` (`{"path": "...tga"}`; the file is written on the next frame, so wait a moment before reading it), and the profiling and tuning ones (`get_stats`, `get_profile`, `get_settings`, `set_settings`, `set_camera`, `record_start`/`record_stop`): docs/PROFILING.md, which `tools/pakal_device.py` drives.
 - Quick check: `curl -X POST http://127.0.0.1:8765/mcp -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}"`.
 
 ### 7. Audio

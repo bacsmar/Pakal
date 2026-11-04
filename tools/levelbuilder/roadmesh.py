@@ -87,6 +87,9 @@ MATERIALS = {
               'normal': REPO / 'build-win64/bin/Assets/levelgen/_decals/water_ripples_normal.png'},
     # el atlas de desgaste (decals.py): se hace la primera vez que hace falta
     'decals': {'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/wear_atlas.png', 'alpha': 'BLEND', 'roughness': 0.9},
+    # the grime against the curb (gutter_grime.png, made here): v = 0 at the curb, gone by v = 1
+    'gutter': {'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/gutter_grime.png', 'alpha': 'BLEND', 'repeat': 3.0,
+               'roughness': 0.95},
     # road paint worn by traffic (make_worn_paint), the crosswalks more than the lines: in Mexico little paint is left
     'paint_white': {'factor': [0.86, 0.86, 0.82, 1.0], 'roughness': 0.7, 'alpha': 'BLEND', 'repeat': 3.0,
                     'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/worn_paint.png'},
@@ -422,7 +425,7 @@ class Mesh:
             # the materials that flow (water): their speed for the engine, next to the model
             # (and the ones that blend: the engine blends what its sidecar says, whatever the glTF's alpha mode)
             flowing = [m for m in sorted(materials) if materials[m]['idx'] and (MATERIALS[m].get('scroll') or MATERIALS[m].get('detile')
-                                                                                or MATERIALS[m].get('alpha') == 'BLEND')]
+                                                                                or MATERIALS[m].get('mix') or MATERIALS[m].get('alpha') == 'BLEND')]
             overrides = out_dir / f'{name}.gltf.materials.xml'
             if flowing:
                 def row(m):
@@ -434,6 +437,14 @@ class Mesh:
                         out += f' water="{spec["water"]}"'
                     if spec.get('detile'):
                         out += f' detile="{spec["detile"][0]} {spec["detile"][1]}"'
+                    # other surfaces in patches (the engine's mix, mix2): their textures beside the others
+                    for key, layer in zip(('mix', 'mix2'), spec.get('mix', [])[:2]):
+                        source = Path(layer['color'])
+                        tex_dir.mkdir(parents=True, exist_ok=True)
+                        if not (tex_dir / source.name).is_file():
+                            shutil.copy2(source, tex_dir / source.name)
+                        out += (f' {key}="_textures/{source.name} {layer.get("repeat", 4.0)} {layer["coverage"]}'
+                                f' {layer.get("patch", 8.0)} {layer.get("softness", 0.08)}"')
                     return out + '/>\n'
                 rows = ''.join(row(m) for m in flowing)
                 overrides.write_text(f'<materials>\n{rows}</materials>\n', encoding='utf-8')
@@ -580,6 +591,104 @@ def make_worn_paint(path, size=512, heavy=False):
     Image.fromarray(np.dstack([rgb, np.clip(alpha, 0, 1) * 255.0]).astype(np.uint8), 'RGBA').save(path)
 
 
+def make_gutter_grime(path, width=512, height=128):
+    """The dirt that gathers against a curb (it repeats along u without a seam): grime and dust darkest at the curb (v = 0),
+    its far edge ragged at several scales, a few leaves and grains in it; transparent by v = 1."""
+    from PIL import Image
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(37)
+
+    def wrap_noise(cells_u, cells_v):
+        # smooth noise that wraps along u (and across v, unused: its last rows are transparent)
+        small = rng.random((cells_v, cells_u))
+        small = np.pad(small, 2, mode='wrap')
+        su, sv = width // cells_u, height // cells_v
+        big = Image.fromarray((small * 255).astype(np.uint8)).resize(((cells_u + 4) * su, (cells_v + 4) * sv), Image.BICUBIC)
+        return np.asarray(big, np.float32)[2 * sv:2 * sv + height, 2 * su:2 * su + width] / 255.0
+
+    v = np.linspace(0.0, 1.0, height)[:, None]
+    # how far from the curb it reaches, along the curb: 0.25 to 0.85 of the band, ragged
+    reach = 0.25 + 0.45 * wrap_noise(8, 2)[0:1, :] + 0.15 * wrap_noise(32, 4)
+    edge = (reach - v) / 0.12 + 0.15 * (wrap_noise(64, 16) - 0.5) / 0.12
+    alpha = np.clip(edge, 0.0, 1.0) * (0.45 + 0.4 * np.clip(1.0 - v / np.maximum(reach, 0.05), 0.0, 1.0))
+    alpha *= 0.75 + 0.25 * wrap_noise(64, 16)
+    # the color: dusty grey-brown, darker and wetter at the curb, flecks of sand and dry leaves
+    tone = 0.85 + 0.25 * wrap_noise(32, 8)
+    base = np.array([0.30, 0.27, 0.23])
+    rgb = base * (tone * (0.75 + 0.35 * v))[..., None]
+    flecks = rng.random((height, width))
+    leaf = (flecks > 0.9965) & (v[:, :1].repeat(width, 1) < reach)
+    sand = (flecks < 0.02) & (v[:, :1].repeat(width, 1) < reach)
+    rgb[leaf] = [0.42, 0.30, 0.15]
+    rgb[sand] = rgb[sand] * 1.5
+    alpha[leaf] = np.maximum(alpha[leaf], 0.85)
+    alpha[-3:, :] = 0.0
+    Image.fromarray(np.dstack([np.clip(rgb, 0, 1) * 255.0, np.clip(alpha, 0, 1) * 255.0]).astype(np.uint8), 'RGBA').save(path)
+
+
+def gutters(road, sidewalk, mesh, clip, reach=0.7, top_reach=0.3):
+    """Grime along every curb (an edge of the road with a sidewalk past it): a band on the asphalt 'reach' wide from the
+    curb, and a narrower one on the sidewalk's edge, both ragged (gutter_grime.png). Edges cut by 'clip' or facing water
+    have none."""
+    beside = sidewalk.buffer(0.05)
+    for poly in polygons(road):
+        for k, ring in enumerate([poly.exterior] + list(poly.interiors)):
+            coords = list(ring.coords)[:-1]
+            n = len(coords)
+            if n < 3:
+                continue
+            # the side the road is on: left of a->b on a counterclockwise exterior, right on a clockwise one (holes reversed)
+            left_inside = ring.is_ccw if k == 0 else not ring.is_ccw
+            sign = 1.0 if left_inside else -1.0
+
+            def normal(a, b):
+                dx, dy = b[0] - a[0], b[1] - a[1]
+                length = math.hypot(dx, dy) or 1.0
+                return -dy / length * sign, dx / length * sign   # into the road
+
+            edges = [(coords[i], coords[(i + 1) % n]) for i in range(n)]
+            normals = [normal(a, b) for a, b in edges]
+            curb = []
+            for (a, b), (nx, ny) in zip(edges, normals):
+                mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
+                curb.append(math.hypot(b[0] - a[0], b[1] - a[1]) > 0.05 and clip.contains(Point(mx, my))
+                            and beside.contains(Point(mx - nx * 0.3, my - ny * 0.3)))
+
+            def offset(i, d):
+                # vertex i moved d into the road along its two edges' mean normal (mitred, capped at corners)
+                (n0x, n0y), (n1x, n1y) = normals[i - 1], normals[i]
+                mx, my = n0x + n1x, n0y + n1y
+                length = math.hypot(mx, my)
+                if length < 1e-3:
+                    mx, my, length = n1x, n1y, 1.0
+                mx, my = mx / length, my / length
+                cos_half = max(mx * n1x + my * n1y, 0.5)
+                x, y = coords[i]
+                return x + mx * d / cos_half, y + my * d / cos_half
+
+            # runs of consecutive curb edges (from an edge that is not one; all of them: the whole ring), each a strip
+            if all(curb):
+                runs = [list(range(n))]
+            else:
+                start = curb.index(False)
+                runs, run = [], []
+                for j in range(1, n + 1):
+                    i = (start + j) % n
+                    if curb[i]:
+                        run.append(i)
+                    elif run:
+                        runs.append(run)
+                        run = []
+                if run:
+                    runs.append(run)
+            for run in runs:
+                points = run + [(run[-1] + 1) % n]
+                at_curb = [coords[i] for i in points]
+                mesh.strip(at_curb, [offset(i, reach) for i in points], ROAD_Y + 0.006, 'gutter')
+                mesh.strip(at_curb, [offset(i, -top_reach) for i in points], 0.004, 'gutter')
+
+
 def make_water_normal(path, size=256):
     """Las ondas del agua: un mapa de normales que se repite sin costura (senos de periodos enteros), suaves."""
     from PIL import Image
@@ -633,6 +742,8 @@ def to_gltf(name, materials, tex_dir):
                 make_malecon_paving(path)
             if not path.is_file() and path.name == 'shallows.png':
                 make_shallows(path)
+            if not path.is_file() and path.name == 'gutter_grime.png':
+                make_gutter_grime(path)
             if not path.is_file() and path.name in ('worn_paint.png', 'worn_paint_heavy.png'):
                 make_worn_paint(path, heavy=path.name == 'worn_paint_heavy.png')
             tex_dir.mkdir(parents=True, exist_ok=True)
@@ -738,6 +849,8 @@ def road_surfaces(net, mesh, clip):
     # guarniciones: el borde del asfalto sube a la banqueta (salvo donde da al agua: ahí no hay borde)
     mesh.ring_walls(road, ROAD_Y - 0.02, 0.0, 'concrete', outward=False)
     mesh.flat(a['sidewalk'].intersection(clip), 0.0, 'concrete')
+    # the grime against the curbs, both sides of them (the whole road's edges: not the cuts 'clip' makes)
+    gutters(a['road'], a['sidewalk'], mesh, clip)
     paving = unary_union([a['promenade'], a['alley']] + [b.get('ground_poly', b['poly']) for b in net.blocks if b['kind'] == 'plaza'])
     malecon = getattr(net, 'malecon', None)
     if malecon:

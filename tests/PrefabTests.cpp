@@ -159,8 +159,44 @@ int main()
 	check(tiltedEditor.apply({ { "op", "place" }, { "object", "wall_01" }, { "rot", Json::array({ 0, 0, 90 }) } }).empty() && !tiltedBack.objects[0].has_basis,
 		"angles replace a basis");
 
+	// a shared library the level names: its prefabs are found after the level's own, their meshes relative to their folder
+	{
+		write(root / "shared" / "Crate.prefab.json", R"({ "mesh": "../models/crate.glb", "role": "clutter", "catalog": "pack/Crate" })");
+		write(root / "shared" / "Barrel.prefab.json", R"({ "mesh": "../models/other_barrel.glb" })");
+		const fs::path libraryLevel = root / "lib_level" / "level.json";
+		write(libraryLevel, R"({ "format": "pakal-level", "version": 2, "name": "l", "units_per_meter": 100, "objects": [] })");
+		write(root / "lib_level" / "prefabs" / "Barrel.prefab.json", R"({ "mesh": "../barrel.glb" })");
+		LevelDocument shared;
+		check(shared.load(libraryLevel.string(), error), "a level without libraries loads");
+		PrefabLibrary library;
+		library.open(libraryLevel.string(), shared);
+		check(library.names() == std::vector<std::string>({ "Barrel" }), "without the key only the level's folder");
+		LevelEditor sharedEditor(shared);
+		sharedEditor.set_prefabs(&library);
+		check(sharedEditor.apply({ { "op", "batch" }, { "ops", Json::array({ { { "op", "prefab-library" }, { "folder", "../shared" } },
+			{ { "op", "instantiate" }, { "prefab", "Barrel" }, { "x", 1.0 }, { "y", 2.0 }, { "z", 0.5 }, { "rot", Json::array({ 5, 0, 30 }) } } }) } }).empty(),
+			"a batch names a library and instantiates");
+		check(shared.meta[PrefabLibrary::kLibrariesKey] == Json::array({ "../shared" }) && shared.objects.size() == 1 && shared.objects[0].rot[0] == 5.0
+			&& shared.objects[0].rot[2] == 30.0 && std::fabs(shared.objects[0].z - 50.0) < 1e-9, "the library is named and the object turned as asked");
+		library.open(libraryLevel.string(), shared);
+		check(library.names() == std::vector<std::string>({ "Barrel", "Crate" }), "the library's prefabs are listed with the level's");
+		check(library.prefab("Barrel", error)["mesh"] == "barrel.glb", "the level's own prefab comes before the library's");
+		Json crate = library.prefab("Crate", error);
+		check(error.empty() && crate["mesh"] == "../models/crate.glb" && crate["catalog"] == "pack/Crate", "a library prefab's mesh comes relative to the level");
+		check(!sharedEditor.apply({ { "op", "batch" }, { "ops", Json::array({ { { "op", "instantiate" }, { "prefab", "Crate" }, { "x", 0.0 }, { "y", 0.0 } },
+			{ { "op", "instantiate" }, { "prefab", "Nothing" }, { "x", 0.0 }, { "y", 0.0 } } }) } }).empty() && shared.objects.size() == 1,
+			"a batch with a failing operation leaves the level as it was");
+		check(sharedEditor.apply({ { "op", "batch" }, { "ops", Json::array({ { { "op", "instantiate" }, { "prefab", "Crate" }, { "x", 0.0 }, { "y", 0.0 } },
+			{ { "op", "instantiate" }, { "prefab", "Crate" }, { "x", 1.0 }, { "y", 0.0 } } }) } }).empty() && shared.objects.size() == 3, "a batch does them all");
+		sharedEditor.undo();
+		check(shared.objects.size() == 1, "and one undo takes them all back");
+		std::string saveError;
+		check(library.save_in((root / "shared").string(), "Lamp", Json{ { "mesh", "lamp.glb" } }, saveError) && fs::is_regular_file(root / "shared" / "Lamp.prefab.json")
+			&& library.exists("Lamp") && fs::path(library.path_of("Lamp")).filename() == "Lamp.prefab.json", "a prefab written into the library is found there");
+	}
+
 	// diff is the smallest patch
-	const Json a = Json::parse(R"({"x":1,"o":{"p":1,"q":2},"gone":true})"), b = Json::parse(R"({"x":1,"o":{"p":1,"q":3},"new":5})");
+	const Json a =Json::parse(R"({"x":1,"o":{"p":1,"q":2},"gone":true})"), b = Json::parse(R"({"x":1,"o":{"p":1,"q":3},"new":5})");
 	Json patched = a;
 	patched.merge_patch(PrefabLibrary::diff(a, b));
 	check(patched == b && PrefabLibrary::diff(a, b) == Json::parse(R"({"o":{"q":3},"new":5,"gone":null})"), "diff gives the smallest merge patch");
