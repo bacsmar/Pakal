@@ -149,7 +149,7 @@ celebration),
 `PropMesh` (a prop's model; a hit on one that breaks lights it up and shakes it, `PropView::show_hit`, for the seconds the game gives `PropComponent::set_hit_seconds`, none by default), `EffectsSystem` (bullet trails, muzzle flashes, casings, sparks, blood, the
 props' water, fire, glass and debris; and what lies on the floor, drawn with `BgfxGraphicsSystem::draw_ground_spot`: the
 muzzle's light flickering around the shooter, blood pools and splats that stay and fade after a while, bodies blown to
-pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`; SFML on desktops, AAudio on
+pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`, and the game's own with `add(name, path)`; SFML on desktops, AAudio on
 Android), `CameraRig` (the camera at a fixed offset from what it follows, scripted pans, the shake; its `rest_pose` is
 what the simulation may use), `InputMapper` (the step's `PlayerInput` from the keys, the mouse and the sticks, relative to
 the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections; the clouds' shadows

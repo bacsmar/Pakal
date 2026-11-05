@@ -31,6 +31,8 @@ namespace Pakal::TopDown
 		m_panel.set_class(body, "moving", sticks.move.held);
 		m_panel.set_class(body, "aiming", sticks.aim.held);
 		m_panel.set_class(body, "firing", sticks.firing);
+		m_panel.set_class(body, "hint_move", m_hint == "move");
+		m_panel.set_class(body, "hint_aim", m_hint == "aim");
 	}
 
 	// A circle centered on a point of the screen (shares, y down), its radius a share of the screen's height: in percent

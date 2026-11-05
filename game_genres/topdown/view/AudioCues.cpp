@@ -78,6 +78,22 @@ namespace Pakal::TopDown
 
 	AudioCues::~AudioCues() = default;
 
+	bool AudioCues::add(const std::string& name, const std::string& path)
+	{
+		if (!m_manager || name.empty() || path.empty()) return false;
+#if PAKAL_USE_SFML_AUDIO == 1
+		const auto bytes = ResourceMgr.read_bytes(path);
+		if (!bytes) return false;
+		auto stream = std::make_shared<std::istringstream>(std::string(bytes->begin(), bytes->end()), std::ios::binary);
+		auto buffer = m_manager->load_sfx(stream, path);
+#else
+		auto buffer = m_manager->load_wav(path);
+#endif
+		if (!buffer) return false;
+		m_sounds[name].push_back(buffer);
+		return true;
+	}
+
 	void AudioCues::play(const std::string& name, float volume)
 	{
 		if (!m_manager || name.empty() || volume <= 0.0f)

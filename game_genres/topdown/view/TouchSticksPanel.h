@@ -26,10 +26,14 @@ namespace Pakal::TopDown
 		// Loads the document ('body': its body's id) when the sticks are on, and unloads it when they are off
 		void update(const InputMapper::TouchSticks& sticks, const std::string& document, const std::string& body);
 		void unload() { m_panel.unload(); }
+		// A stick the game points out (a tutorial's lesson): "move" or "aim" set the body's class hint_move or hint_aim, for
+		// the document to make it glow; "" none
+		void hint(const std::string& stick) { m_hint = stick; }
 
 	private:
 		void place(const std::string& element, float centerX, float centerY, float radius, float aspect);
 
 		UiPanel m_panel;
+		std::string m_hint;
 	};
 }

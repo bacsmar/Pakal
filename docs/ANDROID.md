@@ -57,7 +57,8 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
   goes to `event_touch_began/moved/ended` (screen pixels, `get_touch_area` is the screen's size) and the platform
   neither reads nor draws its sticks. TopDown games do this: `InputMapper::touch_sticks` turns the fingers into the
   move and aim sticks, and `TouchSticksPanel` draws them with an RmlUi document of the game's (its elements
-  `move_base`, `move_thumb`, `aim_base`, `aim_thumb`; the body's classes `moving`, `aiming`, `firing`).
+  `move_base`, `move_thumb`, `aim_base`, `aim_thumb`; the body's classes `moving`, `aiming`, `firing`, and `hint_move` or
+  `hint_aim` for the stick a game points out with `hint()`, a tutorial's lesson).
 - The game reads its assets straight out of the APK through the resource manager (`AndroidAssetSource`). Nothing is
   copied to the app's storage. `PAKAL_EXTRACT=1` copies them as before (`assets.list` is the content version). Copies
   left by an older build are removed once.
