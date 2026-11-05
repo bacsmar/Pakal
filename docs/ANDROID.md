@@ -116,6 +116,9 @@ of leaves, cost a tablet's GPU about an eighth of its frame rate.
 `PAKAL_SHADOW_FILTER=wide|narrow|<taps>x<spacing>` measures another filter. Below High a character casts a simplified mesh (a third of its
 triangles) and a tree's crown a clustered blob; at High and Ultra they cast all their triangles
 (`MeshComponent3D_Bgfx::set_full_shadows`; static models take it when they load).
+The wind in the foliage (`MeshComponent3D_Bgfx::set_wind(bend, speed)`, `pakal_wind.sh`) bends every alpha-tested material
+(leaves, palms, grass) in the vertex shader, more the higher above its model's origin, each model on its own phase: vertex
+work only, the same at every quality. The shadow map keeps the still shape.
 
 At Minimum, a level with a lightmap keeps only what moves in the shadow map (1024): the fixed scene's shadow on the floor
 is baked. `PAKAL_QUALITY=low|medium|high|ultra|extreme` sets it and `PAKAL_RENDER_HEIGHT` changes the height. Otherwise, on PC it is Ultra and on Android

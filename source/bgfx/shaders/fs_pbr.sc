@@ -14,6 +14,9 @@ uniform vec4 u_ambient;       // rgb: ambient color from above (the sky)
 uniform vec4 u_ambientGround; // rgb: ambient color from below (the light bounced by the ground)
 uniform vec4 u_tint;          // material color multiplier
 uniform vec4 u_material;      // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit, w: dithered opacity
+uniform vec4 u_cut;       // a model cut away (MeshComponent3D_Bgfx::set_fade_cut): x: the height (world y) above which
+                          // nothing is drawn, y: the rim under it (m), drawn flat in u_cutColor; w: 1 = on
+uniform vec4 u_cutColor;
 uniform vec4 u_ground;        // x: how much a second, turned read of the texture breaks its tiling, y: the macro variation (0: off)
 uniform vec4 u_uvScroll;      // z: water (how much it reflects the sky; 0 for the rest), w: its clock in seconds
 
@@ -34,6 +37,19 @@ void main()
 	{
 		discard;
 	}
+	// cut away: nothing above the cut; the band under it flat in the rim's color, so the edge reads from above
+	if (u_cut.w > 0.0)
+	{
+		if (v_worldpos.y > u_cut.x)
+		{
+			discard;
+		}
+		if (v_worldpos.y > u_cut.x - u_cut.y)
+		{
+			gl_FragColor = vec4(u_cutColor.rgb, 1.0);
+			return;
+		}
+	}
 	// a model faded by dithering leaves out the pixels of a 4x4 pattern above its opacity (u_material.w)
 	if (u_material.w > 0.0)
 	{
@@ -48,11 +64,24 @@ void main()
 		}
 	}
 
+	// a faded (blended) model, mostly see-through: a flat color from the ambient and a share of the sun, without the shadows,
+	// the lightmap, the probes or the reflections. A building that fills the screen blends layers of these, and each costs
+	// the whole lighting otherwise.
+	if (u_material.z > 1.5)
+	{
+		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), mix(1.0, albedo.a, u_material.y));
+		return;
+	}
+
 	if (u_uvScroll.z > 0.0)
 	{
 		// water: turquoise where it is shallow (v_texcoord1.x: 1 by the shore, 0 out at sea; a sea without it is deep),
 		// its own color farther out
-		albedo.rgb = mix(albedo.rgb, vec3(0.16, 0.56, 0.58), 0.85 * clamp(v_texcoord1.x, 0.0, 1.0));
+		// (three stops, as a stylized water graph blends its depth colors: deep, mid, shallow)
+		float shore = clamp(v_texcoord1.x, 0.0, 1.0);
+		vec3 water = mix(vec3(0.03, 0.20, 0.36), vec3(0.07, 0.46, 0.58), smoothstep(0.0, 0.4, shore));
+		water = mix(water, vec3(0.24, 0.74, 0.68), smoothstep(0.4, 0.9, shore));
+		albedo.rgb = mix(albedo.rgb, water, 0.9);
 	}
 	vec3 orm = texture2D(s_texOrm, v_texcoord0).rgb;
 	float occlusion = orm.r;
@@ -77,6 +106,7 @@ void main()
 		tn = normalize(vec3(tn.xy * 1.3, tn.z));
 	}
 	vec3 normal = normalize(t * tn.x + b * tn.y + n * tn.z);
+	float waterNoise = clamp(tn.x * 1.6 + 0.5, 0.0, 1.0);
 
 	vec3 l = -normalize(u_lightDir.xyz);
 	vec3 eye = mul(u_invView, vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -115,6 +145,18 @@ void main()
 		vec3 sky = mix(u_ambientGround.rgb * 1.2 + u_lightColor.rgb * 0.25, u_ambient.rgb * 1.6, clamp(r.y * 1.5, 0.0, 1.0));
 		float facing = pow(1.0 - ndv, 3.0);
 		color = mix(color, sky, clamp(u_uvScroll.z * (0.25 + 0.75 * facing), 0.0, 0.9));
+		// foam: a band along the shore that breathes in and out (its edge slides with the clock and the wave's phase along
+		// the coast), broken up by the ripples' noise, and a few flecks on the crests farther out
+		float shoreNow = clamp(v_texcoord1.x, 0.0, 1.0);
+		float edge = 0.88 + 0.05 * sin(u_uvScroll.w * 0.8 + v_worldpos.x * 0.21 + v_worldpos.z * 0.17);
+		float band = smoothstep(edge - 0.04, edge + 0.03, shoreNow);
+		float lace = smoothstep(0.42, 0.62, waterNoise + (shoreNow - edge) * 1.4);
+		float crest = smoothstep(0.80, 0.95, waterNoise) * smoothstep(0.1, 0.5, shoreNow) * 0.5;
+		float foam = clamp(band * lace + crest, 0.0, 1.0);
+		// caustics: a bright web on the shallows, from the same ripples (it drifts as they do)
+		float web = smoothstep(0.60, 0.74, waterNoise) * smoothstep(0.5, 0.9, shoreNow);
+		color += vec3(0.10, 0.16, 0.12) * web * (0.4 + 0.6 * visibility);
+		color = mix(color, vec3(0.92, 0.97, 0.97) * (u_ambient.rgb * 0.9 + u_lightColor.rgb * 0.6 * visibility), foam * 0.85);
 	}
 	color = mix(color, albedo.rgb, u_material.z);
 

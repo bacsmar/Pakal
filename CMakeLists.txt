@@ -39,6 +39,13 @@ if(PAKAL_BUILD_CORE_ONLY)
     return()
 endif()
 
+# Our fixes to bgfx: applied to the submodule here; the desktop's bgfx libraries are built apart (docs/BUILDING.md)
+set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxPatches.cmake)
+if(PAKAL_BGFX_PATCHED)
+    message(WARNING "bgfx was just patched: rebuild its libraries (docs/BUILDING.md, step 2) before building Pakal")
+endif()
+
 # Include directories
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/source)
@@ -48,7 +55,7 @@ include_directories(${CMAKE_SOURCE_DIR}/external/bimg/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/bgfx/examples/common)
 
 # Add source files
-file(GLOB_RECURSE PAKAL_SOURCES
+file(GLOB_RECURSE PAKAL_SOURCES FOLLOW_SYMLINKS
     "${CMAKE_SOURCE_DIR}/source/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/*.h"
     "${CMAKE_SOURCE_DIR}/source/components/*.cpp"

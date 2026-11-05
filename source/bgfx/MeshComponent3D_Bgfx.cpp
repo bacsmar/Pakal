@@ -111,6 +111,11 @@ namespace Pakal
 		// What each pass drew since the last take_pass_stats: shadow, opaque, transparent
 		MeshComponent3D_Bgfx::PassStats s_passStats[3];
 		bgfx::UniformHandle s_materialUniform = BGFX_INVALID_HANDLE; // u_material: alpha ref, keep alpha, unlit
+		bgfx::UniformHandle s_cutUniform = BGFX_INVALID_HANDLE;      // u_cut: a model cut away (set_fade_cut)
+		bgfx::UniformHandle s_cutColorUniform = BGFX_INVALID_HANDLE; // u_cutColor: its rim's color
+		bgfx::UniformHandle s_windUniform = BGFX_INVALID_HANDLE;     // u_wind: the foliage's bend (set_wind)
+		float s_wind[2] = { 0.0f, 0.0f };                            // bend, speed (0: no wind)
+		bool s_cullOpaque = false;                                   // set_cull_opaque
 		uint32_t s_meshInstanceCount = 0;
 		bgfx::TextureHandle s_whiteTexture = BGFX_INVALID_HANDLE;
 
@@ -161,6 +166,9 @@ namespace Pakal
 				}
 				s_dummyShadow = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::D16, BGFX_TEXTURE_RT | BGFX_SAMPLER_COMPARE_LEQUAL);
 				s_materialUniform = bgfx::createUniform("u_material", bgfx::UniformType::Vec4);
+				s_cutUniform = bgfx::createUniform("u_cut", bgfx::UniformType::Vec4);
+				s_cutColorUniform = bgfx::createUniform("u_cutColor", bgfx::UniformType::Vec4);
+				s_windUniform = bgfx::createUniform("u_wind", bgfx::UniformType::Vec4);
 				const uint32_t white = 0xffffffff;
 				s_whiteTexture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
 					BGFX_TEXTURE_NONE, bgfx::copy(&white, sizeof(white)));
@@ -208,6 +216,11 @@ namespace Pakal
 				s_normalSampler = s_ormSampler = BGFX_INVALID_HANDLE;
 				s_flatNormalTexture = s_plainOrmTexture = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_materialUniform)) bgfx::destroy(s_materialUniform);
+				if (bgfx::isValid(s_cutUniform)) bgfx::destroy(s_cutUniform);
+				if (bgfx::isValid(s_cutColorUniform)) bgfx::destroy(s_cutColorUniform);
+				s_cutUniform = s_cutColorUniform = BGFX_INVALID_HANDLE;
+				if (bgfx::isValid(s_windUniform)) bgfx::destroy(s_windUniform);
+				s_windUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_uvScrollUniform)) bgfx::destroy(s_uvScrollUniform);
 				s_uvScrollUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_groundUniform)) bgfx::destroy(s_groundUniform);
@@ -2164,6 +2177,7 @@ namespace Pakal
 				const char* scrollText = material.attribute("scroll").value();
 				if (*scrollText) std::sscanf(scrollText, "%f %f", &sub.scroll[0], &sub.scroll[1]);
 				if (material.attribute("water")) sub.water = material.attribute("water").as_float(0.0f);
+				if (material.attribute("lightmap")) sub.lightmap = std::string(material.attribute("lightmap").value()) != "off";
 				const char* detileText = material.attribute("detile").value();
 				if (*detileText) std::sscanf(detileText, "%f %f", &sub.detile[0], &sub.detile[1]);
 				load_mix_layer(i, 0, modelPath, material.attribute("mix").value());
@@ -2634,6 +2648,26 @@ namespace Pakal
 	// The model's box (moved by its transform) lies completely outside one plane of the frustum. A skinned model's pose
 	// moves it out of the box of its bind pose (a body lying down, an arm reaching): its box is a cube as wide as the bind
 	// pose's largest side, around its middle, a little larger.
+	void MeshComponent3D_Bgfx::set_cull_opaque(bool cull)
+	{
+		s_cullOpaque = cull;
+	}
+
+	void MeshComponent3D_Bgfx::set_wind(float bend, float speed)
+	{
+		s_wind[0] = std::max(0.0f, bend);
+		s_wind[1] = speed;
+	}
+
+	void MeshComponent3D_Bgfx::set_fade_cut(float keep, float rim, const float rimColor[3], float floor)
+	{
+		m_fadeCut = true;
+		m_cutKeep = keep;
+		m_cutRim = rim;
+		m_cutFloor = floor;
+		std::copy(rimColor, rimColor + 3, m_cutColor);
+	}
+
 	void MeshComponent3D_Bgfx::get_world_box(float center[3], float extent[3])
 	{
 		set_transform();
@@ -2764,6 +2798,14 @@ namespace Pakal
 		bgfx::setUniform(s_tintUniform, tint);
 		bgfx::setUniform(s_materialUniform, material);
 		{
+			// cut away (set_fade_cut) only while faded: an instanced draw or a solid copy sets it off
+			static const float off[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+			const bool cut = m_fadeCut && m_opacity < 0.995f;
+			bgfx::setUniform(s_cutUniform, cut ? m_cutUniform : off);
+			const float color[4] = { m_cutColor[0], m_cutColor[1], m_cutColor[2], 1.0f };
+			bgfx::setUniform(s_cutColorUniform, color);
+		}
+		{
 			// a material that flows (water): its texture slides at its speed, on a clock of its own (wrapped, so the
 			// offset stays small)
 			static const auto clockStart = std::chrono::steady_clock::now();
@@ -2772,6 +2814,10 @@ namespace Pakal
 			const float scroll[4] = { static_cast<float>(std::fmod(seconds * sub.scroll[0], 1.0)),
 				static_cast<float>(std::fmod(seconds * sub.scroll[1], 1.0)), sub.water, static_cast<float>(std::fmod(seconds, 600.0)) };
 			bgfx::setUniform(s_uvScrollUniform, scroll);
+			// the wind bends what is alpha-tested (leaves, palms, grass): the same clock
+			const bool windy = sub.blend == MaterialBlend::AlphaTest && s_wind[0] > 0.0f;
+			const float wind[4] = { s_wind[0], s_wind[1], static_cast<float>(std::fmod(seconds, 600.0)), windy ? 1.0f : 0.0f };
+			bgfx::setUniform(s_windUniform, wind);
 			const float ground[4] = { sub.detile[0], sub.detile[1], 0.0f, 0.0f };
 			bgfx::setUniform(s_groundUniform, ground);
 			static const float noMix[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -2798,8 +2844,8 @@ namespace Pakal
 			bgfx::setTexture(5, s_giSampler, s_dummyVolume);
 		}
 		// u_lightmap: xyz the place in the atlas, w: 0 no lightmap, 1 + how much the baked shadow darkens
-		// (water keeps the probes' light: the bake sees its surface as floor)
-		const bool lightmapped = m_lightmapRect[0] > 0.0f && bgfx::isValid(s_lightmapAtlas) && sub.water <= 0.0f;
+		// (water keeps the probes' light: the bake sees its surface as floor; so do the decals a material turns it off for)
+		const bool lightmapped = m_lightmapRect[0] > 0.0f && bgfx::isValid(s_lightmapAtlas) && sub.water <= 0.0f && sub.lightmap;
 		const float lightmap[4] = { m_lightmapRect[0], m_lightmapRect[1], m_lightmapRect[2],
 			lightmapped ? (s_lightmapRelative ? -1.0f : 1.0f) * (1.0f + s_lightmapShadow) : 0.0f };
 		bgfx::setUniform(s_lightmapUniform, lightmap);
@@ -2873,7 +2919,7 @@ namespace Pakal
 				const float material[4] = { sub.blend == MaterialBlend::AlphaTest ? 0.5f : 0.0f, 0.0f, 0.0f, 0.0f };
 				first.bind_material(sub, false, material);
 				bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS
-					| BGFX_STATE_MSAA | (sub.doubleSided || noCull ? 0ull : BGFX_STATE_CULL_CW));
+					| BGFX_STATE_MSAA | ((sub.doubleSided && !(s_cullOpaque && sub.blend == MaterialBlend::Opaque)) || noCull ? 0ull : BGFX_STATE_CULL_CW));
 			}
 			bgfx::submit(viewId, program);
 			s_passStats[pass].triangles += sub.indexCount / 3 * count;
@@ -2886,6 +2932,19 @@ namespace Pakal
 	{
 		const bool faded = m_opacity < 0.995f && !m_fadeDither;   // blended in the transparent pass
 		const bool dithered = m_opacity < 0.995f && m_fadeDither;  // solid, with a share of its pixels left out
+		if (m_fadeCut && m_opacity < 0.995f && !transparentPass)
+		{
+			// solid, cut at a height that falls from its top to 'keep' over its base as it fades
+			float center[3], extent[3];
+			get_world_box(center, extent);
+			const float base = center[1] - extent[1], top = center[1] + extent[1];
+			const float t = std::clamp((1.0f - m_opacity) / std::max(0.01f, 1.0f - m_cutFloor), 0.0f, 1.0f);
+			const float height = top - t * (top - std::min(top, base + m_cutKeep));
+			m_cutUniform[0] = height;
+			m_cutUniform[1] = m_cutRim;
+			m_cutUniform[2] = 0.0f;
+			m_cutUniform[3] = 1.0f;
+		}
 		if (hidden() || !m_loaded || !bgfx::isValid(program) || (transparentPass && !m_hasTransparent && !faded)
 			|| outside_frustum(0))
 		{
@@ -2933,8 +2992,12 @@ namespace Pakal
 				continue;
 			}
 
+			// both sides: as the material says (but an opaque one when the game culls them, set_cull_opaque), and always while
+			// cut away (its walls' inside shows)
+			const bool cutAway = m_fadeCut && m_opacity < 0.995f;
+			const bool bothSides = cutAway || (sub.doubleSided && !(s_cullOpaque && sub.blend == MaterialBlend::Opaque));
 			uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA
-				| (sub.doubleSided ? 0ull : cullState);
+				| (bothSides ? 0ull : cullState);
 			// u_material: x = alpha test reference (0 = off), y = keep the texture alpha, z = unlit, w = dithered opacity (0 = off)
 			float material[4] = { 0.0f, 0.0f, 0.0f, dithered ? std::max(0.05f, m_opacity) : 0.0f };
 			switch (sub.blend)
@@ -2946,6 +3009,9 @@ namespace Pakal
 					state |= BGFX_STATE_BLEND_ALPHA; // no depth write: what is behind shows through
 					material[0] = sub.blend == MaterialBlend::AlphaTest ? 0.5f : 0.0f;
 					material[1] = 1.0f;
+					// mostly see-through: the shader's flat, cheap lighting (a building that fills the screen blends layers of it)
+					static const bool fullLight = std::getenv("PAKAL_FADE_FULL_LIGHT") != nullptr;   // debug: the old cost
+					if (m_opacity < 0.7f && !fullLight) material[2] = 2.0f;
 					break;
 				}
 				state |= BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z;
