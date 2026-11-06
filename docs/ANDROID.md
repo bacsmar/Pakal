@@ -197,6 +197,9 @@ step up) it steps back up one step at a time, and a step up that does not hold m
 - **Music**: `SoundManager::play_music` plays an OGG Vorbis file (`source/MusicMixer`, stb_vorbis from vcpkg's `stb`). On
   Android a thread of its own decodes it about 0.17 s ahead into a ring that the output callback reads, so the callback never
   decodes. The `.ogg` files go in the APK as they are (the 22 kHz resampling is for the WAV effects only).
+- **One activity**: the activity is `singleTask`. Opened again from the launcher (or a store's Open button) while it
+  runs, Android brings the running one to the front. A second instance in the same process started a second
+  `android_main`, and the engine aborted as it was built again.
 - **Background**: when going to the background (or losing the window) the engine pauses; on return, bgfx receives the new window
   (`BgfxGraphicsSystem::set_native_window`) and the engine continues where it was. Verified with HOME and reopening.
   The sound pauses with it (`Engine::on_pause` calls `SoundManager::set_paused`: the AAudio stream pauses, the music and the
