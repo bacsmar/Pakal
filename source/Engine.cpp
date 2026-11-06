@@ -295,11 +295,13 @@ void Engine::on_pause()
 	}
 
 	TaskUtils::wait_all(pauseTaks);
+	if (m_sound_manager) m_sound_manager->set_paused(true);
 }
 //////////////////////////////////////////////////////////////////////////
 
 void Engine::on_resume()
 {
+	if (m_sound_manager) m_sound_manager->set_paused(false);
 	std::vector<BasicTaskPtr> resumeTasks;
 
 	for (auto s : m_systems)

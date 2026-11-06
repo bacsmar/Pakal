@@ -6,11 +6,48 @@
 #include "ResourceManager.h"
 #include "Timer.h"
 
-#include <map>
+#include <algorithm>
 #include <list>
+#include <map>
+#include <vector>
 
 namespace Pakal
 {
+	// The music: one stream, always open, that SFML's thread fills from the mixer (silence between tracks)
+	class MusicStreamSFML final : public sf::SoundStream
+	{
+	public:
+		static const unsigned kRate = 48000;
+		static const int kFrames = 2048;
+
+		explicit MusicStreamSFML(MusicMixer& mixer) : m_mixer(mixer)
+		{
+			initialize(2, kRate);
+			setRelativeToListener(true);
+			setAttenuation(0.0f);
+		}
+		~MusicStreamSFML() override { stop(); }
+
+	private:
+		bool onGetData(Chunk& data) override
+		{
+			m_mix.assign(2 * kFrames, 0.0f);
+			m_mixer.render(m_mix.data(), kFrames, static_cast<int>(kRate));
+			m_samples.resize(m_mix.size());
+			for (size_t i = 0; i < m_mix.size(); ++i)
+			{
+				m_samples[i] = static_cast<sf::Int16>(std::clamp(m_mix[i], -1.0f, 1.0f) * 32767.0f);
+			}
+			data.samples = m_samples.data();
+			data.sampleCount = m_samples.size();
+			return true;   // it never ends: silence between tracks
+		}
+		void onSeek(sf::Time) override {}
+
+		MusicMixer& m_mixer;
+		std::vector<float> m_mix;
+		std::vector<sf::Int16> m_samples;
+	};
 
 	class _PAKALExport SoundManagerSFML : public SoundManager
 	{
@@ -18,6 +55,9 @@ namespace Pakal
 
 		std::map<Path, WeakPtr<sf::SoundBuffer>> m_buffers;
 		std::list<UniquePtr<sf::Sound>> m_active_players;
+
+		MusicMixer m_music;
+		UniquePtr<MusicStreamSFML> m_musicStream;
 
 		Timer m_timer;
 		EventId m_clean_players_id = 0;
@@ -31,6 +71,11 @@ namespace Pakal
 		void register_component_factories(std::vector<IComponentFactory*>& factories) override;
 		void set_volume(float volume) override;
 		float get_volume() override;
+		bool play_music(const std::string& path, const MusicSettings& settings) override;
+		void stop_music(float fadeSeconds) override;
+		void set_music_volume(float volume) override { m_music.set_volume(volume); }
+		void set_paused(bool paused) override;
+		~SoundManagerSFML() override;
 
 		void hint_buffer_removed();
 

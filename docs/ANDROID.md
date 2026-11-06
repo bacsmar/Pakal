@@ -192,10 +192,18 @@ step up) it steps back up one step at a time, and a step up that does not hold m
 
 ## Sound, lifecycle and controls
 
-- **Sound**: `android/SoundManagerAAudio` mixes the WAV effects (16-bit) by hand into a single AAudio stream; `AudioCues` uses it instead
-  of SFML. The `.wav` files go in the APK. The original's music (`PlayMusic`) has no file yet.
+- **Sound**: `android/SoundManagerAAudio` mixes the WAV effects (16-bit) by hand into a single stereo AAudio stream; `AudioCues`
+  uses it instead of SFML. The `.wav` files go in the APK.
+- **Music**: `SoundManager::play_music` plays an OGG Vorbis file (`source/MusicMixer`, stb_vorbis from vcpkg's `stb`). On
+  Android a thread of its own decodes it about 0.17 s ahead into a ring that the output callback reads, so the callback never
+  decodes. The `.ogg` files go in the APK as they are (the 22 kHz resampling is for the WAV effects only).
 - **Background**: when going to the background (or losing the window) the engine pauses; on return, bgfx receives the new window
   (`BgfxGraphicsSystem::set_native_window`) and the engine continues where it was. Verified with HOME and reopening.
+  The sound pauses with it (`Engine::on_pause` calls `SoundManager::set_paused`: the AAudio stream pauses, the music and the
+  effects hold where they are) and goes on as the engine resumes. A stream that Android disconnects (its route changed:
+  headphones, a call, a screen recorder) is closed and opened again, by its error callback's mark or when it does not
+  start on resume. The stream asks for a session id of its own (Android 9+), which keeps AAudio off MMAP: an MMAP stream
+  goes to the device past the system's mixer, and screen recorders cannot capture it. It still gets a fast track.
 - **Touch controls**: two analog sticks. The left half moves and the right half aims;
   each stick appears where the thumb lands (120 px radius on a 1080-high screen, 15 % dead zone). The aim
   stick fires past 41 % (its disc turns red); without it, the hero faces where it walks. The screen is the engine's

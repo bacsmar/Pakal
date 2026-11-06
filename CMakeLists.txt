@@ -156,6 +156,14 @@ endif()
 # Remove this once source/persist is updated to a pugixml that matches vcpkg's.
 target_compile_definitions(Pakal PRIVATE pugi=pugi_pakal p2t=p2t_pakal)
 
+# stb_vorbis (vcpkg's stb): the music's OGG decoder (source/MusicMixer.cpp; without it the music is silent)
+find_path(PAKAL_STB_DIR stb_vorbis.c)
+if(PAKAL_STB_DIR)
+    target_include_directories(Pakal PRIVATE ${PAKAL_STB_DIR})
+else()
+    message(WARNING "stb_vorbis.c not found (vcpkg's stb): the game plays without music")
+endif()
+
 # SFML
 if(WIN32)
     # vcpkg provides SFML 2.6. The code uses the SFML 2 event API (pollEvent + sf::Event::Closed),
@@ -725,6 +733,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     add_executable(AudioTests ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     target_link_libraries(AudioTests Pakal)
     target_include_directories(AudioTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    target_compile_definitions(AudioTests PRIVATE PAKAL_TEST_FIXTURES="${CMAKE_SOURCE_DIR}/tests/fixtures")
     add_test(NAME AudioTests COMMAND AudioTests)
 endif()
 

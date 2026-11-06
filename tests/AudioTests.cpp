@@ -3,16 +3,23 @@
 // File: AudioTests.cpp
 //
 // Purpose: Checks the spatial audio math used by the sound backends: distance gain and left/right
-//          panning for the listener's orientation. No audio device is needed.
+//          panning for the listener's orientation. And the music mixer on a fixture (tests/fixtures/music_tone.ogg,
+//          two seconds of 440 Hz on the left and 660 Hz on the right): its loop, its stereo, its fade out. No audio
+//          device is needed.
 //
 // Exit code 0 when every check passes.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "SpatialAudio.h"
 #include "SoundManager.h"
+#include "MusicMixer.h"
 
 #include <cmath>
 #include <cstdio>
+#include <fstream>
+#include <iterator>
+#include <memory>
+#include <vector>
 
 using namespace Pakal;
 using vec3 = tmath::vector3df;
@@ -88,6 +95,53 @@ int main()
 	SoundSettings settings;
 	check(near(settings.min_distance, 1.0f) && near(settings.attenuation, 1.0f),
 		"SoundSettings defaults: min distance 1, attenuation 1");
+
+	// The music mixer
+	{
+		const int rate = 48000;
+		std::ifstream file(PAKAL_TEST_FIXTURES "/music_tone.ogg", std::ios::binary);
+		auto ogg = std::make_shared<std::vector<uint8_t>>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+		MusicMixer mixer;
+		check(!mixer.play(std::make_shared<std::vector<uint8_t>>(100, uint8_t(7)), MusicSettings()), "music: bytes that are not OGG do not play");
+		MusicSettings settings;
+		settings.gain = 1.0f;
+		settings.fadeSeconds = 0.0f;
+		settings.loopFadeSeconds = 0.5f;
+		check(mixer.play(ogg, settings), "music: the fixture plays");
+		// 5 s: two seams of its loop. The quietest tenth of a second on each side, after the first 0.1 s
+		const int window = rate / 10;
+		float quietest[2] = { 1.0f, 1.0f };
+		double crossing[2] = { 0.0, 0.0 };
+		std::vector<float> block(2 * window);
+		for (int w = 0; w < 50; ++w)
+		{
+			std::fill(block.begin(), block.end(), 0.0f);
+			mixer.render(block.data(), window, rate);
+			double energy[2] = { 0.0, 0.0 };
+			for (int i = 0; i < window; ++i)
+			{
+				for (int c = 0; c < 2; ++c)
+				{
+					energy[c] += block[2 * i + c] * block[2 * i + c];
+					if (i > 0 && (block[2 * (i - 1) + c] < 0.0f) != (block[2 * i + c] < 0.0f)) crossing[c] += 1.0;
+				}
+			}
+			for (int c = 0; c < 2 && w > 0; ++c) quietest[c] = std::min(quietest[c], static_cast<float>(std::sqrt(energy[c] / window)));
+		}
+		check(quietest[0] > 0.15f && quietest[1] > 0.15f, "music: the loop plays on with no gap at its seams");
+		check(crossing[1] > crossing[0] * 1.3, "music: stereo kept (the right side's tone is higher)");
+		mixer.stop(0.5f);
+		for (int w = 0; w < 6; ++w)
+		{
+			std::fill(block.begin(), block.end(), 0.0f);
+			mixer.render(block.data(), window, rate);
+		}
+		std::fill(block.begin(), block.end(), 0.0f);
+		mixer.render(block.data(), window, rate);
+		float loudest = 0.0f;
+		for (float v : block) loudest = std::max(loudest, std::fabs(v));
+		check(loudest < 1e-4f, "music: silent once its fade out is over");
+	}
 
 	std::printf("%s (%d failures)\n", g_failures == 0 ? "ALL PASSED" : "FAILED", g_failures);
 	std::fflush(stdout);

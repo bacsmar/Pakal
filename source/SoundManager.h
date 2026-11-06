@@ -2,6 +2,9 @@
 #include "IManager.h"
 #include "IComponentProvider.h"
 #include "PakalMath.h"
+#include "MusicMixer.h"
+
+#include <string>
 
 namespace Pakal
 {
@@ -31,6 +34,14 @@ namespace Pakal
 
 		// Where the player hears from. Sounds with a position are heard relative to it.
 		virtual void set_listener(const tmath::vector3df& position, const tmath::vector3df& forward, const tmath::vector3df& up) {}
+
+		// Music: an OGG Vorbis resource (a folder, a zip, the APK) that crossfades with the one playing (MusicMixer).
+		// False when the platform has no music or the file is not one.
+		virtual bool play_music(const std::string& path, const MusicSettings& settings) { (void)path; (void)settings; return false; }
+		virtual void stop_music(float fadeSeconds) { (void)fadeSeconds; }
+		virtual void set_music_volume(float volume) { (void)volume; }
+		// Everything that sounds holds where it is (the engine paused: the app went to the background) and goes on from there
+		virtual void set_paused(bool paused) { (void)paused; }
 	};
 
 	class NullSoundManager: public SoundManager
