@@ -162,7 +162,13 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::set_governor(bool enabled, unsigned maxFps)
 	{
+		// (what a game configured stays when it is turned on or off)
+		const Governor kept = m_governor;
 		m_governor = Governor();
+		m_governor.steps = kept.steps;
+		m_governor.thermalStepDown = kept.thermalStepDown;
+		m_governor.thermalLoadedStepDown = kept.thermalLoadedStepDown;
+		m_governor.thermalLoad = kept.thermalLoad;
 		m_governor.enabled = enabled;
 		m_governor.maxFps = m_governor.cap = maxFps;
 		m_governor.baseScale = get_render_scale();
@@ -214,7 +220,7 @@ namespace Pakal
 
 	// Once a second: too slow for 3 seconds in a row -> a step down (60 -> 30 FPS, then 12% less render scale, down to half
 	// the screen); room to spare for 20 seconds -> a step up (the scale 30 s after the last step down, the cap last and 2
-	// minutes after). A thermal status of moderate or worse counts as too slow. The room to spare is the game thread's work
+	// minutes after). A thermal status counts as too slow by set_governor_thermal's rule. The room to spare is the game thread's work
 	// (the GPU's is not measured on phones): a step up that does not hold for a minute doubles the waits (up to 8 times),
 	// so a phone that cannot keep 60 stops trying, and one that can stays there.
 	void BgfxGraphicsSystem::set_governor_steps(std::vector<unsigned> steps)
@@ -224,6 +230,20 @@ namespace Pakal
 		std::sort(steps.begin(), steps.end(), std::greater<unsigned>());
 		steps.erase(std::unique(steps.begin(), steps.end()), steps.end());
 		m_governor.steps = std::move(steps);
+	}
+
+	void BgfxGraphicsSystem::set_ao_tuning(unsigned divisor, unsigned taps, float boost)
+	{
+		m_ao_divisor = std::clamp(divisor, 1u, 8u);
+		m_ao_taps = taps == 0 ? 0u : std::clamp(taps, 2u, 8u);
+		m_ao_boost = std::clamp(boost, 0.1f, 8.0f);
+	}
+
+	void BgfxGraphicsSystem::set_governor_thermal(int stepDown, int loadedStepDown, float load)
+	{
+		m_governor.thermalStepDown = std::clamp(stepDown, 1, 6);
+		m_governor.thermalLoadedStepDown = std::clamp(loadedStepDown, 1, m_governor.thermalStepDown);
+		m_governor.thermalLoad = std::clamp(load, 0.1f, 1.0f);
 	}
 
 	void BgfxGraphicsSystem::governor_frame(double workMs)
@@ -256,7 +276,11 @@ namespace Pakal
 			g.slow = 0;
 			return;
 		}
-		const bool hot = g.thermal >= 2;   // ATHERMAL_STATUS_MODERATE
+		// ATHERMAL_STATUS_MODERATE is 2, SEVERE 3: a warm phone that is not working hard keeps its frame rate, one near its
+		// limit (some phones cut their clocks to half) steps down as it warms
+		const double budgetMs = 1000.0 / double(std::max(g.cap, 1u));
+		const bool loaded = g.lastWorkMs > g.thermalLoad * budgetMs;
+		const bool hot = g.thermal >= g.thermalStepDown || (g.thermal >= g.thermalLoadedStepDown && loaded);
 		const bool slow = hot || g.lastFps < g.cap * 0.87;
 		const float scale = get_render_scale();
 		// the next cap down and up among the steps (below the starting cap)
@@ -1410,6 +1434,7 @@ namespace Pakal
 		m_s_post_color = bgfx::createUniform("s_postColor", bgfx::UniformType::Sampler);
 		m_s_post_depth = bgfx::createUniform("s_postDepth", bgfx::UniformType::Sampler);
 		m_s_post_bloom = bgfx::createUniform("s_postBloom", bgfx::UniformType::Sampler);
+		m_post_program = load_program("vs_post", "fs_post");
 		m_post_layout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
 		m_u_bloom = bgfx::createUniform("u_bloom", bgfx::UniformType::Vec4);
 		m_s_bloom_input = bgfx::createUniform("s_bloomInput", bgfx::UniformType::Sampler);
@@ -1535,7 +1560,9 @@ namespace Pakal
 	bool BgfxGraphicsSystem::prepare_ao()
 	{
 		if (!bgfx::isValid(m_ao_program) || !bgfx::isValid(m_ao_blur_program) || !bgfx::isValid(m_post_depth)) return false;
-		const uint32_t width = std::max(1u, m_width / 2), height = std::max(1u, m_height / 2);
+		// PAKAL_AO_DIV: how many times smaller than the picture the occlusion is drawn (2: half, the default; 4: a quarter)
+		const uint32_t divisor = std::getenv("PAKAL_AO_DIV") ? std::clamp(uint32_t(std::atoi(std::getenv("PAKAL_AO_DIV"))), 1u, 8u) : m_ao_divisor;
+		const uint32_t width = std::max(1u, m_width / divisor), height = std::max(1u, m_height / divisor);
 		if (bgfx::isValid(m_ao_target[0]) && m_ao_width == width && m_ao_height == height) return true;
 		destroy_ao();
 		for (int i = 0; i < 2; ++i)
@@ -1563,6 +1590,13 @@ namespace Pakal
 
 	// The occlusion at half the size (into the first target), then blurred across (into the second) and down (back into the
 	// first, which the post pass reads)
+	// PAKAL_AO_VIEW=1 shows the occlusion alone (after its blur), 2 the raw one (before it): to look for its defects
+	static int ao_debug_view()
+	{
+		static const int view = std::getenv("PAKAL_AO_VIEW") ? std::atoi(std::getenv("PAKAL_AO_VIEW")) : 0;
+		return view;
+	}
+
 	void BgfxGraphicsSystem::render_ao()
 	{
 		float scaleX = 1.0f, scaleY = 1.0f, nearPlane = 0.1f, farPlane = 1000.0f;
@@ -1572,7 +1606,9 @@ namespace Pakal
 		}
 		const float ao0[4] = { 1.0f / float(m_width), 1.0f / float(m_height), nearPlane, farPlane };
 		const float ao1[4] = { scaleX, scaleY, m_post.aoRadius, m_post.aoBias };
-		const float taps = std::clamp(std::round(8.0f * m_post.quality), 4.0f, 8.0f);
+		float taps = std::clamp(std::round(8.0f * m_post.quality), 4.0f, 8.0f);
+		if (m_ao_taps > 0) taps = float(m_ao_taps);
+		if (const char* text = std::getenv("PAKAL_AO_TAPS")) taps = std::clamp(float(std::atoi(text)), 2.0f, 8.0f);   // to measure
 		auto pass = [&](bgfx::ViewId view, int target, bgfx::ProgramHandle program, bgfx::TextureHandle input, float stepX, float stepY)
 		{
 			bgfx::setViewName(view, "Occlusion");
@@ -1584,7 +1620,7 @@ namespace Pakal
 			bgfx::allocTransientVertexBuffer(&triangle, 3, m_post_layout);
 			const float corners[9] = { -1.0f, -1.0f, 0.0f, 3.0f, -1.0f, 0.0f, -1.0f, 3.0f, 0.0f };
 			std::copy(corners, corners + 9, reinterpret_cast<float*>(triangle.data));
-			const float ao2[4] = { m_post.aoStrength, taps, stepX, stepY };
+			const float ao2[4] = { m_post.aoStrength * m_ao_boost, taps, stepX, stepY };
 			set_uniform(m_u_ao[0], "u_ao0", ao0);
 			set_uniform(m_u_ao[1], "u_ao1", ao1);
 			set_uniform(m_u_ao[2], "u_ao2", ao2);
@@ -1602,6 +1638,7 @@ namespace Pakal
 			bgfx::submit(view, program);
 		};
 		pass(m_ao_view_id, 0, m_ao_program, BGFX_INVALID_HANDLE, 0.0f, 0.0f);
+		if (ao_debug_view() == 2) return;   // the raw occlusion, as the first pass left it (3, 4: the depth's contours, see fs_post)
 		pass(bgfx::ViewId(m_ao_view_id + 1), 1, m_ao_blur_program, m_ao_color[0], 1.0f / float(m_ao_width), 0.0f);
 		pass(bgfx::ViewId(m_ao_view_id + 2), 0, m_ao_blur_program, m_ao_color[1], 0.0f, 1.0f / float(m_ao_height));
 	}
@@ -1649,7 +1686,7 @@ namespace Pakal
 		m_post_target = bgfx::createFrameBuffer(2, attachments, true);
 		m_post_width = m_width;
 		m_post_height = m_height;
-		LOG_INFO("[BgfxGraphicsSystem] Post-process target %ux%u created", m_width, m_height);
+		LOG_INFO("[BgfxGraphicsSystem] Post-process target %ux%u created, depth %s", m_width, m_height, depthFormat == bgfx::TextureFormat::D32F ? "D32F" : depthFormat == bgfx::TextureFormat::D24S8 ? "D24S8" : "D24");
 		return bgfx::isValid(m_post_target);
 	}
 
@@ -1777,7 +1814,7 @@ namespace Pakal
 		const PostSettings& s = m_post.enabled ? m_post : neutral;
 		const float p0[4] = { s.exposure, s.contrast, s.saturation, s.vignette };
 		const float p1[4] = { s.gain[0], s.gain[1], s.gain[2], s.tiltBlur };
-		const float p2[4] = { s.tiltFocus, s.tiltBand, m_ao_active ? 1.0f : 0.0f, s.aoRadius };
+		const float p2[4] = { s.tiltFocus, s.tiltBand, m_ao_active ? (ao_debug_view() >= 3 ? float(ao_debug_view()) : ao_debug_view() > 0 ? 2.0f : 1.0f) : 0.0f, s.aoRadius };
 		const float p3[4] = { 1.0f / float(m_width), 1.0f / float(m_height), nearPlane, farPlane };
 		const float p4[4] = { scaleX, scaleY, s.aoBias, s.aoRange };
 		bgfx::setViewFrameBuffer(m_post_view_id, get_screen_target());

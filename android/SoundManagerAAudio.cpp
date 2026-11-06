@@ -4,7 +4,9 @@
 #include "ResourceManager.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
+#include <dlfcn.h>
 #include <fstream>
 
 namespace Pakal
@@ -12,6 +14,8 @@ namespace Pakal
 	namespace
 	{
 		const size_t kMaxVoices = 24;
+		const size_t kRingFrames = 8192;   // ~0.17 s at 48 kHz: how far the music is decoded ahead
+		const int kFeedFrames = 1024;
 
 		uint16_t read16(const uint8_t* p) { return static_cast<uint16_t>(p[0] | (p[1] << 8)); }
 		uint32_t read32(const uint8_t* p) { return static_cast<uint32_t>(p[0] | (p[1] << 8) | (p[2] << 16) | (static_cast<uint32_t>(p[3]) << 24)); }
@@ -24,45 +28,86 @@ namespace Pakal
 
 	void SoundManagerAAudio::initialize()
 	{
+		if (!open_stream())
+		{
+			LOG_ERROR("[SoundManagerAAudio] the game plays without sound");
+			return;
+		}
+		m_ring.assign(kRingFrames * 2, 0.0f);
+		m_ringRead = 0;
+		m_ringWrite = 0;
+		m_feeding = true;
+		m_feeder = std::thread([this] { feed_music(); });
+		AAudioStream_requestStart(m_stream);
+		LOG_INFO("[SoundManagerAAudio] output at %d Hz", m_sampleRate.load());
+	}
+
+	bool SoundManagerAAudio::open_stream()
+	{
 		AAudioStreamBuilder* builder = nullptr;
 		if (AAudio_createStreamBuilder(&builder) != AAUDIO_OK)
 		{
-			LOG_ERROR("[SoundManagerAAudio] no stream builder: the game plays without sound");
-			return;
+			LOG_ERROR("[SoundManagerAAudio] no stream builder");
+			return false;
 		}
 		AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_OUTPUT);
 		AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 		AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
 		AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-		AAudioStreamBuilder_setChannelCount(builder, 1);
+		AAudioStreamBuilder_setChannelCount(builder, 2);
 		AAudioStreamBuilder_setDataCallback(builder, &SoundManagerAAudio::on_data, this);
-		const aaudio_result_t result = AAudioStreamBuilder_openStream(builder, &m_stream);
+		AAudioStreamBuilder_setErrorCallback(builder, &SoundManagerAAudio::on_error, this);
+		// A session of its own keeps the stream off MMAP (the device written to directly, past the system's mixer): a
+		// stereo low-latency stream got one, and screen recorders cannot capture it (the videos had no sound; the
+		// recorder starting disconnected it). Android 9 and later; Android 8 has no MMAP
+		using SetSessionId = void (*)(AAudioStreamBuilder*, aaudio_session_id_t);
+		static const auto setSessionId = reinterpret_cast<SetSessionId>(dlsym(RTLD_DEFAULT, "AAudioStreamBuilder_setSessionId"));
+		if (setSessionId) setSessionId(builder, AAUDIO_SESSION_ID_ALLOCATE);
+		AAudioStream* stream = nullptr;
+		const aaudio_result_t result = AAudioStreamBuilder_openStream(builder, &stream);
 		AAudioStreamBuilder_delete(builder);
-		if (result != AAUDIO_OK || !m_stream)
+		if (result != AAUDIO_OK || !stream)
 		{
-			LOG_ERROR("[SoundManagerAAudio] the stream did not open (%s): the game plays without sound", AAudio_convertResultToText(result));
-			m_stream = nullptr;
-			return;
+			LOG_ERROR("[SoundManagerAAudio] the stream did not open (%s)", AAudio_convertResultToText(result));
+			return false;
 		}
-		m_sampleRate = AAudioStream_getSampleRate(m_stream);
-		AAudioStream_requestStart(m_stream);
-		LOG_INFO("[SoundManagerAAudio] output at %d Hz", m_sampleRate);
+		m_sampleRate = AAudioStream_getSampleRate(stream);
+		m_stream = stream;
+		return true;
+	}
+
+	void SoundManagerAAudio::close_stream()
+	{
+		AAudioStream* stream = m_stream.exchange(nullptr);
+		if (!stream) return;
+		// stopped before it is closed: Android 8's AAudio closed while still stopping let go of a binder object twice,
+		// and the app crashed as it quit
+		AAudioStream_requestStop(stream);
+		aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STOPPING;
+		for (int i = 0; i < 4 && state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_DISCONNECTED; ++i)
+		{
+			if (AAudioStream_waitForStateChange(stream, state, &state, 100 * 1000000LL) != AAUDIO_OK) break;
+		}
+		AAudioStream_close(stream);
+	}
+
+	void SoundManagerAAudio::reopen_stream()
+	{
+		std::lock_guard<std::mutex> lock(m_streamMutex);
+		m_lost = false;
+		close_stream();
+		if (!open_stream()) return;   // tried again on the next resume
+		if (!m_paused) AAudioStream_requestStart(m_stream);
+		LOG_INFO("[SoundManagerAAudio] the output opened again at %d Hz", m_sampleRate.load());
 	}
 
 	void SoundManagerAAudio::terminate()
 	{
-		if (m_stream)
+		m_feeding = false;
+		if (m_feeder.joinable()) m_feeder.join();
 		{
-			// stopped before it is closed: Android 8's AAudio closed while still stopping let go of a binder
-			// object twice, and the app crashed as it quit
-			AAudioStream_requestStop(m_stream);
-			aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STOPPING;
-			for (int i = 0; i < 4 && state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_DISCONNECTED; ++i)
-			{
-				if (AAudioStream_waitForStateChange(m_stream, state, &state, 100 * 1000000LL) != AAUDIO_OK) break;
-			}
-			AAudioStream_close(m_stream);
-			m_stream = nullptr;
+			std::lock_guard<std::mutex> lock(m_streamMutex);
+			close_stream();
 		}
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_voices.clear();
@@ -130,15 +175,74 @@ namespace Pakal
 		m_voices.push_back({ sound, 0.0, gain });
 	}
 
+	void SoundManagerAAudio::set_paused(bool paused)
+	{
+		{
+			std::lock_guard<std::mutex> lock(m_streamMutex);
+			m_paused = paused;
+			if (m_stream && !m_lost)
+			{
+				const aaudio_result_t result = paused ? AAudioStream_requestPause(m_stream) : AAudioStream_requestStart(m_stream);
+				if (result == AAUDIO_OK || paused) return;
+				LOG_WARNING("[SoundManagerAAudio] start: %s", AAudio_convertResultToText(result));
+			}
+			if (paused) return;
+		}
+		// lost while in the background (another app took the output, the screen recorder changed its route), or it
+		// never opened: a new one
+		reopen_stream();
+	}
+
+	void SoundManagerAAudio::on_error(AAudioStream*, void* user, aaudio_result_t error)
+	{
+		// the stream is dead (its device changed or went away: headphones, a screen recording, a call). It cannot be
+		// closed from this callback; the feeder opens a new one
+		LOG_WARNING("[SoundManagerAAudio] the output was lost: %s", AAudio_convertResultToText(error));
+		static_cast<SoundManagerAAudio*>(user)->m_lost = true;
+	}
+
+	bool SoundManagerAAudio::play_music(const std::string& path, const MusicSettings& settings)
+	{
+		const auto bytes = ResourceMgr.read_bytes(path);
+		if (!m_stream || !bytes || !m_music.play(bytes, settings)) return false;
+		m_musicOn = true;
+		return true;
+	}
+
+	void SoundManagerAAudio::feed_music()
+	{
+		std::vector<float> block(static_cast<size_t>(kFeedFrames) * 2);
+		while (m_feeding)
+		{
+			if (m_lost && !m_paused) reopen_stream();
+			const size_t read = m_ringRead.load(std::memory_order_acquire);
+			size_t write = m_ringWrite.load(std::memory_order_relaxed);
+			if (!m_musicOn || write - read + kFeedFrames > kRingFrames)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(5));
+				continue;
+			}
+			std::fill(block.begin(), block.end(), 0.0f);
+			m_music.render(block.data(), kFeedFrames, m_sampleRate);
+			for (int i = 0; i < kFeedFrames; ++i, ++write)
+			{
+				const size_t at = (write % kRingFrames) * 2;
+				m_ring[at] = block[static_cast<size_t>(i) * 2];
+				m_ring[at + 1] = block[static_cast<size_t>(i) * 2 + 1];
+			}
+			m_ringWrite.store(write, std::memory_order_release);
+		}
+	}
+
 	aaudio_data_callback_result_t SoundManagerAAudio::on_data(AAudioStream*, void* user, void* audio, int32_t frames)
 	{
-		static_cast<SoundManagerAAudio*>(user)->mix(static_cast<int16_t*>(audio), frames);
+		static_cast<SoundManagerAAudio*>(user)->mix(static_cast<int16_t*>(audio), frames);   // stereo frames
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	}
 
 	void SoundManagerAAudio::mix(int16_t* out, int32_t frames)
 	{
-		std::vector<float> accumulator(static_cast<size_t>(frames), 0.0f);
+		std::vector<float> accumulator(static_cast<size_t>(frames), 0.0f);   // the effects, mono
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 			for (auto& voice : m_voices)
@@ -158,10 +262,22 @@ namespace Pakal
 			m_voices.erase(std::remove_if(m_voices.begin(), m_voices.end(),
 				[](const Voice& v) { return static_cast<size_t>(v.position) + 1 >= v.sound->samples.size(); }), m_voices.end());
 		}
+		// the music the feeder decoded ahead (silence when it fell behind)
+		size_t read = m_ringRead.load(std::memory_order_relaxed);
+		const size_t available = m_ringWrite.load(std::memory_order_acquire) - read;
 		for (int32_t i = 0; i < frames; ++i)
 		{
-			const float value = std::max(-1.0f, std::min(1.0f, accumulator[static_cast<size_t>(i)]));
-			out[i] = static_cast<int16_t>(value * 32767.0f);
+			float left = accumulator[static_cast<size_t>(i)], right = left;
+			if (static_cast<size_t>(i) < available)
+			{
+				const size_t at = (read % kRingFrames) * 2;
+				left += m_ring[at] * m_volume;
+				right += m_ring[at + 1] * m_volume;
+				++read;
+			}
+			out[2 * i] = static_cast<int16_t>(std::max(-1.0f, std::min(1.0f, left)) * 32767.0f);
+			out[2 * i + 1] = static_cast<int16_t>(std::max(-1.0f, std::min(1.0f, right)) * 32767.0f);
 		}
+		m_ringRead.store(read, std::memory_order_release);
 	}
 }

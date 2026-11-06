@@ -149,7 +149,7 @@ celebration),
 `PropMesh` (a prop's model; a hit on one that breaks lights it up and shakes it, `PropView::show_hit`, for the seconds the game gives `PropComponent::set_hit_seconds`, none by default), `EffectsSystem` (bullet trails, muzzle flashes, casings, sparks, blood, the
 props' water, fire, glass and debris; and what lies on the floor, drawn with `BgfxGraphicsSystem::draw_ground_spot`: the
 muzzle's light flickering around the shooter, blood pools and splats that stay and fade after a while, bodies blown to
-pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`; SFML on desktops, AAudio on
+pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`, and the game's own with `add(name, path)`; SFML on desktops, AAudio on
 Android), `CameraRig` (the camera at a fixed offset from what it follows, scripted pans, the shake; its `rest_pose` is
 what the simulation may use), `InputMapper` (the step's `PlayerInput` from the keys, the mouse and the sticks, relative to
 the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections; the clouds' shadows
@@ -162,7 +162,7 @@ on it),
 `LevelObjects` (a level document's objects by key: each one's model from its prefab or its own mesh, and for one with
 components a prop actor made with the `ComponentSchema`; brought in line with an edited document object by object;
 `LevelPlacement.h` places them), `LevelEditPanel` (the running level's editor: an ImGui panel over its document and `LevelEditor`, picking and dragging
-on the floor, gizmos; docs/LEVEL_EDITOR.md), `OccluderFade` (models between the camera and the player fade out: the camera's lines to the player's chest and head are tested against each model's box in its own frame, then, inside the box, against the model's columns, `MeshComponent3D_Bgfx::Columns`, the lowest and highest surface in each of up to 64 x 64 cells seen from above, so the air beside an awning or under a sign does not make a building fade) and `RenderSpace.h` (`floor_point`: the
+on the floor, gizmos; docs/LEVEL_EDITOR.md), `OccluderFade` (models between the camera and the player fade out: the camera's lines to the player's chest and head are tested against each model's box in its own frame, then, inside the box, against the model's columns, `MeshComponent3D_Bgfx::Columns`, the lowest and highest surface in each of up to 64 x 64 cells seen from above, so the air beside an awning or under a sign does not make a building fade; how a faded model is drawn is the mesh's choice: blended, the default; dithered, `set_fade_dither`, solid with a share of its pixels left out; or cut away, `set_fade_cut(keep, rim, color, floor)`, solid with nothing above a height that falls from its top to `keep` meters over its base, a flat-colored band of `rim` meters under the cut, the look of a model kit with its upper floors lifted off and cheaper than blending a building that fills the screen) and `RenderSpace.h` (`floor_point`: the
 plane to render space).
 
 `ComponentSchema` (the components a level's object can carry: fields with their types, defaults and ranges, and how each

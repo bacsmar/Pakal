@@ -1,6 +1,6 @@
 $input v_texcoord0
 
-// Ambient occlusion, its blur (BgfxGraphicsSystem::render_ao): seven texels along one direction with a Gaussian's weights (sigma 1.5),
+// Ambient occlusion, its blur (BgfxGraphicsSystem::render_ao): a box of four texels along one direction (the width of fs_ao's 4x4 pattern),
 // each weighed down by how far its depth is from the middle one's, so the shade does not bleed from a wall onto the floor in
 // front of it or from a character onto the street behind. Run across and then down.
 
@@ -22,9 +22,15 @@ vec2 target_uv(vec2 uv)
 #endif
 }
 
+// (the same as fs_ao: the depth is read at the middle of one of its texels, not at the edge between two)
+vec2 depth_texel_center(vec2 uv)
+{
+	return (floor(uv / u_ao0.xy + 0.25) + 0.5) * u_ao0.xy;
+}
+
 float linear_depth(vec2 uv)
 {
-	float d = texture2D(s_aoDepth, target_uv(uv)).x;
+	float d = texture2D(s_aoDepth, target_uv(depth_texel_center(uv))).x;
 	return u_ao0.z * u_ao0.w / (u_ao0.w - d * (u_ao0.w - u_ao0.z));
 }
 
@@ -35,11 +41,12 @@ void main()
 	float z = linear_depth(uv);
 	// depths within a few percent of the middle one's count fully
 	float tolerance = 1.0 / (0.03 * z + 0.05);
-	float sum = texture2D(s_aoInput, target_uv(uv)).r * 0.266;
-	float weight = 0.266;
-	for (int i = 1; i <= 3; ++i)
+	// a box of four texels (weights 0.5, 1, 1, 1, 0.5 over five): the width of fs_ao's 4x4 pattern, which then cancels exactly
+	float sum = texture2D(s_aoInput, target_uv(uv)).r;
+	float weight = 1.0;
+	for (int i = 1; i <= 2; ++i)
 	{
-		float g = i == 1 ? 0.213 : (i == 2 ? 0.110 : 0.036);
+		float g = i == 1 ? 1.0 : 0.5;
 		for (int s = -1; s <= 1; s += 2)
 		{
 			vec2 suv = uv + stride * float(i * s);

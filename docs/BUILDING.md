@@ -82,8 +82,11 @@ msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformTool
 `PlatformToolset=v145` is the toolset of Visual Studio 2026. Use `v143` with Visual Studio 2022. The libraries are written to `external\bgfx\.build\win64_vs2022\bin`.
 
 Pakal carries a few fixes to bgfx as patches (`patches/bgfx/*.patch`, e.g. the OpenGL barrier that lets draws read
-what a compute shader wrote). The Android build applies them to the submodule when it configures; for the desktop
-libraries apply them before building bgfx: `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+what a compute shader wrote), not a fork. Every build applies them to the submodule when it configures, the ones it does
+not have yet (`cmake/BgfxPatches.cmake`). The Android build compiles bgfx itself, so that is all; the desktop libraries
+are built apart, so apply them before building bgfx, or configure Pakal once first (it warns when it has just patched
+bgfx: rebuild its libraries then): `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+The submodule is marked `ignore = dirty` in `.gitmodules`, so the patched files do not show as changes.
 
 ### 3. Configure and build
 

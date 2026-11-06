@@ -2,8 +2,8 @@ $input v_texcoord0
 
 // Ambient occlusion from the depth, at half the picture's size (BgfxGraphicsSystem::render_ao): samples on a spiral
 // around the pixel; each one in front of the surface darkens it by how much it faces it, less the farther it is, nothing
-// past the radius (a cable meters above the floor does not darken it). The spiral turns by interleaved gradient noise, which
-// the depth-aware blur after it (fs_ao_blur) evens out. Writes the light left (1: open) in r.
+// past the radius (a cable meters above the floor does not darken it). The spiral turns by an ordered 4x4 pattern, which
+// the depth-aware blur after it (fs_ao_blur, a box of four texels) cancels. Writes the light left (1: open) in r.
 
 #include <bgfx_shader.sh>
 #include "pakal_precision.sh"
@@ -24,9 +24,19 @@ vec2 target_uv(vec2 uv)
 #endif
 }
 
+// The occlusion runs at half the size of the depth: the middle of one of its pixels is the edge between two of the depth's, and
+// a point sample there picks one row or the other as the rounding falls, from one row to the next. Every read is taken at the
+// middle of a depth texel instead (a quarter texel past the edge, so the rounding never ties), and every point is placed at
+// the uv it was read at (view_point): a point at one uv with the depth of the texel beside it stands off its surface, by
+// meters on a far floor seen edge-on, and darkens the rows that round that way (stripes across the screen).
+vec2 depth_texel_center(vec2 uv)
+{
+	return (floor(uv / u_ao0.xy + 0.25) + 0.5) * u_ao0.xy;
+}
+
 float linear_depth(vec2 uv)
 {
-	float d = texture2D(s_aoDepth, target_uv(uv)).x;
+	float d = texture2D(s_aoDepth, target_uv(depth_texel_center(uv))).x;
 	return u_ao0.z * u_ao0.w / (u_ao0.w - d * (u_ao0.w - u_ao0.z));
 }
 
@@ -37,22 +47,29 @@ vec3 view_position(vec2 uv, float z)
 	return vec3(ndc.x * z / u_ao1.x, ndc.y * z / u_ao1.y, z);
 }
 
+// The point of the view a depth texel holds, at the middle of the texel its depth is read from
+vec3 view_point(vec2 uv)
+{
+	vec2 center = depth_texel_center(uv);
+	return view_position(center, linear_depth(center));
+}
+
 void main()
 {
 	vec2 uv = v_texcoord0;
-	float z = linear_depth(uv);
+	vec3 p = view_point(uv);
+	float z = p.z;
 	if (z > u_ao0.w * 0.98)
 	{
 		gl_FragColor = vec4_splat(1.0); // sky
 		return;
 	}
-	vec3 p = view_position(uv, z);
 	// the surface's orientation from the nearer neighbor on each axis (not across an edge)
 	vec2 texel = u_ao0.xy;
-	vec3 px = view_position(uv + vec2(texel.x, 0.0), linear_depth(uv + vec2(texel.x, 0.0)));
-	vec3 nx = view_position(uv - vec2(texel.x, 0.0), linear_depth(uv - vec2(texel.x, 0.0)));
-	vec3 py = view_position(uv + vec2(0.0, texel.y), linear_depth(uv + vec2(0.0, texel.y)));
-	vec3 ny = view_position(uv - vec2(0.0, texel.y), linear_depth(uv - vec2(0.0, texel.y)));
+	vec3 px = view_point(uv + vec2(texel.x, 0.0));
+	vec3 nx = view_point(uv - vec2(texel.x, 0.0));
+	vec3 py = view_point(uv + vec2(0.0, texel.y));
+	vec3 ny = view_point(uv - vec2(0.0, texel.y));
 	vec3 dx = abs(px.z - p.z) < abs(p.z - nx.z) ? px - p : p - nx;
 	vec3 dy = abs(py.z - p.z) < abs(p.z - ny.z) ? py - p : p - ny;
 	vec3 n = normalize(cross(dy, dx));
@@ -62,8 +79,15 @@ void main()
 	// the radius on screen (uv) at this depth, kept to a part of the picture up close
 	vec2 reach = vec2(radius * u_ao1.x * 0.5 / z, radius * u_ao1.y * 0.5 / z);
 	reach = min(reach, vec2_splat(0.12));
-	vec2 pixel = gl_FragCoord.xy;
-	float angle = fract(52.9829189 * fract(dot(pixel, vec2(0.06711056, 0.00583715)))) * 6.2831853;
+	// the spiral turns by an ordered 4x4 pattern (16 turns), and the blur after this pass is a box of four texels (fs_ao_blur): the
+	// pattern's period and the blur's width are the same, so the pattern cancels exactly and leaves no stripes (interleaved
+	// gradient noise has a period that is not a whole number of texels, and no blur of a few texels cancels it)
+	vec2 cell = mod(floor(gl_FragCoord.xy), 4.0);
+	vec2 a2 = mod(cell, 2.0);
+	vec2 b2 = floor(cell * 0.5);
+	float inner = 2.0 * a2.x + 3.0 * a2.y - 4.0 * a2.x * a2.y;
+	float outer = 2.0 * b2.x + 3.0 * b2.y - 4.0 * b2.x * b2.y;
+	float angle = (4.0 * inner + outer + 0.5) / 16.0 * 6.2831853;
 	float taps = u_ao2.y;
 	float occlusion = 0.0;
 	for (int i = 0; i < 8; ++i)
@@ -72,7 +96,7 @@ void main()
 		float t = (float(i) + 0.5) / taps;
 		float a = angle + float(i) * 2.399963;
 		vec2 suv = uv + vec2(cos(a), sin(a)) * reach * sqrt(t);
-		vec3 v = view_position(suv, linear_depth(suv)) - p;
+		vec3 v = view_point(suv) - p;
 		float vv = dot(v, v);
 		float facing = max(dot(n, v) * inversesqrt(vv + 0.0001) - u_ao1.w, 0.0);
 		float falloff = max(1.0 - vv / (radius * radius), 0.0);

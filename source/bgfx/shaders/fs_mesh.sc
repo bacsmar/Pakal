@@ -11,6 +11,9 @@ uniform vec4 u_ambient;    // rgb: ambient color from above (the sky)
 uniform vec4 u_ambientGround; // rgb: ambient color from below (the light bounced by the ground)
 uniform vec4 u_tint;       // material color multiplier
 uniform vec4 u_material;   // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit
+uniform vec4 u_cut;       // a model cut away (MeshComponent3D_Bgfx::set_fade_cut): x: the height (world y) above which
+                          // nothing is drawn, y: the rim under it (m), drawn flat in u_cutColor; w: 1 = on
+uniform vec4 u_cutColor;
 uniform vec4 u_ground;     // x: how much a second, turned read of the texture breaks its tiling, y: the macro variation (0: off)
 
 // Value noise in 3D (0..1): smooth bumps one unit apart
@@ -54,6 +57,19 @@ void main()
 	{
 		discard;
 	}
+	// cut away: nothing above the cut; the band under it flat in the rim's color, so the edge reads from above
+	if (u_cut.w > 0.0)
+	{
+		if (v_worldpos.y > u_cut.x)
+		{
+			discard;
+		}
+		if (v_worldpos.y > u_cut.x - u_cut.y)
+		{
+			gl_FragColor = vec4(u_cutColor.rgb, 1.0);
+			return;
+		}
+	}
 	// a model faded by dithering leaves out the pixels of a 4x4 pattern above its opacity (u_material.w)
 	if (u_material.w > 0.0)
 	{
@@ -66,6 +82,15 @@ void main()
 		{
 			discard;
 		}
+	}
+
+	// a faded (blended) model, mostly see-through: a flat color from the ambient and a share of the sun, without the shadows,
+	// the lightmap, the probes or the reflections. A building that fills the screen blends layers of these, and each costs
+	// the whole lighting otherwise.
+	if (u_material.z > 1.5)
+	{
+		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), mix(1.0, albedo.a, u_material.y));
+		return;
 	}
 
 	vec3 n = normalize(v_normal);

@@ -172,8 +172,12 @@ namespace Pakal
 		// Faded by dithering: below full opacity the model stays solid (opaque pass, depth written) and leaves out a share of
 		// its pixels in a fixed pattern. Much cheaper than blending a model with many layers (a tree's leaves).
 		void set_fade_dither(bool dither) { m_fadeDither = dither; }
-		// It needs the blended pass (blended materials, or faded without dithering)
-		bool needs_transparent_pass() const { return m_hasTransparent || (m_opacity < 0.995f && !m_fadeDither); }
+		// Faded by cutting it away: below full opacity the model stays solid and leaves out what is above a height that goes
+		// down from its top to 'keep' meters over its base as the opacity falls to 'floor'; the 'rim' meters under the cut
+		// are drawn flat in 'rimColor' (0..1), so the cut's edge reads. Like a model kit with its upper floors lifted off.
+		void set_fade_cut(float keep, float rim, const float rimColor[3], float floor);
+		// It needs the blended pass (blended materials, or faded by blending)
+		bool needs_transparent_pass() const { return m_hasTransparent || (m_opacity < 0.995f && !m_fadeDither && !m_fadeCut); }
 		// Instancing: a static copy drawn as its model is (whole, no lightmap, color or clay of its own) can go with the
 		// other copies of its model in one draw (render_instances); the copies of one model share their vertex buffer
 		bool instanceable() const
@@ -238,6 +242,12 @@ namespace Pakal
 		// The clouds' shadows drifting over the ground: x how much of the sun a cloud takes (0: none), y 1 / a cloud's size
 		// (meters), zw how far the wind has carried them (meters, x and z)
 		static void set_clouds(const float clouds[4]);
+		// The wind in the foliage: every alpha-tested material (leaves, palms, grass) bends with gusts, 'bend' meters at 1 m
+		// above its model's origin (more higher up), at 'speed'; 0 turns it off. Vertex work only (pakal_wind.sh).
+		static void set_wind(float bend, float speed);
+		// Opaque materials drawn from the front only, though their file says both sides (a converter's default, not the
+		// art's: Blender's FBX import leaves every material double-sided). The shadow map keeps both. Off by default.
+		static void set_cull_opaque(bool cull);
 		// The baked ambient light (a 3D grid in world space); origin.w is how much of the ambient comes from it, 0 for none
 		static void set_gi_state(bgfx::TextureHandle volume, const float origin[4], const float size[4]);
 		// The level's lightmap atlas (RGB: the square root of half the ambient light, A: the sun's baked visibility) and how
@@ -371,6 +381,7 @@ namespace Pakal
 			bgfx::TextureHandle mixTexture[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
 			float mix[2][4] = { { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f } };
 			bool ownsMix = false;
+			bool lightmap = true; // false (materials.xml lightmap="off"): lit by the probes, not the lightmap (decals too thin to bake)
 			float water = 0.0f;   // its ripples wobble and it reflects the sky (materials.xml water="strength", 0: not water)
 			// glTF metal-rough materials: the normal map and the ORM texture (occlusion, roughness, metalness)
 			bgfx::TextureHandle normalTexture = BGFX_INVALID_HANDLE;
@@ -502,6 +513,10 @@ namespace Pakal
 		const aiNode* m_overlayRoot = nullptr;
 		float m_opacity = 1.0f;
 		bool m_fadeDither = false;
+		bool m_fadeCut = false;
+		float m_cutKeep = 0.0f, m_cutRim = 0.0f, m_cutFloor = 0.3f;
+		float m_cutColor[3] = { 1.0f, 1.0f, 1.0f };
+		float m_cutUniform[4] = { 0.0f, 0.0f, 0.0f, 0.0f };   // u_cut as this frame's draw sets it (render)
 		float m_lightmapRect[3] = { 0.0f, 0.0f, 0.0f };
 		bool m_shadowBaked = false;
 		bool m_visible = true;

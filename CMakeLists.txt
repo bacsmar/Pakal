@@ -39,6 +39,13 @@ if(PAKAL_BUILD_CORE_ONLY)
     return()
 endif()
 
+# Our fixes to bgfx: applied to the submodule here; the desktop's bgfx libraries are built apart (docs/BUILDING.md)
+set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxPatches.cmake)
+if(PAKAL_BGFX_PATCHED)
+    message(WARNING "bgfx was just patched: rebuild its libraries (docs/BUILDING.md, step 2) before building Pakal")
+endif()
+
 # Include directories
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/source)
@@ -48,7 +55,7 @@ include_directories(${CMAKE_SOURCE_DIR}/external/bimg/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/bgfx/examples/common)
 
 # Add source files
-file(GLOB_RECURSE PAKAL_SOURCES
+file(GLOB_RECURSE PAKAL_SOURCES FOLLOW_SYMLINKS
     "${CMAKE_SOURCE_DIR}/source/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/*.h"
     "${CMAKE_SOURCE_DIR}/source/components/*.cpp"
@@ -148,6 +155,14 @@ endif()
 # pugixml 1.16 that Assimp links. Rename the engine copy so both can be linked into Pakal.dll.
 # Remove this once source/persist is updated to a pugixml that matches vcpkg's.
 target_compile_definitions(Pakal PRIVATE pugi=pugi_pakal p2t=p2t_pakal)
+
+# stb_vorbis (vcpkg's stb): the music's OGG decoder (source/MusicMixer.cpp; without it the music is silent)
+find_path(PAKAL_STB_DIR stb_vorbis.c)
+if(PAKAL_STB_DIR)
+    target_include_directories(Pakal PRIVATE ${PAKAL_STB_DIR})
+else()
+    message(WARNING "stb_vorbis.c not found (vcpkg's stb): the game plays without music")
+endif()
 
 # SFML
 if(WIN32)
@@ -718,6 +733,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     add_executable(AudioTests ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     target_link_libraries(AudioTests Pakal)
     target_include_directories(AudioTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    target_compile_definitions(AudioTests PRIVATE PAKAL_TEST_FIXTURES="${CMAKE_SOURCE_DIR}/tests/fixtures")
     add_test(NAME AudioTests COMMAND AudioTests)
 endif()
 

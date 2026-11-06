@@ -2,6 +2,7 @@ $input a_position, a_normal, a_texcoord0, a_tangent, a_texcoord1, i_data0, i_dat
 $output v_normal, v_texcoord0, v_worldpos, v_tangent, v_texcoord1
 
 #include <bgfx_shader.sh>
+#include "pakal_wind.sh"
 
 // vs_pbr for many copies of one model in a single draw: each copy's model matrix comes with the instance (i_data0..3, its
 // columns) instead of u_model. Instanced models have no lightmap (v_texcoord1 stays at the atlas' unused corner)
@@ -11,6 +12,7 @@ void main()
 {
 	mat4 model = mtxFromCols(i_data0, i_data1, i_data2, i_data3);
 	vec4 worldPos = mul(model, vec4(a_position, 1.0));
+	worldPos = wind_bend(worldPos, mul(model, vec4(0.0, 0.0, 0.0, 1.0)).xyz);
 	gl_Position = mul(u_viewProj, worldPos);
 	v_worldpos = worldPos.xyz;
 	v_normal = normalize(mul(model, vec4(a_normal, 0.0)).xyz);

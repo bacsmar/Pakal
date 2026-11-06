@@ -49,6 +49,8 @@ namespace Pakal::TopDown
 
 		// Plays one sound of 'name' at 'volume' (0..1). Unknown names are reported once.
 		void play(const std::string& name, float volume = 1.0f);
+		// One more sound under 'name', from a file of the game's (not the level's audio.json): false when it does not load
+		bool add(const std::string& name, const std::string& path);
 		size_t name_count() const { return m_sounds.size(); }
 
 	private:

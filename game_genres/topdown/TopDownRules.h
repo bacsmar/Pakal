@@ -71,6 +71,9 @@ namespace Pakal::TopDown
 		float height = 1.8f;           // it reaches this high from the feet (m)
 		float clipSeconds = 0.3f;      // how long the view shows a swing
 		DeathKind death = DeathKind::Normal;
+		// it swings on its own, at its rate, for as long as it lasts (aimed at the nearest foe within reach when the player
+		// does not aim); off: only while the trigger is held
+		bool autoSwing = false;
 	};
 
 	struct PlayerRules
