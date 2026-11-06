@@ -20,6 +20,7 @@
             android:name="org.pakalengine.PakalActivity"
             android:exported="true"
             android:label="@LABEL@"
+            android:launchMode="singleTask"
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|density"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
