@@ -7,8 +7,8 @@
 //            - gives bgfx the ANativeWindow,
 //            - turns touches into the input the Zombies module reads: the left half of the screen is a
 //              virtual stick, the right half aims and fires. A touch that lands on the game's interface (its
-//              buttons) or on the development panels goes to them instead; three fingers at once show or hide
-//              the development panels.
+//              buttons) or on the development panels goes to them instead; how many fingers are down is told
+//              (event_touch_count) for a game's gestures.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "AndroidAssetSource.h"
@@ -276,13 +276,7 @@ namespace
 			const int rx = ui_x(x), ry = ui_y(y);
 			const float slop = ui_y(kTapSlop * height);
 			int ux = 0, uy = 0;
-			if (m_touches.size() == 2 && g)
-			{
-				// A third finger: show or hide the development panels (the touch does nothing else)
-				g->get_debug_ui().toggle();
-				touch.role = Role::None;
-			}
-			else if (g && g->get_debug_ui().is_over(rx, ry))
+			if (g && g->get_debug_ui().is_over(rx, ry))
 			{
 				touch.role = Role::Debug;
 				g->get_debug_ui().pointer(rx, ry, true);
@@ -310,6 +304,7 @@ namespace
 				event_touch_began.notify(TouchArgs{ static_cast<unsigned>(id), int(x), int(y) });
 			}
 			m_touches.push_back(touch);
+			event_touch_count.notify(static_cast<unsigned>(m_touches.size()));
 		}
 
 		void move_touch(int32_t id, float x, float y)
@@ -351,6 +346,7 @@ namespace
 				if (m_touches[i].id != id) continue;
 				finish(m_touches[i]);
 				m_touches.erase(m_touches.begin() + i);
+				event_touch_count.notify(static_cast<unsigned>(m_touches.size()));
 				return;
 			}
 		}
@@ -358,7 +354,9 @@ namespace
 		void release_all()
 		{
 			for (Touch& touch : m_touches) finish(touch);
+			const bool had = !m_touches.empty();
 			m_touches.clear();
+			if (had) event_touch_count.notify(0u);
 		}
 
 		void finish(const Touch& touch)
