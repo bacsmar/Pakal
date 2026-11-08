@@ -13,6 +13,7 @@ namespace Pakal
 		std::vector<ITouchDevice*>	m_touch_devices;
 		OSManager*					m_os_manager;
 		std::vector<InputDevice*>	m_devices;
+		unsigned					m_focus_listener = 0;   // OSManager::event_window_focused
 
 	public:
 		explicit InputManager_SFML(OSManager* os_manager);
