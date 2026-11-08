@@ -1,6 +1,7 @@
 #include "WindowCreatorSFML.h"
 #include "IInputManager.h"
 #include "LogMgr.h"
+#include "sfml/WindowFocus_SFML.h"
 
 #include <cstdlib>
 
@@ -98,7 +99,9 @@ void WindowCreatorSFML::process_window_events()
 	ASSERT(m_window_created);
 	
 	sf::Event e;
-	while (m_window->pollEvent(e))
+	// (pollEvent updates SFML's joysticks: under their lock, the events handled out of it)
+	auto poll = [this, &e]() { std::lock_guard<std::mutex> joysticks(JoystickLock_SFML::mutex()); return m_window->pollEvent(e); };
+	while (poll())
 	{
 		switch (e.type)
 		{
