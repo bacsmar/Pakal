@@ -743,6 +743,7 @@ namespace Zombies
 		{
 			return;
 		}
+		listen_dev_panel(false);
 		if (m_devPanelId) m_graphics->get_debug_ui().remove_panel(m_devPanelId);
 		{
 			std::lock_guard<std::recursive_mutex> lock(m_stateMutex);

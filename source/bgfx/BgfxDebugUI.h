@@ -14,8 +14,9 @@ namespace Pakal
 	class IInputManager;
 
 	// Dear ImGui over bgfx, for development tools: panels that games and the engine register (stats, switches, cheats,
-	// the future level editor). It draws in its own view on top of everything. Hidden until toggled (F1, or a tap with
-	// three fingers on touch screens); PAKAL_DEV_UI=1 shows it from the start.
+	// the future level editor). It draws in its own view on top of everything. Hidden until shown: what shows it (a key, a
+	// gesture: IInputManager::event_touch_count) is the game's to choose, the engine binds nothing; PAKAL_DEV_UI=1 shows it from
+	// the start.
 	class _PAKALExport BgfxDebugUI
 	{
 	public:

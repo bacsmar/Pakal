@@ -47,7 +47,8 @@ Wi-Fi's broadcasts). Output: `build-android/pakal-<game>.apk`.
 - Shaders: the same `.sc` files, compiled with `--platform android -p 300_es` to `Assets/shaders/essl`.
 - Touch input (`main_android.cpp`): left half = virtual stick, right half = aim and shoot. A touch that lands on a
   button of the game's interface (RmlUi: pause, the pause panel) or on a development panel (Dear ImGui) goes to it
-  instead; three fingers at once show or hide the development panels. A game's own buttons are buttons of its
+  instead. How many fingers are down is told (`IInputManager::event_touch_count`): a gesture is the game's (the Zombies
+  module shows its development panel with three fingers); the engine binds none. A game's own buttons are buttons of its
   interface that hold the button a moment (`InputMapper::tap`): the dungeon's abilities (in the bottom right corner,
   aimed at the nearest monster: it has no aim stick) and its bag,
   the brawler's HIT, HEAVY, JUMP, DODGE and GUARD. A game turns the sticks on while it is played
