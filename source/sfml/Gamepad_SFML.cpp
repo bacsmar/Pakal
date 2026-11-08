@@ -1,9 +1,11 @@
 
 #include "Gamepad_SFML.h"
+#include "WindowFocus_SFML.h"
 #include "components/GamepadComponent.h"
 
 float Pakal::Gamepad_SFML::get_axis_state(unsigned v_axis)
 {
+	if (!WindowFocus_SFML::focused()) return 0.0f;
 	auto axis = m_axis[v_axis];
 	return sf::Joystick::getAxisPosition(m_device_id, axis);
 }
@@ -15,6 +17,7 @@ void Pakal::Gamepad_SFML::map_axis(unsigned v_axis, unsigned real_axis)
 
 bool Pakal::Gamepad_SFML::get_button_state(unsigned button)
 {
+	if (!WindowFocus_SFML::focused()) return false;
 	sf::Joystick::update();
 	auto b = m_buttons[button];
 	return b();

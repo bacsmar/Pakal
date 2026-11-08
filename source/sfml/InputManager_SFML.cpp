@@ -6,9 +6,19 @@
 #include "sfml/Keyboard_SFML.h"
 #include "sfml/Gamepad_SFML.h"
 #include "OSManager.h"
+#include "sfml/WindowFocus_SFML.h"
+#include <atomic>
 
 
 using namespace Pakal;
+
+namespace
+{
+	std::atomic<bool> s_focused{ true };   // (a window starts focused; the system says so when it changes)
+}
+
+bool Pakal::WindowFocus_SFML::focused() { return s_focused.load(); }
+void Pakal::WindowFocus_SFML::set_focused(bool focused) { s_focused.store(focused); }
 
 InputManager_SFML::InputManager_SFML(OSManager* os_manager) : m_os_manager(os_manager)
 {
@@ -16,6 +26,10 @@ InputManager_SFML::InputManager_SFML(OSManager* os_manager) : m_os_manager(os_ma
 
 void InputManager_SFML::initialize()
 {
+	// the keys and the pads are read only while the game's window has the focus (see WindowFocus_SFML)
+	WindowFocus_SFML::set_focused(true);
+	if (m_os_manager)
+		m_focus_listener = m_os_manager->event_window_focused.add_listener([](const bool& focused) { WindowFocus_SFML::set_focused(focused); });
 	auto keyboard = new Keyboard_SFML();
 	m_devices.emplace_back(keyboard);
 	m_button_devices.emplace_back(keyboard);
@@ -40,6 +54,8 @@ void InputManager_SFML::initialize()
 
 void InputManager_SFML::terminate()
 {	
+	if (m_os_manager && m_focus_listener) m_os_manager->event_window_focused.remove_listener(m_focus_listener);
+	m_focus_listener = 0;
 	for(auto device : m_devices)
 	{
 		delete device;
@@ -116,6 +132,7 @@ tmath::vector2di InputManager_SFML::get_mouse_position() const
 
 bool InputManager_SFML::is_key_pressed(Pakal::Key key)
 {
+	if (!WindowFocus_SFML::focused()) return false;   // (another window's keys are not the game's)
 	auto k = (sf::Keyboard::Key)(key);
 	return sf::Keyboard::isKeyPressed(k);
 }

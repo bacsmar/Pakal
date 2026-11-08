@@ -1,9 +1,11 @@
 
 #include "Keyboard_SFML.h"
+#include "WindowFocus_SFML.h"
 #include "components/GamepadComponent.h"
 
 bool Pakal::Keyboard_SFML::get_button_state(unsigned button)
 {
+	if (!WindowFocus_SFML::focused()) return false;
 	auto key = m_buttons[button];
 	return sf::Keyboard::isKeyPressed(key);
 }
