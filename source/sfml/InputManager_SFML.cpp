@@ -18,6 +18,12 @@ namespace
 }
 
 bool Pakal::WindowFocus_SFML::focused() { return s_focused.load(); }
+
+std::mutex& Pakal::JoystickLock_SFML::mutex()
+{
+	static std::mutex lock;
+	return lock;
+}
 void Pakal::WindowFocus_SFML::set_focused(bool focused) { s_focused.store(focused); }
 
 InputManager_SFML::InputManager_SFML(OSManager* os_manager) : m_os_manager(os_manager)
@@ -34,6 +40,7 @@ void InputManager_SFML::initialize()
 	m_devices.emplace_back(keyboard);
 	m_button_devices.emplace_back(keyboard);
 
+	std::lock_guard<std::mutex> joysticks(JoystickLock_SFML::mutex());
 	sf::Joystick::update();
 
 	for (unsigned i = 0; i < sf::Joystick::Count; i++)
