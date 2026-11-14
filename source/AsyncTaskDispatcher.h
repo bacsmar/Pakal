@@ -23,7 +23,7 @@ namespace Pakal
 
 		inline std::thread::id thread_id()
 		{
-			return m_inbox->get_tid();
+			return m_inbox ? m_inbox->get_tid() : NULL_THREAD;	// none once deregistered
 		}
 
 		void dispatch_all_tasks();
