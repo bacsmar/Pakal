@@ -28,15 +28,27 @@ rules, sounds and shot effects) comes from a level converted from an original ga
 
 ## Quick start
 
-```bash
-git clone https://github.com/bacsmar/Pakal.git
-cd Pakal
+Windows, with Visual Studio 2022 or 2026 (the "Desktop development with C++" workload) and
+[vcpkg](https://github.com/microsoft/vcpkg) cloned and bootstrapped. From an "x64 Native Tools Command Prompt":
+
+```bat
+git clone https://github.com/bacsmar/Pakal.git C:\dev\Pakal
+cd C:\dev\Pakal
 git submodule update --init --recursive
+set VCPKG_ROOT=C:\path\to\vcpkg
+cmake --preset win64
+cmake --build --preset win64-release
+build-win64\bin\PakalFeatureLab.exe
 ```
 
-Windows (Visual Studio + vcpkg): `cmake --preset win64` then `cmake --build --preset win64-release`.
+- The first `cmake --preset win64` also builds bgfx and its shader compiler from the submodules (a few minutes, once).
+- Clone into a short folder: some of bgfx's third-party sources have deep paths, and Windows stops at 260 characters.
+- `PakalFeatureLab` needs no assets: 2D sprites, a camera and generated sounds, to see that the engine runs.
+- The 3D examples (Zombies, Brawler, Dungeon) use free CC0 model packs that are not in the repository: see
+  [docs/ASSETS.md](docs/ASSETS.md) to install them.
+
 Android: `python android/build_apk.py` (NDK, SDK and JDK paths in [docs/ANDROID.md](docs/ANDROID.md)).
-Details: [docs/BUILDING.md](docs/BUILDING.md).
+Details, Linux and the manual bgfx build: [docs/BUILDING.md](docs/BUILDING.md).
 
 ## Documentation
 

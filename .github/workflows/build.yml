@@ -1,0 +1,52 @@
+# What README's quick start promises, on every push and pull request: a fresh clone builds (bgfx included, from the
+# submodules) and its tests pass.
+name: build
+
+on:
+  push:
+    branches: [master, beta, develop]
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - name: Short work folder (bgfx's third-party paths are deep)
+        run: git config --system core.longpaths true
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ hashFiles('vcpkg.json') }}
+
+      - name: bgfx build cache
+        uses: actions/cache@v4
+        with:
+          path: external/bgfx/.build/win64_vs2022/bin
+          key: bgfx-${{ hashFiles('.gitmodules', 'patches/bgfx/*.patch') }}-${{ github.sha }}
+          restore-keys: bgfx-${{ hashFiles('.gitmodules', 'patches/bgfx/*.patch') }}-
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure (builds bgfx the first time)
+        shell: cmd
+        env:
+          VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
+        run: |
+          set VCPKG_ROOT=%VCPKG_INSTALLATION_ROOT%
+          cmake --preset win64
+
+      - name: Build
+        run: cmake --build --preset win64-release
+
+      - name: Tests
+        working-directory: build-win64
+        run: ctest -j 4 --output-on-failure -E Mcp

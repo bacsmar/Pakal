@@ -64,9 +64,14 @@ Pakal.dll is a shared library. ContraGameModule.dll and PakalPlayer.exe link to 
   ```
 - Submodules: `git submodule update --init --recursive`.
 
-### 2. Build bgfx (once, or after changing the submodule)
+### 2. bgfx (built for you)
 
-bgfx has no CMake project in this repo. Its own tools generate and build it. Run from a Developer shell:
+`cmake --preset win64` builds bgfx, bx, bimg and shaderc from the submodules the first time, with bgfx's own tools
+(GENie, then MSBuild with your compiler's toolset), after applying our patches (`cmake/BgfxBuild.cmake`). It takes a few
+minutes, once; it builds them again when the submodules or our patches change. Clone into a short folder: shaderc's
+third-party sources have deep paths, and past 260 characters MSBuild reports "Cannot open source file".
+
+To build them yourself instead, configure with `-DPAKAL_BGFX_AUTOBUILD=OFF` and run, from a Developer shell:
 
 ```bat
 cd external\bgfx
@@ -83,9 +88,9 @@ msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformTool
 
 Pakal carries a few fixes to bgfx as patches (`patches/bgfx/*.patch`, e.g. the OpenGL barrier that lets draws read
 what a compute shader wrote), not a fork. Every build applies them to the submodule when it configures, the ones it does
-not have yet (`cmake/BgfxPatches.cmake`). The Android build compiles bgfx itself, so that is all; the desktop libraries
-are built apart, so apply them before building bgfx, or configure Pakal once first (it warns when it has just patched
-bgfx: rebuild its libraries then): `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+not have yet (`cmake/BgfxPatches.cmake`), and the desktop build then builds bgfx again with them. Building bgfx by hand
+(`PAKAL_BGFX_AUTOBUILD=OFF`), configure Pakal once first (it warns when it has just patched bgfx: rebuild its libraries
+then), or apply them yourself: `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
 The submodule is marked `ignore = dirty` in `.gitmodules`, so the patched files do not show as changes.
 
 ### 3. Configure and build

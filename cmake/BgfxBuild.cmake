@@ -1,5 +1,5 @@
 # bgfx, bx, bimg and shaderc for the desktop, built from the submodules with bgfx's own tools (GENie, then MSBuild on
-# Windows or make on Linux), the first time CMake configures, or again when one of our patches had to be applied.
+# Windows or make on Linux), the first time CMake configures, and again when the submodules or our patches change.
 # Sets BGFX_DIR and BGFX_BUILD_DIR. A clone needs nothing done by hand: `cmake --preset win64` builds them (a few minutes,
 # once). PAKAL_BGFX_AUTOBUILD=OFF skips it, for someone who builds bgfx themselves (docs/BUILDING.md).
 
@@ -47,7 +47,30 @@ foreach(output ${PAKAL_BGFX_OUTPUTS})
     endif()
 endforeach()
 
-if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_PATCHED) AND PAKAL_BGFX_AUTOBUILD)
+# What the libraries were built from: the three submodules' commits and our patches. A different one (a submodule
+# updated, a patch added or changed) builds them again; a patch applied again to the same sources does not
+set(PAKAL_BGFX_SOURCE "")
+foreach(dir ${BGFX_DIR} ${BX_DIR} ${PAKAL_ROOT}/external/bimg)
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD WORKING_DIRECTORY ${dir}
+        OUTPUT_VARIABLE commit OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    string(APPEND PAKAL_BGFX_SOURCE "${commit};")
+endforeach()
+foreach(patch ${PAKAL_BGFX_PATCHES})
+    file(SHA1 ${patch} hash)
+    string(APPEND PAKAL_BGFX_SOURCE "${hash};")
+endforeach()
+set(PAKAL_BGFX_STAMP ${BGFX_BUILD_DIR}/pakal_bgfx_source.txt)
+set(PAKAL_BGFX_BUILT_FROM "")
+if(EXISTS ${PAKAL_BGFX_STAMP})
+    file(READ ${PAKAL_BGFX_STAMP} PAKAL_BGFX_BUILT_FROM)
+endif()
+if(NOT PAKAL_BGFX_BUILT_FROM STREQUAL PAKAL_BGFX_SOURCE)
+    set(PAKAL_BGFX_STALE TRUE)
+else()
+    set(PAKAL_BGFX_STALE FALSE)
+endif()
+
+if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
     message(STATUS "bgfx: building bgfx, bx, bimg and shaderc from external/ (once; a few minutes)")
     if(WIN32)
         if(NOT MSVC)
@@ -112,6 +135,9 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_PATCHED) AND PAKAL_BGFX_AUTOBUILD)
             list(APPEND PAKAL_BGFX_MISSING ${output})
         endif()
     endforeach()
+    if(NOT PAKAL_BGFX_MISSING)
+        file(WRITE ${PAKAL_BGFX_STAMP} "${PAKAL_BGFX_SOURCE}")
+    endif()
 endif()
 
 if(PAKAL_BGFX_MISSING)
