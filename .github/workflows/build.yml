@@ -50,3 +50,23 @@ jobs:
       - name: Tests
         working-directory: build-win64
         run: ctest -j 4 --output-on-failure -E Mcp
+
+  linux:
+    # Ubuntu 24.04 with the packages of Dockerfile.linux: the same build a Linux user runs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build environment (Dockerfile.linux)
+        run: docker build -f Dockerfile.linux -t pakal-linux .
+
+      - name: Configure, build and test (builds bgfx the first time)
+        run: >
+          docker run --rm -v "$PWD:/workspace" -w /workspace pakal-linux bash -c
+          "git config --global --add safe.directory '*' &&
+          cmake --preset linux-release &&
+          cmake --build --preset linux-release -j 4 &&
+          cd build-linux && ctest -j 4 --output-on-failure -E Mcp"

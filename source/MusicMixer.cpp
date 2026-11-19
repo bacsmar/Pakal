@@ -9,10 +9,14 @@
 #include <algorithm>
 #include <cmath>
 
-// stb_vorbis (from vcpkg's stb, on the desktop and on Android); without it the music is silent
+// stb_vorbis (from vcpkg's stb, on the desktop and on Android; Linux's libstb-dev names the same file stb_vorbis.h, the
+// decoder included); without it the music is silent
 #if __has_include(<stb_vorbis.c>)
 #define PAKAL_MUSIC_VORBIS 1
 #include <stb_vorbis.c>
+#elif __has_include(<stb_vorbis.h>)
+#define PAKAL_MUSIC_VORBIS 1
+#include <stb_vorbis.h>
 #else
 #define PAKAL_MUSIC_VORBIS 0
 #endif

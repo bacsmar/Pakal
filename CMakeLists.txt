@@ -153,8 +153,9 @@ endif()
 # Remove this once source/persist is updated to a pugixml that matches vcpkg's.
 target_compile_definitions(Pakal PRIVATE pugi=pugi_pakal p2t=p2t_pakal)
 
-# stb_vorbis (vcpkg's stb): the music's OGG decoder (source/MusicMixer.cpp; without it the music is silent)
-find_path(PAKAL_STB_DIR stb_vorbis.c)
+# stb_vorbis (vcpkg's stb; Linux: libstb-dev's stb_vorbis.h in /usr/include/stb, the same file): the music's OGG decoder
+# (source/MusicMixer.cpp; without it the music is silent)
+find_path(PAKAL_STB_DIR NAMES stb_vorbis.c stb_vorbis.h PATH_SUFFIXES stb)
 if(PAKAL_STB_DIR)
     target_include_directories(Pakal PRIVATE ${PAKAL_STB_DIR})
 else()
