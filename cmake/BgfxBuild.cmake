@@ -46,6 +46,8 @@ foreach(patch ${PAKAL_BGFX_PATCHES})
     file(SHA1 ${patch} hash)
     string(APPEND PAKAL_BGFX_SOURCE "${hash};")
 endforeach()
+# and how they are built (a change here builds them again: Linux's libraries were not position independent before)
+string(APPEND PAKAL_BGFX_SOURCE "fpic;")
 set(PAKAL_BGFX_STAMP ${BGFX_BUILD_DIR}/pakal_bgfx_source.txt)
 set(PAKAL_BGFX_BUILT_FROM "")
 if(EXISTS ${PAKAL_BGFX_STAMP})
@@ -109,7 +111,8 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
         if(PAKAL_CORES EQUAL 0)
             set(PAKAL_CORES 2)
         endif()
-        execute_process(COMMAND make linux-gcc-release64 -j${PAKAL_CORES}
+        # position independent: they go into libPakal.so, a shared library on Linux
+        execute_process(COMMAND ${CMAKE_COMMAND} -E env CFLAGS=-fPIC CXXFLAGS=-fPIC make linux-gcc-release64 -j${PAKAL_CORES}
             WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
         if(failed)
             file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")
