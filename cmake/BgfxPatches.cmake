@@ -1,5 +1,11 @@
 # Our fixes to bgfx (patches/bgfx/*.patch), applied to the submodule when it does not have them yet. Included by the
 # desktop and the Android builds; sets PAKAL_BGFX_PATCHED to the patches it applied in this configure.
+if(NOT EXISTS ${PAKAL_ROOT}/external/bgfx/src/bgfx.cpp OR NOT EXISTS ${PAKAL_ROOT}/external/bx/include/bx/bx.h
+        OR NOT EXISTS ${PAKAL_ROOT}/external/bimg/include/bimg/bimg.h)
+    message(FATAL_ERROR "bgfx, bx or bimg is missing from external/. Fetch the submodules first:
+"
+        "    git submodule update --init --recursive")
+endif()
 find_package(Git QUIET)
 set(PAKAL_BGFX_PATCHED "")
 file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)

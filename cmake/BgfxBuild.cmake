@@ -14,23 +14,10 @@ if(NOT EXISTS ${BGFX_DIR}/src/bgfx.cpp OR NOT EXISTS ${BX_DIR}/include/bx/bx.h O
         "    git submodule update --init --recursive")
 endif()
 
-# Our fixes to bgfx (patches/bgfx/*.patch), applied when the submodule does not have them yet
+# Our fixes to bgfx are applied by cmake/BgfxPatches.cmake (included before this file); PAKAL_BGFX_PATCHED lists the
+# ones it applied in this configure, and the libraries are built again when it is not empty
 find_package(Git QUIET)
-set(PAKAL_BGFX_PATCHED "")
 file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
-foreach(patch ${PAKAL_BGFX_PATCHES})
-    execute_process(COMMAND ${GIT_EXECUTABLE} apply --reverse --check --ignore-whitespace ${patch}
-        WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE applied OUTPUT_QUIET ERROR_QUIET)
-    if(NOT applied EQUAL 0)
-        execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${patch}
-            WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed)
-        if(failed)
-            message(FATAL_ERROR "bgfx: ${patch} does not apply (a newer bgfx may have it, or need it redone)")
-        endif()
-        message(STATUS "bgfx: applied ${patch}")
-        list(APPEND PAKAL_BGFX_PATCHED ${patch})
-    endif()
-endforeach()
 
 if(WIN32)
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/win64_vs2022/bin)
@@ -64,7 +51,7 @@ set(PAKAL_BGFX_BUILT_FROM "")
 if(EXISTS ${PAKAL_BGFX_STAMP})
     file(READ ${PAKAL_BGFX_STAMP} PAKAL_BGFX_BUILT_FROM)
 endif()
-if(NOT PAKAL_BGFX_BUILT_FROM STREQUAL PAKAL_BGFX_SOURCE)
+if(PAKAL_BGFX_PATCHED OR NOT PAKAL_BGFX_BUILT_FROM STREQUAL PAKAL_BGFX_SOURCE)
     set(PAKAL_BGFX_STALE TRUE)
 else()
     set(PAKAL_BGFX_STALE FALSE)
@@ -138,6 +125,10 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
     if(NOT PAKAL_BGFX_MISSING)
         file(WRITE ${PAKAL_BGFX_STAMP} "${PAKAL_BGFX_SOURCE}")
     endif()
+endif()
+
+if(PAKAL_BGFX_PATCHED AND NOT PAKAL_BGFX_AUTOBUILD)
+    message(WARNING "bgfx was just patched: rebuild its libraries (docs/BUILDING.md, step 2) before building Pakal")
 endif()
 
 if(PAKAL_BGFX_MISSING)
