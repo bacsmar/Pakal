@@ -265,6 +265,9 @@ namespace Zombies
 		// drawing
 		void dev_panel();
 		unsigned m_devPanelId = 0;
+		// what shows or hides it: F1, or three fingers on a touch screen (the game's choice: the engine binds none)
+		Pakal::EventId m_devKeyId = 0, m_devFingersId = 0;
+		void listen_dev_panel(bool on);
 		std::string m_devLevelRequest;      // load this level
 		bool m_devRestartRequest = false;
 		// Editing the running level (the dev panel's "Edit level", ZOMBIES_EDIT=1) and reloading it when its file changes

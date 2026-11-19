@@ -110,7 +110,6 @@ namespace Pakal
 		});
 		m_ids[4] = input->event_key_down.add_listener([this](const KeyArgs& a)
 		{
-			if (a.key == Key::F1) { toggle(); return; }
 			InputEvent e{ InputEvent::Type::Key }; e.key = a.key; e.down = true; push(e);
 		});
 		m_ids[5] = input->event_key_up.add_listener([this](const KeyArgs& a)

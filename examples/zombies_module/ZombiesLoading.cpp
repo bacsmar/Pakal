@@ -189,6 +189,27 @@ namespace Zombies
 		m_hud.load(m_ui);
 		m_hud.refresh_boosts(m_missionId);
 		m_devPanelId = m_graphics->get_debug_ui().add_panel([this]() { dev_panel(); });
+		listen_dev_panel(true);
+	}
+
+	void ZombiesLevelState::listen_dev_panel(bool on)
+	{
+		if (!m_input) return;
+		if (!on)
+		{
+			if (m_devKeyId) m_input->event_key_down.remove_listener(m_devKeyId);
+			if (m_devFingersId) m_input->event_touch_count.remove_listener(m_devFingersId);
+			m_devKeyId = m_devFingersId = 0;
+			return;
+		}
+		m_devKeyId = m_input->event_key_down.add_listener([this](const Pakal::KeyArgs& a)
+		{
+			if (a.key == Pakal::Key::F1 && m_graphics) m_graphics->get_debug_ui().toggle();
+		});
+		m_devFingersId = m_input->event_touch_count.add_listener([this](unsigned fingers)
+		{
+			if (fingers == 3 && m_graphics) m_graphics->get_debug_ui().toggle();
+		});
 	}
 
 	// The prototype of a model file shares its GPU buffers with every instance; it is not drawn itself (an animated one also

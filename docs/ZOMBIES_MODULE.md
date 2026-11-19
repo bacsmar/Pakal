@@ -105,7 +105,8 @@ fires past 41% of its travel) and the top center square restarts (see [ANDROID.m
   hears a document's `data-event-click="buy(id)"` with its arguments, `set_strings` shows a document's text that is a key
   as the table's (languages; RmlUi's TranslateString), `load_fallback_font` gives the characters the other fonts lack,
   `bring_to_front` raises a panel.
-- **Development panels**: Dear ImGui (`source/bgfx/BgfxDebugUI`), F1 or three fingers on a phone; `PAKAL_DEV_UI=1` shows
+- **Development panels**: Dear ImGui (`source/bgfx/BgfxDebugUI`), F1 or three fingers on a phone (the module's own switch,
+  `ZombiesLevelState::listen_dev_panel`: the engine binds no key or gesture to them); `PAKAL_DEV_UI=1` shows
   them from the start. The Zombies panel: frame rate, level list and restart, god mode, money, consumables, spawn any
   enemy type, and Graphics: quality level, post-process, SSAO, tilt-shift, real-time shadows, lightmap, light probes, the
   upscaler (FSR 1 or bilinear, and its sharpness) when the picture is drawn smaller than the screen, fading. On the
@@ -168,7 +169,7 @@ Engine:
 |---|---|
 | `PAKAL_FPS_LOG=1` | One line per second: FPS of each system, and `[GPU]` with draws, triangles and models per pass |
 | `PAKAL_GPU=discrete\|integrated\|nvidia\|amd\|intel\|any` | Which GPU on a computer with two (Direct3D picks the adapter by vendor; the default is the dedicated NVIDIA one, the log names the one in use) |
-| `PAKAL_DEV_UI=1` | Shows the development panels (Dear ImGui) from the start; F1 toggles them |
+| `PAKAL_DEV_UI=1` | Shows the development panels (Dear ImGui) from the start; F1 toggles them (in the Zombies module) |
 | `PAKAL_RENDER_HEIGHT=<lines>` | Desktop: the most lines the picture is drawn at (by default the window's); a taller window gets it scaled up by FSR. Android: the picture's height (720, 1080 at ultra) |
 | `PAKAL_SHARPNESS=<stops>\|off` | FSR's sharpening (RCAS): stops below the most; `off` leaves its pass out |
 | `ZOMBIES_AO=<strength>` | The screen's ambient occlusion (SSAO). A level with baked light (light probes, a lightmap) has it baked: without this variable SSAO runs only at ultra and extreme (the dev panel can turn it on) |

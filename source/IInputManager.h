@@ -59,6 +59,9 @@ namespace Pakal
 		Event<TouchArgs> event_touch_began;
 		Event<TouchArgs> event_touch_moved;
 		Event<TouchArgs> event_touch_ended;
+		// How many fingers are on the screen, told each time it changes: all of them, those the platform keeps (its sticks, the
+		// interface's buttons) as well. What a number of fingers means (a gesture) is the game's to decide
+		Event<unsigned> event_touch_count;
 
 
 		virtual tmath::vector2di get_mouse_position() const = 0;
