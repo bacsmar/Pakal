@@ -2,7 +2,7 @@
 
 `tools/levelbuilder` turns a request ("a small US town with a park and a couple of missions") into playable Zombies
 levels, using only the free Quaternius packs (CC0). It is driven from the command line (`lb.py`), so Claude can build and
-change levels step by step; `tools/levelbuilder/CLAUDE.md` is the short working guide, this page explains the parts.
+change levels step by step; `tools/levelbuilder/AGENTS.md` is the short working guide, this page explains the parts.
 
     python tools/levelbuilder/lb.py <command> <scene> [options]
 
