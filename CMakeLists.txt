@@ -39,12 +39,9 @@ if(PAKAL_BUILD_CORE_ONLY)
     return()
 endif()
 
-# Our fixes to bgfx: applied to the submodule here; the desktop's bgfx libraries are built apart (docs/BUILDING.md)
+# Our fixes to bgfx: applied to the submodule here; cmake/BgfxBuild.cmake builds the desktop's libraries again with them
 set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
 include(${CMAKE_SOURCE_DIR}/cmake/BgfxPatches.cmake)
-if(PAKAL_BGFX_PATCHED)
-    message(WARNING "bgfx was just patched: rebuild its libraries (docs/BUILDING.md, step 2) before building Pakal")
-endif()
 
 # Include directories
 include_directories(${CMAKE_BINARY_DIR})
@@ -156,8 +153,9 @@ endif()
 # Remove this once source/persist is updated to a pugixml that matches vcpkg's.
 target_compile_definitions(Pakal PRIVATE pugi=pugi_pakal p2t=p2t_pakal)
 
-# stb_vorbis (vcpkg's stb): the music's OGG decoder (source/MusicMixer.cpp; without it the music is silent)
-find_path(PAKAL_STB_DIR stb_vorbis.c)
+# stb_vorbis (vcpkg's stb; Linux: libstb-dev's stb_vorbis.h in /usr/include/stb, the same file): the music's OGG decoder
+# (source/MusicMixer.cpp; without it the music is silent)
+find_path(PAKAL_STB_DIR NAMES stb_vorbis.c stb_vorbis.h PATH_SUFFIXES stb)
 if(PAKAL_STB_DIR)
     target_include_directories(Pakal PRIVATE ${PAKAL_STB_DIR})
 else()
@@ -196,6 +194,8 @@ endif()
 
 # bgfx library (prebuilt from the submodule's own build tools; we link the libraries)
 set(BGFX_DIR ${CMAKE_SOURCE_DIR}/external/bgfx)
+# Built from the submodules the first time CMake configures (cmake/BgfxBuild.cmake), our patches applied
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxBuild.cmake)
 
 if(WIN32)
     # Built with: genie vs2022 --with-dynamic-runtime (external/bgfx), then MSBuild
@@ -457,7 +457,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     add_executable(PakalMeshViewer ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     target_link_libraries(PakalMeshViewer Pakal)
     target_include_directories(PakalMeshViewer PRIVATE ${CMAKE_SOURCE_DIR}/source)
-    if(WIN32)
+    if(TARGET PakalShaders)
         add_dependencies(PakalMeshViewer PakalShaders)
     endif()
 endif()

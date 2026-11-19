@@ -44,7 +44,6 @@ namespace Pakal
 		void initialize() override;
 		void terminate() override;
 
-		void load_descriptors(const std::string& source);
 		void clear_descriptors();
 
 		void add_descriptor(EntityDescriptor* descriptor);
