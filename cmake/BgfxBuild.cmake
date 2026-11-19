@@ -61,10 +61,19 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_PATCHED) AND PAKAL_BGFX_AUTOBUILD)
         if(NOT PAKAL_MSBUILD)
             message(FATAL_ERROR "bgfx: msbuild was not found. Configure from a Developer shell (\"x64 Native Tools Command Prompt\").")
         endif()
-        if(MSVC_TOOLSET_VERSION GREATER_EQUAL 145)
+        # the compiler's own toolset (19.50 and later: Visual Studio 2026's v145; a CMake older than the compiler may not
+        # know MSVC_TOOLSET_VERSION for it)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.50)
             set(PAKAL_VS_TOOLSET v145)
         else()
             set(PAKAL_VS_TOOLSET v143)
+        endif()
+        # bgfx's third-party sources have deep paths: under a long folder they pass Windows' 260 characters
+        string(LENGTH "${BGFX_DIR}" PAKAL_BGFX_DIR_LENGTH)
+        if(PAKAL_BGFX_DIR_LENGTH GREATER 80)
+            message(WARNING "bgfx: the clone is in a long path (${PAKAL_BGFX_DIR_LENGTH} characters to external/bgfx). "
+                "shaderc's sources may pass Windows' 260-character limit: clone into a short folder (C:/dev/Pakal) "
+                "or turn on long paths (git config core.longpaths true, and LongPathsEnabled in Windows).")
         endif()
         execute_process(COMMAND ${BX_DIR}/tools/bin/windows/genie.exe --with-tools --with-dynamic-runtime vs2022
             WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed OUTPUT_QUIET)
@@ -79,7 +88,9 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_PATCHED) AND PAKAL_BGFX_AUTOBUILD)
                 RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
             if(failed)
                 file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")
-                message(FATAL_ERROR "bgfx: ${project} did not build. Its log: ${CMAKE_BINARY_DIR}/bgfx_build.log")
+                message(FATAL_ERROR "bgfx: ${project} did not build. Its log: ${CMAKE_BINARY_DIR}/bgfx_build.log
+"
+                    "\"Cannot open source file\" there is a path past 260 characters: clone into a shorter folder.")
             endif()
         endforeach()
     else()
