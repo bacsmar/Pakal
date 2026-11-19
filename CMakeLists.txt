@@ -196,6 +196,8 @@ endif()
 
 # bgfx library (prebuilt from the submodule's own build tools; we link the libraries)
 set(BGFX_DIR ${CMAKE_SOURCE_DIR}/external/bgfx)
+# Built from the submodules the first time CMake configures (cmake/BgfxBuild.cmake), our patches applied
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxBuild.cmake)
 
 if(WIN32)
     # Built with: genie vs2022 --with-dynamic-runtime (external/bgfx), then MSBuild
@@ -457,7 +459,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     add_executable(PakalMeshViewer ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     target_link_libraries(PakalMeshViewer Pakal)
     target_include_directories(PakalMeshViewer PRIVATE ${CMAKE_SOURCE_DIR}/source)
-    if(WIN32)
+    if(TARGET PakalShaders)
         add_dependencies(PakalMeshViewer PakalShaders)
     endif()
 endif()
