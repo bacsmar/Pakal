@@ -25,7 +25,6 @@ x86/
 .vs/
 .vscode/
 cmake-build-*/
-docker-build/
 
 # IDE files
 *.suo
@@ -84,7 +83,6 @@ tools/bench_budgets.local.json
 # Private workstation datapack (licensed assets and local signing key)
 /.local/
 /assets_zip/
-/games/zombimex/docs/reference/
 
 # An open level editor's request folder (tools/level_doc/LiveEditing)
 *.live/

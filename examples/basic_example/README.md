@@ -4,16 +4,17 @@ This is the minimal executable example for Pakal Engine startup and shutdown.
 
 ## Building
 
-From the project root:
+From the project root, as in [docs/QUICKSTART.md](../../docs/QUICKSTART.md):
 
 ```bash
-./docker-build.sh build all debug
+cmake --preset linux-release        # or win64 on Windows
+cmake --build --preset linux-release # or win64-release
 ```
 
 ## Running
 
 ```bash
-cd docker-build/bin
+cd build-linux/bin   # build-win64\bin on Windows
 ./PakalBasicExample
 ```
 

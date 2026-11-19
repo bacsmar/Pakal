@@ -35,5 +35,3 @@ README.md
 .local/
 assets_zip/
 build-*/
-docker-build/
-games/zombimex/docs/reference/

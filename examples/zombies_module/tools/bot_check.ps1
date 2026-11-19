@@ -1,6 +1,6 @@
 param(
     [string]$OutDir = (Join-Path $env:TEMP "pakal_bot_check"),
-    [string]$Root = (Split-Path $PSScriptRoot -Parent),
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path,
     [float]$TimeScale = 8          # the bot plays this many times faster: the steps are the same, so is the trace
 )
 # Plays every case of tests/baseline (<level>_seed<n>.trace) with the bot and compares its trace with the stored one.

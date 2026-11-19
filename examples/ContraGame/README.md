@@ -23,13 +23,15 @@ A side-scrolling run & gun game demonstrating Pakal Engine with bgfx + Box2D.
 
 ## Building
 
-Requires `PAKAL_USE_BGFX=1` and `PAKAL_USE_BOX2D=1` in `source/Config.h`
-
 ```bash
-./docker-build.sh build runtime debug
-cd docker-build/bin
-./PakalPlayer
+cmake --preset linux-release
+cmake --build --preset linux-release
+cd build-linux/bin
+./PakalPlayer ./libContraGameModule.so
 ```
+
+On Windows: `cmake --preset win64`, `cmake --build --preset win64-release`, then
+`build-win64\bin\PakalPlayer.exe ContraGameModule.dll`. Or run it in Docker with `tools/run_linux.sh`.
 
 ContraGame is built as a loadable module (`libContraGameModule.so`). `PakalPlayer` is the executable host and loads the module from the same directory by default.
 

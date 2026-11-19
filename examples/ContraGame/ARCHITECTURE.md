@@ -12,7 +12,7 @@ Pakal Core (source/)
 ├── source/
 │   ├── PakalPlayerMain.cpp          ← SINGLE runtime host (generic for any .so)
 │   └── (rest of core...)
-└── docker-build/bin/
+└── build-linux/bin/  (build-win64/bin on Windows)
     ├── PakalPlayer                   ← Executable (loads any .so plugin)
     └── libContraGameModule.so         ← ContraGame plugin
 
