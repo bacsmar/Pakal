@@ -19,24 +19,34 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache keys
+        id: keys
+        shell: bash
+        run: echo "bgfx=$(git rev-parse HEAD:external/bgfx HEAD:external/bx HEAD:external/bimg | sha1sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      # vcpkg: a new key every run, restored from the newest one, so packages built here are saved for the next run
       - name: vcpkg binary cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+          restore-keys: |
+            vcpkg-${{ hashFiles('vcpkg.json') }}-
+            vcpkg-
 
+      # bgfx: what the libraries are built from (the submodules' commits, our patches, how we build them). The stamp
+      # inside tells cmake/BgfxBuild.cmake they are current, so a hit builds nothing
       - name: bgfx build cache
         uses: actions/cache@v4
         with:
           path: external/bgfx/.build/win64_vs2022/bin
-          key: bgfx-${{ hashFiles('.gitmodules', 'patches/bgfx/*.patch') }}-${{ github.sha }}
-          restore-keys: bgfx-${{ hashFiles('.gitmodules', 'patches/bgfx/*.patch') }}-
+          key: bgfx-windows-${{ steps.keys.outputs.bgfx }}-${{ hashFiles('patches/bgfx/*.patch', 'cmake/BgfxBuild.cmake') }}
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
-      - name: Configure (builds bgfx the first time)
+      - name: Configure (builds bgfx when it is not cached)
         shell: cmd
         env:
           VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
@@ -60,10 +70,34 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build environment (Dockerfile.linux)
-        run: docker build -f Dockerfile.linux -t pakal-linux .
+      - name: Cache keys
+        id: keys
+        run: echo "bgfx=$(git rev-parse HEAD:external/bgfx HEAD:external/bx HEAD:external/bimg | sha1sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
 
-      - name: Configure, build and test (builds bgfx the first time)
+      - name: bgfx build cache
+        uses: actions/cache@v4
+        with:
+          path: external/bgfx/.build/linux64_gcc/bin
+          key: bgfx-linux-${{ steps.keys.outputs.bgfx }}-${{ hashFiles('patches/bgfx/*.patch', 'cmake/BgfxBuild.cmake') }}
+
+      # The image's layers (apt packages, RmlUi) are cached: they are built again only when Dockerfile.linux changes.
+      # Dockerfile.linux copies nothing from the repository, so its context is an empty folder
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Empty build context
+        run: mkdir -p "$RUNNER_TEMP/empty"
+
+      - name: Build environment (Dockerfile.linux)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ runner.temp }}/empty
+          file: Dockerfile.linux
+          tags: pakal-linux
+          load: true
+          cache-from: type=gha,scope=pakal-linux
+          cache-to: type=gha,scope=pakal-linux,mode=max
+
+      - name: Configure, build and test (builds bgfx when it is not cached)
         run: >
           docker run --rm -v "$PWD:/workspace" -w /workspace pakal-linux bash -c
           "git config --global --add safe.directory '*' &&
