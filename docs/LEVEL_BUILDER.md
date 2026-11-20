@@ -1,9 +1,9 @@
 # Level builder and its procedural tools
 
 `tools/levelbuilder` turns a request ("a small US town with a park and a couple of missions") into playable Zombies
-levels from the free Quaternius packs (CC0). Its models and layouts come from the packs alone; a playable level also
-takes the game's rules, audio and shooting effects from the converted Survival level, which is not in the repository
-(`tools/levelbuilder/AGENTS.md`). It is driven from the command line (`lb.py`), so Claude can build and
+levels from the free Quaternius packs (CC0). Its models and layouts come from the packs alone, and its levels' rules from
+`tools/zombies_convert/free_base.json` (silent, no shot effects) unless the converted Survival level, which is not in the
+repository, is there to give its own (docs/ZOMBIES_DOWNTOWN.md). It is driven from the command line (`lb.py`), so Claude can build and
 change levels step by step; `tools/levelbuilder/AGENTS.md` is the short working guide, this page explains the parts.
 
     python tools/levelbuilder/lb.py <command> <scene> [options]

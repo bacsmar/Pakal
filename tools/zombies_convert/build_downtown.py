@@ -3,8 +3,9 @@
 Usage: build_downtown.py [--mission survival_01] [--assets build-win64/bin/Assets/zombies]
        build_downtown.py --meshes-only     (the shared models alone, from the free packs: what the brawler and dungeon
                                             examples need; no converted level)
-A level needs the converted Survival level (hollywood_s01t01) in the assets folder: the game's rules, the audio and the shooting
-effects are shared with it. Writes <assets>/downtown_<mission>/level.json; the models go to <assets>/downtown/.
+A level takes its rules, audio and shot effects from the converted Survival level (hollywood_s01t01) when it is in the
+assets folder; without it, from free_base.json: rules written for Pakal, no sounds, no shot effects.
+Writes <assets>/downtown_<mission>/level.json; the models go to <assets>/downtown/.
 """
 import argparse
 import copy
@@ -199,6 +200,9 @@ def mannequin_visuals(pistol_mesh, weapons):
     }
 
 
+# The rules used when the converted Survival level is not there (written for Pakal, free)
+FREE_BASE = Path(__file__).with_name('free_base.json')
+
 # Props the brawler and dungeon prototypes place (examples/*_proto/data), which no Downtown mission exports
 EXAMPLE_PROPS = ('Street_Asphalt_9x9', 'TrafficBarrier_1', 'Prop_Crate', 'Barrel', 'TrashBag_1', 'Chest', 'Axe',
                  'Blood_1', 'Blood_2', 'Blood_3')
@@ -257,7 +261,14 @@ def build_level(name, build, args, base=True):
     shared = assets / 'downtown'
     out = assets / name
     survival = assets / args.survival
-    hollywood = json.loads((survival / 'level.json').read_text(encoding='utf-8'))
+    if (survival / 'level.json').is_file():
+        hollywood = json.loads((survival / 'level.json').read_text(encoding='utf-8'))
+    else:
+        # no converted level: the free rules written for Pakal (enemies, weapons, pickups, breakable props); the level
+        # then has no sounds and no shot effects
+        print(f'{survival / "level.json"} not found: using the free rules (tools/zombies_convert/{FREE_BASE.name}); '
+              f'the level is silent and has no shot effects')
+        hollywood = json.loads(FREE_BASE.read_text(encoding='utf-8'))
     out.mkdir(parents=True, exist_ok=True)
     (shared / 'meshes').mkdir(parents=True, exist_ok=True)
 
@@ -435,8 +446,8 @@ def build_level(name, build, args, base=True):
             shutil.copyfile(out / f'gi_{name}.bin', cache / f'{look_key}.bin')
             shutil.copyfile(look_meta, cache / f'{look_key}.json')
 
-    # The sounds of the Survival level are shared: the bank points into its folder
-    bank = json.loads((survival / 'audio.json').read_text(encoding='utf-8'))
+    # The sounds of the Survival level are shared: the bank points into its folder (none with the free rules)
+    bank = json.loads((survival / 'audio.json').read_text(encoding='utf-8')) if (survival / 'audio.json').is_file() else {}
     (out / 'audio.json').write_text(json.dumps({k: [f'{survival_rel}/{v}' for v in files] for k, files in bank.items()}, indent=1), encoding='utf-8')
 
     print(f'{document["name"]}: {len(level.objects)} objects, {len(level.polygons)} colliders, {len(level.walls)} breakable props, '

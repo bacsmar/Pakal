@@ -1,0 +1,5 @@
+# Python packages the tools use (python -m pip install -r tools/requirements.txt):
+# the level tools (tools/zombies_convert, tools/levelbuilder) and the APK's texture and sound steps (android/)
+numpy
+pillow
+shapely

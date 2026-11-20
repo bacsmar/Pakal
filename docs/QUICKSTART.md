@@ -45,8 +45,10 @@ cd build-linux && ctest -j 4 -E Mcp
 
 - **The 3D examples** use free CC0 model packs that are not in the repository. `python tools/fetch_free_assets.py`
   puts them in place, then `python tools/zombies_convert/build_downtown.py --meshes-only` (with Blender) exports the
-  models. Configure again and build: Brawler and Dungeon then run. The Zombies levels also need a converted level that
-  is not free ([ZOMBIES_DOWNTOWN.md](ZOMBIES_DOWNTOWN.md)).
+  models. Configure again and build: Brawler and Dungeon then run. For the Zombies example, also
+  `python -m pip install -r tools/requirements.txt` and `python tools/zombies_convert/build_downtown.py`, then
+  `set ZOMBIES_LEVEL=Assets\zombies\downtown_survival_01\level.json` and run `ZombiesModule.dll`: it plays with free
+  rules, silent ([ZOMBIES_DOWNTOWN.md](ZOMBIES_DOWNTOWN.md)).
 - **Running a game module:** `build-win64\bin\PakalPlayer.exe ZombiesModule.dll`, from the repository root.
 - **Opening a level in the editor:** add `--edit <level.json>` ([EDITOR.md](EDITOR.md)).
 - **How the engine is put together:** [ARCHITECTURE.md](ARCHITECTURE.md).

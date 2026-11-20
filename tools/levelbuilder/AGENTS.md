@@ -11,7 +11,8 @@ Packs: install them with `python tools/fetch_free_assets.py` (Downtown City, Med
 Universal Animation Library 1 and 2, Stylized Nature). **Every file of them (models and textures, what each is and what
 uses it) is in `docs/ASSET_INDEX.md`** (`python tools/assets_index.py` makes it again): look there before saying something
 is missing; a texture of a pack can become a piece of our own. Blender (5.x) renders the views and writes the `.glb`; `PAKAL_BLENDER` overrides its
-path. Building a playable level also needs the converted Survival level (see docs/ZOMBIES_DOWNTOWN.md).
+path. A playable level takes its rules from the converted Survival level when it is there, else from the free
+`tools/zombies_convert/free_base.json` (silent, no shot effects; see docs/ZOMBIES_DOWNTOWN.md).
 
 ## Files
 
