@@ -13,7 +13,6 @@
 #include <OSManager.h>
 #include <SoundManager.h>
 #include <SpatialAudio.h>
-#include <sfml/SoundManagerSFML.h>
 
 #include <chrono>
 #include <cmath>
@@ -46,10 +45,10 @@ public:
 	{
 		m_thread = std::thread([this, &engine]()
 		{
-			auto* sounds = dynamic_cast<SoundManagerSFML*>(engine.sound_manager());
+			SoundManager* sounds = engine.sound_manager();
 			if (!sounds)
 			{
-				std::cerr << "The SFML sound manager is not active" << std::endl;
+				std::cerr << "No sound manager is active" << std::endl;
 				engine.os_manager()->event_app_finished();
 				return;
 			}
@@ -86,7 +85,7 @@ public:
 				SoundSettings settings;
 				settings.position = spot.position;
 				settings.relative_to_source = false;
-				sounds->play_sfx(tone, settings);
+				sounds->play_effect(tone, settings);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1200));
 			}
 

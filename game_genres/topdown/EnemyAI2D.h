@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -64,11 +65,11 @@ namespace Pakal::TopDown
 	{
 	public:
 		// 'id' identifies the enemy in ray cast hits (RayCastHit::userData). Must not be 0.
-		EnemyAI2D(PhysicsWorld2D& world, const b2Vec2& position, const EnemyConfig& config, uintptr_t id);
+		EnemyAI2D(PhysicsWorld2D& world, const Pakal::Vec2& position, const EnemyConfig& config, uintptr_t id);
 
 		// Advances the enemy by dt. Returns the damage it deals to 'target' this step.
 		// Call before PhysicsWorld2D::step. 'nav' must be built from the same world's static geometry.
-		float update(float dt, const b2Vec2& target, const NavGrid2D& nav, PhysicsWorld2D& world);
+		float update(float dt, const Pakal::Vec2& target, const NavGrid2D& nav, PhysicsWorld2D& world);
 
 		void apply_damage(float amount);
 
@@ -77,13 +78,13 @@ namespace Pakal::TopDown
 		// Knocked back away from 'from': it slides off at 'speed' (m/s), slowing down
 		// (the deceleration grows with time), and stays stunned until 'seconds' have passed. An attack in progress is
 		// cancelled.
-		void knock_back(const b2Vec2& from, float speed, float seconds);
+		void knock_back(const Pakal::Vec2& from, float speed, float seconds);
 		bool is_knocked_back() const { return m_knockTimer > 0.0f; }
 		float get_knock_seconds_left() const { return std::max(0.0f, m_knockTimer); }
 		// The speed of the next update is multiplied by this (near the target, off screen...); 1 by default
 		void set_speed_scale(float scale) { m_speedScale = scale; }
-		void teleport(const b2Vec2& position);
-		b2Vec2 get_facing() const { return m_facing; }
+		void teleport(const Pakal::Vec2& position);
+		Pakal::Vec2 get_facing() const { return m_facing; }
 
 		// A scripted attack (EnemyConfig::scriptedAttack): ends it, so the wait before the next one starts
 		void end_attack();
@@ -99,17 +100,17 @@ namespace Pakal::TopDown
 		// An attack in progress (from its start to the end of attackDuration, or of the windup), and whether it began this step
 		bool is_attacking() const { return m_windup > 0.0f || m_attacking > 0.0f || m_scripted; }
 		bool attack_started() const { return m_attackStarted; }
-		b2Vec2 get_attack_direction() const { return m_attackDirection; }
+		Pakal::Vec2 get_attack_direction() const { return m_attackDirection; }
 
 		bool is_dead() const { return m_state == EnemyState::Dead; }
 		EnemyState get_state() const { return m_state; }
-		b2Vec2 get_position() const { return m_body->get_position(); }
+		Pakal::Vec2 get_position() const { return m_body->get_position(); }
 		uintptr_t get_id() const { return m_id; }
 
 		Health health;
 
 		// Nothing that blocks sight between it and 'target'
-		bool has_line_of_sight(PhysicsWorld2D& world, const b2Vec2& target) const;
+		bool has_line_of_sight(PhysicsWorld2D& world, const Pakal::Vec2& target) const;
 
 	private:
 
@@ -117,7 +118,7 @@ namespace Pakal::TopDown
 		uintptr_t m_id;
 		EnemyState m_state;
 		std::unique_ptr<CharacterController2D> m_body;
-		std::vector<b2Vec2> m_path;
+		std::vector<Pakal::Vec2> m_path;
 		float m_pathTimer;
 		bool m_noRoute = false;      // the last search found none: the next one waits for the timer
 		float m_attackTimer;
@@ -127,14 +128,14 @@ namespace Pakal::TopDown
 		float m_knockTimer = 0.0f;   // knocked back: seconds left of the stun
 		float m_knockSpeed = 0.0f;   // cm/s, as the original's formula
 		float m_knockAccel = 0.0f;
-		b2Vec2 m_knockDirection = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 m_knockDirection = Pakal::Vec2(0.0f, 0.0f);
 		float m_speedScale = 1.0f;
 		bool m_scripted = false;     // a scripted attack in progress
 		float m_attackSpeed = 0.0f;
 		bool m_attackTurns = false;
-		b2Vec2 m_facing = b2Vec2(1.0f, 0.0f);
+		Pakal::Vec2 m_facing = Pakal::Vec2(1.0f, 0.0f);
 		bool m_attackStarted = false;
-		b2Vec2 m_attackDirection = b2Vec2(1.0f, 0.0f);
+		Pakal::Vec2 m_attackDirection = Pakal::Vec2(1.0f, 0.0f);
 		uint32 m_random;             // for the random wait between attacks
 	};
 }

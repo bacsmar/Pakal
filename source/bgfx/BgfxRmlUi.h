@@ -34,9 +34,12 @@ namespace Pakal
 		TaskPtr<bool> unload_document_async(unsigned id) override;
 		bool load_document(unsigned id, const Path& resourcePath) override;
 		bool unload_document(unsigned id) override;
+		bool load_document_from_text(unsigned id, const std::string& markup) override;
 		void show_document(unsigned id, bool autoresize = true) override;
 		void hide_document(unsigned id) override;
 		void bring_to_front(unsigned id) override;
+		bool reload_document(unsigned id) override;
+		void reload_documents() override;
 		bool load_font(const Path& resourcePath) override;
 		bool load_fallback_font(const Path& resourcePath) override;
 		void set_theme(const Path& themePath) override;
@@ -46,10 +49,13 @@ namespace Pakal
 		void terminate() override;
 
 		bool is_document_visible(unsigned id) const override;
+		std::vector<DocumentInfo> documents() const override;
 		void set_text(unsigned document, const std::string& element, const std::string& text) override;
 		void set_markup(unsigned document, const std::string& element, const std::string& markup) override;
 		void set_class(unsigned document, const std::string& element, const std::string& name, bool on) override;
 		void set_property(unsigned document, const std::string& element, const std::string& name, const std::string& value) override;
+		void scroll_by(unsigned document, const std::string& element, float dp) override;
+		void scroll_into_view(unsigned document, const std::string& element) override;
 		void set_attribute(unsigned document, const std::string& element, const std::string& name, const std::string& value) override;
 		bool create_data_model(const std::string& model, const std::string& json) override;
 		void remove_data_model(const std::string& model) override;
@@ -59,9 +65,15 @@ namespace Pakal
 		unsigned add_click_listener(unsigned document, ClickCallback callback) override;
 		void remove_click_listener(unsigned listener) override;
 		bool is_over_ui(int x, int y) const override;
+		float dp_ratio() const override;
 		void pointer(int x, int y, bool down) override;
 		void pointer_move(int x, int y) override;
 		void touch(int id, int x, int y, int phase) override;
+		void navigate(unsigned document, NavDirection direction) override;
+		void activate(unsigned document) override;
+		void focus_first(unsigned document) override;
+		void set_build_label(const std::string& text, BuildLabelCorner corner) override;
+		std::string undrawn_build_label(BuildLabelCorner* corner) const override;
 
 		class Backend;
 		class ClickListener;
@@ -75,7 +87,7 @@ namespace Pakal
 
 		struct InputEvent
 		{
-			enum class Type { Move, Button, Wheel, Key, Text, Touch } type;
+			enum class Type { Move, Button, Wheel, Key, Text, Touch, Navigate, Activate, FocusFirst } type;
 			int x = 0, y = 0, button = 0;
 			bool down = false;
 			float wheel = 0.0f;
@@ -83,8 +95,29 @@ namespace Pakal
 			unsigned modifiers = 0;
 			unsigned text = 0;
 			int touch = 0, phase = 0; // a finger: its id, and 0 down, 1 moved, 2 up
+			unsigned document = 0;    // navigate, activate: the document, and the way
+			NavDirection direction = NavDirection::Down;
 		};
 		void push(const InputEvent& event);
+		void navigate_now(unsigned document, NavDirection direction);
+		void activate_now(unsigned document);
+		void focus_first_now(unsigned document);
+		void update_build_label();
+
+		// Reloading in place (dev and --tools builds, docs/UI_RELOAD.md): each document's file, the watches on it and on what it
+		// read as it loaded (its style sheets, templates), and what the game set on its elements, put back after a reload
+		struct Applied { enum class Kind { Text, Markup, Attribute, Property, Class } kind; std::string element, name, value; bool on = false; };
+		struct Source
+		{
+			std::string path;
+			std::vector<unsigned> watches;
+			std::map<std::string, Applied> applied;   // by what it sets (an element's content, one of its classes...)
+		};
+		Rml::ElementDocument* load_from(unsigned id, const std::string& path);
+		void remember(unsigned document, Applied applied);
+		void forget_source(unsigned document);
+		bool m_reload = false;
+		std::map<unsigned, Source> m_sources;
 
 		BgfxGraphicsSystem* m_graphics;
 		std::unique_ptr<Backend> m_backend;
@@ -103,5 +136,11 @@ namespace Pakal
 		IInputManager* m_input = nullptr;
 		unsigned m_ids[7] = {};
 		std::map<std::string, std::unique_ptr<DataModel>> m_models;
+		// The build's label (C-ID-7): a document of its own over the others, in the first font loaded
+		std::string m_label_text;
+		BuildLabelCorner m_label_corner = BuildLabelCorner::BottomLeft;
+		std::string m_label_font;              // the family of the first font loaded
+		Rml::ElementDocument* m_label_document = nullptr;
+		bool m_label_dirty = false;
 	};
 }

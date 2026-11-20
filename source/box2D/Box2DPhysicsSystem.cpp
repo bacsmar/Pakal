@@ -11,9 +11,6 @@
 	#include "bgfx/BgfxDebugDrawer.h"
 #endif
 
-#if PAKAL_USE_IRRLICHT
-	#include "box2d/B2DebugDrawIrr.h"	
-#endif
 
 
 using namespace Pakal;
@@ -76,18 +73,13 @@ void Box2DPhysicsSystem::do_debug_draw()
 	mutex_guard lock( m_debug_draw_mutex);
 	if (m_world) 
 	{
-#if PAKAL_USE_IRRLICHT
-		((B2DebugDrawIrr*)m_debug_draw)->update_camera();
-#endif
 		m_world->DebugDraw();
 	}
 }
 //////////////////////////////////////////////////////////////////////////
 void Box2DPhysicsSystem::set_drawer(const RendererInfo *renderInfo)
 {	
-#if PAKAL_USE_IRRLICHT
-	m_debug_draw = new B2DebugDrawIrr(renderInfo->m_Device, renderInfo->m_Driver);
-#elif PAKAL_USE_BGFX == 1
+#if PAKAL_USE_BGFX == 1
 	(void)renderInfo;
 	m_debug_draw = new BgfxDebugDrawer(nullptr);
 #endif

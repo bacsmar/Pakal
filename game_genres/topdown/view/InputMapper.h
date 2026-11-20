@@ -20,6 +20,7 @@
 #include <mutex>
 #include <utility>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -89,11 +90,11 @@ namespace Pakal::TopDown
 		// This step's input; the camera is the drawn one (width and height: the screen in pixels)
 		PlayerInput read(const CameraRig& camera, float width, float height);
 		// Where the mouse aims on the floor (false: it is not aiming, or misses the floor)
-		bool mouse_aim(const CameraRig& camera, float width, float height, b2Vec2& at) const;
+		bool mouse_aim(const CameraRig& camera, float width, float height, Pakal::Vec2& at) const;
 		float aim_height() const { return m_settings.aimPlaneHeight; }
 
 	private:
-		b2Vec2 camera_relative(const b2Vec2& v) const;
+		Pakal::Vec2 camera_relative(const Pakal::Vec2& v) const;
 
 		struct Mouse
 		{
@@ -120,7 +121,7 @@ namespace Pakal::TopDown
 		void finger_moved(unsigned id, float x, float y);
 		void finger_up(unsigned id);
 		// A stick's value (x right, y up, length up to 1, zero in the dead zone); false when no thumb is on it
-		bool stick_value(int stick, b2Vec2& value) const;
+		bool stick_value(int stick, Pakal::Vec2& value) const;
 		mutable std::mutex m_touchMutex;
 		std::vector<Finger> m_fingers;
 		bool m_touchOn = false, m_touchAims = true;

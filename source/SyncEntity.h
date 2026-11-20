@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <cstdint>
 #include <memory>
@@ -88,14 +88,14 @@ namespace Pakal
 		const std::string name;
 		const uintptr_t id;      // physics user data of its body: ray casts report it
 		int gameId = -1;         // the game's object id, when it has one
-		b2Vec2 position = b2Vec2(0.0f, 0.0f); // meters, on the simulation's plane
-		b2Vec2 previousPosition = b2Vec2(0.0f, 0.0f); // where it was when the last simulation step began
+		Pakal::Vec2 position = Pakal::Vec2(0.0f, 0.0f); // meters, on the simulation's plane
+		Pakal::Vec2 previousPosition = Pakal::Vec2(0.0f, 0.0f); // where it was when the last simulation step began
 
 		// Where to draw it 'alpha' (0..1) of the way from the last step to the next one: the frame falls between two
 		// steps of the fixed-step simulation. A jump (a warp, a respawn) is not smoothed.
-		b2Vec2 drawn_position(float alpha) const
+		Pakal::Vec2 drawn_position(float alpha) const
 		{
-			const b2Vec2 moved = position - previousPosition;
+			const Pakal::Vec2 moved = position - previousPosition;
 			if (moved.LengthSquared() > 4.0f) return position;
 			return previousPosition + alpha * moved;
 		}

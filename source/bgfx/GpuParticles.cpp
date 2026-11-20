@@ -13,7 +13,7 @@ namespace Pakal
 		m_passUniform = bgfx::createUniform("u_gpuParticle", bgfx::UniformType::Vec4);
 		m_simulate = simulate();
 		m_draw = draw();
-		if (!bgfx::isValid(m_simulate) || !bgfx::isValid(m_draw) || !(caps & BGFX_CAPS_COMPUTE) || !(caps & BGFX_CAPS_INSTANCING))
+		if (!bgfx::isValid(m_simulate) || !bgfx::isValid(m_draw) || !(caps & BGFX_CAPS_COMPUTE)   /* (instancing: every renderer) */)
 		{
 			m_available = false;
 			return;

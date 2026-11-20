@@ -66,4 +66,4 @@ No shader change gave more frames at the same resolution.
 
 - On Linux the engine shaders are compiled for both GLSL and SPIR-V (Windows keeps Direct3D).
 - The RGB8 back-buffer format of the X11 visual is requested for OpenGL only.
-- bgfx's compute barrier fix is `patches/bgfx/0001-gl-compute-vertex-barrier.patch`.
+- bgfx's compute barrier fix was a patch in `patches/bgfx`; bgfx has it itself since its 2026-11 update (ADR-0019).

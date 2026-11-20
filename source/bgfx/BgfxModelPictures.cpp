@@ -26,7 +26,7 @@ namespace Pakal
 	void BgfxGraphicsSystem::request_model_picture(MeshComponent3D_Bgfx* mesh, uint32_t size, PictureDone done)
 	{
 		const bgfx::Caps* caps = bgfx::getCaps();
-		const bool canRead = caps && (caps->supported & BGFX_CAPS_TEXTURE_BLIT) && (caps->supported & BGFX_CAPS_TEXTURE_READ_BACK);
+		const bool canRead = caps != nullptr   /* (blits and read-backs: every renderer since bgfx raised its baseline) */;
 		if (!mesh || !mesh->is_loaded() || size == 0 || !canRead)
 		{
 			if (done) done(size, {});
@@ -103,16 +103,18 @@ namespace Pakal
 		bgfx::setUniform(m_u_light_color, lightColor);
 		bgfx::setUniform(m_u_ambient, ambient);
 		bgfx::setUniform(m_u_ambient_ground, ambientGround);
-		const bgfx::ProgramHandle program = job.mesh->is_skinned() ? m_skin_program
-			: (job.mesh->uses_pbr() && bgfx::isValid(m_pbr_program) ? m_pbr_program : m_mesh_program);
+		const bgfx::ProgramHandle program = program_for(*job.mesh);
 		job.mesh->render_alone(view_, program);
 
 		// copied for the CPU after it is drawn, in the view after it
 		const bgfx::ViewId copy = static_cast<bgfx::ViewId>(m_picture_view_id + 1);
 		bgfx::touch(copy);
-		bgfx::blit(copy, job.readback, 0, 0, job.color);
+		bgfx::TextureRegion from, to;
+		from.init(job.color);
+		to.init(job.readback);
+		bgfx::blit(copy, to, from);
 		job.pixels.assign(size_t(size) * size * 4, 0);
-		job.readyFrame = bgfx::readTexture(job.readback, job.pixels.data());
+		job.readyFrame = bgfx::read(to, job.pixels.data());
 	}
 
 	void BgfxGraphicsSystem::finish_model_pictures()

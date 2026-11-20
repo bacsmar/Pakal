@@ -10,7 +10,7 @@
 #pragma once
 #include "topdown/TopDownRules.h"
 
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <cstdint>
 
@@ -35,10 +35,11 @@ namespace Pakal::TopDown
 		float amount = 0.0f;
 		int type = DamageType::Generic;
 		uintptr_t source = 0;                   // the actor that dealt it (0: none, or not known)
-		b2Vec2 from = b2Vec2(0.0f, 0.0f);       // where it came from (the push goes away from it)
+		Pakal::Vec2 from = Pakal::Vec2(0.0f, 0.0f);       // where it came from (the push goes away from it)
 		bool knockback = false;                 // pushes the target away instead of its hurt stun
 		float hitstun = 0.0f;                   // seconds the target cannot act (0: its own default)
 		bool critical = false;                  // the game decides what a critical hit does more
+		bool guarded = false;                   // the target guarded it (a Brawler kit's guard: 'amount' is already its share)
 		DeathKind death = DeathKind::Normal;    // how the target dies if this kills it
 	};
 

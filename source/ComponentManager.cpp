@@ -25,10 +25,19 @@ void ComponentManager::register_factory(IComponentFactory* factory, bool replace
 
 	std::string componentTypename = factory->get_typename();
 
-	if(m_factories.find( componentTypename ) != m_factories.end() && replacePreviousFactory == false)
+	auto previous = m_factories.find( componentTypename );
+	if(previous != m_factories.end())
 	{
-		LOG_ERROR("[ComponentManager] Factory Already registered");
-		ASSERT(false);
+		if (replacePreviousFactory == false)
+		{
+			LOG_ERROR("[ComponentManager] Factory Already registered");
+			ASSERT(false);
+		}
+		// the one replaced is the manager's too (it leaked)
+		if (previous->second != factory)
+		{
+			delete previous->second;
+		}
 	}
 
 	m_factories[ componentTypename ] = factory;
@@ -100,13 +109,24 @@ size_t ComponentManager::process_pending_disposals()
 void ComponentManager::terminate()
 {
 	process_pending_disposals();
+
+	// The factories go when the engine ends its run, as the entities' do (EntityManager::terminate): a game module's
+	// factories are made by its own code, and the module is unloaded right after the run, before the engine is deleted
+	// (deleting them in ~ComponentManager then ran code no longer loaded: the desktop player crashed on exit with a
+	// module that registers components). Like those, they are registered for one run.
+	release_factories();
+}
+
+void ComponentManager::release_factories()
+{
+	for (auto& pair : m_factories)
+	{
+		delete pair.second;
+	}
+	m_factories.clear();
 }
 
 ComponentManager::~ComponentManager()
 {
-	for( auto it = m_factories.begin() ; it != m_factories.end() ; )
-	{
-		delete it->second;
-		m_factories.erase(it++);	
-	}
+	release_factories();
 }

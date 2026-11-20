@@ -14,13 +14,9 @@
 
 #define PAKAL_COMPILE_WITH_EDITOR 0
 
-//! compile with LUA Scripts
+//! compile with LUA Scripts (the old script component; a game's Lua is source/scripting, PakalScripting)
 #define PAKAL_USE_SCRIPTS 0
-//! compile with ogre3D
-#define PAKAL_USE_OGRE 0
-//! compile with Irrlicht
-#define PAKAL_USE_IRRLICHT 0
-//! compile with bgfx
+//! compile with bgfx (the one graphics backend; Irrlicht and Ogre were left behind)
 // (PAKAL_CORE_ONLY: the core alone, the PakalCore target: no bgfx, no Box2D, no SFML; the dummy systems take their place)
 #ifdef PAKAL_CORE_ONLY
 	#define PAKAL_USE_BGFX 0
@@ -31,11 +27,7 @@
 	#define PAKAL_USE_BGFX 1
 #endif
 
-#if PAKAL_USE_BGFX == 1 && PAKAL_USE_IRRLICHT == 1
-	#error "Cannot use both BGFX and Irrlicht simultaneously"
-#endif
-
-#if PAKAL_USE_OGRE == 0 && PAKAL_USE_IRRLICHT == 0 && PAKAL_USE_BGFX == 0
+#if PAKAL_USE_BGFX == 0
 	#define PAKAL_USE_DUMMY_GRAPHICS 1
 #endif
 
@@ -63,9 +55,6 @@
 #else
 	#define PAKAL_USE_BOX2D 1
 #endif
-
-//! compile with Rocket GUI
-#define PAKAL_USE_ROCKET 0
 
 //! compile with DEBUGGER
 #define PAKAL_USE_DEBUGGER 0

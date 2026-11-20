@@ -6,19 +6,25 @@
 
 #include "BrawlerLevelState.h"
 
+#include <chrono>
+
 #include "Engine.h"
 #include "GameStateManager.h"
 #include "IInputManager.h"
 #include "IUIManager.h"
 #include "LogMgr.h"
 #include "bgfx/BgfxGraphicsSystem.h"
+#include "bgfx/SpriteComponent_Bgfx.h"
 #include "box2D/PhysicsWorld2D.h"
 #include "gameplay/NavGrid2D.h"
+#include "topdown/kits/brawler/FighterComponent.h"
+#include "topdown/view/ParticleEffects.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 using namespace Pakal::TopDown;
@@ -76,7 +82,7 @@ namespace Brawler
 		}
 		m_rules = BrawlerRules::from_json(nlohmann::json::parse(file, nullptr, false));
 		const uint32_t seed = static_cast<uint32_t>(env_number("BRAWLER_SEED", 2026.0f));
-		m_world = std::make_unique<PhysicsWorld2D>(b2Vec2(0.0f, 0.0f));
+		m_world = std::make_unique<PhysicsWorld2D>(Pakal::Vec2(0.0f, 0.0f));
 		m_nav = std::make_unique<NavGrid2D>(0.5f);
 		m_game = std::make_unique<BrawlerGame>(*m_world, *m_nav, m_rules, seed);
 		m_game->start();
@@ -99,6 +105,8 @@ namespace Brawler
 		std::vector<std::string> models;
 		for (const auto& [type, fighter] : m_rules.fighters) models.push_back(fighter.look.value("model", std::string()));
 		m_runtime->prefetch(models);
+		// the hits' effects (data/vfx: particle effects made of data)
+		m_runtime->particles().prefetch({ "Assets/brawler/vfx/blood_hit.json", "Assets/brawler/vfx/sparks_hit.json" });
 		m_runtime->on_graphics([this]()
 		{
 			SceneLook look = SceneLook::from_json(m_rules.visuals.value("lighting", nlohmann::json::object()), m_rules.visuals.value("post", nlohmann::json::object()));
@@ -180,7 +188,7 @@ namespace Brawler
 				// walking and the buttons: the hero faces the way it walks (no mouse aim) and Space is a jump, not the trigger
 				input = m_runtime->read_input();
 				input.hasAimPoint = false;
-				input.aimDirection = b2Vec2(0.0f, 0.0f);
+				input.aimDirection = Pakal::Vec2(0.0f, 0.0f);
 				input.fire = false;
 			}
 			m_game->step(m_runtime->step_seconds(), input);
@@ -193,6 +201,12 @@ namespace Brawler
 			m_impactsShaken = impacts;
 			m_runtime->rig().shake(3.0f, 120.0f);
 		}
+		show_hits();
+		// BRAWLER_VFX=<name>: that effect in the middle of the arena, again each time it ends (to look at one)
+		static const char* vfx = std::getenv("BRAWLER_VFX");
+		if (vfx && !m_runtime->particles().playing(m_vfx))
+			m_vfx = m_runtime->particles().play(std::string("Assets/brawler/vfx/") + vfx + ".json", Pakal::Vec2(0.0f, 1.0f), 0.0f, Pakal::Vec2(1.0f, 0.0f));
+		m_runtime->particles().update(m_runtime->frame_seconds());
 		m_runtime->sync_views(*m_game);
 		update_camera();
 		update_hud();
@@ -203,14 +217,81 @@ namespace Brawler
 			LOG_INFO("[Brawler] %s after %.1f s, hero health %.0f", m_game->won() ? "ROUND CLEAR" : "KO", m_game->timeMs / 1000.0,
 				m_game->player() ? m_game->player()->get<HealthComponent>()->current() : 0.0f);
 		}
+		// BRAWLER_PRELOAD=<a.png;b.png...> (a check of GraphicsSystem::preload_textures): preloaded as the level starts; at
+		// BRAWLER_PRELOAD_AT seconds (0: at once, while they are still loading) a sprite takes each one, and the log says how long
+		static const char* preload = std::getenv("BRAWLER_PRELOAD");
+		if (preload && !m_preloadStarted)
+		{
+			m_preloadStarted = true;
+			std::vector<std::string> paths;
+			std::string all = preload;
+			for (size_t at = 0; at <= all.size();)
+			{
+				const size_t end = std::min(all.find(';', at), all.size());
+				if (end > at) paths.push_back(all.substr(at, end - at));
+				at = end + 1;
+			}
+			if (!std::getenv("BRAWLER_PRELOAD_SKIP")) m_preload = m_runtime->graphics().preload_textures(paths);   // (SKIP: the same without it)
+			LOG_INFO("[Brawler] preloading %zu textures", paths.size());
+		}
+		if (preload && !m_preloadChecked && m_seconds >= env_number("BRAWLER_PRELOAD_AT", 1.0f))
+		{
+			m_preloadChecked = true;
+			const bool wasReady = m_preload && m_preload->ready();
+			const auto startedAt = std::chrono::steady_clock::now();
+			std::string all = preload;
+			for (size_t at = 0; at <= all.size();)
+			{
+				const size_t end = std::min(all.find(';', at), all.size());
+				if (end > at)
+				{
+					auto sprite = std::make_unique<Pakal::SpriteComponent_Bgfx>(&m_runtime->graphics());
+					sprite->set_texture(all.substr(at, end - at));
+					m_preloadSprites.push_back(std::move(sprite));
+				}
+				at = end + 1;
+			}
+			LOG_INFO("[Brawler] preload check: ready %d when asked, %zu sprites took their textures in %.1f ms", wasReady ? 1 : 0,
+				m_preloadSprites.size(), std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - startedAt).count());
+			m_preload.reset();   // (the textures stay: the sprites hold them, and the system keeps the last set)
+		}
 		// BRAWLER_SCREENSHOT=<file>.tga at BRAWLER_SCREENSHOT_AT seconds
 		static const char* shot = std::getenv("BRAWLER_SCREENSHOT");
 		if (shot && !m_shot && m_seconds >= env_number("BRAWLER_SCREENSHOT_AT", 3.0f))
 		{
 			m_shot = true;
 			const std::string path = shot;
-			m_runtime->on_graphics([this, path]() { m_runtime->graphics().request_screenshot(path.c_str()); });
+			m_runtime->graphics().take_screenshot(path);
 		}
+	}
+
+	// Each hit the hero lands: blood and sparks between it and the enemy nearest to it, flying away from the hero
+	void BrawlerLevelState::show_hits()
+	{
+		const Actor* hero = m_game->player();
+		const FighterComponent* fighter = hero ? hero->get<FighterComponent>() : nullptr;
+		const int hits = fighter ? fighter->hits() : 0;
+		if (hits <= m_hitsShown)
+		{
+			m_hitsShown = hits;
+			return;
+		}
+		m_hitsShown = hits;
+		const Pakal::Vec2 from = hero->drawn_position(m_runtime->alpha());
+		const Actor* nearest = nullptr;
+		float best = 1e9f;
+		for (const auto& actor : m_game->actors())
+		{
+			if (actor.get() == hero || !actor->get<FighterComponent>()) continue;
+			const Pakal::Vec2 d = actor->drawn_position(m_runtime->alpha()) - from;
+			const float distance = d.x * d.x + d.y * d.y;
+			if (distance < best) { best = distance; nearest = actor.get(); }
+		}
+		if (!nearest) return;
+		const Pakal::Vec2 away = nearest->drawn_position(m_runtime->alpha()) - from;
+		const Pakal::Vec2 at = from + away * 0.6f;
+		m_runtime->particles().play("Assets/brawler/vfx/blood_hit.json", at, 1.2f, away);
+		m_runtime->particles().play("Assets/brawler/vfx/sparks_hit.json", at, 1.2f, away);
 	}
 
 	// It follows the hero across the arena and stops before its ends: the arena's walls stay at the screen's edges
@@ -221,8 +302,8 @@ namespace Brawler
 		const Actor* hero = m_game->player();
 		static const bool close = std::getenv("BRAWLER_CAM_SCALE") != nullptr;   // close up: on the hero, not the arena
 		static const float scale = env_number("BRAWLER_CAM_SCALE", 1.0f);         // debug: below 1 comes closer
-		const b2Vec2 at = hero ? hero->drawn_position(m_runtime->alpha()) : b2Vec2(0.0f, 0.0f);
-		m_runtime->follow(close ? at : b2Vec2(std::clamp(at.x, -lock, lock), 0.0f), m_game->timeMs, 0.9f, scale);
+		const Pakal::Vec2 at = hero ? hero->drawn_position(m_runtime->alpha()) : Pakal::Vec2(0.0f, 0.0f);
+		m_runtime->follow(close ? at : Pakal::Vec2(std::clamp(at.x, -lock, lock), 0.0f), m_game->timeMs, 0.9f, scale);
 	}
 
 	void BrawlerLevelState::update_hud()

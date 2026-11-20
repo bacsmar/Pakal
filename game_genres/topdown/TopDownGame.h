@@ -18,11 +18,13 @@
 #include "RandomStreams.h"
 #include "topdown/TopDownRules.h"
 
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <map>
+#include <set>
 #include <memory>
 #include <span>
 #include <string>
@@ -64,10 +66,10 @@ namespace Pakal::TopDown
 	// What the player asks for in one step: from the keyboard and mouse, or from a test
 	struct PlayerInput
 	{
-		b2Vec2 move = b2Vec2(0.0f, 0.0f);   // level axes, length up to 1
+		Pakal::Vec2 move = Pakal::Vec2(0.0f, 0.0f);   // level axes, length up to 1
 		bool hasAimPoint = false;            // aim at a point of the floor (the mouse)
-		b2Vec2 aimPoint = b2Vec2(0.0f, 0.0f);
-		b2Vec2 aimDirection = b2Vec2(0.0f, 0.0f); // aim this way (keys); zero for none
+		Pakal::Vec2 aimPoint = Pakal::Vec2(0.0f, 0.0f);
+		Pakal::Vec2 aimDirection = Pakal::Vec2(0.0f, 0.0f); // aim this way (keys); zero for none
 		bool fire = false;
 		// A game's own buttons, one bit each (a brawler's light, heavy, jump: the game names them): down now, and gone down
 		// in this step
@@ -77,8 +79,8 @@ namespace Pakal::TopDown
 
 	struct Bullet
 	{
-		b2Vec2 position;
-		b2Vec2 direction;
+		Pakal::Vec2 position;
+		Pakal::Vec2 direction;
 		float speed;      // meters per second
 		float damage;
 		float secondsLeft;
@@ -123,7 +125,7 @@ namespace Pakal::TopDown
 		// Makes the actor the next player; returns its index
 		size_t add_player(Actor& actor) { m_players.push_back(&actor); return m_players.size() - 1; }
 		// The player nearest to a point, or nullptr; 'living' leaves out the ones down (HealthComponent)
-		Actor* nearest_player(const b2Vec2& at, bool living) const;
+		Actor* nearest_player(const Pakal::Vec2& at, bool living) const;
 		// A player is down: its HealthComponent is dead
 		static bool is_down(const Actor& player);
 		// Who is on whose side: the game names its factions and their relations
@@ -158,15 +160,15 @@ namespace Pakal::TopDown
 		// The bullet fired last bursts where it lands (a grenade launcher's): a game that has blasts gives it this
 		virtual void make_last_bullet_burst(float radius, float damage) { (void)radius; (void)damage; }
 		// A bullet of the shooter's 'faction' (meters, seconds), flying 'height' meters over the floor
-		virtual void fire_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range, float piercing = 1.0f, bool knockback = false, int faction = Factions::None, float height = 1.0f)
+		virtual void fire_bullet(const Pakal::Vec2& from, const Pakal::Vec2& direction, float speed, float damage, float range, float piercing = 1.0f, bool knockback = false, int faction = Factions::None, float height = 1.0f)
 		{ (void)from; (void)direction; (void)speed; (void)damage; (void)range; (void)piercing; (void)knockback; (void)faction; (void)height; }
 		// Damage to what is around 'at' (an explosion), shaking the camera this hard (negative: the rules' explosion)
-		virtual void blast(const b2Vec2& at, float radius, float amount, uintptr_t source, float shake = -1.0f)
+		virtual void blast(const Pakal::Vec2& at, float radius, float amount, uintptr_t source, float shake = -1.0f)
 		{ (void)at; (void)radius; (void)amount; (void)source; (void)shake; }
 		// A pickup on the floor, from the rules by game id
-		virtual void drop_pickup(int pickupId, const b2Vec2& at) { (void)pickupId; (void)at; }
+		virtual void drop_pickup(int pickupId, const Pakal::Vec2& at) { (void)pickupId; (void)at; }
 		// The prop drop rules (PickupSpawn): rolls and drops at most one pickup
-		virtual void roll_drop(bool random, const std::vector<int>& drops, float rate, const b2Vec2& at) { (void)random; (void)drops; (void)rate; (void)at; }
+		virtual void roll_drop(bool random, const std::vector<int>& drops, float rate, const Pakal::Vec2& at) { (void)random; (void)drops; (void)rate; (void)at; }
 
 		// The game's own answers (none by default)
 		// A consumable whose effect is not a stat (an air strike): true if the game ran it
@@ -179,7 +181,41 @@ namespace Pakal::TopDown
 		// What happened, for the rest of the program (TopDownEvents.h and the game's own): the game delivers them at the end
 		// of each step, so a listener (sound, effects, the camera, a test) never runs in the middle of one
 		Pakal::EventBus events;
-		void play(const std::string& sound, const b2Vec2& at) { if (!sound.empty()) events.emit(SoundEvent{ sound, at }); }
+		void play(const std::string& sound, const Pakal::Vec2& at) { if (!sound.empty()) events.emit(SoundEvent{ sound, at }); }
+
+		// A hold (a local hit-stop): for this many fixed steps the actor stands still, its components skipped (its body's
+		// on_held keeps it in place), while the rest of the game goes on. Counted in whole steps, never wall time, so every
+		// machine holds it the same: a hold given in the middle of a step (a blow landing) lets that step finish and takes
+		// the next ones. A held actor counts down only through its components' updates (update_entities: each step it is
+		// skipped counts one). A longer hold replaces a shorter one, never adds to it. The holds are counted down before
+		// each step's entities update (SimWorld::before_entities_update): a game never calls step_holds.
+		void hold(const Actor& actor, int steps)
+		{
+			if (steps <= 0) return;
+			int& left = m_holds[actor.id];
+			left = std::max(left, steps);
+			m_fresh.insert(actor.id);
+		}
+		int held_steps(const Actor& actor) const
+		{
+			auto found = m_holds.find(actor.id);
+			return found == m_holds.end() ? 0 : found->second;
+		}
+		bool held(const Actor& actor) const { return held_steps(actor) > 0; }
+		void step_holds()
+		{
+			for (auto it = m_holds.begin(); it != m_holds.end();)
+			{
+				if (m_skipped.count(it->first) && --it->second <= 0) it = m_holds.erase(it);
+				else ++it;
+			}
+			m_skipped.clear();
+			m_fresh.clear();
+		}
+		// (Component::update: whether to skip this actor now, a hold given in this very step waiting for the next; and that
+		// it was skipped)
+		bool holding_now(const Actor& actor) const { return held(actor) && !m_fresh.count(actor.id); }
+		void note_held(const Actor& actor) { m_skipped.insert(actor.id); }
 
 	protected:
 		// The game applies a hit, already through the target's resistances and defence, to whatever holds its health (an
@@ -189,9 +225,19 @@ namespace Pakal::TopDown
 		// The inputs of a step, one per player in order
 		void take_inputs(std::span<const PlayerInput> inputs) { m_inputs.assign(inputs.begin(), inputs.end()); }
 		// A player that leaves stops being one (a game that overrides this calls it)
-		void entity_removed(Actor& actor) override { std::replace(m_players.begin(), m_players.end(), &actor, static_cast<Actor*>(nullptr)); }
+		// (the holds counted down before each step's entities)
+		void before_entities_update(float dt) override { (void)dt; step_holds(); }
+		void entity_removed(Actor& actor) override
+		{
+			std::replace(m_players.begin(), m_players.end(), &actor, static_cast<Actor*>(nullptr));
+			m_holds.erase(actor.id);
+			m_fresh.erase(actor.id);
+		}
 
 	private:
+		std::map<uintptr_t, int> m_holds;   // the actors held, and their steps left
+		std::set<uintptr_t> m_skipped;      // ... the ones skipped in this step
+		std::set<uintptr_t> m_fresh;        // ... the ones given since the step began (they start with the next)
 		std::vector<Actor*> m_players;
 		std::vector<PlayerInput> m_inputs;
 		const PlayerInput m_noInput;

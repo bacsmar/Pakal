@@ -13,6 +13,8 @@
 #include "Config.h"
 #include <bgfx/bgfx.h>
 #include <assimp/matrix4x4.h>
+#include <assimp/quaternion.h>
+#include <assimp/vector3.h>
 #include <array>
 #include <cmath>
 #include <functional>
@@ -20,6 +22,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -144,6 +147,12 @@ namespace Pakal
 		// onClipMark is called with the clip's index and the mark's name (during update(), on the graphics thread)
 		void add_clip_mark(int index, double seconds, const std::string& name);
 		std::function<void(int clip, const std::string& mark)> onClipMark;
+		// Posed off the graphics thread (BgfxGraphicsSystem's posing on its workers): the marks it passes are held, then
+		// flush_marks reports them on the graphics thread, as ever
+		void defer_marks(bool on) { m_marks.defer(on); }
+		void flush_marks() { m_marks.flush(onClipMark); }
+		// Attached to another model's bone (its place follows that model's pose: posed after it)
+		bool attached() const { return m_attachParent != nullptr; }
 
 		// Keeps the skeleton's root over its bind position: the clips' horizontal travel is dropped
 		// and only the vertical motion stays. For characters whose movement comes from gameplay code.
@@ -358,6 +367,7 @@ namespace Pakal
 			float x, y, z;
 			float nx, ny, nz;
 			float u, v;
+			float tx, ty, tz;   // the tangent, for a metal-rough material's normal map (vs_skin_pbr; vs_skin leaves it)
 			float boneIndex[4]; // palette indices stored as floats: matches vec4 BLENDINDICES in the shader
 			float boneWeight[4];
 
@@ -441,7 +451,24 @@ namespace Pakal
 		bool casts_into_view();
 		void build_palette();
 		void compute_node_transforms(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay = false);
+		void compute_nodes(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay, size_t& index);
+		// What a pose looks up once (each frame it was found again for every node): each node's bind pose, decomposed,
+		// and the channels a channel map has for it, by the nodes' order (depth first from the root)
+		struct NodeBind { aiVector3D pos, scale; aiQuaternion rot; };
+		struct NodeChannels { const aiNodeAnim* pos = nullptr; const aiNodeAnim* rot = nullptr; const aiNodeAnim* scale = nullptr; bool found = false; };
+		std::vector<NodeBind> m_nodeBind;
+		const aiScene* m_nodeBindScene = nullptr;
+		std::unordered_map<const void*, std::vector<NodeChannels>> m_nodeChannels;
+		std::tuple<const void*, size_t, size_t> m_nodeChannelsFor{ nullptr, 0, 0 };
+		const std::vector<NodeChannels>& node_channels(const void* map);
 		void load_clips(const std::string& path);
+		// Clips another file holds (<model>.clips.json: {"from": "<glTF beside it>", "translate": {"<node>": scale}}), for a
+		// model skinned to the same skeleton (bone names): its clips are added after the model's own. With "translate", only
+		// the nodes named keep their position tracks (scaled: a taller body's hips), the others play rotations only (their
+		// bone lengths stay the model's). The channels are copied once per file and spec and shared by every model using them.
+		struct BorrowedClips;
+		std::shared_ptr<const BorrowedClips> m_borrowed;
+		void borrow_clips(const std::string& path);
 
 		BgfxGraphicsSystem* m_graphics_system;
 		bgfx::VertexBufferHandle m_vertexBuffer;
@@ -522,6 +549,7 @@ namespace Pakal
 		bool m_visible = true;
 		struct WatchedNode { std::string name; const aiNode* node; std::array<float, 16> world{}; bool known = false; };
 		MeshComponent3D_Bgfx* m_attachParent = nullptr;
+		MarkReports m_marks;   // the marks update() passes (held while posed on a worker: defer_marks, flush_marks)
 		std::string m_attachNode;
 		std::array<float, 16> m_attachLocal{};
 		std::vector<WatchedNode> m_watched;

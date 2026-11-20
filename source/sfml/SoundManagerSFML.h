@@ -75,6 +75,8 @@ namespace Pakal
 		void stop_music(float fadeSeconds) override;
 		void set_music_volume(float volume) override { m_music.set_volume(volume); }
 		void set_paused(bool paused) override;
+		std::shared_ptr<SoundEffect> load_effect(const std::string& path) override;
+		void play_effect(const std::shared_ptr<SoundEffect>& effect, const SoundSettings& settings) override;
 		~SoundManagerSFML() override;
 
 		void hint_buffer_removed();
@@ -85,7 +87,7 @@ namespace Pakal
 		void play_sfx(SharedPtr<sf::SoundBuffer> buffer, const SoundSettings& settings);
 
 		// Mono sine tone generated in memory (no asset needed). Spatialized when played with a position.
-		SharedPtr<sf::SoundBuffer> create_tone(float frequencyHz, float seconds);
+		std::shared_ptr<SoundEffect> create_tone(float frequencyHz, float seconds) override;
 
 		void set_listener(const tmath::vector3df& position, const tmath::vector3df& forward, const tmath::vector3df& up) override;
 

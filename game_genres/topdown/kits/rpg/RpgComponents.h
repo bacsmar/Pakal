@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -100,7 +101,7 @@ namespace Pakal::TopDown
 		AbilityComponent(std::vector<AbilityRules> abilities, float runSpeed);
 
 		// Starts an ability toward 'direction' (zero: the way it faces); false while one is under way, cooling down, or not paid
-		bool use(const std::string& name, const b2Vec2& direction = b2Vec2(0.0f, 0.0f));
+		bool use(const std::string& name, const Pakal::Vec2& direction = Pakal::Vec2(0.0f, 0.0f));
 		bool busy() const;
 		const AbilityRules* current() const { return m_current >= 0 ? &m_abilities[static_cast<size_t>(m_current)] : nullptr; }
 		// Seconds of cooldown left, and its share of the whole (the interface's clock)
@@ -108,8 +109,8 @@ namespace Pakal::TopDown
 		float cooldown_share(const std::string& name) const;
 		const std::vector<AbilityRules>& abilities() const { return m_abilities; }
 		// Which way it faces: its control's (the player), else the one its brain sets
-		b2Vec2 facing() const;
-		void face(const b2Vec2& direction);
+		Pakal::Vec2 facing() const;
+		void face(const Pakal::Vec2& direction);
 
 		void set_trigger(bool pulled) override { m_trigger = pulled; }
 		float run_speed() const override;
@@ -124,8 +125,8 @@ namespace Pakal::TopDown
 		float m_runSpeed;
 		int m_current = -1;
 		bool m_effectPending = false;
-		b2Vec2 m_direction = b2Vec2(0.0f, 1.0f);
-		b2Vec2 m_facing = b2Vec2(0.0f, 1.0f);
+		Pakal::Vec2 m_direction = Pakal::Vec2(0.0f, 1.0f);
+		Pakal::Vec2 m_facing = Pakal::Vec2(0.0f, 1.0f);
 		bool m_trigger = false;
 		CharacterAction m_view;
 		int m_hurtClips = 0;
@@ -137,16 +138,16 @@ namespace Pakal::TopDown
 	class ProjectileComponent : public Component
 	{
 	public:
-		ProjectileComponent(uintptr_t thrower, int faction, const b2Vec2& direction, float speed, float range, float damage, float radius, int damageType);
+		ProjectileComponent(uintptr_t thrower, int faction, const Pakal::Vec2& direction, float speed, float range, float damage, float radius, int damageType);
 		bool burst() const { return m_burst; }
 		void update(TopDownGame& game, float dt) override;
 
 	private:
-		void explode(TopDownGame& game, const b2Vec2& at);
+		void explode(TopDownGame& game, const Pakal::Vec2& at);
 
 		uintptr_t m_thrower;
 		int m_faction;
-		b2Vec2 m_direction;
+		Pakal::Vec2 m_direction;
 		float m_speed, m_left, m_damage, m_radius;
 		int m_damageType;
 		bool m_burst = false;

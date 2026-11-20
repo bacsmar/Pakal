@@ -17,6 +17,12 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# bx's SIMD code (its headers, and bgfx's examples/common the engine compiles) uses SSE 4.1 intrinsics: GCC and Clang
+# refuse them without the target, as bx's own build does (-msse4.2). MSVC needs no switch; Android is ARM.
+if(NOT MSVC AND NOT ANDROID AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64")
+    add_compile_options(-msse4.2)
+endif()
+
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -34,7 +40,26 @@ endif()
 # The engine's core alone (no backends, the dummy systems), built with every build so that the core stays apart from
 # them; PAKAL_BUILD_CORE_ONLY builds it and nothing else (no bgfx, SFML, Box2D, Assimp or RmlUi needed)
 option(PAKAL_BUILD_CORE_ONLY "Build only the engine's core (PakalCore and CoreTests)" OFF)
+# Files reloaded while the game runs (.rml, .rcss, texts, data: docs/UI_RELOAD.md): on in the desktop's builds; OFF for a
+# build that goes to players (Android has it only with build_apk.py --tools)
+option(PAKAL_FILE_RELOAD "Reload UI and data files while the game runs (dev builds)" ON)
+if(NOT PAKAL_FILE_RELOAD)
+    add_compile_definitions(PAKAL_NO_FILE_RELOAD)
+endif()
 include(${CMAKE_SOURCE_DIR}/cmake/PakalCore.cmake)
+
+# Games and genres never see the backends: every build checks that no game or genre includes a backend header beyond
+# the files still waiting to move to the abstractions (cmake/backend_includes_pending.txt, a list that only shrinks)
+set(PAKAL_CHECK_BACKEND_INCLUDES ${CMAKE_COMMAND} -DPAKAL_ROOT=${CMAKE_SOURCE_DIR} -P ${CMAKE_SOURCE_DIR}/cmake/CheckBackendIncludes.cmake)
+add_custom_target(CheckBackendIncludes ALL COMMAND ${PAKAL_CHECK_BACKEND_INCLUDES} VERBATIM)
+add_test(NAME BackendIncludes COMMAND ${PAKAL_CHECK_BACKEND_INCLUDES})
+# The C-DAT scan (tools/cdat_scan.py: UI built or styled in a game's code, docs/UI_RELOAD.md), its own tests
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+    add_test(NAME CdatScanTests COMMAND ${Python3_EXECUTABLE} -m unittest tests/test_cdat_scan.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
+# how a game builds on the engine: the engine's libraries by name (Pakal::TopDownView...) and pakal_add_game_module()
+include(${CMAKE_SOURCE_DIR}/cmake/PakalGameModule.cmake)
 if(PAKAL_BUILD_CORE_ONLY)
     return()
 endif()
@@ -79,14 +104,16 @@ list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/scripting/.*")
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/net/.*")
 # pugixml is compiled once, through the unity unit source/CompileUnit_1.cpp
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/persist/pugixml/pugixml\\.cpp$")
+# the core alone's default systems (the dummies) are PakalCore's; this engine's are in source/runtime
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/core_only/.*")
 
 # Platform-specific source files
 if(UNIX AND NOT APPLE)
-    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp)
+    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/unix/HttpPostImpl.cpp)
 elseif(APPLE)
-    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp)
+    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/unix/HttpPostImpl.cpp)
 elseif(WIN32)
-    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/win32/ClockImpl.cpp)
+    list(APPEND PAKAL_SOURCES ${CMAKE_SOURCE_DIR}/source/win32/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/win32/HttpPostImpl.cpp)
 endif()
 
 # Create the main library.
@@ -101,6 +128,16 @@ elseif(UNIX AND NOT APPLE)
 else()
     add_library(Pakal STATIC ${PAKAL_SOURCES})
 endif()
+# the check runs with any build of something on the engine (a game module alone too), not only a full build
+add_dependencies(Pakal CheckBackendIncludes)
+# build.json beside the programs at every build: the copy's commit and channel, which the engine logs and draws as its label
+# (docs/BUILD_IDENTITY.md)
+add_custom_target(PakalBuildIdentity
+    COMMAND ${CMAKE_COMMAND} -DROOT=${CMAKE_SOURCE_DIR} -DOUT=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build.json
+        -P ${CMAKE_SOURCE_DIR}/cmake/WriteBuildIdentity.cmake
+    BYPRODUCTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build.json
+    COMMENT "build.json (the build's identity)" VERBATIM)
+add_dependencies(Pakal PakalBuildIdentity)
 # The genres (game_genres/: TopDown) live outside the engine's source/; what is built after the engine finds them as
 # "topdown/..."
 include_directories(${CMAKE_SOURCE_DIR}/game_genres)
@@ -126,8 +163,20 @@ target_include_directories(Pakal PUBLIC ${CMAKE_SOURCE_DIR}/external/bgfx/3rdpar
 file(GLOB PAKAL_MESHOPT_SOURCES ${CMAKE_SOURCE_DIR}/external/bgfx/3rdparty/meshoptimizer/src/*.cpp)
 target_sources(Pakal PRIVATE ${PAKAL_MESHOPT_SOURCES})
 target_include_directories(Pakal PRIVATE ${CMAKE_SOURCE_DIR}/external/bgfx/3rdparty/meshoptimizer/src)
-# miniz (bundled with bimg, compiled into bimg_decode): ResourceManager's zip source (source/bgfx/ZipSourceMiniz.cpp)
+# miniz for ResourceManager's zip source (source/bgfx/ZipSourceMiniz.cpp), with bimg's header. bimg_decode no longer
+# carries it (built without EXR: that miniz clashed with Assimp's). Where vcpkg's Assimp brings kubazip, which has miniz
+# inside, its functions are used (as on Android); with a system Assimp (Linux), bimg's miniz.c is compiled in
+find_package(kubazip CONFIG QUIET)
+if(TARGET kubazip::kubazip)
+    set(PAKAL_MINIZ_LIBS kubazip::kubazip)
+    set(PAKAL_MINIZ_SOURCES "")
+else()
+    set(PAKAL_MINIZ_LIBS "")
+    set(PAKAL_MINIZ_SOURCES ${CMAKE_SOURCE_DIR}/external/bimg/3rdparty/tinyexr/deps/miniz/miniz.c)
+endif()
 target_include_directories(Pakal PRIVATE ${CMAKE_SOURCE_DIR}/external/bimg/3rdparty/tinyexr/deps/miniz)
+target_sources(Pakal PRIVATE ${PAKAL_MINIZ_SOURCES})
+target_link_libraries(Pakal PRIVATE ${PAKAL_MINIZ_LIBS})
 
 # Set include paths for the library
 target_include_directories(Pakal PUBLIC
@@ -169,11 +218,11 @@ if(WIN32)
     set(SFML_STATIC_LIBRARIES TRUE)
     find_package(SFML 2.6 COMPONENTS system window audio REQUIRED)
     target_link_libraries(Pakal PRIVATE sfml-system sfml-window sfml-audio)
-    # SoundManagerSFML.h exposes sf:: types: headers are PUBLIC, the libraries stay PRIVATE.
-    # SFML is static here, so consumers must not expect dllimport.
+    # PRIVATE: only the engine's desktop backend (source/sfml, included by source/runtime/EngineBackends.cpp) sees SFML;
+    # games reach sound, input and the window through the abstractions (docs/adr ADR-0017, ADR-0018 step 0).
     get_target_property(PAKAL_SFML_INCLUDES sfml-audio INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(Pakal PUBLIC ${PAKAL_SFML_INCLUDES})
-    target_compile_definitions(Pakal PUBLIC SFML_STATIC)
+    target_include_directories(Pakal PRIVATE ${PAKAL_SFML_INCLUDES})
+    target_compile_definitions(Pakal PRIVATE SFML_STATIC)
     # OpenAL (static, from vcpkg) needs fmt and the MMCSS audio thread API
     find_package(fmt CONFIG REQUIRED)
     target_link_libraries(Pakal PRIVATE fmt::fmt avrt)
@@ -279,6 +328,7 @@ if(WIN32 OR (UNIX AND NOT APPLE))
 
         pakal_compile_shader(vs_mesh vertex varying_mesh.def.sc)
         pakal_compile_shader(vs_skin vertex varying_skin.def.sc)
+        pakal_compile_shader(vs_skin_pbr vertex varying_skin_pbr.def.sc)
         pakal_compile_shader(vs_pbr vertex varying_pbr.def.sc)
         pakal_compile_shader(fs_pbr fragment varying_pbr.def.sc)
         pakal_compile_shader(fs_mesh fragment varying_mesh.def.sc)
@@ -333,20 +383,20 @@ endif()
 find_package(RmlUi CONFIG REQUIRED)
 target_link_libraries(Pakal PRIVATE RmlUi::RmlUi)
 
-# Box2D physics library (optional). Its headers are part of the public API (Box2DQueries.h,
-# CharacterController2D.h), so the include paths are PUBLIC; the library stays PRIVATE.
+# Box2D physics library. PRIVATE: no public header of the 2D physics names it (docs/adr ADR-0017,
+# phase C), only the engine's .cpp files (source/box2D/Box2DInternal.h).
 if(WIN32)
     find_package(box2d CONFIG REQUIRED)
     target_link_libraries(Pakal PRIVATE box2d::box2d)
     get_target_property(PAKAL_BOX2D_INCLUDES box2d::box2d INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(Pakal PUBLIC ${PAKAL_BOX2D_INCLUDES})
+    target_include_directories(Pakal PRIVATE ${PAKAL_BOX2D_INCLUDES})
     set(BOX2D_FOUND TRUE)
     message(STATUS "✓ Box2D found via vcpkg")
 else()
     pkg_check_modules(BOX2D box2d)
     if(BOX2D_FOUND)
         message(STATUS "✓ Box2D found via pkg-config")
-        target_include_directories(Pakal PUBLIC ${BOX2D_INCLUDE_DIRS})
+        target_include_directories(Pakal PRIVATE ${BOX2D_INCLUDE_DIRS})
         target_link_directories(Pakal PRIVATE ${BOX2D_LIBRARY_DIRS})
         target_link_libraries(Pakal PRIVATE ${BOX2D_LIBRARIES})
     else()
@@ -432,6 +482,12 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
+# The engine's own logo, which SplashState shows when a game names none (docs/SPLASH.md), next to every build
+add_custom_command(TARGET Pakal POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/assets/engine/pakal_splash.png
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/pakal/splash.png
+    VERBATIM)
+
 if(EXISTS ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
     add_executable(PakalFeatureLab ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
     target_link_libraries(PakalFeatureLab Pakal)
@@ -439,9 +495,9 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
 endif()
 
 # Build generic runtime host for game modules
-if(EXISTS ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
+if(EXISTS ${CMAKE_SOURCE_DIR}/apps/player/PakalPlayerMain.cpp)
     add_executable(PakalPlayer
-        ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp
+        ${CMAKE_SOURCE_DIR}/apps/player/PakalPlayerMain.cpp
         ${CMAKE_SOURCE_DIR}/source/resources/SceneLoader.cpp
     )
     target_link_libraries(PakalPlayer Pakal)
@@ -450,6 +506,22 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/source/PakalPlayerMain.cpp)
         target_link_options(PakalPlayer PRIVATE -Wl,-E)
     endif()
     set_target_properties(PakalPlayer PROPERTIES ENABLE_EXPORTS ON)
+    # The same player without a console window, for a game handed out (renamed to the game, beside its pakal_module.txt):
+    # a Windows program (no console) that still starts at main
+    if(WIN32)
+        add_executable(PakalPlayerWindowed WIN32
+            ${CMAKE_SOURCE_DIR}/apps/player/PakalPlayerMain.cpp
+            ${CMAKE_SOURCE_DIR}/source/resources/SceneLoader.cpp
+        )
+        target_link_libraries(PakalPlayerWindowed Pakal)
+        target_include_directories(PakalPlayerWindowed PRIVATE ${CMAKE_SOURCE_DIR}/source)
+        set_target_properties(PakalPlayerWindowed PROPERTIES ENABLE_EXPORTS ON)
+        if(MSVC)
+            target_link_options(PakalPlayerWindowed PRIVATE /ENTRY:mainCRTStartup)
+        else()
+            target_link_options(PakalPlayerWindowed PRIVATE -mwindows)
+        endif()
+    endif()
 endif()
 
 # Mesh viewer: one static 3D model, directional light and sky (needs bgfx + Assimp)
@@ -457,7 +529,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     add_executable(PakalMeshViewer ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     target_link_libraries(PakalMeshViewer Pakal)
     target_include_directories(PakalMeshViewer PRIVATE ${CMAKE_SOURCE_DIR}/source)
-    if(TARGET PakalShaders)
+    if(TARGET PakalShaders)   # not there without shaderc: configure goes on, the viewer then has no shaders built
         add_dependencies(PakalMeshViewer PakalShaders)
     endif()
 endif()
@@ -493,6 +565,10 @@ if(WIN32)
     add_executable(LevelReachabilityTests ${CMAKE_SOURCE_DIR}/tests/LevelReachabilityTests.cpp)
     target_link_libraries(LevelReachabilityTests Pakal nlohmann_json::nlohmann_json)
     # It needs a converted level (not in the repository): a game that has one adds the test with it
+    # font-effect: outline made fast (source/bgfx/FontOutline.h) against RmlUi's own way
+    add_executable(FontOutlineTests ${CMAKE_SOURCE_DIR}/tests/FontOutlineTests.cpp)
+    target_include_directories(FontOutlineTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    add_test(NAME FontOutlineTests COMMAND FontOutlineTests)
     add_executable(ActorOrientationTests ${CMAKE_SOURCE_DIR}/tests/ActorOrientationTests.cpp)
     target_link_libraries(ActorOrientationTests PRIVATE ${BGFX_BUILD_DIR}/bxRelease.lib)
     target_compile_options(ActorOrientationTests PRIVATE /Zc:preprocessor /Zc:__cplusplus)
@@ -538,40 +614,33 @@ file(GLOB PAKAL_TOPDOWN_NET_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_g
 add_library(PakalTopDownNet STATIC ${PAKAL_TOPDOWN_NET_SOURCES})
 target_link_libraries(PakalTopDownNet PUBLIC PakalTopDown PakalNet)
 
+# A genre a checkout carries of its own (game_genres/platformer, namespace Pakal::Platformer), built when it is there
+file(GLOB PAKAL_PLATFORMER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/platformer/*.cpp)
+if(PAKAL_PLATFORMER_SOURCES)
+    add_library(PakalPlatformer STATIC ${PAKAL_PLATFORMER_SOURCES})
+    target_link_libraries(PakalPlatformer PUBLIC Pakal nlohmann_json::nlohmann_json)
+    target_include_directories(PakalPlatformer PUBLIC ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/game_genres)
+endif()
+
 # Zombies game module: runs a converted level inside PakalPlayer (PakalPlayer ZombiesModule.dll)
 if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesModule.cpp)
-    add_library(ZombiesModule SHARED
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesModule.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesLevelState.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/AutoplayBot.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/WorldOverlays.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesDevPanel.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesHud.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesScripting.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesLoading.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/LevelLook.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/CharacterViewer.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombieScript.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesGame.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/Components.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/GameRules.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/Meta.cpp
-        ${CMAKE_SOURCE_DIR}/examples/zombies_module/MenuState.cpp
-    )
+    set(ZOMBIES_DIR ${CMAKE_SOURCE_DIR}/examples/zombies_module)
+    # The game's interface (documents, style sheets, fonts) goes to Assets/ui next to the player, the campaign to Assets/game
+    pakal_add_game_module(ZombiesModule
+        SOURCES ${ZOMBIES_DIR}/ZombiesModule.cpp ${ZOMBIES_DIR}/ZombiesLevelState.cpp ${ZOMBIES_DIR}/AutoplayBot.cpp
+            ${ZOMBIES_DIR}/WorldOverlays.cpp ${ZOMBIES_DIR}/ZombiesDevPanel.cpp ${ZOMBIES_DIR}/ZombiesHud.cpp
+            ${ZOMBIES_DIR}/ZombiesScripting.cpp ${ZOMBIES_DIR}/ZombiesLoading.cpp ${ZOMBIES_DIR}/LevelLook.cpp
+            ${ZOMBIES_DIR}/CharacterViewer.cpp ${ZOMBIES_DIR}/ZombieScript.cpp ${ZOMBIES_DIR}/ZombiesGame.cpp
+            ${ZOMBIES_DIR}/Components.cpp ${ZOMBIES_DIR}/GameRules.cpp ${ZOMBIES_DIR}/Meta.cpp ${ZOMBIES_DIR}/MenuState.cpp
+        LINKS Pakal::TopDownView Pakal::TopDownEditor Pakal::Scripting Pakal::LevelDoc nlohmann_json::nlohmann_json
+        INCLUDES ${ZOMBIES_DIR}
+        DATA ${ZOMBIES_DIR}/ui ui ${ZOMBIES_DIR}/game game
+        DATA_TARGET ZombiesUI)
     # Lua runs the level scripts: the engine's ScriptHost (source/scripting) is the only part that links it
     find_package(unofficial-lua CONFIG REQUIRED)
     add_library(PakalScripting STATIC ${CMAKE_SOURCE_DIR}/source/scripting/ScriptHost.cpp)
     target_link_libraries(PakalScripting PUBLIC Pakal unofficial::lua::lua)
     target_include_directories(PakalScripting PUBLIC ${CMAKE_SOURCE_DIR}/source)
-    target_link_libraries(ZombiesModule PakalTopDownView PakalTopDownEditor PakalScripting PakalLevelDoc nlohmann_json::nlohmann_json)
-    target_include_directories(ZombiesModule PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/zombies_module)
-    # The game's interface (documents, style sheets, fonts) goes to Assets/ui next to the player, the campaign to Assets/game
-    file(GLOB_RECURSE ZOMBIES_UI_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ui/* ${CMAKE_SOURCE_DIR}/examples/zombies_module/game/*)
-    add_custom_target(ZombiesUI ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/examples/zombies_module/ui ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/ui
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/examples/zombies_module/game ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/game
-        DEPENDS ${ZOMBIES_UI_FILES})
-    add_dependencies(ZombiesModule ZombiesUI)
     # The simulation without window or level (weapon cycles, enemy timing): checked against the original's numbers
     add_executable(ZombiesGameTests tests/ZombiesGameTests.cpp
         examples/zombies_module/ZombiesGame.cpp examples/zombies_module/Components.cpp
@@ -608,18 +677,14 @@ endif()
 # Brawler prototype: a second game on TopDown (one arena, hand to hand), to try the module. Its simulation is tested
 # without a window; the module runs in PakalPlayer (PakalPlayer BrawlerModule.dll) with the Zombies example's models.
 if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/brawler_proto/BrawlerGame.cpp)
-    add_library(BrawlerModule SHARED
-        ${CMAKE_SOURCE_DIR}/examples/brawler_proto/BrawlerModule.cpp
-        ${CMAKE_SOURCE_DIR}/examples/brawler_proto/BrawlerLevelState.cpp
-        ${CMAKE_SOURCE_DIR}/examples/brawler_proto/BrawlerGame.cpp)
-    target_link_libraries(BrawlerModule PakalTopDownView nlohmann_json::nlohmann_json)
-    target_include_directories(BrawlerModule PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/brawler_proto)
     # its rules go next to the player, in Assets/brawler
-    file(GLOB_RECURSE BRAWLER_DATA_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/examples/brawler_proto/data/*)
-    add_custom_target(BrawlerData ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/examples/brawler_proto/data ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/brawler
-        DEPENDS ${BRAWLER_DATA_FILES})
-    add_dependencies(BrawlerModule BrawlerData)
+    set(BRAWLER_DIR ${CMAKE_SOURCE_DIR}/examples/brawler_proto)
+    pakal_add_game_module(BrawlerModule
+        SOURCES ${BRAWLER_DIR}/BrawlerModule.cpp ${BRAWLER_DIR}/BrawlerLevelState.cpp ${BRAWLER_DIR}/BrawlerGame.cpp
+        LINKS Pakal::TopDownView nlohmann_json::nlohmann_json
+        INCLUDES ${BRAWLER_DIR}
+        DATA ${BRAWLER_DIR}/data brawler
+        DATA_TARGET BrawlerData)
     add_executable(BrawlerTests tests/BrawlerTests.cpp examples/brawler_proto/BrawlerGame.cpp)
     target_link_libraries(BrawlerTests PakalTopDown nlohmann_json::nlohmann_json)
     target_include_directories(BrawlerTests PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/brawler_proto)
@@ -630,14 +695,13 @@ endif()
 # simulation is tested without a window; the module runs in PakalPlayer (PakalPlayer DungeonModule.dll). The dungeon's
 # pieces come from the local Medieval Village pack (not in Git), copied next to the player when it is there.
 if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonGame.cpp)
-    add_library(DungeonModule SHARED
-        ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonModule.cpp
-        ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonLevelState.cpp
-        ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonMenuState.cpp
-        ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonGame.cpp
-        ${CMAKE_SOURCE_DIR}/examples/dungeon_proto/DungeonNet.cpp)
-    target_link_libraries(DungeonModule PakalTopDownView PakalTopDownNet nlohmann_json::nlohmann_json)
-    target_include_directories(DungeonModule PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/examples/dungeon_proto)
+    # (its data is copied by DungeonData below: the pieces of a local pack go with it)
+    set(DUNGEON_DIR ${CMAKE_SOURCE_DIR}/examples/dungeon_proto)
+    pakal_add_game_module(DungeonModule
+        SOURCES ${DUNGEON_DIR}/DungeonModule.cpp ${DUNGEON_DIR}/DungeonLevelState.cpp ${DUNGEON_DIR}/DungeonMenuState.cpp
+            ${DUNGEON_DIR}/DungeonGame.cpp ${DUNGEON_DIR}/DungeonNet.cpp
+        LINKS Pakal::TopDownView Pakal::TopDownNet nlohmann_json::nlohmann_json
+        INCLUDES ${DUNGEON_DIR})
     set(DUNGEON_PIECES_SOURCE ${CMAKE_SOURCE_DIR}/examples/zombies_module/assets/source/medieval-village/glTF)
     set(DUNGEON_PIECES Floor_UnevenBrick Wall_UnevenBrick_Straight Prop_Crate Prop_Brick1 Prop_Brick2 Prop_Support)
     set(DUNGEON_TEXTURES T_UnevenBrick_BaseColor T_UnevenBrick_Normal T_UnevenBrick_Roughness T_WoodTrim_BaseColor
@@ -749,6 +813,8 @@ endif()
 # The simulation's core pieces (header-only, no engine startup)
 add_executable(SimulationClockTests ${CMAKE_SOURCE_DIR}/tests/SimulationClockTests.cpp)
 target_include_directories(SimulationClockTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+# (the clock follows the engine's time scale, TimeScale.cpp)
+target_link_libraries(SimulationClockTests PRIVATE PakalCore)
 add_test(NAME SimulationClockTests COMMAND SimulationClockTests)
 add_executable(RandomStreamsTests ${CMAKE_SOURCE_DIR}/tests/RandomStreamsTests.cpp)
 target_include_directories(RandomStreamsTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
@@ -763,6 +829,11 @@ add_test(NAME SimWorldTests COMMAND SimWorldTests)
 add_executable(AssetCacheTests ${CMAKE_SOURCE_DIR}/tests/AssetCacheTests.cpp)
 target_include_directories(AssetCacheTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
 add_test(NAME AssetCacheTests COMMAND AssetCacheTests)
+# a sealed pack read by its names, also under the resource manager's root (ZipSourceMiniz is built in, not exported)
+add_executable(ZipSourceTests ${CMAKE_SOURCE_DIR}/tests/ZipSourceTests.cpp ${CMAKE_SOURCE_DIR}/source/bgfx/ZipSourceMiniz.cpp ${PAKAL_MINIZ_SOURCES})
+target_include_directories(ZipSourceTests PRIVATE ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/external/bimg/3rdparty/tinyexr/deps/miniz)
+target_link_libraries(ZipSourceTests Pakal ${BGFX_LIBS} ${BGFX_SYSTEM_LIBS} ${PAKAL_MINIZ_LIBS})
+add_test(NAME ZipSourceTests COMMAND ZipSourceTests)
 add_executable(EventBusTests ${CMAKE_SOURCE_DIR}/tests/EventBusTests.cpp)
 target_include_directories(EventBusTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
 add_test(NAME EventBusTests COMMAND EventBusTests)
@@ -772,6 +843,12 @@ add_test(NAME ActionTests COMMAND ActionTests)
 add_executable(AnimationMarksTests ${CMAKE_SOURCE_DIR}/tests/AnimationMarksTests.cpp)
 target_include_directories(AnimationMarksTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
 add_test(NAME AnimationMarksTests COMMAND AnimationMarksTests)
+# a frame's posing shared among threads (WorkShare) and the marks held while posed on them (MarkReports)
+add_executable(PoseSharingTests ${CMAKE_SOURCE_DIR}/tests/PoseSharingTests.cpp)
+target_include_directories(PoseSharingTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+find_package(Threads REQUIRED)
+target_link_libraries(PoseSharingTests Threads::Threads)
+add_test(NAME PoseSharingTests COMMAND PoseSharingTests)
 add_executable(RpgKitTests ${CMAKE_SOURCE_DIR}/tests/RpgKitTests.cpp)
 target_link_libraries(RpgKitTests PakalTopDown)
 add_test(NAME RpgKitTests COMMAND RpgKitTests)
@@ -782,10 +859,23 @@ add_test(NAME ComponentSchemaTests COMMAND ComponentSchemaTests)
 add_executable(McpServerTests ${CMAKE_SOURCE_DIR}/tests/McpServerTests.cpp)
 target_link_libraries(McpServerTests Pakal)
 add_test(NAME McpServerTests COMMAND McpServerTests)
+# The QA hooks (source/mcp/QaTools: input, state, log, time scale, quit) on a headless engine: the core with its dummy
+# systems, the MCP server compiled in beside them
+add_executable(QaToolsTests ${CMAKE_SOURCE_DIR}/tests/QaToolsTests.cpp ${CMAKE_SOURCE_DIR}/source/mcp/QaTools.cpp
+    ${CMAKE_SOURCE_DIR}/source/mcp/McpServer.cpp ${CMAKE_SOURCE_DIR}/source/mcp/McpClient.cpp)
+target_link_libraries(QaToolsTests PRIVATE PakalCore nlohmann_json::nlohmann_json)
+if(WIN32)
+    target_link_libraries(QaToolsTests PRIVATE ws2_32)
+endif()
+add_test(NAME QaToolsTests COMMAND QaToolsTests)
 
 # Games kept outside the engine's examples (a folder only some checkouts have)
 if(TARGET PakalScripting AND EXISTS ${CMAKE_SOURCE_DIR}/games/CMakeLists.txt)
     add_subdirectory(${CMAKE_SOURCE_DIR}/games)
+add_executable(SpriteAtlasTests ${CMAKE_SOURCE_DIR}/tests/SpriteAtlasTests.cpp)
+target_link_libraries(SpriteAtlasTests Pakal)
+target_include_directories(SpriteAtlasTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+add_test(NAME SpriteAtlasTests COMMAND SpriteAtlasTests)
 endif()
 
 # Print configuration summary
@@ -801,3 +891,9 @@ message(STATUS "================================================")
 add_executable(FrameTimingTests tests/FrameTimingTests.cpp)
 target_include_directories(FrameTimingTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
 add_test(NAME FrameTimingTests COMMAND FrameTimingTests)
+
+# Games that stay on this machine (cmake/LocalGames.cmake is not in the repository): their targets, if the file is there
+include(${CMAKE_SOURCE_DIR}/cmake/LocalGames.cmake OPTIONAL)
+
+# every library is defined: their names for the games (Pakal::TopDownView...; cmake/PakalGameModule.cmake)
+pakal_name_targets()

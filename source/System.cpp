@@ -1,4 +1,5 @@
 #include "System.h"
+#include "Profiler.h"
 #include "Clock.h"
 
 #include "EventScheduler.h"
@@ -35,6 +36,7 @@ namespace Pakal
 			}
 			else
 			{
+				PAKAL_PROFILE_SCOPE(loop_section(m_tasks_section, "tasks"));   // the work other threads queued for this one (graphics: loads, uploads)
 				m_dispatcher.dispatch_all_tasks();
 			}
 
@@ -56,7 +58,10 @@ namespace Pakal
 	{
 		ASSERT(m_threaded == false && m_state != SystemState::Terminated && m_state != SystemState::Created);
 
-		m_dispatcher.dispatch_all_tasks();
+		{
+			PAKAL_PROFILE_SCOPE(loop_section(m_tasks_section, "tasks"));
+			m_dispatcher.dispatch_all_tasks();
+		}
 		if (m_state == SystemState::Running)
 		{
 			on_update(dtMilliSeconds);
@@ -69,6 +74,12 @@ namespace Pakal
 	// and, with whole milliseconds and Windows' 15.6 ms timer, overslept: 60 FPS with vsync landed on ~33). Sleeps until
 	// a millisecond before the deadline and yields the rest; a frame that ran late starts a new cadence instead of
 	// rushing the next ones.
+	const char* System::loop_section(std::string& cache, const char* part)
+	{
+		if (cache.empty()) cache = std::string(get_system_name()) + "." + part;
+		return cache.c_str();
+	}
+
 	void System::limit_fps()
 	{
 		using clock = std::chrono::steady_clock;
@@ -78,6 +89,8 @@ namespace Pakal
 		static const bool fine_timer = timeBeginPeriod(1) == TIMERR_NOERROR;   // the 1 ms scheduler tick, for the whole process
 		(void)fine_timer;
 #endif
+		// (the time it sleeps to keep its rate; where vsync also paces the frame, a sleep that overshoots shows here)
+		PAKAL_PROFILE_SCOPE(loop_section(m_wait_section, "wait"));
 		const auto now = clock::now();
 		m_next_frame += m_frame_period;
 		if (m_next_frame < now - m_frame_period || m_next_frame > now + 2 * m_frame_period)

@@ -11,7 +11,9 @@
 
 #include <android/asset_manager.h>
 
+#include <mutex>
 #include <sstream>
+#include <vector>
 #include <string>
 #include <unordered_set>
 
@@ -71,6 +73,31 @@ namespace Pakal
 			return stream;
 		}
 
+		// An asset kept uncompressed in the APK is mapped (AAsset_getBuffer), not read: a pack of the game's data is seen in place.
+		// The asset stays open while the source lives
+		bool map_resource(const Path& pathToResource, const void*& data, size_t& size) override
+		{
+			const std::string path = in_package(pathToResource.c_str());
+			if (path.empty() || (!m_index.empty() && !m_index.count(path))) return false;
+			AAsset* asset = AAssetManager_open(m_assets, path.c_str(), AASSET_MODE_BUFFER);
+			if (!asset) return false;
+			data = AAsset_getBuffer(asset);
+			size = static_cast<size_t>(AAsset_getLength(asset));
+			if (!data)
+			{
+				AAsset_close(asset);
+				return false;
+			}
+			std::lock_guard<std::mutex> lock(m_mapped_mutex);
+			m_mapped.push_back(asset);
+			return true;
+		}
+
+		~AndroidAssetSource() override
+		{
+			for (AAsset* asset : m_mapped) AAsset_close(asset);
+		}
+
 	private:
 		// The path inside the package: what follows the root, without "./"; empty when it is outside it (another absolute path)
 		std::string in_package(std::string path) const
@@ -83,5 +110,7 @@ namespace Pakal
 		AAssetManager* m_assets = nullptr;
 		std::string m_root;
 		std::unordered_set<std::string> m_index;   // the package's files (assets.list); empty: ask the asset manager
+		std::vector<AAsset*> m_mapped;   // the assets seen in place (map_resource), closed with the source
+		std::mutex m_mapped_mutex;
 	};
 }

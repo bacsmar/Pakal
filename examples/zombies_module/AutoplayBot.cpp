@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Zombies
 {
@@ -27,12 +28,12 @@ namespace Zombies
 		{
 			return input;
 		}
-		const b2Vec2 at = player->position;
-		auto sees = [&game, &at](const b2Vec2& to) { return !game.world().raycast(at, to, game.layers.wall).hit; };
-		auto route_to = [&game, &at](const b2Vec2& goal)
+		const Pakal::Vec2 at = player->position;
+		auto sees = [&game, &at](const Pakal::Vec2& to) { return !game.world().raycast(at, to, game.layers.wall).hit; };
+		auto route_to = [&game, &at](const Pakal::Vec2& goal)
 		{
-			std::vector<b2Vec2> route;
-			b2Vec2 next = goal;
+			std::vector<Pakal::Vec2> route;
+			Pakal::Vec2 next = goal;
 			if (game.nav().find_path(at, goal, route))
 			{
 				for (const auto& waypoint : route)
@@ -40,7 +41,7 @@ namespace Zombies
 					if ((waypoint - at).Length() > 0.4f) { next = waypoint; break; }
 				}
 			}
-			b2Vec2 direction = next - at;
+			Pakal::Vec2 direction = next - at;
 			direction.Normalize();
 			return direction;
 		};
@@ -65,11 +66,11 @@ namespace Zombies
 		if (nearest && nearestDistance < 4.0f)
 		{
 			// Back away, turning if a wall is behind
-			b2Vec2 away = at - nearest->position;
+			Pakal::Vec2 away = at - nearest->position;
 			away.Normalize();
 			for (float turn : { 0.0f, 0.8f, -0.8f, 1.6f, -1.6f, 2.4f, -2.4f })
 			{
-				const b2Vec2 dir(away.x * std::cos(turn) - away.y * std::sin(turn), away.x * std::sin(turn) + away.y * std::cos(turn));
+				const Pakal::Vec2 dir(away.x * std::cos(turn) - away.y * std::sin(turn), away.x * std::sin(turn) + away.y * std::cos(turn));
 				if (!game.world().raycast(at, at + 1.2f * dir, game.layers.wall | game.layers.playerWall).hit)
 				{
 					input.move = dir;

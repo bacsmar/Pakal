@@ -1,4 +1,7 @@
 #pragma once
+#include <atomic>
+#include "BuildIdentity.h"
+#include <thread>
 #include "Config.h"
 #include "System.h"
 
@@ -62,6 +65,13 @@ namespace Pakal
 		inline ResourceManager*		resource_manager() const { return &ResourceManager::instance(); }
 		inline IUIManager*			get_ui_manager() const { return m_graphics_system->get_ui_interface(); }		
 
+		// Which copy this is (Assets/build.json, or build.json beside a desktop build): logged as the run's first line
+		inline const BuildIdentity& build_identity() const { return m_build; }
+		// The build's label, drawn by the engine outside production (C-ID-7): in the corner of the game's version text
+		// (bottom left unless the game moves it). A promoted production bundle hides it (BuildIdentity::label_flag_url)
+		void set_build_label_corner(BuildLabelCorner corner);
+		bool build_label_shown() const;
+
 		const char* get_system_name() override { return nameof(Engine); };
 
 		inline void add_system(ISystem* system)
@@ -88,18 +98,31 @@ namespace Pakal
 		static void init_timer_system();	// timer.cpp
 		static void stop_timer_system();	// timer.cpp
 
-		IPakalApplication*  m_application;
+		void show_build_label();
+		BuildIdentity		m_build;
+		BuildLabelCorner	m_build_label_corner = BuildLabelCorner::BottomLeft;
+		std::atomic<int>	m_build_label_state{ 0 };   // 0: shown, 1: waiting for the label flag, 2: hidden by it
+		std::thread			m_label_flag_thread;
 
-		GraphicsSystem*		m_graphics_system;
-		PhysicsSystem*		m_physics_system;
+		IPakalApplication*  m_application = nullptr;
 
-		GameStateManager*	m_game_state_manager;
-		ComponentManager*	m_component_manager;
-		EntityManager*		m_entity_manager;
-		SoundManager*		m_sound_manager;
+		GraphicsSystem*		m_graphics_system = nullptr;
+		PhysicsSystem*		m_physics_system = nullptr;
+
+		GameStateManager*	m_game_state_manager = nullptr;
+		ComponentManager*	m_component_manager = nullptr;
+		EntityManager*		m_entity_manager = nullptr;
+		SoundManager*		m_sound_manager = nullptr;
 
 		std::vector<ISystem*> m_systems;
 
-		EventId m_listener_terminate;
+		EventId m_listener_terminate = 0;
+		EventId m_listener_focus = 0;   // the sound is held while no window of the app has the focus
+		// The sound plays only while the app has the focus AND the engine is not paused. Each of the two used to set the pause
+		// alone, the last one winning: a phone that gave the focus back behind its lock screen (a Galaxy S24, the lock button)
+		// played the music with the engine still paused
+		std::atomic<bool> m_sound_focused{ true }, m_sound_engine_paused{ false };   // (the focus comes from the platform's thread)
+		void apply_sound_pause();
+		unsigned m_update_count = 0;	// the engine's updates in this run (its first one is logged)
 	};
 }

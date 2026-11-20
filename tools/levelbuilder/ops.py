@@ -862,6 +862,9 @@ def validate(scene, catalog):
     bounds = scene.data['bounds']
     solids = []
     for e in scene.entities:
+        if e['asset'] in catalog.get('banned', {}):
+            problems.append(f'{e["id"]}: {e["asset"]} is banned: {catalog["banned"][e["asset"]]}')
+            continue
         if e['asset'] not in catalog['models']:
             problems.append(f'{e["id"]}: el modelo {e["asset"]} no está en el catálogo')
             continue

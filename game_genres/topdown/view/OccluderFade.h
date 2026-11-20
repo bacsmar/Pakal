@@ -48,6 +48,11 @@ namespace Pakal::TopDown
 		void add(const Occluder& occluder) { m_occluders.push_back(occluder); }
 		bool empty() const { return m_occluders.empty(); }
 		void clear() { m_occluders.clear(); }
+		// An occluder's model was swapped (a broken version): it keeps fading through the new one
+		void replace_mesh(const Pakal::MeshComponent3D_Bgfx* from, Pakal::MeshComponent3D_Bgfx* to)
+		{
+			for (Occluder& occluder : m_occluders) if (occluder.mesh == from) occluder.mesh = to;
+		}
 
 		// 'watching': the ones hiding any of the 'targets' (points of the player's body) from 'eye' fade out; the others (all,
 		// when not watching) come back

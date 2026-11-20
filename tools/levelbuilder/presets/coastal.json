@@ -1334,16 +1334,16 @@
   },
   {
    "name": "park_trees",
-   "role": "tree",
+   "role": "park_tree",
    "where": "park",
    "places": "cluster",
    "cluster": {
-    "spacing": 10.0,
+    "spacing": 9.0,
     "count": [
      2,
      4
     ],
-    "radius": 3.5
+    "radius": 4.0
    },
    "threshold": 0.0,
    "yaw": "random",
@@ -1405,7 +1405,9 @@
     0.8,
     1.3
    ],
-   "clearance": 0.0
+   "clearance": 0.0,
+   "occupy": "trunk",
+   "trunk": 0.2
   },
   {
    "name": "park_bushes",
@@ -1423,6 +1425,125 @@
    "threshold": 0.0,
    "yaw": "random",
    "clearance": 0.0
+  },
+  {
+   "name": "park_lawn_tufts",
+   "role": "tuft",
+   "where": "park",
+   "places": "poisson",
+   "spacing": 0.9,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 9,
+     "range": [
+      0.3,
+      1.0
+     ]
+    }
+   ],
+   "threshold": 0.05,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.4
+   ],
+   "clearance": 0.0,
+   "occupy": "trunk",
+   "trunk": 0.15
+  },
+  {
+   "name": "park_flower_beds",
+   "role": "flower",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 5.0,
+    "count": [
+     4,
+     8
+    ],
+    "radius": 1.8
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.4
+   ],
+   "clearance": 0.0,
+   "occupy": "trunk",
+   "trunk": 0.2
+  },
+  {
+   "name": "park_ferns",
+   "role": "fern",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 4.0,
+    "count": [
+     2,
+     5
+    ],
+    "radius": 1.4
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "clearance": 0.0,
+   "occupy": "trunk",
+   "trunk": 0.3
+  },
+  {
+   "name": "park_shrubs",
+   "role": "shrub",
+   "where": "park",
+   "places": "cluster",
+   "cluster": {
+    "spacing": 6.0,
+    "count": [
+     2,
+     4
+    ],
+    "radius": 2.2
+   },
+   "threshold": 0.0,
+   "yaw": "random",
+   "scale": [
+    0.8,
+    1.2
+   ],
+   "clearance": 0.2,
+   "occupy": "trunk",
+   "trunk": 0.7
+  },
+  {
+   "name": "park_rocks",
+   "role": "rock",
+   "where": "park",
+   "places": "poisson",
+   "spacing": 13.0,
+   "masks": [
+    {
+     "type": "noise",
+     "scale": 14,
+     "range": [
+      0.2,
+      0.8
+     ]
+    }
+   ],
+   "threshold": 0.3,
+   "yaw": "random",
+   "scale": [
+    0.5,
+    0.9
+   ],
+   "clearance": 0.5
   },
   {
    "name": "bushes_yard",

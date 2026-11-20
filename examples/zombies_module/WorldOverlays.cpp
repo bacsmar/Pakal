@@ -14,7 +14,7 @@
 #include "bgfx/BgfxGraphicsSystem.h"
 #include "box2D/PhysicsWorld2D.h"
 
-#include <box2d/box2d.h>
+#include "math/Vec2.h"
 
 #include <algorithm>
 #include <cmath>
@@ -34,14 +34,14 @@ namespace Zombies
 			return (color & 0xff000000) | (b << 16) | (g << 8) | r;
 		};
 		// A gem: an octahedron of half width r at height h, turned by 'spin'
-		auto solid_gem = [&](const b2Vec2& c, float h, float r, float spin, uint32_t color)
+		auto solid_gem = [&](const Pakal::Vec2& c, float h, float r, float spin, uint32_t color)
 		{
 			const tmath::vector3df top = floor_point(c, h + r * 1.3f), bottom = floor_point(c, h - r * 1.3f);
 			tmath::vector3df ring[4];
 			for (int k = 0; k < 4; ++k)
 			{
 				const float a = spin + k * 1.5707963f;
-				ring[k] = floor_point(c + r * b2Vec2(std::cos(a), std::sin(a)), h);
+				ring[k] = floor_point(c + r * Pakal::Vec2(std::cos(a), std::sin(a)), h);
 			}
 			for (int k = 0; k < 4; ++k)
 			{
@@ -51,13 +51,13 @@ namespace Zombies
 			}
 		};
 		// A flat cross (two bars of length 2 r) at height h, turned by 'spin'
-		auto solid_cross = [&](const b2Vec2& c, float h, float r, float spin, uint32_t color)
+		auto solid_cross = [&](const Pakal::Vec2& c, float h, float r, float spin, uint32_t color)
 		{
 			const float w = r * 0.32f;
 			for (int k = 0; k < 2; ++k)
 			{
 				const float a = spin + k * 1.5707963f;
-				const b2Vec2 u(std::cos(a), std::sin(a)), v(-u.y, u.x);
+				const Pakal::Vec2 u(std::cos(a), std::sin(a)), v(-u.y, u.x);
 				const tmath::vector3df p0 = floor_point(c - r * u - w * v, h), p1 = floor_point(c + r * u - w * v, h);
 				const tmath::vector3df p2 = floor_point(c + r * u + w * v, h), p3 = floor_point(c - r * u + w * v, h);
 				scene.graphics.draw_triangle3d(p0, p1, p2, color);
@@ -82,7 +82,7 @@ namespace Zombies
 			const CharacterViewComponent* view = actor->get<CharacterViewComponent>();
 			if (brain && view && brain->health_bar_seconds() > 0.0f)
 			{
-				const b2Vec2 at = actor->drawn_position(scene.alpha);
+				const Pakal::Vec2 at = actor->drawn_position(scene.alpha);
 				const float half = 0.45f, top = view->height() + 0.35f;
 				const float fill = -half + 2.0f * half * brain->health_share();
 				for (int line = 0; line < 4; ++line)
@@ -96,7 +96,7 @@ namespace Zombies
 			// A zombie that took money from the floor carries it over its head: kill it and the money comes back
 			if (brain && view && !brain->is_dead() && brain->coins_carried() > 0)
 			{
-				const b2Vec2 at = actor->drawn_position(scene.alpha);
+				const Pakal::Vec2 at = actor->drawn_position(scene.alpha);
 				const float bob = 0.1f * static_cast<float>(std::sin(seconds * 5.0));
 				solid_gem(at, view->height() + 0.75f + bob, 0.3f, static_cast<float>(seconds * 4.0), 0xff20d0ff);
 			}
@@ -108,7 +108,7 @@ namespace Zombies
 			const CharacterViewComponent* view = ally->get<CharacterViewComponent>();
 			if (health && !health->is_dead())
 			{
-				const b2Vec2 at = ally->drawn_position(scene.alpha);
+				const Pakal::Vec2 at = ally->drawn_position(scene.alpha);
 				const float half = 0.5f, top = (view ? view->height() : 1.7f) + 0.35f;
 				const float fill = -half + 2.0f * half * std::max(0.0f, health->current() / std::max(1.0f, health->maximum()));
 				for (int line = 0; line < 5; ++line)
@@ -121,7 +121,7 @@ namespace Zombies
 				for (int i = 0; i < 24; ++i)
 				{
 					const float a0 = i * 6.2831853f / 24, a1 = (i + 1) * 6.2831853f / 24;
-					const b2Vec2 d0(std::cos(a0), std::sin(a0)), d1(std::cos(a1), std::sin(a1));
+					const Pakal::Vec2 d0(std::cos(a0), std::sin(a0)), d1(std::cos(a1), std::sin(a1));
 					scene.graphics.draw_triangle3d(floor_point(at + 0.75f * d0, 0.05f), floor_point(at + 0.75f * d1, 0.05f), floor_point(at + 0.6f * d1, 0.05f), 0xffffc040);
 					scene.graphics.draw_triangle3d(floor_point(at + 0.75f * d0, 0.05f), floor_point(at + 0.6f * d1, 0.05f), floor_point(at + 0.6f * d0, 0.05f), 0xffffc040);
 				}
@@ -135,7 +135,7 @@ namespace Zombies
 			if (!prop || !(prop->rules().repairable || prop->rules().objective)) continue;
 			const float share = prop->repair_share();
 			if (share >= 0.999f && !prop->rules().objective) continue;
-			const b2Vec2 at = actor->position;
+			const Pakal::Vec2 at = actor->position;
 			const bool goal = prop->rules().objective;
 			const float half = goal ? 1.2f : 0.6f, top = goal ? 3.6f : 1.6f;
 			const float fill = -half + 2.0f * half * share;
@@ -157,7 +157,7 @@ namespace Zombies
 			{
 				if (pickup->seconds_left() < 3.0f && std::fmod(seconds, 0.3) < 0.12) continue;
 				const float spin = static_cast<float>(seconds * 3.0);
-				const b2Vec2 c = actor->position;
+				const Pakal::Vec2 c = actor->position;
 				const PickupRules& rules = pickup->rules();
 				if (rules.type == "Token")
 				{
@@ -197,8 +197,8 @@ namespace Zombies
 				for (int i = 0; i < 32; ++i)
 				{
 					const float a0 = i * 6.2831853f / 32, a1 = (i + 1) * 6.2831853f / 32;
-					scene.graphics.draw_line3d(floor_point(actor->position + radius * b2Vec2(std::cos(a0), std::sin(a0)), 0.05f),
-						floor_point(actor->position + radius * b2Vec2(std::cos(a1), std::sin(a1)), 0.05f), 0xff40ffff);
+					scene.graphics.draw_line3d(floor_point(actor->position + radius * Pakal::Vec2(std::cos(a0), std::sin(a0)), 0.05f),
+						floor_point(actor->position + radius * Pakal::Vec2(std::cos(a1), std::sin(a1)), 0.05f), 0xff40ffff);
 				}
 			}
 		}
@@ -206,13 +206,13 @@ namespace Zombies
 		// The beacons of ShowMarker: a ring on the floor and a column of light that can be seen from afar
 		for (int id : scene.markers)
 		{
-			b2Vec2 c;
+			Pakal::Vec2 c;
 			if (!scene.pointPosition(id, c)) continue;
 			const float radius = 2.5f * (0.92f + 0.08f * static_cast<float>(std::sin(seconds * 5.0)));
 			for (int i = 0; i < 40; ++i)
 			{
 				const float a0 = i * 6.2831853f / 40, a1 = (i + 1) * 6.2831853f / 40;
-				const b2Vec2 d0(std::cos(a0), std::sin(a0)), d1(std::cos(a1), std::sin(a1));
+				const Pakal::Vec2 d0(std::cos(a0), std::sin(a0)), d1(std::cos(a1), std::sin(a1));
 				const tmath::vector3df o0 = floor_point(c + radius * d0, 0.06f), o1 = floor_point(c + radius * d1, 0.06f);
 				const tmath::vector3df i0 = floor_point(c + (radius - 0.45f) * d0, 0.06f), i1 = floor_point(c + (radius - 0.45f) * d1, 0.06f);
 				scene.graphics.draw_triangle3d(o0, o1, i1, 0xff40ffa0);
@@ -228,9 +228,9 @@ namespace Zombies
 		// An arrow on the floor next to the player, toward the nearest beacon, or else the nearest token (they may be off the screen)
 		if (const Actor* player = scene.game.find(scene.playerId))
 		{
-			b2Vec2 best;
+			Pakal::Vec2 best;
 			float bestDistance = 1e9f;
-			auto consider = [&](const b2Vec2& c)
+			auto consider = [&](const Pakal::Vec2& c)
 			{
 				if ((c - player->position).Length() < bestDistance)
 				{
@@ -240,7 +240,7 @@ namespace Zombies
 			};
 			for (int id : scene.markers)
 			{
-				b2Vec2 c;
+				Pakal::Vec2 c;
 				if (scene.pointPosition(id, c)) consider(c);
 			}
 			if (scene.markers.empty())
@@ -253,20 +253,20 @@ namespace Zombies
 			}
 			if (bestDistance > 4.0f && bestDistance < 1e8f)
 			{
-				b2Vec2 way = best - player->position;
+				Pakal::Vec2 way = best - player->position;
 				way *= 1.0f / bestDistance;
-				const b2Vec2 side(-way.y, way.x);
+				const Pakal::Vec2 side(-way.y, way.x);
 				// a solid arrow (head and shaft) on the floor, with a dark rim so it shows on light paving too
 				const float pulse = 1.0f + 0.08f * static_cast<float>(std::sin(seconds * 6.0));
-				const b2Vec2 tip = player->position + 2.7f * pulse * way, base = player->position + 2.1f * pulse * way;
-				const b2Vec2 tail = player->position + 1.6f * way;
+				const Pakal::Vec2 tip = player->position + 2.7f * pulse * way, base = player->position + 2.1f * pulse * way;
+				const Pakal::Vec2 tail = player->position + 1.6f * way;
 				const uint32_t green = 0xff40ffa0, rim = 0xc0103020;
 				auto arrow = [&](float grow, uint32_t color, float h)
 				{
-					const b2Vec2 t2 = tip + grow * way;
+					const Pakal::Vec2 t2 = tip + grow * way;
 					scene.graphics.draw_triangle3d(floor_point(t2, h), floor_point(base + (0.38f + grow) * side, h), floor_point(base - (0.38f + grow) * side, h), color, false);
-					const b2Vec2 s0 = base + (0.13f + grow) * side, s1 = base - (0.13f + grow) * side;
-					const b2Vec2 s2 = tail - grow * way - (0.13f + grow) * side, s3 = tail - grow * way + (0.13f + grow) * side;
+					const Pakal::Vec2 s0 = base + (0.13f + grow) * side, s1 = base - (0.13f + grow) * side;
+					const Pakal::Vec2 s2 = tail - grow * way - (0.13f + grow) * side, s3 = tail - grow * way + (0.13f + grow) * side;
 					scene.graphics.draw_triangle3d(floor_point(s0, h), floor_point(s1, h), floor_point(s2, h), color, false);
 					scene.graphics.draw_triangle3d(floor_point(s0, h), floor_point(s2, h), floor_point(s3, h), color, false);
 				};
@@ -277,48 +277,41 @@ namespace Zombies
 
 		// Where the mouse aims
 		const Actor* player = scene.game.find(scene.playerId);
-		b2Vec2 aim;
+		Pakal::Vec2 aim;
 		if (player && scene.controls.mouse_aim(scene.camera, static_cast<float>(scene.graphics.get_width()), static_cast<float>(scene.graphics.get_height()), aim))
 		{
 			const float r = 0.25f, h = scene.controls.aim_height();
-			scene.graphics.draw_line3d(floor_point(aim + b2Vec2(-r, 0), h), floor_point(aim + b2Vec2(r, 0), h), 0xff4040ff, false);
-			scene.graphics.draw_line3d(floor_point(aim + b2Vec2(0, -r), h), floor_point(aim + b2Vec2(0, r), h), 0xff4040ff, false);
+			scene.graphics.draw_line3d(floor_point(aim + Pakal::Vec2(-r, 0), h), floor_point(aim + Pakal::Vec2(r, 0), h), 0xff4040ff, false);
+			scene.graphics.draw_line3d(floor_point(aim + Pakal::Vec2(0, -r), h), floor_point(aim + Pakal::Vec2(0, r), h), 0xff4040ff, false);
 		}
 
 		if (!scene.showColliders && std::getenv("ZOMBIES_SHOW_COLLIDERS") == nullptr) return;
-		for (const b2Body* body = scene.world.native()->GetBodyList(); body; body = body->GetNext())
+		scene.world.for_each_shape([&](const Pakal::PhysicsShape2D& shape)
 		{
-			if (!body->IsEnabled()) continue;
-			for (const b2Fixture* fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext())
+			if (!shape.enabled) return;
+			const uint32_t color = shape.isStatic ? 0xffffc040 : 0xff40ff40;
+			auto line = [&](const Pakal::Vec2& a, const Pakal::Vec2& b)
 			{
-				const uint32_t color = body->GetType() == b2_staticBody ? 0xffffc040 : 0xff40ff40;
-				auto line = [&](const b2Vec2& a, const b2Vec2& b)
+				scene.graphics.draw_line3d(floor_point(a, 0.08f), floor_point(b, 0.08f), color, false);
+			};
+			switch (shape.kind)
+			{
+			case Pakal::PhysicsShape2D::Kind::Edge:
+			case Pakal::PhysicsShape2D::Kind::Chain:
+				for (int i = 0; i + 1 < shape.count; ++i) line(shape.points[i], shape.points[i + 1]);
+				break;
+			case Pakal::PhysicsShape2D::Kind::Polygon:
+				for (int i = 0; i < shape.count; ++i) line(shape.points[i], shape.points[(i + 1) % shape.count]);
+				break;
+			case Pakal::PhysicsShape2D::Kind::Circle:
+				for (int i = 0; i < 24; ++i)
 				{
-					scene.graphics.draw_line3d(floor_point(b2Mul(body->GetTransform(), a), 0.08f), floor_point(b2Mul(body->GetTransform(), b), 0.08f), color, false);
-				};
-				const b2Shape* shape = fixture->GetShape();
-				if (shape->GetType() == b2Shape::e_edge)
-				{
-					const auto* edge = static_cast<const b2EdgeShape*>(shape);
-					line(edge->m_vertex1, edge->m_vertex2);
+					const float a = i * 6.2831853f / 24, b = (i + 1) * 6.2831853f / 24;
+					line(shape.center + shape.radius * Pakal::Vec2(std::cos(a), std::sin(a)),
+						shape.center + shape.radius * Pakal::Vec2(std::cos(b), std::sin(b)));
 				}
-				else if (shape->GetType() == b2Shape::e_polygon)
-				{
-					const auto* polygon = static_cast<const b2PolygonShape*>(shape);
-					for (int i = 0; i < polygon->m_count; ++i)
-						line(polygon->m_vertices[i], polygon->m_vertices[(i + 1) % polygon->m_count]);
-				}
-				else if (shape->GetType() == b2Shape::e_circle)
-				{
-					const auto* circle = static_cast<const b2CircleShape*>(shape);
-					for (int i = 0; i < 24; ++i)
-					{
-						const float a = i * 6.2831853f / 24, b = (i + 1) * 6.2831853f / 24;
-						line(circle->m_p + circle->m_radius * b2Vec2(std::cos(a), std::sin(a)),
-							circle->m_p + circle->m_radius * b2Vec2(std::cos(b), std::sin(b)));
-					}
-				}
+				break;
 			}
-		}
+		});
 	}
 }

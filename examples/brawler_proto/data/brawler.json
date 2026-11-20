@@ -201,7 +201,9 @@
           }
         }
       },
-      "blockFactor": 0.2
+      "blockFactor": 0.2,
+      "guardStunShare": 0.5,
+      "guardPushShare": 0.5
     },
     "thug": {
       "health": 60,

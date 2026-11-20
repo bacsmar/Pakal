@@ -3,6 +3,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <string>
 
 #include "ISystem.h"
 #include "AsyncTaskDispatcher.h"
@@ -17,6 +18,10 @@ namespace Pakal
 		std::atomic<SystemState> m_state;// (SystemState::Created);
 		std::thread*			m_thread = nullptr;
 		std::chrono::nanoseconds	m_frame_period{0};
+		// the profiler's sections of its loop, by its name: "<system>.tasks" (the work other threads queued for it) and
+		// "<system>.wait" (the sleep that keeps its rate)
+		std::string				m_tasks_section, m_wait_section;
+		const char* loop_section(std::string& cache, const char* part);
 
 		bool					m_threaded;
 		AsyncTaskDispatcher		m_dispatcher;

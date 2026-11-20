@@ -28,7 +28,7 @@ ROLE_TAGS = {
     'church': ['building', 'landmark'], 'city_hall': ['building', 'landmark'],
     'kiosk': ['landmark', 'pavilion'], 'fountain': ['landmark'],
     'palm': ['vegetation', 'tree'], 'palm_decor': ['vegetation', 'tree'], 'flower_bush': ['vegetation', 'small'],
-    'tree': ['vegetation', 'tree'], 'vine': ['vegetation', 'small'], 'bush': ['vegetation', 'small'], 'grass': ['vegetation', 'small'], 'rock': ['rock'],
+    'tree': ['vegetation', 'tree'], 'vine': ['vegetation', 'small'], 'bush': ['vegetation', 'small'], 'grass': ['vegetation', 'small'], 'park_tree': ['vegetation', 'tree'], 'tuft': ['vegetation', 'small'], 'flower': ['vegetation', 'small'], 'fern': ['vegetation', 'small'], 'shrub': ['vegetation', 'small'], 'rock': ['rock'],
     'street_light': ['street_prop', 'light', 'pole'], 'bench': ['street_prop'], 'planter': ['street_prop'],
     'hydrant': ['street_prop'], 'trash': ['clutter', 'small'], 'clutter': ['clutter'], 'barrier': ['barrier'],
     'dumpster': ['clutter', 'cover'], 'car': ['vehicle', 'car', 'cover'], 'bus': ['vehicle', 'cover'],
@@ -53,7 +53,21 @@ def load(path):
     theme = json.loads(Path(path).read_text(encoding='utf-8'))
     theme['path'] = str(Path(path).resolve())
     theme.setdefault('models_dir', '{short}/models')
+    # "banned": a file (next to the theme) of models the generator must not place (performance): {"banned": [{"models": regex on
+    # the model's file stem, "reason": ...}]}; they stay out of the catalog and validate names one that is placed
+    theme['banned'] = []
+    if theme.get('banned_file'):
+        banned = Path(path).resolve().parent / theme['banned_file']
+        theme['banned'] = json.loads(banned.read_text(encoding='utf-8')).get('banned', [])
     return theme
+
+
+def banned_reason(theme, stem):
+    """Why a model may not be placed, or None."""
+    for entry in theme.get('banned', []):
+        if re.search(entry['models'], stem):
+            return entry.get('reason', 'banned')
+    return None
 
 
 def patterns(theme):
@@ -168,6 +182,10 @@ def add_to_catalog(catalog, theme):
                 if not re.search(spec['models'], path.stem):
                     continue
                 key = path.relative_to(ASSETS).with_suffix('').as_posix()
+                reason = banned_reason(theme, path.stem)
+                if reason:
+                    catalog.setdefault('banned', {})[key] = reason
+                    continue
                 if key in catalog['models']:
                     entry = catalog['models'][key]
                     for r in (role, fine):
@@ -177,6 +195,8 @@ def add_to_catalog(catalog, theme):
                         entry['pose'] = spec['pose']
                     if spec.get('turn'):
                         entry['turn'] = spec['turn']
+                    if spec.get('scale'):
+                        entry.setdefault('scale', spec['scale'])
                     continue
                 try:
                     low, high = citykit.model_bounds(path)
@@ -193,6 +213,9 @@ def add_to_catalog(catalog, theme):
                     **({'pose': spec['pose']} if spec.get('pose') else {}),
                     # a model whose front is not its +z (some packs' demo groups face -z): turned this much more
                     **({'turn': spec['turn']} if spec.get('turn') else {}),
+                    # the size this model is planted at (its pack's models are not all drawn to one scale): a spawner's own
+                    # "scale" range is for the models without one
+                    **({'scale': spec['scale']} if spec.get('scale') else {}),
                     'roles': list(dict.fromkeys([role, fine])),
                 }
                 count += 1

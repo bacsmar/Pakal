@@ -49,12 +49,15 @@ target_include_directories(bx PUBLIC ${BX_DIR}/include ${BX_DIR}/3rdparty)
 target_compile_definitions(bx PUBLIC ${BGFX_DEFINES})
 
 file(GLOB ASTC_SOURCES ${BIMG_DIR}/3rdparty/astc-encoder/source/*.cpp)
-add_library(bimg STATIC ${BIMG_DIR}/src/image.cpp ${BIMG_DIR}/src/image_gnf.cpp ${ASTC_SOURCES})
+add_library(bimg STATIC ${BIMG_DIR}/src/image.cpp ${BIMG_DIR}/src/image_encode_wic.cpp ${ASTC_SOURCES})
 target_include_directories(bimg PUBLIC ${BIMG_DIR}/include PRIVATE ${BIMG_DIR}/3rdparty/astc-encoder/include)
 target_link_libraries(bimg PUBLIC bx)
 
-add_library(bimg_decode STATIC ${BIMG_DIR}/src/image_decode.cpp ${BIMG_DIR}/3rdparty/tinyexr/deps/miniz/miniz.c)
-target_include_directories(bimg_decode PRIVATE ${BIMG_DIR}/3rdparty ${BIMG_DIR}/3rdparty/tinyexr/deps/miniz)
+# No EXR (it brings bimg's own miniz, whose names clash with the one Assimp links) and no AVIF (the dav1d decoder): the
+# engine loads neither. The same switches as the desktop's bimg_decode (docs/BUILDING.md).
+add_library(bimg_decode STATIC ${BIMG_DIR}/src/image_decode.cpp ${BIMG_DIR}/src/image_decode_wic.cpp)
+target_include_directories(bimg_decode PRIVATE ${BIMG_DIR}/3rdparty ${BIMG_DIR}/3rdparty/tinyexr/deps)
+target_compile_definitions(bimg_decode PRIVATE BIMG_CONFIG_PARSE_EXR=0 BIMG_CONFIG_PARSE_AVIF=0)
 target_link_libraries(bimg_decode PUBLIC bimg)
 
 add_library(bgfx STATIC ${BGFX_DIR}/src/amalgamated.cpp)
@@ -91,8 +94,10 @@ if(PAKAL_ENGINE_TOOLS)
 else()
     list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/(android|win32|unix|sfml|mcp)/.*")
 endif()
-list(APPEND PAKAL_SOURCES ${PAKAL_ROOT}/source/unix/ClockImpl.cpp)
-list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/PakalPlayerMain\\.cpp$")
+list(APPEND PAKAL_SOURCES ${PAKAL_ROOT}/source/unix/ClockImpl.cpp ${PAKAL_ROOT}/source/unix/HttpPostImpl.cpp)
+# the core alone's default systems (the dummies) never: this engine's are in source/runtime (bgfx, Box2D; the platform
+# sets its window, input and sound after them). The desktop player is in apps/player, outside source/.
+list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/core_only/.*")
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/persist/pugixml/pugixml\\.cpp$")
 # the network (ENet, source/net, game_genres/topdown/net) goes only into the games that play online: a library of its own
 list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/net/.*")
@@ -143,6 +148,13 @@ add_library(pakal_core OBJECT
 target_compile_definitions(pakal_core PRIVATE ${PAKAL_DEFINITIONS})
 target_include_directories(pakal_core PRIVATE ${PAKAL_INCLUDES})
 target_link_libraries(pakal_core PRIVATE bgfx bimg_decode bimg bx box2d)
+# A flavor of a game (build_apk.py --flavor: a demo...): its settings are a header build_apk.py writes, pakal_flavor.h in
+# PAKAL_FLAVOR_DIR, which the entry point and the games see (PAKAL_FLAVOR defined)
+set(PAKAL_FLAVOR_DIR "" CACHE PATH "The folder of a flavor's pakal_flavor.h (build_apk.py --flavor); empty: no flavor")
+if(PAKAL_FLAVOR_DIR)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/main_android.cpp PROPERTIES
+        INCLUDE_DIRECTORIES ${PAKAL_FLAVOR_DIR} COMPILE_DEFINITIONS PAKAL_FLAVOR=1)
+endif()
 
 # The network: ENet (external/enet) and the engine's and the genre's code over it
 file(GLOB ENET_SOURCES ${PAKAL_ROOT}/external/enet/*.c)
@@ -158,6 +170,10 @@ function(pakal_game name module_dir)
     add_library(${name} SHARED $<TARGET_OBJECTS:pakal_core> ${ARGN})
     target_compile_definitions(${name} PRIVATE ${PAKAL_DEFINITIONS})
     target_include_directories(${name} PRIVATE ${PAKAL_INCLUDES} ${module_dir})
+    if(PAKAL_FLAVOR_DIR)
+        target_include_directories(${name} PRIVATE ${PAKAL_FLAVOR_DIR})
+        target_compile_definitions(${name} PRIVATE PAKAL_FLAVOR=1)
+    endif()
     target_link_libraries(${name} PRIVATE
         bgfx bimg_decode bimg bx box2d
         ${PAKAL_VCPKG_ANDROID}/lib/liblua.a ${RMLUI_LIBS} ${ASSIMP_LIBS}
@@ -222,6 +238,7 @@ endfunction()
 
 pakal_compile_shader(vs_mesh vertex varying_mesh.def.sc)
 pakal_compile_shader(vs_skin vertex varying_skin.def.sc)
+pakal_compile_shader(vs_skin_pbr vertex varying_skin_pbr.def.sc)
 pakal_compile_shader(vs_pbr vertex varying_pbr.def.sc)
 pakal_compile_shader(fs_pbr fragment varying_pbr.def.sc)
 pakal_compile_shader(fs_mesh fragment varying_mesh.def.sc)

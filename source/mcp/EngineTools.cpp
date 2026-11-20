@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "mcp/EngineTools.h"
+#include "mcp/QaTools.h"
 
 #include "BasicTask.h"
 #include "Engine.h"
@@ -15,6 +16,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <stdexcept>
+#include <string>
 
 namespace Pakal
 {
@@ -336,6 +338,17 @@ namespace Pakal
 		std::string error;
 		const unsigned short port = static_cast<unsigned short>(std::atoi(portText));
 		const char* token = std::getenv("PAKAL_MCP_TOKEN");
+		// The QA tools drive the game (its input, its end): only behind a token, and never in a release (PAKAL_RELEASE=1, what
+		// build_apk.py --release and a store build set; an Android release has no source/mcp at all)
+		std::string why;
+		if (qa_tools_allowed(token, std::getenv("PAKAL_RELEASE"), why))
+		{
+			add_qa_tools(*server, engine);
+		}
+		else
+		{
+			LOG_WARNING("[EngineTools] the QA tools (input, state, log, time scale, quit) are not added: %s", why.c_str());
+		}
 		if (!server->start(port, token ? token : "", error))
 		{
 			LOG_ERROR("[EngineTools] MCP server not started: %s", error.c_str());

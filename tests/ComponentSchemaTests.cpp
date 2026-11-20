@@ -15,6 +15,7 @@
 #include "gameplay/NavGrid2D.h"
 
 #include <cstdio>
+#include "math/Vec2.h"
 
 using namespace Pakal::TopDown;
 using Pakal::Json;
@@ -35,7 +36,7 @@ namespace
 	class TestGame : public TopDownGame
 	{
 	public:
-		TestGame() : m_world(b2Vec2(0.0f, 0.0f)), m_nav(0.5f), m_random(7) {}
+		TestGame() : m_world(Pakal::Vec2(0.0f, 0.0f)), m_nav(0.5f), m_random(7) {}
 		~TestGame() override { remove_all(); }
 		Pakal::PhysicsWorld2D& world() override { return m_world; }
 		Pakal::NavGrid2D& nav() override { return m_nav; }
@@ -78,8 +79,8 @@ int main()
 	Actor& actor = game.add_actor(ActorKind::Prop, object.name);
 	actor.add<PropComponent>();
 	PlacedObject placed{ game, actor, object, resolved };
-	placed.low = b2Vec2(-1.0f, -1.0f);
-	placed.high = b2Vec2(1.0f, 1.0f);
+	placed.low = Pakal::Vec2(-1.0f, -1.0f);
+	placed.high = Pakal::Vec2(1.0f, 1.0f);
 	placed.size = 2.0f;
 	const auto unknown = schema.add_components(placed);
 	check(unknown == std::vector<std::string>({ "Teleporter" }), "an unknown component is reported");

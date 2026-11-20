@@ -20,6 +20,10 @@ endif()
 find_package(Git QUIET)
 file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
 
+# bimg_decode without EXR and AVIF: the engine loads neither, EXR brings bimg's own copy of miniz, whose names clash with
+# the one Assimp links (LNK2005 on mz_*), and AVIF brings the dav1d decoder. android/CMakeLists.txt sets the same.
+set(PAKAL_BIMG_DEFINES BIMG_CONFIG_PARSE_EXR=0 BIMG_CONFIG_PARSE_AVIF=0)
+
 if(WIN32)
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/win64_vs2022/bin)
     # texturec: the texture tool android/build_apk.py compresses the APK's textures with
@@ -48,6 +52,7 @@ foreach(patch ${PAKAL_BGFX_PATCHES})
     file(SHA1 ${patch} hash)
     string(APPEND PAKAL_BGFX_SOURCE "${hash};")
 endforeach()
+string(APPEND PAKAL_BGFX_SOURCE "${PAKAL_BIMG_DEFINES};")   # built with other switches: built again
 # and how they are built (a change here builds them again: Linux's libraries were not position independent before)
 string(APPEND PAKAL_BGFX_SOURCE "fpic;")
 set(PAKAL_BGFX_STAMP ${BGFX_BUILD_DIR}/pakal_bgfx_source.txt)
@@ -94,9 +99,20 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
         if(failed)
             message(FATAL_ERROR "bgfx: GENie could not generate the Visual Studio projects")
         endif()
+        set(PAKAL_BIMG_CL "")
+        foreach(define ${PAKAL_BIMG_DEFINES})
+            string(APPEND PAKAL_BIMG_CL "/D${define} ")
+        endforeach()
         foreach(project bx bimg bimg_decode bgfx shaderc texturec)
             message(STATUS "bgfx: building ${project} (${PAKAL_VS_TOOLSET}, Release x64)")
-            execute_process(COMMAND ${PAKAL_MSBUILD} ${project}.vcxproj /m /nologo /v:minimal
+            # CL: switches the compiler adds to every file of the project (only bimg_decode gets any)
+            set(PAKAL_PROJECT_CL "")
+            set(PAKAL_PROJECT_TARGET "")
+            if(project STREQUAL "bimg_decode")
+                set(PAKAL_PROJECT_CL "${PAKAL_BIMG_CL}")
+                set(PAKAL_PROJECT_TARGET /t:Rebuild)   # (a change of CL alone does not make msbuild compile again)
+            endif()
+            execute_process(COMMAND ${CMAKE_COMMAND} -E env "CL=${PAKAL_PROJECT_CL}" ${PAKAL_MSBUILD} ${project}.vcxproj ${PAKAL_PROJECT_TARGET} /m /nologo /v:minimal
                     /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=${PAKAL_VS_TOOLSET}
                 WORKING_DIRECTORY ${BGFX_DIR}/.build/projects/vs2022
                 RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
@@ -114,7 +130,13 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
             set(PAKAL_CORES 2)
         endif()
         # position independent: they go into libPakal.so, a shared library on Linux
-        execute_process(COMMAND ${CMAKE_COMMAND} -E env CFLAGS=-fPIC CXXFLAGS=-fPIC make linux-gcc-release64 -j${PAKAL_CORES}
+        set(PAKAL_BIMG_FLAGS "")
+        foreach(define ${PAKAL_BIMG_DEFINES})
+            string(APPEND PAKAL_BIMG_FLAGS " -D${define}")
+        endforeach()
+        # (the bimg switches reach every library, and only bimg_decode reads them)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=-fPIC${PAKAL_BIMG_FLAGS}" "CXXFLAGS=-fPIC${PAKAL_BIMG_FLAGS}"
+                make linux-gcc-release64 -j${PAKAL_CORES}
             WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
         if(failed)
             file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")

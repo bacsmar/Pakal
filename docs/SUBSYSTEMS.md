@@ -65,6 +65,16 @@ simulation in fixed steps; the components run in order, once per step, on one th
   Android renders it into its AAudio stream. `tests/AudioTests.cpp` checks the loop, the stereo and the fade out on
   `tests/fixtures/music_tone.ogg`.
 - `SoundManager::set_paused`: every sound holds while the engine is paused (`Engine::on_pause` / `on_resume`).
+- Gamepads: a standard pad (an Xbox's layout) reads as keys: `set_pad_bindings` binds each `PadInput` to a `Key`, so what a
+  game reads with `is_key_pressed` a pad gives too. On Android the two sticks are also axis device 0 (axes 0-1 the left one,
+  2-3 the right one, as the touch screen's sticks are), and the touch sticks hide while a pad plays, until a finger lands.
+- Menus with keys and pads: `IUIManager::navigate(document, NavDirection)` moves the focus to the nearest button that way and
+  `activate(document)` clicks the focused one (its `data-event-click` runs, as a tap's would). The buttons are the elements
+  whose style says `tab-index: auto`; the focused one has `:focus-visible`. While an element of class `nav-trap` is shown, only
+  the buttons inside it are reached. `ui/UiNav.h` (`Pakal::UiNav`) reads the arrows and Return each frame and calls both.
+  Once the keys or a pad have moved through a menu, UiNav keeps one button lit in every document it serves
+  (`IUIManager::focus_first`: the first, when none of its buttons has the focus), so a pad's A always presses something;
+  a finger alone never lights one.
 - UI: no active implementation in the bgfx backend. Rocket GUI required Irrlicht and is no longer available.
 
 ## Other

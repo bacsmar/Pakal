@@ -44,6 +44,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 
@@ -159,7 +160,7 @@ namespace Zombies
 			{
 				m_screenshotTaken = true;
 				const std::string path = shot;
-				m_graphics->execute_block([this, path]() { m_graphics->request_screenshot(path.c_str()); });
+				m_graphics->take_screenshot(path);
 			}
 		}
 	}
@@ -289,7 +290,7 @@ namespace Zombies
 			m_rules.giftTable.size(), m_rules.props.size());
 
 		// The game: the world and the walkable grid are filled in below
-		m_world = std::make_unique<PhysicsWorld2D>(b2Vec2(0.0f, 0.0f));
+		m_world = std::make_unique<PhysicsWorld2D>(Pakal::Vec2(0.0f, 0.0f));
 		m_nav = std::make_unique<NavGrid2D>(0.5f);
 		m_game = std::make_unique<ZombiesGame>(*m_world, *m_nav, m_rules, m_random.seed());
 		// What the game reports (delivered at the end of each step): sounds, and the camera's shakes; the effects listen
@@ -306,7 +307,7 @@ namespace Zombies
 			if (m_effects) m_effects->on_shockwave(wave.at, wave.radius);
 		});
 		m_game->events.subscribe<ShakeEvent>([this](const ShakeEvent& shake) { m_rig->shake_from(Vec3{ shake.at.x, 0.0f, -shake.at.y }, shake.power); });
-		m_game->spawnEnemy = [this](const std::string& type, const b2Vec2& at) { return spawn_enemy(type, at); };
+		m_game->spawnEnemy = [this](const std::string& type, const Pakal::Vec2& at) { return spawn_enemy(type, at); };
 		m_game->onRemove = [this](Actor& actor)
 		{
 			// A zombie's model goes back to the pool for the next one
@@ -417,10 +418,10 @@ namespace Zombies
 
 		mark("effects");
 		// Spawners of the level (the game's ZombieSpawner objects). Spawn orders come from the level scripts.
-		m_spawns = std::make_unique<SpawnSystem>([this](const std::string& type, const b2Vec2& at) { return spawn_enemy(type, at); }, kPlayerRadius);
+		m_spawns = std::make_unique<SpawnSystem>([this](const std::string& type, const Pakal::Vec2& at) { return spawn_enemy(type, at); }, kPlayerRadius);
 		for (const auto& spawner : doc.spawners)
 		{
-			m_spawns->add_point(b2Vec2(doc.meters(spawner.value("x", 0.0)), doc.meters(spawner.value("y", 0.0))));
+			m_spawns->add_point(Pakal::Vec2(doc.meters(spawner.value("x", 0.0)), doc.meters(spawner.value("y", 0.0))));
 		}
 		// Models for the zombies alive at once (the scripts ask for up to 20, and bodies stay a moment). A level with bigger
 		// waves asks for more ("enemyPool").
@@ -623,7 +624,7 @@ namespace Zombies
 			if (object.id < 0) return true;   // scenery
 			Actor& prop = m_game->add_actor(ActorKind::Prop, object.name);
 			prop.gameId = object.id;
-			prop.position = b2Vec2(static_cast<float>(object.x / unitsPerMeter), static_cast<float>(object.y / unitsPerMeter));
+			prop.position = Pakal::Vec2(static_cast<float>(object.x / unitsPerMeter), static_cast<float>(object.y / unitsPerMeter));
 			PropComponent& view = prop.add<PropComponent>(std::make_unique<PropMesh>(&mesh, placement));
 			auto rules = propRules.find(object.id);
 			if (rules != propRules.end() && rules->second->health > 0.0f)
@@ -634,14 +635,14 @@ namespace Zombies
 				const float scale = static_cast<float>(object.scale);
 				breakable.set_size(std::clamp(std::max(hi[0] - lo[0], hi[2] - lo[2]) * scale, 0.3f, 6.0f));
 				// its footprint on the floor (level x, y: render x, -z), where zombies stand to hit it
-				b2Vec2 low(1e9f, 1e9f), high(-1e9f, -1e9f);
+				Pakal::Vec2 low(1e9f, 1e9f), high(-1e9f, -1e9f);
 				for (int corner = 0; corner < 8; ++corner)
 				{
 					const float px = (corner & 1) ? hi[0] : lo[0], py = (corner & 2) ? hi[1] : lo[1], pz = (corner & 4) ? hi[2] : lo[2];
 					const float wx = placement[0] * px + placement[4] * py + placement[8] * pz + placement[12];
 					const float wz = placement[2] * px + placement[6] * py + placement[10] * pz + placement[14];
-					low = b2Vec2(std::min(low.x, wx), std::min(low.y, -wz));
-					high = b2Vec2(std::max(high.x, wx), std::max(high.y, -wz));
+					low = Pakal::Vec2(std::min(low.x, wx), std::min(low.y, -wz));
+					high = Pakal::Vec2(std::max(high.x, wx), std::max(high.y, -wz));
 				}
 				breakable.set_box(low, high);
 				if (rules->second->repairable) m_game->barricades.push_back(prop.id);
@@ -724,7 +725,7 @@ namespace Zombies
 		}
 
 		// where the level starts it, or where it was before a reload of the edited level
-		const b2Vec2 spawn = m_carried.edit.keep ? m_carried.edit.playerAt : b2Vec2(doc.meters(doc.spawn[0]), doc.meters(doc.spawn[1]));
+		const Pakal::Vec2 spawn = m_carried.edit.keep ? m_carried.edit.playerAt : Pakal::Vec2(doc.meters(doc.spawn[0]), doc.meters(doc.spawn[1]));
 		Actor& player = m_game->add_actor(ActorKind::Character, "Player", m_game->survivors);
 		player.position = spawn;
 		player.yaw = actor_yaw(0.0f, -1.0f);
@@ -785,7 +786,7 @@ namespace Zombies
 		return keys;
 	}
 
-	uintptr_t ZombiesLevelState::spawn_enemy(const std::string& type, const b2Vec2& at)
+	uintptr_t ZombiesLevelState::spawn_enemy(const std::string& type, const Pakal::Vec2& at)
 	{
 		auto lookIt = m_enemyLooks.find(type);
 		const CharacterViewComponent::Look& look = lookIt != m_enemyLooks.end() ? lookIt->second : m_enemyLook;

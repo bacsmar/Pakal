@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 using namespace Pakal::TopDown::Net;
@@ -114,7 +115,7 @@ namespace Dungeon
 
 	bool DungeonServer::start(uint16_t port, size_t maxPlayers, int bots)
 	{
-		m_world = std::make_unique<PhysicsWorld2D>(b2Vec2(0.0f, 0.0f));
+		m_world = std::make_unique<PhysicsWorld2D>(Pakal::Vec2(0.0f, 0.0f));
 		m_nav = std::make_unique<NavGrid2D>(0.5f);
 		m_game = std::make_unique<DungeonGame>(*m_world, *m_nav, m_rules, m_seed);
 		m_game->start(bots, true);

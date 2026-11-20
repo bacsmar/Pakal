@@ -12,7 +12,7 @@
 #include "LevelDocument.h"
 #include "topdown/Actor.h"
 
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <functional>
 #include <string>
@@ -30,7 +30,7 @@ namespace Pakal::TopDown
 		const Pakal::LevelObject& object;
 		const Pakal::Json& resolved;   // its prefab with its overrides (PrefabLibrary::resolve)
 		float size = 1.0f;             // meters across its footprint
-		b2Vec2 low, high;              // its footprint on the floor (meters)
+		Pakal::Vec2 low, high;              // its footprint on the floor (meters)
 	};
 
 	struct FieldSchema

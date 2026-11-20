@@ -28,6 +28,7 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 using namespace Pakal::TopDown;
@@ -196,7 +197,7 @@ namespace Dungeon
 	void DungeonLevelState::build_world(uint32_t seed, int heroes, bool monsters)
 	{
 		m_seed = seed;
-		m_world = std::make_unique<PhysicsWorld2D>(b2Vec2(0.0f, 0.0f));
+		m_world = std::make_unique<PhysicsWorld2D>(Pakal::Vec2(0.0f, 0.0f));
 		m_nav = std::make_unique<NavGrid2D>(0.5f);
 		m_game = std::make_unique<DungeonGame>(*m_world, *m_nav, m_rules, m_seed);
 		m_game->start(heroes, monsters);
@@ -304,7 +305,7 @@ namespace Dungeon
 	}
 
 	// Centered on its point of the floor, turned 'yaw' (radians), standing on the floor
-	void DungeonLevelState::place(MeshComponent3D_Bgfx& mesh, const b2Vec2& at, float yaw)
+	void DungeonLevelState::place(MeshComponent3D_Bgfx& mesh, const Pakal::Vec2& at, float yaw)
 	{
 		float low[3], high[3];
 		mesh.get_bounds(low, high);
@@ -323,7 +324,7 @@ namespace Dungeon
 		const std::string wallModel = folder + pieces.value("wall", std::string());
 		const DungeonLayout& layout = m_game->layout();
 		const float half = 0.5f * layout.cell;
-		auto add = [&](const std::string& model, const b2Vec2& at, float yaw) -> MeshComponent3D_Bgfx*
+		auto add = [&](const std::string& model, const Pakal::Vec2& at, float yaw) -> MeshComponent3D_Bgfx*
 		{
 			auto mesh = m_runtime->model(model);
 			if (!mesh) return nullptr;
@@ -336,7 +337,7 @@ namespace Dungeon
 		// every piece on its own.
 		static const bool mergePieces = !std::getenv("DUNGEON_MERGE") || std::string(std::getenv("DUNGEON_MERGE")) != "off";
 		std::map<std::pair<std::string, int>, std::vector<std::unique_ptr<MeshComponent3D_Bgfx>>> blocks;
-		auto addMerged = [&](const std::string& model, const b2Vec2& at, float yaw)
+		auto addMerged = [&](const std::string& model, const Pakal::Vec2& at, float yaw)
 		{
 			if (!mergePieces)
 			{
@@ -350,7 +351,7 @@ namespace Dungeon
 			blocks[{ model, block }].push_back(std::move(mesh));
 		};
 		// a wall that may hide the hero fades: its box, in render space
-		auto fades = [&](MeshComponent3D_Bgfx* mesh, const b2Vec2& at, bool alongX)
+		auto fades = [&](MeshComponent3D_Bgfx* mesh, const Pakal::Vec2& at, bool alongX)
 		{
 			if (!mesh) return;
 			OccluderFade::Occluder occluder;
@@ -366,13 +367,13 @@ namespace Dungeon
 			for (int x = 0; x < layout.width; ++x)
 			{
 				if (!layout.is_floor(x, y)) continue;
-				const b2Vec2 c = layout.center(x, y);
+				const Pakal::Vec2 c = layout.center(x, y);
 				addMerged(floorModel, c, 0.0f);
 				// a wall on each open side, its face to the floor
-				if (!layout.is_floor(x, y + 1)) { const b2Vec2 at = c + b2Vec2(0.0f, half); fades(add(wallModel, at, 0.0f), at, true); }
-				if (!layout.is_floor(x, y - 1)) { const b2Vec2 at = c - b2Vec2(0.0f, half); fades(add(wallModel, at, kPi), at, true); }
-				if (!layout.is_floor(x + 1, y)) { const b2Vec2 at = c + b2Vec2(half, 0.0f); fades(add(wallModel, at, -0.5f * kPi), at, false); }
-				if (!layout.is_floor(x - 1, y)) { const b2Vec2 at = c - b2Vec2(half, 0.0f); fades(add(wallModel, at, 0.5f * kPi), at, false); }
+				if (!layout.is_floor(x, y + 1)) { const Pakal::Vec2 at = c + Pakal::Vec2(0.0f, half); fades(add(wallModel, at, 0.0f), at, true); }
+				if (!layout.is_floor(x, y - 1)) { const Pakal::Vec2 at = c - Pakal::Vec2(0.0f, half); fades(add(wallModel, at, kPi), at, true); }
+				if (!layout.is_floor(x + 1, y)) { const Pakal::Vec2 at = c + Pakal::Vec2(half, 0.0f); fades(add(wallModel, at, -0.5f * kPi), at, false); }
+				if (!layout.is_floor(x - 1, y)) { const Pakal::Vec2 at = c - Pakal::Vec2(half, 0.0f); fades(add(wallModel, at, 0.5f * kPi), at, false); }
 			}
 		}
 		// a few props in the corners of each room (no bodies: they stand where nobody walks)
@@ -381,16 +382,16 @@ namespace Dungeon
 		RandomStream& random = m_runtime->random()["props"];
 		for (const auto& room : layout.rooms)
 		{
-			const b2Vec2 corners[] = { layout.center(room.x, room.y), layout.center(room.x + room.w - 1, room.y),
+			const Pakal::Vec2 corners[] = { layout.center(room.x, room.y), layout.center(room.x + room.w - 1, room.y),
 				layout.center(room.x, room.y + room.h - 1), layout.center(room.x + room.w - 1, room.y + room.h - 1) };
 			for (int i = 0; i < perRoom && !props.empty(); ++i)
 			{
-				const b2Vec2 corner = corners[std::min(3, static_cast<int>(random.uniform() * 4.0f))];
-				const b2Vec2 inward = layout.room_center(room) - corner;
-				b2Vec2 nudge = inward;
+				const Pakal::Vec2 corner = corners[std::min(3, static_cast<int>(random.uniform() * 4.0f))];
+				const Pakal::Vec2 inward = layout.room_center(room) - corner;
+				Pakal::Vec2 nudge = inward;
 				nudge.Normalize();
 				const std::string& prop = props[std::min(props.size() - 1, static_cast<size_t>(random.uniform() * static_cast<float>(props.size())))];
-				addMerged(folder + prop, corner - 0.35f * nudge + b2Vec2(random.uniform(-0.2f, 0.2f), random.uniform(-0.2f, 0.2f)), random.uniform(0.0f, 2.0f * kPi));
+				addMerged(folder + prop, corner - 0.35f * nudge + Pakal::Vec2(random.uniform(-0.2f, 0.2f), random.uniform(-0.2f, 0.2f)), random.uniform(0.0f, 2.0f * kPi));
 			}
 		}
 		size_t merged = 0;
@@ -616,7 +617,7 @@ namespace Dungeon
 		draw_pools(world, dt);
 		sync_chests(world, dt);
 		if (m_effects) m_effects->update(dt, {});
-		const b2Vec2 at = hero ? hero->drawn_position(m_runtime->alpha()) : b2Vec2(0.0f, 0.0f);
+		const Pakal::Vec2 at = hero ? hero->drawn_position(m_runtime->alpha()) : Pakal::Vec2(0.0f, 0.0f);
 		static const float scale = env_number("DUNGEON_CAM_SCALE", 1.0f);   // debug: below 1 comes closer
 		m_runtime->follow(at, m_seconds * 1000.0, 0.9f, scale);
 		m_walls.update(m_runtime->rig().eye(), OccluderFade::body_points(at.x, at.y), hero != nullptr, dt);
@@ -626,7 +627,7 @@ namespace Dungeon
 		{
 			m_shot = true;
 			const std::string path = shot;
-			m_runtime->on_graphics([this, path]() { m_runtime->graphics().request_screenshot(path.c_str()); });
+			m_runtime->graphics().take_screenshot(path);
 		}
 	}
 
@@ -695,12 +696,12 @@ namespace Dungeon
 			auto seen = m_hurtSeen.find(actor->id);
 			if (seen != m_hurtSeen.end() && seen->second != state.hurtClips)
 			{
-				b2Vec2 away(0.0f, 1.0f);
+				Pakal::Vec2 away(0.0f, 1.0f);
 				float nearest = 4.0f;
 				for (const auto& other : world.actors())
 				{
 					if (other->removed || other->kind != ActorKind::Character || world.faction_of(*other) == world.faction_of(*actor)) continue;
-					const b2Vec2 to = actor->position - other->position;
+					const Pakal::Vec2 to = actor->position - other->position;
 					if (to.Length() < nearest)
 					{
 						nearest = to.Length();
@@ -743,7 +744,7 @@ namespace Dungeon
 					m_effects->on_blast(missile.at, thrown->radius);
 					m_runtime->rig().shake(4.0f, 160.0f);
 				}
-				else m_effects->on_impact(missile.at, b2Vec2(0.0f, 1.0f), ImpactKind::Wall);
+				else m_effects->on_impact(missile.at, Pakal::Vec2(0.0f, 1.0f), ImpactKind::Wall);
 			}
 		}
 		m_flying = std::move(flying);
@@ -752,7 +753,7 @@ namespace Dungeon
 	void DungeonLevelState::draw_pools(TopDownGame& world, float dt)
 	{
 		const std::vector<std::string> blood = m_rules.visuals.value("blood", std::vector<std::string>());
-		std::vector<std::pair<uintptr_t, b2Vec2>> fresh;
+		std::vector<std::pair<uintptr_t, Pakal::Vec2>> fresh;
 		for (const auto& actor : world.actors())
 		{
 			if (actor->removed || actor->kind != ActorKind::Character || m_pools.count(actor->id)) continue;
@@ -825,7 +826,7 @@ namespace Dungeon
 				for (int i = 0; i < 8; ++i)
 				{
 					const float a = 0.785f * static_cast<float>(i) + 2.0f * rise;
-					const b2Vec2 at = actor->position + (0.25f + 0.35f * rise) * b2Vec2(std::cos(a), std::sin(a));
+					const Pakal::Vec2 at = actor->position + (0.25f + 0.35f * rise) * Pakal::Vec2(std::cos(a), std::sin(a));
 					const uint8_t alpha = static_cast<uint8_t>(220.0f * chest.glow);
 					m_runtime->graphics().draw_particle(floor_point(at, 0.4f + 1.2f * rise), 0.09f, (static_cast<uint32_t>(alpha) << 24) | 0x0040d0ffu, true);
 				}
@@ -845,9 +846,9 @@ namespace Dungeon
 				const DungeonLayout& layout = m_game->layout();
 				for (const auto& room : layout.rooms)
 				{
-					const b2Vec2 low = layout.center(room.x, room.y), high = layout.center(room.x + room.w - 1, room.y + room.h - 1);
+					const Pakal::Vec2 low = layout.center(room.x, room.y), high = layout.center(room.x + room.w - 1, room.y + room.h - 1);
 					if (actor->position.x < low.x - 0.1f || actor->position.x > high.x + 0.1f || actor->position.y < low.y - 0.1f || actor->position.y > high.y + 0.1f) continue;
-					const b2Vec2 in = layout.room_center(room) - actor->position;
+					const Pakal::Vec2 in = layout.room_center(room) - actor->position;
 					yaw = std::atan2(in.x, in.y);
 				}
 				chest.mesh->set_scale(1.4f);   // the pack's chest is small for a dungeon's
@@ -866,8 +867,8 @@ namespace Dungeon
 			const bool fire = actor->name == "fireball";
 			const uint32_t core = fire ? 0xff40c0ffu : 0xff60ff90u;   // ABGR
 			const uint32_t glow = fire ? 0x802080ffu : 0x8030c060u;
-			const b2Vec2 at = actor->drawn_position(m_runtime->alpha());
-			b2Vec2 back = actor->previousPosition - actor->position;
+			const Pakal::Vec2 at = actor->drawn_position(m_runtime->alpha());
+			Pakal::Vec2 back = actor->previousPosition - actor->position;
 			back.Normalize();
 			graphics.draw_particle(floor_point(at, 1.1f), fire ? 0.3f : 0.18f, core, true);
 			for (int i = 1; i <= 3; ++i)

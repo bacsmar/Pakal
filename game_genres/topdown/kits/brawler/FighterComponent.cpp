@@ -9,6 +9,7 @@
 #include "topdown/TopDownGame.h"
 
 #include <algorithm>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -50,12 +51,13 @@ namespace Pakal::TopDown
 		{
 			return false;
 		}
-		const b2Vec2 facing = this->facing();
+		const Pakal::Vec2 facing = this->facing();
 		if (!m_action.start(move->timing))
 		{
 			return false;
 		}
 		m_move = m_action.busy() ? move : nullptr;
+		m_connected = false;
 		m_facing = facing;   // the move goes the way it started
 		if (move->jump)
 		{
@@ -82,8 +84,20 @@ namespace Pakal::TopDown
 		return m_runSpeed * stat_of(actor(), Stat::speed);
 	}
 
-	void FighterComponent::stagger(float seconds, const b2Vec2& push)
+	void FighterComponent::guard_stun(float seconds, const Pakal::Vec2& push)
 	{
+		if (seconds <= 0.0f && push.LengthSquared() <= 0.0f) return;
+		m_action.cancel();
+		m_move = nullptr;
+		m_stun = std::max(m_stun, std::max(seconds, 1.0e-3f));
+		m_stunTotal = m_stun;
+		m_push = push;
+		m_guardStunned = true;
+	}
+
+	void FighterComponent::stagger(float seconds, const Pakal::Vec2& push)
+	{
+		m_guardStunned = false;
 		m_action.cancel();
 		m_move = nullptr;
 		m_stun = std::max(m_stun, seconds);
@@ -93,16 +107,16 @@ namespace Pakal::TopDown
 		m_hurtFlash = kHurtFlashSeconds;
 	}
 
-	b2Vec2 FighterComponent::facing() const
+	Pakal::Vec2 FighterComponent::facing() const
 	{
 		if (m_action.busy()) return m_facing;
 		const PlayerControlComponent* control = actor().get<PlayerControlComponent>();
 		return control ? control->facing() : m_facing;
 	}
 
-	void FighterComponent::face(const b2Vec2& direction)
+	void FighterComponent::face(const Pakal::Vec2& direction)
 	{
-		b2Vec2 way = direction;
+		Pakal::Vec2 way = direction;
 		if (!m_action.busy() && way.Normalize() > 1.0e-4f) m_facing = way;
 	}
 
@@ -114,7 +128,9 @@ namespace Pakal::TopDown
 		{
 			m_action.cancel();
 			m_move = nullptr;
-			if (body) body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_stun = 0.0f;   // the fight ends a stun: one down is down, not stunned forever (stunned() turns false)
+			m_requested.clear();
+			if (body) body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		if (m_stun > 0.0f)
@@ -122,17 +138,32 @@ namespace Pakal::TopDown
 			m_requested.clear();   // a button pressed while hit is lost
 			// pushed away, slowing down to a stop at the end of the stun
 			const float left = m_stun / std::max(m_stunTotal, 1.0e-4f);
-			b2Vec2 way = m_push;
+			Pakal::Vec2 way = m_push;
 			const float speed = way.Normalize() * left;
 			if (body) body->move(way, speed);
 			m_stun = std::max(0.0f, m_stun - dt);
+			if (m_stun <= 0.0f) m_guardStunned = false;
 			return;
 		}
 		m_action.update(dt);
-		if (m_action.busy() && m_move && !m_move->next.empty()
+		if (m_action.busy() && m_move && !m_move->next.empty() && m_queuedRoot.empty()
 			&& std::find(m_requested.begin(), m_requested.end(), m_chainRoot) != m_requested.end())
 		{
 			m_queued = find(m_move->next);   // the combo goes on
+		}
+		else if (m_action.busy() && m_move && m_connected && !m_move->cancelInto.empty() && m_queuedRoot.empty())
+		{
+			// a cancel: the first requested move this one may be cancelled into, once it has connected
+			for (const auto& name : m_requested)
+			{
+				if (std::find(m_move->cancelInto.begin(), m_move->cancelInto.end(), name) == m_move->cancelInto.end()) continue;
+				if (const MoveRules* into = find(name))
+				{
+					m_queued = into;
+					m_queuedRoot = name;   // its own combo goes on with its button, once it comes out
+					break;
+				}
+			}
 		}
 		else if (!m_action.busy())
 		{
@@ -153,11 +184,12 @@ namespace Pakal::TopDown
 			m_queued = nullptr;
 			m_action.cancel();
 			m_move = nullptr;
-			perform(next->name);
+			if (perform(next->name) && !m_queuedRoot.empty()) m_chainRoot = m_queuedRoot;
+			m_queuedRoot.clear();
 		}
 		if (blocking())
 		{
-			if (body) body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			if (body) body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		if (!m_action.busy() && m_trigger && !m_moves.empty())
@@ -178,7 +210,7 @@ namespace Pakal::TopDown
 			return;   // a move that hurts no one (a dodge)
 		}
 		const MoveRules& move = *m_move;
-		const b2Vec2 center = actor().position + move.reach * m_facing;
+		const Pakal::Vec2 center = actor().position + move.reach * m_facing;
 		const float from = height_of(actor());
 		for (const auto& candidate : game.actors())
 		{
@@ -203,13 +235,15 @@ namespace Pakal::TopDown
 				continue;
 			}
 			m_struck.push_back(target.id);
-			b2Vec2 away = target.position - actor().position;
+			m_connected = true;
+			Pakal::Vec2 away = target.position - actor().position;
 			if (away.Normalize() < 1.0e-4f) away = m_facing;
 			// a fighter guarding and facing this one takes a share of it, and is neither stunned nor flung
-			const bool guarded = other && other->blocking() && b2Dot(other->facing(), -away) > 0.0f;
+			const bool guarded = other && other->blocking() && Pakal::dot(other->facing(), -away) > 0.0f;
 			DamageInfo hit{ .amount = move.damage * stat_of(actor(), Stat::damage), .type = DamageType::Melee, .source = actor().id,
 				.from = actor().position, .knockback = move.push > 0.0f && !guarded, .hitstun = guarded ? 0.0f : move.hitstun };
 			if (guarded) hit.amount *= other->blockFactor;
+			hit.guarded = guarded;
 			if (!game.damage(target, hit))
 			{
 				continue;
@@ -217,9 +251,19 @@ namespace Pakal::TopDown
 			++m_hits;
 			if (guarded)
 			{
+				// the guard held a moment and pushed back (a fighting game's blockstun), as the move or this fighter says
+				const float stun = move.guardstun >= 0.0f ? move.guardstun : move.hitstun * guardStunShare;
+				const float push = move.guardPush >= 0.0f ? move.guardPush : move.push * guardPushShare;
+				FighterComponent* guard = target.get<FighterComponent>();
+				if (guard && guard->blocking()) guard->guard_stun(stun, push * away);   // (not if the game broke its guard meanwhile: a guard crush)
 				continue;
 			}
-			if (FighterComponent* fighter = target.get<FighterComponent>())
+			FighterComponent* fighter = target.get<FighterComponent>();
+			if (fighter && fighter->armored)
+			{
+				continue;   // (hurt, not interrupted)
+			}
+			if (fighter)
 			{
 				fighter->stagger(move.hitstun, move.push * away);
 			}
@@ -240,12 +284,13 @@ namespace Pakal::TopDown
 		state.hurt = m_hurtFlash > 0.0f;
 		state.hurtClips = m_hurtClips;
 		const HeightComponent* height = actor().get<HeightComponent>();
-		state.knocked = m_stun > 0.0f && (m_stunTotal >= kKnockedAbove || (height && height->airborne()));
+		state.knocked = m_stun > 0.0f && !m_guardStunned && (m_stunTotal >= kKnockedAbove || (height && height->airborne()));
 		state.knockLeft = m_stun;
 		// a move's clip, or the guard's
 		state.special = m_action.busy() || blocking();
 		state.action = m_action.busy() ? &m_view : (blocking() ? &m_guard : nullptr);
-		state.facing = m_facing;
+		// the way it looks now: its control's while it walks (a player turns as it walks), the move's during a move
+		state.facing = facing();
 		return state;
 	}
 }

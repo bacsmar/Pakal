@@ -21,13 +21,14 @@
 #include <span>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Zombies
 {
 	// A ground pound (a boomer, the player revived): dust, no fire. An event of this game (TopDownGame::events).
 	struct ShockwaveEvent
 	{
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		float radius;
 		float shake;
 	};
@@ -57,30 +58,30 @@ namespace Zombies
 		bool frozen() const;
 
 		// Services for the components
-		void fire_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range, float piercing = 1.0f, bool knockback = false, int faction = Factions::None, float height = 1.0f) override;
+		void fire_bullet(const Pakal::Vec2& from, const Pakal::Vec2& direction, float speed, float damage, float range, float piercing = 1.0f, bool knockback = false, int faction = Factions::None, float height = 1.0f) override;
 		// An enemy's shot (meters, seconds): walls stop it, it goes through zombies and hurts the player
-		void fire_enemy_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range);
+		void fire_enemy_bullet(const Pakal::Vec2& from, const Pakal::Vec2& direction, float speed, float damage, float range);
 		// Damage from an enemy's blast to the player and to the zombies around 'at' (not to props), but not to 'source'
-		void enemy_blast(const b2Vec2& at, float radius, float amount, uintptr_t source);
+		void enemy_blast(const Pakal::Vec2& at, float radius, float amount, uintptr_t source);
 		// Brings in an enemy of a type (a dog walker lets its dogs loose); set by the level. Returns its id, 0 if none came.
-		std::function<uintptr_t(const std::string& type, const b2Vec2& at)> spawnEnemy;
+		std::function<uintptr_t(const std::string& type, const Pakal::Vec2& at)> spawnEnemy;
 
 		// The part of the floor the camera shows (an axis-aligned box in level meters, set by the level every frame):
 		// zombies far off it walk faster, and the ones left behind are brought to the edge ahead of the player
-		void set_screen(const b2Vec2& minCorner, const b2Vec2& maxCorner);
-		bool on_screen(const b2Vec2& point) const;
+		void set_screen(const Pakal::Vec2& minCorner, const Pakal::Vec2& maxCorner);
+		bool on_screen(const Pakal::Vec2& point) const;
 		// Off screen and farther from the player than twice the distance to the screen's farthest corner
-		bool far_off_screen(const b2Vec2& point) const;
+		bool far_off_screen(const Pakal::Vec2& point) const;
 		// Damage to the enemies and breakable props around 'at' (an explosion), shaking the camera this hard
-		void blast(const b2Vec2& at, float radius, float amount, uintptr_t source, float shake = -1.0f) override;
+		void blast(const Pakal::Vec2& at, float radius, float amount, uintptr_t source, float shake = -1.0f) override;
 		int tokens = 0;   // tokens picked up (a "collect" mission counts them: pickupCount)
-		void drop_pickup(int pickupId, const b2Vec2& at) override;
-		void roll_drop(bool random, const std::vector<int>& drops, float rate, const b2Vec2& at) override;
+		void drop_pickup(int pickupId, const Pakal::Vec2& at) override;
+		void roll_drop(bool random, const std::vector<int>& drops, float rate, const Pakal::Vec2& at) override;
 		float random01() override;
 		Pakal::RandomStream& random(const std::string& stream) override { return m_random[stream]; }
 		void enemy_killed(Actor& enemy);
 		// AirStrikeBoost: a burst of blasts around 'center' over the next moments (none lands on the player)
-		void airstrike(const b2Vec2& center);
+		void airstrike(const Pakal::Vec2& center);
 
 		bool apply_effect(const std::string& effect, Actor& user) override;
 		// Money and tokens go to the counters
@@ -120,11 +121,11 @@ namespace Zombies
 		Pakal::NavGrid2D& m_nav;
 		const GameRules& m_rules;
 		std::vector<Bullet> m_bullets;
-		struct Strike { float delay; b2Vec2 at; };
+		struct Strike { float delay; Pakal::Vec2 at; };
 		std::vector<Strike> m_strikes;
 		void teleport_enemies(float dt);
 		bool m_hasScreen = false;
-		b2Vec2 m_screenMin = b2Vec2(0.0f, 0.0f), m_screenMax = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 m_screenMin = Pakal::Vec2(0.0f, 0.0f), m_screenMax = Pakal::Vec2(0.0f, 0.0f);
 		float m_teleportTimer = 0.0f;
 		std::map<uintptr_t, float> m_coinCalls;   // money on the floor: seconds to its next call for a zombie
 		Pakal::RandomStreams m_random;   // from the level's seed: "sim", "spawn"

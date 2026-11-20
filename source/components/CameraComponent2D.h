@@ -16,6 +16,8 @@ namespace Pakal
 		virtual ~CameraComponent2D() = default;
 
 		virtual void set_orthographic(float width, float height, float nearPlane = 0.1f, float farPlane = 100.0f) = 0;
+		// Where on the screen the camera draws, in pixels of the back buffer. A width or a height of 0 is automatic: the whole
+		// screen in the shape of the camera's view (the bars of what is left over, at the sides or above and below)
 		virtual void set_viewport(int x, int y, int width, int height) = 0;
 		virtual void set_position(float x, float y) = 0;
 		virtual void set_zoom(float zoom) = 0;

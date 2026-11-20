@@ -8,7 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "config.h"
+#include "Config.h"
+#include <functional>
 #include <string>
 
 #if PAKAL_USE_LOG == 1
@@ -83,5 +84,12 @@ namespace Pakal{
 		void inline log(const std::string&msg) { log(LOG_INFO, msg.c_str()); }
 		void log( int level, const char *format, ... );
 		void log(int level, const char *format, va_list& args);
+
+		// One more place every line goes, formatted (the QA tools' log.tail keeps the last ones in memory); empty: none.
+		// Called under the log's lock, from whatever thread logs: it must not log itself.
+		using Sink = std::function<void(int level, const char* line)>;
+		void set_sink(Sink sink);
+	private:
+		Sink m_sink;
 	};
 }

@@ -7,6 +7,7 @@
 #include "Utils.h"
 
 #include <algorithm>
+#include <sstream>
 #include <cmath>
 #include <vector>
 
@@ -148,7 +149,33 @@ namespace Pakal
 		return nullptr;
 	}
 
-	SharedPtr<sf::SoundBuffer> SoundManagerSFML::create_tone(float frequencyHz, float seconds)
+	namespace
+	{
+		// SoundManager's SoundEffect on SFML: a decoded buffer
+		struct SoundEffectSFML final : SoundEffect
+		{
+			explicit SoundEffectSFML(SharedPtr<sf::SoundBuffer> b) : buffer(std::move(b)) {}
+			SharedPtr<sf::SoundBuffer> buffer;
+		};
+	}
+
+	std::shared_ptr<SoundEffect> SoundManagerSFML::load_effect(const std::string& path)
+	{
+		// read whole first (a zip's or a pack's stream is not one SFML can seek in while it decodes)
+		const auto bytes = ResourceMgr.read_bytes(path);
+		if (!bytes) return nullptr;
+		auto stream = std::make_shared<std::istringstream>(std::string(bytes->begin(), bytes->end()), std::ios::binary);
+		auto buffer = load_sfx(stream, path);
+		return buffer ? std::make_shared<SoundEffectSFML>(std::move(buffer)) : nullptr;
+	}
+
+	void SoundManagerSFML::play_effect(const std::shared_ptr<SoundEffect>& effect, const SoundSettings& settings)
+	{
+		// (only this manager makes them: load_effect)
+		if (const auto* sfml = static_cast<const SoundEffectSFML*>(effect.get())) play_sfx(sfml->buffer, settings);
+	}
+
+	std::shared_ptr<SoundEffect> SoundManagerSFML::create_tone(float frequencyHz, float seconds)
 	{
 		const unsigned int sampleRate = 44100;
 		const size_t count = static_cast<size_t>(seconds * sampleRate);
@@ -168,7 +195,7 @@ namespace Pakal
 			LOG_ERROR("[SoundManagerSFML] could not create a %.1f Hz tone", frequencyHz);
 			return nullptr;
 		}
-		return buffer;
+		return std::make_shared<SoundEffectSFML>(std::move(buffer));
 	}
 
 	void SoundManagerSFML::set_listener(const tmath::vector3df& position, const tmath::vector3df& forward, const tmath::vector3df& up)

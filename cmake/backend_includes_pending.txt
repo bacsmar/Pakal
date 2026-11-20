@@ -1,0 +1,34 @@
+# Files of games and genres that still include a backend header (cmake/CheckBackendIncludes.cmake). The list only
+# shrinks: when a file moves to the engine's abstractions, its line goes. No file is added to it.
+
+# engine tools that exercise a backend on purpose (a mesh viewer)
+examples/mesh_viewer/main.cpp
+
+# the TopDown genre
+game_genres/topdown/editor/AssetBrowser.cpp
+game_genres/topdown/editor/AssetBrowser.h
+game_genres/topdown/editor/LevelEditorState.cpp
+game_genres/topdown/view/CameraRig.cpp
+game_genres/topdown/view/CharacterViewComponent.cpp
+game_genres/topdown/view/EffectsSystem.cpp
+game_genres/topdown/view/LevelEditPanel.cpp
+game_genres/topdown/view/LevelObjects.cpp
+game_genres/topdown/view/LevelRuntime.cpp
+game_genres/topdown/view/OccluderFade.cpp
+game_genres/topdown/view/OccluderFade.h
+game_genres/topdown/view/PropMesh.cpp
+game_genres/topdown/view/SceneLook.cpp
+game_genres/topdown/view/SceneLook.h
+
+# the games
+examples/brawler_proto/BrawlerLevelState.cpp
+examples/dungeon_proto/DungeonLevelState.cpp
+examples/zombies_module/CharacterViewer.cpp
+examples/zombies_module/MenuState.cpp
+examples/zombies_module/WorldOverlays.cpp
+examples/zombies_module/ZombiesDevPanel.cpp
+examples/zombies_module/ZombiesHud.cpp
+examples/zombies_module/ZombiesLevelState.cpp
+examples/zombies_module/ZombiesLevelState.h
+examples/zombies_module/ZombiesLoading.cpp
+examples/zombies_module/ZombiesScripting.cpp

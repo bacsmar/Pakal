@@ -141,6 +141,7 @@ namespace Pakal
 		// host gives its own reader (the engine's resource manager: a folder, a zip, the APK). False when it is not there.
 		using FileReader = std::function<bool(const std::string& path, std::string& text)>;
 		static void set_file_reader(FileReader reader);
+		static bool has_file_reader();
 		static bool read_file(const std::string& path, std::string& text);
 		// The file of a part of a level file: "dir/level.json", "objects" -> "dir/level.objects.json"
 		static std::string part_path(const std::string& path, const std::string& section);

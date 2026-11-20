@@ -14,6 +14,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -22,7 +23,7 @@ namespace Pakal::TopDown
 		const std::function<bool(uintptr_t actor)>& isBarricade)
 	{
 		LevelPhysicsCount count;
-		b2Vec2 minCorner(1e9f, 1e9f), maxCorner(-1e9f, -1e9f);
+		Pakal::Vec2 minCorner(1e9f, 1e9f), maxCorner(-1e9f, -1e9f);
 		auto extend = [&](float x, float y)
 		{
 			minCorner.x = std::min(minCorner.x, x);
@@ -45,7 +46,7 @@ namespace Pakal::TopDown
 				const float hy = doc.meters(wall.h) * 0.5f;
 				// a turned box (a car along a diagonal street): its own extent, not the one of the box around it
 				const float angle = static_cast<float>(wall.angle) * 3.14159265f / 180.0f;
-				world.add_static_box(b2Vec2(x, y), b2Vec2(hx, hy), category, userData, angle);
+				world.add_static_box(Pakal::Vec2(x, y), Pakal::Vec2(hx, hy), category, userData, angle);
 				const float c = std::abs(std::cos(angle)), s = std::abs(std::sin(angle));
 				const float ex = hx * c + hy * s, ey = hx * s + hy * c;
 				extend(x - ex, y - ey);
@@ -55,7 +56,7 @@ namespace Pakal::TopDown
 			else if (wall.shape == "circle")
 			{
 				const float r = doc.meters(wall.d) * 0.5f;
-				world.add_static_circle(b2Vec2(x, y), r, category, userData);
+				world.add_static_circle(Pakal::Vec2(x, y), r, category, userData);
 				extend(x - r, y - r);
 				extend(x + r, y + r);
 				++count.walls;
@@ -73,10 +74,10 @@ namespace Pakal::TopDown
 				{
 					continue;
 				}
-				std::vector<b2Vec2> points;
+				std::vector<Pakal::Vec2> points;
 				for (const auto& point : segment.value("points", Pakal::Json::array()))
 				{
-					points.push_back(b2Vec2(doc.meters(point[0].get<double>()), doc.meters(point[1].get<double>())));
+					points.push_back(Pakal::Vec2(doc.meters(point[0].get<double>()), doc.meters(point[1].get<double>())));
 					extend(points.back().x, points.back().y);
 				}
 				if (segment.value("filled", false))
@@ -90,9 +91,9 @@ namespace Pakal::TopDown
 				++count.outlines;
 			}
 		}
-		const b2Vec2 spawn(doc.meters(doc.spawn[0]), doc.meters(doc.spawn[1]));
+		const Pakal::Vec2 spawn(doc.meters(doc.spawn[0]), doc.meters(doc.spawn[1]));
 		extend(spawn.x, spawn.y);
-		const b2Vec2 margin(10.0f, 10.0f);
+		const Pakal::Vec2 margin(10.0f, 10.0f);
 		nav.build(world, minCorner - margin, maxCorner + margin, agentRadius, layers.wall);
 		return count;
 	}

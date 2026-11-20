@@ -25,8 +25,13 @@ namespace Pakal
 
 	void GenericEntity::remove_component(AsyncComponent* c)
 	{
+		auto it = find(m_components.begin(), m_components.end(), c);
+		if (it == m_components.end())
+		{
+			return;	// not one of this entity's (erasing end() was undefined)
+		}
 		c->set_parent_entity(nullptr);
-		m_components.erase(find(m_components.begin(),m_components.end(),c));
+		m_components.erase(it);
 	}
 
 	bool GenericEntity::destroy_component(AsyncComponent* c)

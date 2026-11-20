@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Zombies
 {
@@ -94,7 +95,7 @@ namespace Zombies
 				play(m_rules.sound("strikeBlast"), strike.at);
 				blast(strike.at, kStrikeRadius, kStrikeDamage, 0, m_rules.shake.bombing);
 				strike.delay = 1.0e9f;
-				strike.at = b2Vec2(1.0e9f, 1.0e9f); // done
+				strike.at = Pakal::Vec2(1.0e9f, 1.0e9f); // done
 			}
 		}
 		m_strikes.erase(std::remove_if(m_strikes.begin(), m_strikes.end(), [](const Strike& s) { return s.at.x > 1.0e8f; }), m_strikes.end());
@@ -108,7 +109,7 @@ namespace Zombies
 		TopDownGame::entity_removed(actor);
 	}
 
-	void ZombiesGame::fire_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range, float piercing, bool knockback, int faction, float height)
+	void ZombiesGame::fire_bullet(const Pakal::Vec2& from, const Pakal::Vec2& direction, float speed, float damage, float range, float piercing, bool knockback, int faction, float height)
 	{
 		Bullet bullet;
 		bullet.faction = faction;
@@ -123,13 +124,13 @@ namespace Zombies
 		m_bullets.push_back(bullet);
 	}
 
-	void ZombiesGame::fire_enemy_bullet(const b2Vec2& from, const b2Vec2& direction, float speed, float damage, float range)
+	void ZombiesGame::fire_enemy_bullet(const Pakal::Vec2& from, const Pakal::Vec2& direction, float speed, float damage, float range)
 	{
 		fire_bullet(from, direction, speed, damage, range, 1.0f, false, undead);
 		m_bullets.back().fromEnemy = true;
 	}
 
-	void ZombiesGame::enemy_blast(const b2Vec2& at, float radius, float amount, uintptr_t source)
+	void ZombiesGame::enemy_blast(const Pakal::Vec2& at, float radius, float amount, uintptr_t source)
 	{
 		std::vector<Actor*> hit;
 		for (auto& actor : entities())
@@ -158,18 +159,18 @@ namespace Zombies
 				continue;
 			}
 			bullet.secondsLeft -= dt;
-			const b2Vec2 to = bullet.position + (bullet.speed * dt) * bullet.direction;
+			const Pakal::Vec2 to = bullet.position + (bullet.speed * dt) * bullet.direction;
 			Pakal::RayCastHit hit = m_world.raycast(bullet.position, to, layers.wall);
 			// Zombies are hit on a circle as wide as their model (EnemyRules::hit_radius), not on the thin body they walk with
-			const b2Vec2 path = to - bullet.position;
+			const Pakal::Vec2 path = to - bullet.position;
 			const float pathLength = path.Length();
 			float nearest = hit.hit ? (hit.point - bullet.position).Length() : pathLength;
 			if (bullet.fromEnemy)
 			{
 				if (player() && pathLength > 0.0f && body_at(*player(), bullet.height))
 				{
-					const b2Vec2 toCenter = player()->position - bullet.position;
-					const float along = b2Dot(toCenter, bullet.direction);
+					const Pakal::Vec2 toCenter = player()->position - bullet.position;
+					const float along = Pakal::dot(toCenter, bullet.direction);
 					const float sideSquared = toCenter.LengthSquared() - along * along;
 					const float radius = kEnemyShotHitRadius;
 					if (sideSquared <= radius * radius)
@@ -195,8 +196,8 @@ namespace Zombies
 					continue;
 				}
 				const float radius = brain->rules().hit_radius();
-				const b2Vec2 toCenter = actor->position - bullet.position;
-				const float along = b2Dot(toCenter, bullet.direction);
+				const Pakal::Vec2 toCenter = actor->position - bullet.position;
+				const float along = Pakal::dot(toCenter, bullet.direction);
 				const float sideSquared = toCenter.LengthSquared() - along * along;
 				if (sideSquared > radius * radius)
 				{
@@ -242,27 +243,27 @@ namespace Zombies
 			[](const Bullet& bullet) { return bullet.secondsLeft <= 0.0f; }), m_bullets.end());
 	}
 
-	void ZombiesGame::set_screen(const b2Vec2& minCorner, const b2Vec2& maxCorner)
+	void ZombiesGame::set_screen(const Pakal::Vec2& minCorner, const Pakal::Vec2& maxCorner)
 	{
 		m_hasScreen = true;
 		m_screenMin = minCorner;
 		m_screenMax = maxCorner;
 	}
 
-	bool ZombiesGame::on_screen(const b2Vec2& p) const
+	bool ZombiesGame::on_screen(const Pakal::Vec2& p) const
 	{
 		return !m_hasScreen || (p.x >= m_screenMin.x && p.x <= m_screenMax.x && p.y >= m_screenMin.y && p.y <= m_screenMax.y);
 	}
 
-	bool ZombiesGame::far_off_screen(const b2Vec2& p) const
+	bool ZombiesGame::far_off_screen(const Pakal::Vec2& p) const
 	{
 		if (!m_hasScreen || !player() || on_screen(p))
 		{
 			return false;
 		}
-		const b2Vec2 at = player()->position;
+		const Pakal::Vec2 at = player()->position;
 		float corner = 0.0f;
-		for (const b2Vec2& c : { m_screenMin, m_screenMax, b2Vec2(m_screenMin.x, m_screenMax.y), b2Vec2(m_screenMax.x, m_screenMin.y) })
+		for (const Pakal::Vec2& c : { m_screenMin, m_screenMax, Pakal::Vec2(m_screenMin.x, m_screenMax.y), Pakal::Vec2(m_screenMax.x, m_screenMin.y) })
 		{
 			corner = std::max(corner, (c - at).Length());
 		}
@@ -280,12 +281,12 @@ namespace Zombies
 		{
 			return;
 		}
-		b2Vec2 walking = input().move;
+		Pakal::Vec2 walking = input().move;
 		if (walking.Normalize() < 0.0001f)
 		{
 			return;
 		}
-		const b2Vec2 at = player()->position;
+		const Pakal::Vec2 at = player()->position;
 		Actor* mover = nullptr;
 		for (auto& actor : entities())
 		{
@@ -294,8 +295,8 @@ namespace Zombies
 			{
 				continue;
 			}
-			b2Vec2 toEnemy = actor->position - at;
-			if (toEnemy.Normalize() > 0.0f && b2Dot(walking, toEnemy) > 0.6f)
+			Pakal::Vec2 toEnemy = actor->position - at;
+			if (toEnemy.Normalize() > 0.0f && Pakal::dot(walking, toEnemy) > 0.6f)
 			{
 				continue;
 			}
@@ -315,7 +316,7 @@ namespace Zombies
 			const float offset = (i % 2 ? 1.0f : -1.0f) * static_cast<float>(i) * kTeleportStep;
 			const float across = start + offset;
 			if (across > limit + kTeleportStep * 2.0f) return;
-			const b2Vec2 spot = alongX ? b2Vec2(edge, across) : b2Vec2(across, edge);
+			const Pakal::Vec2 spot = alongX ? Pakal::Vec2(edge, across) : Pakal::Vec2(across, edge);
 			if (!m_nav.is_walkable(spot)) continue;
 			bool free = true;
 			for (const auto& other : entities())
@@ -373,7 +374,7 @@ namespace Zombies
 
 	// ExplosiveComponent: the blast hurts enemies and level objects (not the player), and does not set
 	// off other explosives
-	void ZombiesGame::blast(const b2Vec2& at, float radius, float amount, uintptr_t source, float shake)
+	void ZombiesGame::blast(const Pakal::Vec2& at, float radius, float amount, uintptr_t source, float shake)
 	{
 		std::vector<Actor*> hit;
 		for (auto& actor : entities())
@@ -395,7 +396,7 @@ namespace Zombies
 		events.emit(ExplosionEvent{ at, radius, shake < 0.0f ? m_rules.shake.explosion : shake });
 	}
 
-	void ZombiesGame::roll_drop(bool random, const std::vector<int>& drops, float rate, const b2Vec2& at)
+	void ZombiesGame::roll_drop(bool random, const std::vector<int>& drops, float rate, const Pakal::Vec2& at)
 	{
 		const float roll = random01();
 		const float pick = random01();
@@ -406,7 +407,7 @@ namespace Zombies
 		}
 	}
 
-	void ZombiesGame::drop_pickup(int pickupId, const b2Vec2& at)
+	void ZombiesGame::drop_pickup(int pickupId, const Pakal::Vec2& at)
 	{
 		auto found = m_rules.pickups.find(pickupId);
 		if (found == m_rules.pickups.end())
@@ -501,7 +502,7 @@ namespace Zombies
 		return brain ? meters(brain->rules().collisionSize) * 0.5f : kPropHitRadius;
 	}
 
-	void ZombiesGame::airstrike(const b2Vec2& center)
+	void ZombiesGame::airstrike(const Pakal::Vec2& center)
 	{
 		const int count = 9;
 		for (int i = 0; i < count; ++i)
@@ -509,7 +510,7 @@ namespace Zombies
 			// Spread over a ring around the player, never on top of it
 			const float angle = random01() * 6.2831853f;
 			const float distance = 3.5f + random01() * 7.5f;
-			m_strikes.push_back({ 0.5f + 0.22f * static_cast<float>(i), center + distance * b2Vec2(std::cos(angle), std::sin(angle)) });
+			m_strikes.push_back({ 0.5f + 0.22f * static_cast<float>(i), center + distance * Pakal::Vec2(std::cos(angle), std::sin(angle)) });
 		}
 	}
 

@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -35,7 +36,7 @@ namespace Zombies
 	public:
 		using Action = CharacterAction;
 
-		EnemyBrainComponent(ZombiesGame& game, const std::string& type, const b2Vec2& at, uintptr_t id);
+		EnemyBrainComponent(ZombiesGame& game, const std::string& type, const Pakal::Vec2& at, uintptr_t id);
 		~EnemyBrainComponent() override;
 
 		// Takes a hit (ZombiesGame::apply_damage). Returns the damage taken: 0 when dead or a bear that cannot be hurt now.
@@ -45,16 +46,16 @@ namespace Zombies
 		float knock_seconds_left() const;
 		// Seconds an attack of this zombie lasts (its clip, or its windup)
 		float get_attack_duration() const;
-		void teleport(const b2Vec2& at);
+		void teleport(const Pakal::Vec2& at);
 		void set_berserk(bool on);
 		bool is_dead() const;
 		bool is_attacking() const;
 		bool attack_started() const;
-		b2Vec2 attack_direction() const;
+		Pakal::Vec2 attack_direction() const;
 		float dead_seconds() const { return m_deadSeconds; }
 		const EnemyRules& rules() const { return *m_rules; }
 		const std::string& type() const { return m_type; }
-		b2Vec2 position() const;
+		Pakal::Vec2 position() const;
 		bool berserk() const { return m_berserk; }
 		bool hurt_recently() const { return m_hurtTimer > 0.0f; }
 		// How many times its hurt clip started (at most once every 2 s): the model plays it when this changes
@@ -67,11 +68,11 @@ namespace Zombies
 		const Action& action() const { return m_action; }
 		// Blown to pieces (a tourist's explosion, a dog's bite): no body is left
 		bool burst() const { return m_burst; }
-		b2Vec2 facing() const;
+		Pakal::Vec2 facing() const;
 		// Money left on the floor: a zombie goes for it (go_for_coin, the coin's actor), takes it and runs off with it,
 		// then chases again; it drops all it carries when it dies
 		bool free_for_coin() const;
-		bool sees(ZombiesGame& game, const b2Vec2& at) const;   // within its sight range, nothing in the way
+		bool sees(ZombiesGame& game, const Pakal::Vec2& at) const;   // within its sight range, nothing in the way
 		void go_for_coin(uintptr_t coin);
 		uintptr_t coin() const { return m_coin; }
 		int coins_carried() const { return static_cast<int>(m_carried.size()); }
@@ -88,7 +89,7 @@ namespace Zombies
 	private:
 		void on_death(ZombiesGame& game);
 		// Defend and escort missions: a barricade in its way, the thing to defend or the one escorted instead of the player
-		void choose_victim(ZombiesGame& game, Actor* player, b2Vec2& target, Actor*& victim);
+		void choose_victim(ZombiesGame& game, Actor* player, Pakal::Vec2& target, Actor*& victim);
 		void update_special(ZombiesGame& game, float dt, Actor* player);
 		void explode(ZombiesGame& game);   // the tourist blows up
 		void end_special();
@@ -117,7 +118,7 @@ namespace Zombies
 		float m_phaseSeconds = 0.0f;     // in the current phase
 		bool m_burst = false;
 		bool m_flung = false;            // flying from a melee kill
-		b2Vec2 m_flingVelocity = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 m_flingVelocity = Pakal::Vec2(0.0f, 0.0f);
 		float m_lift = 0.0f;
 		float m_liftSpeed = 0.0f;
 		float m_tumble = 0.0f;

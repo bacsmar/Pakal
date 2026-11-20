@@ -444,7 +444,7 @@ namespace Zombies
 		{
 			m_shot = true;
 			const std::string path = shot;
-			m_graphics->execute_block([this, path]() { m_graphics->request_screenshot(path.c_str()); });
+			m_graphics->take_screenshot(path);
 		}
 	}
 
@@ -470,7 +470,7 @@ namespace Zombies
 		char path[512];
 		std::snprintf(path, sizeof(path), "%s/w%02zu_%s.tga", m_shots.folder.c_str(), m_shots.weapon, clip.c_str());
 		const std::string file = path;
-		m_graphics->execute_block([this, file]() { m_graphics->request_screenshot(file.c_str()); });
+		m_graphics->take_screenshot(file);
 		LOG_INFO("[Viewer] shot w%02zu %s (%s): other hand %.1f cm from the grip", m_shots.weapon, clip.c_str(), m_weapons[m_shots.weapon].name.c_str(), m_handOff);
 		m_shots.posed = false;
 		m_shots.wait = 0.3f;

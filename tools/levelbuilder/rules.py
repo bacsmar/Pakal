@@ -27,6 +27,7 @@ ALLOWED = {
     'town_sign': {'sidewalk', 'entrance', 'edge'},
     'tree': {'sidewalk'} | GREEN,
     'bush': GREEN, 'grass': GREEN, 'garden': GREEN, 'rock': GREEN, 'path': GREEN,
+    'park_tree': GREEN, 'tuft': GREEN, 'flower': GREEN, 'fern': GREEN, 'shrub': GREEN,
     'landmark': {'park', 'plaza', 'block', 'ring', 'lot'},
     'water_tower': {'park', 'plaza', 'block', 'ring', 'lot'},
     'crashed_car': {'street', 'lot', 'sidewalk'},

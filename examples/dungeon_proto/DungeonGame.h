@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Dungeon
 {
@@ -54,8 +55,8 @@ namespace Dungeon
 
 		bool is_floor(int x, int y) const { return x >= 0 && y >= 0 && x < width && y < height && floor[static_cast<size_t>(y * width + x)] != 0; }
 		// The center of a cell, meters (the dungeon's corner is at 0, 0)
-		b2Vec2 center(int x, int y) const { return b2Vec2((static_cast<float>(x) + 0.5f) * cell, (static_cast<float>(y) + 0.5f) * cell); }
-		b2Vec2 room_center(const Room& room) const;
+		Pakal::Vec2 center(int x, int y) const { return Pakal::Vec2((static_cast<float>(x) + 0.5f) * cell, (static_cast<float>(y) + 0.5f) * cell); }
+		Pakal::Vec2 room_center(const Room& room) const;
 	};
 
 	struct DungeonRules : TopDownRules
@@ -124,10 +125,10 @@ namespace Dungeon
 		// One step: each player's input (walking, aiming; the trigger is the first ability, each button its ability)
 		void step(float dt, std::span<const PlayerInput> inputs);
 		void step(float dt, const PlayerInput& input) { step(dt, std::span<const PlayerInput>(&input, 1)); }
-		Actor& add_creature(const std::string& type, const b2Vec2& at, bool hero);
+		Actor& add_creature(const std::string& type, const Pakal::Vec2& at, bool hero);
 		// Where an ability goes when its player does not aim: the nearest living monster within 9 m in sight, or where the
 		// hero faces
-		b2Vec2 auto_aim(const Actor& hero);
+		Pakal::Vec2 auto_aim(const Actor& hero);
 
 		const DungeonLayout& layout() const { return m_layout; }
 		const CreatureRules* creature(const Actor& actor) const;
@@ -171,7 +172,7 @@ namespace Dungeon
 		void make_layout();
 		void build_walls();
 		void populate(int heroes, bool monsters);
-		void drop_loot(const std::string& table, const b2Vec2& at, int rolls = 1, float scatter = 0.5f);
+		void drop_loot(const std::string& table, const Pakal::Vec2& at, int rolls = 1, float scatter = 0.5f);
 
 		Pakal::PhysicsWorld2D& m_world;
 		Pakal::NavGrid2D& m_nav;
@@ -196,13 +197,13 @@ namespace Dungeon
 		bool m_awake = false;
 		float m_wait = 0.5f;
 		float m_repath = 0.0f;
-		std::vector<b2Vec2> m_path;
+		std::vector<Pakal::Vec2> m_path;
 		size_t m_next = 0;
 	};
 
 	// Walks along the walkable grid toward 'goal': the direction to move this step (zero when there). 'path' and 'next' are
 	// kept between steps; 'repath' counts down to the next search.
-	b2Vec2 follow_path(TopDownGame& game, const b2Vec2& from, const b2Vec2& goal, std::vector<b2Vec2>& path, size_t& next, float& repath, float dt);
+	Pakal::Vec2 follow_path(TopDownGame& game, const Pakal::Vec2& from, const Pakal::Vec2& goal, std::vector<Pakal::Vec2>& path, size_t& next, float& repath, float dt);
 
 	// A bot for the hero (tests, DUNGEON_AUTOPLAY): it goes to the nearest monster, room after room, uses its abilities, heals
 	// when low, and takes the loot it sees
@@ -213,7 +214,7 @@ namespace Dungeon
 		PlayerInput think(DungeonGame& game, float dt, size_t index = 0);
 
 	private:
-		std::vector<b2Vec2> m_path;
+		std::vector<Pakal::Vec2> m_path;
 		size_t m_next = 0;
 		float m_repath = 0.0f;
 	};

@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <string>
 
 namespace Pakal
 {
@@ -27,6 +28,10 @@ namespace Pakal
 		virtual void end(Engine&) = 0;
 
 		//virtual void setup_resources(Engine& engine) = 0;
+
+		// A short status line of the whole game for the QA tools' "state" (its version, its mode): optional, empty by default.
+		// Called on the game's thread, between two updates.
+		virtual std::string describe() { return std::string(); }
 
 		virtual ~IPakalApplication() {}
 	};

@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -26,7 +27,13 @@ namespace Pakal::TopDown
 
 	void Component::update(Pakal::SimWorld& world, float dt)
 	{
-		update(static_cast<TopDownGame&>(world), dt);
+		TopDownGame& game = static_cast<TopDownGame&>(world);
+		if (game.holding_now(actor()))
+		{
+			game.note_held(actor());
+			on_held(game, dt);
+		}
+		else update(game, dt);
 	}
 
 	// HealthComponent ------------------------------------------------------------------------------
@@ -66,20 +73,29 @@ namespace Pakal::TopDown
 
 	// CharacterBodyComponent --------------------------------------------------------------------------
 
-	CharacterBodyComponent::CharacterBodyComponent(TopDownGame& game, const b2Vec2& at, float radius, uint16_t layer)
+	CharacterBodyComponent::CharacterBodyComponent(TopDownGame& game, const Pakal::Vec2& at, float radius, uint16_t layer)
 	{
 		// The id is set when the component is added; the body takes it on its first update
-		m_body = std::make_unique<Pakal::CharacterController2D>(game.world().native(), at, radius, layer != 0 ? layer : game.layers.player, 0xFFFF, 0);
+		m_body = std::make_unique<Pakal::CharacterController2D>(game.world(), at, radius, layer != 0 ? layer : game.layers.player, 0xFFFF, 0);
 	}
 
 	CharacterBodyComponent::~CharacterBodyComponent() = default;
 
-	void CharacterBodyComponent::move(const b2Vec2& direction, float speed)
+	void CharacterBodyComponent::move(const Pakal::Vec2& direction, float speed)
 	{
-		m_body->set_move(direction, speed);
+		m_body->set_move(direction, speed * std::max(0.0f, speedScale));
 	}
 
-	void CharacterBodyComponent::teleport(const b2Vec2& at)
+	void CharacterBodyComponent::on_held(TopDownGame& game, float dt)
+	{
+		(void)game;
+		(void)dt;
+		m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);   // (held: still, where it is)
+		m_body->update();
+		actor().position = m_body->get_position();
+	}
+
+	void CharacterBodyComponent::teleport(const Pakal::Vec2& at)
 	{
 		m_body->teleport(at);
 		actor().position = at;
@@ -88,6 +104,11 @@ namespace Pakal::TopDown
 	void CharacterBodyComponent::set_enabled(bool enabled)
 	{
 		m_body->set_enabled(enabled);
+	}
+
+	void CharacterBodyComponent::set_mask(uint16_t mask)
+	{
+		m_body->set_mask(mask);
 	}
 
 	void CharacterBodyComponent::update(TopDownGame& game, float dt)
@@ -106,22 +127,22 @@ namespace Pakal::TopDown
 		const HealthComponent* health = actor().get<HealthComponent>();
 		if (m_state == State::Dead || m_state == State::Arrived || !body)
 		{
-			if (body) body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			if (body) body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		if (health && health->is_dead())
 		{
 			m_state = State::Dead;
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
-		const b2Vec2 at = actor().position;
+		const Pakal::Vec2 at = actor().position;
 		// the last point (home) is reached a little farther out: it may sit where the walking grid's body does not fit
 		while (m_next < m_route.size() && (m_route[m_next] - at).Length() < (m_next + 1 == m_route.size() ? 3.0f : pointReach)) ++m_next;
 		if (m_next >= m_route.size())
 		{
 			m_state = State::Arrived;
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		// it goes with the players: it waits while the nearest one is far (unless it walks on its own), or while held
@@ -129,7 +150,7 @@ namespace Pakal::TopDown
 		if (held || (waitsForPlayer && (!player || (player->position - at).Length() > waitDistance)))
 		{
 			m_state = State::Waiting;
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		m_state = State::Walking;
@@ -141,8 +162,8 @@ namespace Pakal::TopDown
 			m_pathTimer = 0.5f;
 		}
 		while (!m_path.empty() && (m_path.front() - at).Length() < 0.4f) m_path.erase(m_path.begin());
-		b2Vec2 way = (m_path.empty() ? m_route[m_next] : m_path.front()) - at;
-		if (way.Normalize() < 1.0e-4f) way = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 way = (m_path.empty() ? m_route[m_next] : m_path.front()) - at;
+		if (way.Normalize() < 1.0e-4f) way = Pakal::Vec2(0.0f, 0.0f);
 		body->move(way, speed);
 	}
 
@@ -215,9 +236,9 @@ namespace Pakal::TopDown
 		const float kAimDeadZone = 0.5f;   // meters around the player where the mouse does not turn it
 	}
 
-	void PlayerControlComponent::face(const b2Vec2& direction)
+	void PlayerControlComponent::face(const Pakal::Vec2& direction)
 	{
-		b2Vec2 way = direction;
+		Pakal::Vec2 way = direction;
 		if (way.Normalize() < 1.0e-4f) return;
 		m_facing = way;
 		actor().yaw = actor_yaw(m_facing.x, -m_facing.y);
@@ -233,6 +254,12 @@ namespace Pakal::TopDown
 		}
 		m_slowFactor = factor;
 		m_slowTimer = seconds;
+	}
+
+	void PlayerControlComponent::set_walk(float walkShare, float runAbove)
+	{
+		m_walkShare = std::clamp(walkShare, 0.0f, 1.0f);
+		m_runAbove = std::clamp(runAbove, 0.0f, 1.0f);
 	}
 
 	bool PlayerControlComponent::slowed() const
@@ -251,15 +278,18 @@ namespace Pakal::TopDown
 		const bool active = enabled && alive;
 
 		// Any push of the stick walks at full speed at once, as the original (the direction is what is analog)
-		b2Vec2 move = active ? input.move : b2Vec2(0.0f, 0.0f);
-		m_moving = move.Normalize() > 0.0001f;
+		Pakal::Vec2 move = active ? input.move : Pakal::Vec2(0.0f, 0.0f);
+		const float push = move.Normalize();
+		m_moving = push > 0.0001f;
+		// (set_walk: a short push walks)
+		m_walking = m_moving && m_walkShare > 0.0f && push < m_runAbove;
 		m_slowTimer = std::max(0.0f, m_slowTimer - dt);
 		if (m_slowTimer > 0.0f) move *= m_slowFactor;
 
 		// Facing: toward the aim point (mouse), else the aim keys, else the way the player walks
 		if (active)
 		{
-			b2Vec2 aim(0.0f, 0.0f);
+			Pakal::Vec2 aim(0.0f, 0.0f);
 			if (input.hasAimPoint) aim = input.aimPoint - actor().position;
 			if (aim.LengthSquared() < kAimDeadZone * kAimDeadZone) aim = input.aimDirection; // the mouse right on the player: keep the last aim
 			if (aim.LengthSquared() < 0.0001f) aim = move;
@@ -272,7 +302,8 @@ namespace Pakal::TopDown
 
 		if (body)
 		{
-			body->move(move, weapon ? weapon->run_speed() : 4.75f);
+			const float speed = weapon ? weapon->run_speed() : 4.75f;
+			body->move(move, m_walking ? speed * m_walkShare : speed);
 		}
 		if (weapon)
 		{
@@ -348,7 +379,7 @@ namespace Pakal::TopDown
 		if (m_rules.clearWhenBroken)
 		{
 			game.world().set_static_enabled(actor().id, false);
-			const b2Vec2 margin(1.0f, 1.0f);
+			const Pakal::Vec2 margin(1.0f, 1.0f);
 			if (m_high.x > m_low.x) game.nav().rebuild_area(game.world(), m_low - margin, m_high + margin);
 		}
 		if (!m_rules.burningEffect.empty()) game.events.emit(PropEffectEvent{ actor().position, m_rules.burningEffect, m_size });
@@ -365,14 +396,14 @@ namespace Pakal::TopDown
 		LOG_INFO("[TopDown] %s %d broken", m_rules.name.c_str(), m_rules.id);
 	}
 
-	b2Vec2 DestructibleComponent::reach_point(const b2Vec2& from, float out) const
+	Pakal::Vec2 DestructibleComponent::reach_point(const Pakal::Vec2& from, float out) const
 	{
 		if (m_high.x <= m_low.x)
 		{
 			return actor().position;
 		}
-		const b2Vec2 nearest(std::clamp(from.x, m_low.x, m_high.x), std::clamp(from.y, m_low.y, m_high.y));
-		b2Vec2 away = from - nearest;
+		const Pakal::Vec2 nearest(std::clamp(from.x, m_low.x, m_high.x), std::clamp(from.y, m_low.y, m_high.y));
+		Pakal::Vec2 away = from - nearest;
 		if (away.Normalize() < 1.0e-4f)
 		{
 			return nearest;   // inside its box

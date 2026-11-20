@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Dungeon
 {
@@ -27,7 +28,7 @@ namespace Dungeon
 			return low + pick(random, high - low + 1);
 		}
 
-		bool sees(TopDownGame& game, const b2Vec2& from, const b2Vec2& to)
+		bool sees(TopDownGame& game, const Pakal::Vec2& from, const Pakal::Vec2& to)
 		{
 			return !game.world().raycast(from, to, game.layers.wall).hit;
 		}
@@ -53,9 +54,9 @@ namespace Dungeon
 		}
 	}
 
-	b2Vec2 DungeonLayout::room_center(const Room& room) const
+	Pakal::Vec2 DungeonLayout::room_center(const Room& room) const
 	{
-		return b2Vec2((static_cast<float>(room.x) + 0.5f * static_cast<float>(room.w)) * cell, (static_cast<float>(room.y) + 0.5f * static_cast<float>(room.h)) * cell);
+		return Pakal::Vec2((static_cast<float>(room.x) + 0.5f * static_cast<float>(room.w)) * cell, (static_cast<float>(room.y) + 0.5f * static_cast<float>(room.h)) * cell);
 	}
 
 	DungeonRules DungeonRules::from_json(const nlohmann::json& data)
@@ -171,7 +172,7 @@ namespace Dungeon
 		// side by side in the first room, a meter apart: the first in the middle, then right, left, right...
 		const int index = static_cast<int>(players().size());
 		const float side = index == 0 ? 0.0f : static_cast<float>((index % 2 ? 1 : -1) * ((index + 1) / 2));
-		const b2Vec2 at = m_layout.room_center(m_layout.rooms.front()) + b2Vec2(side, 0.0f);
+		const Pakal::Vec2 at = m_layout.room_center(m_layout.rooms.front()) + Pakal::Vec2(side, 0.0f);
 		Actor& hero = add_creature(m_rules.hero, at, true);
 		add_player(hero);
 		return hero;
@@ -290,14 +291,14 @@ namespace Dungeon
 			for (int x = 0; x < m_layout.width; ++x)
 			{
 				if (!m_layout.is_floor(x, y)) continue;
-				const b2Vec2 c = m_layout.center(x, y);
-				if (!m_layout.is_floor(x, y + 1)) m_world.add_static_box(c + b2Vec2(0.0f, 0.5f * cell + thick), b2Vec2(0.5f * cell + thick, thick), layers.wall);
-				if (!m_layout.is_floor(x, y - 1)) m_world.add_static_box(c - b2Vec2(0.0f, 0.5f * cell + thick), b2Vec2(0.5f * cell + thick, thick), layers.wall);
-				if (!m_layout.is_floor(x + 1, y)) m_world.add_static_box(c + b2Vec2(0.5f * cell + thick, 0.0f), b2Vec2(thick, 0.5f * cell + thick), layers.wall);
-				if (!m_layout.is_floor(x - 1, y)) m_world.add_static_box(c - b2Vec2(0.5f * cell + thick, 0.0f), b2Vec2(thick, 0.5f * cell + thick), layers.wall);
+				const Pakal::Vec2 c = m_layout.center(x, y);
+				if (!m_layout.is_floor(x, y + 1)) m_world.add_static_box(c + Pakal::Vec2(0.0f, 0.5f * cell + thick), Pakal::Vec2(0.5f * cell + thick, thick), layers.wall);
+				if (!m_layout.is_floor(x, y - 1)) m_world.add_static_box(c - Pakal::Vec2(0.0f, 0.5f * cell + thick), Pakal::Vec2(0.5f * cell + thick, thick), layers.wall);
+				if (!m_layout.is_floor(x + 1, y)) m_world.add_static_box(c + Pakal::Vec2(0.5f * cell + thick, 0.0f), Pakal::Vec2(thick, 0.5f * cell + thick), layers.wall);
+				if (!m_layout.is_floor(x - 1, y)) m_world.add_static_box(c - Pakal::Vec2(0.5f * cell + thick, 0.0f), Pakal::Vec2(thick, 0.5f * cell + thick), layers.wall);
 			}
 		}
-		m_nav.build(m_world, b2Vec2(0.0f, 0.0f), b2Vec2(static_cast<float>(m_layout.width) * cell, static_cast<float>(m_layout.height) * cell), 0.4f, layers.wall);
+		m_nav.build(m_world, Pakal::Vec2(0.0f, 0.0f), Pakal::Vec2(static_cast<float>(m_layout.width) * cell, static_cast<float>(m_layout.height) * cell), 0.4f, layers.wall);
 	}
 
 	// The hero in the first room; in each other room, more monsters the deeper it is, and the boss in the deepest
@@ -357,7 +358,7 @@ namespace Dungeon
 		}
 	}
 
-	Actor& DungeonGame::add_creature(const std::string& type, const b2Vec2& at, bool hero)
+	Actor& DungeonGame::add_creature(const std::string& type, const Pakal::Vec2& at, bool hero)
 	{
 		auto found = m_rules.creatures.find(type);
 		static const CreatureRules none;
@@ -379,18 +380,18 @@ namespace Dungeon
 				if (gear.take(item)) gear.equip(item);
 			}
 			actor.add<PurseComponent>();
-			actor.add<PlayerControlComponent>().face(b2Vec2(0.0f, 1.0f));
+			actor.add<PlayerControlComponent>().face(Pakal::Vec2(0.0f, 1.0f));
 		}
 		else
 		{
 			actor.add<MonsterBrainComponent>(rules);
 		}
-		actor.add<AbilityComponent>(rules.abilities, rules.runSpeed).face(b2Vec2(0.0f, -1.0f));
+		actor.add<AbilityComponent>(rules.abilities, rules.runSpeed).face(Pakal::Vec2(0.0f, -1.0f));
 		actor.add<CharacterBodyComponent>(*this, at, rules.radius, hero ? layers.player : layers.enemy);
 		return actor;
 	}
 
-	b2Vec2 DungeonGame::auto_aim(const Actor& hero)
+	Pakal::Vec2 DungeonGame::auto_aim(const Actor& hero)
 	{
 		const float reach = 9.0f;
 		const Actor* nearest = nullptr;
@@ -407,7 +408,7 @@ namespace Dungeon
 		}
 		if (nearest) return nearest->position - hero.position;
 		const PlayerControlComponent* control = hero.get<PlayerControlComponent>();
-		return control ? control->facing() : b2Vec2(0.0f, 1.0f);
+		return control ? control->facing() : Pakal::Vec2(0.0f, 1.0f);
 	}
 
 	void DungeonGame::step(float dt, std::span<const PlayerInput> inputs)
@@ -426,7 +427,7 @@ namespace Dungeon
 			{
 				if (input.pressed & (1u << button))
 				{
-					b2Vec2 way = input.hasAimPoint ? input.aimPoint - hero->position : input.aimDirection;
+					Pakal::Vec2 way = input.hasAimPoint ? input.aimPoint - hero->position : input.aimDirection;
 					// not aimed (a touch screen's attack button): at the nearest monster in reach, or where the hero faces
 					if (way.LengthSquared() < 1e-6f) way = auto_aim(*hero);
 					skills->use(m_rules.buttons[button], way);
@@ -516,12 +517,12 @@ namespace Dungeon
 		return result;
 	}
 
-	void DungeonGame::drop_loot(const std::string& tableName, const b2Vec2& at, int rolls, float scatter)
+	void DungeonGame::drop_loot(const std::string& tableName, const Pakal::Vec2& at, int rolls, float scatter)
 	{
 		auto table = m_rules.loot.find(tableName);
 		if (table == m_rules.loot.end()) return;
 		Pakal::RandomStream& random = m_random["loot"];
-		auto near = [&]() { return at + b2Vec2(random.uniform(-scatter, scatter), random.uniform(-scatter, scatter)); };
+		auto near = [&]() { return at + Pakal::Vec2(random.uniform(-scatter, scatter), random.uniform(-scatter, scatter)); };
 		for (int roll = 0; roll < rolls; ++roll)
 		{
 			const int gold = table->second.roll_gold(random);
@@ -584,7 +585,7 @@ namespace Dungeon
 
 	// MonsterBrainComponent ------------------------------------------------------------------------
 
-	b2Vec2 follow_path(TopDownGame& game, const b2Vec2& from, const b2Vec2& goal, std::vector<b2Vec2>& path, size_t& next, float& repath, float dt)
+	Pakal::Vec2 follow_path(TopDownGame& game, const Pakal::Vec2& from, const Pakal::Vec2& goal, std::vector<Pakal::Vec2>& path, size_t& next, float& repath, float dt)
 	{
 		repath -= dt;
 		if (repath <= 0.0f || next >= path.size())
@@ -595,8 +596,8 @@ namespace Dungeon
 			game.nav().find_path(from, goal, path);
 		}
 		while (next < path.size() && (path[next] - from).Length() < 0.35f) ++next;
-		b2Vec2 way = (next < path.size() ? path[next] : goal) - from;
-		if (way.Normalize() < 0.05f) return b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 way = (next < path.size() ? path[next] : goal) - from;
+		if (way.Normalize() < 0.05f) return Pakal::Vec2(0.0f, 0.0f);
 		return way;
 	}
 
@@ -607,17 +608,17 @@ namespace Dungeon
 		if (!body || !skills) return;
 		if (!game.is_alive(actor()))
 		{
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			body->set_enabled(false);   // a body on the floor: nobody bumps into it
 			return;
 		}
 		const Actor* target = game.nearest_player(actor().position, true);
 		if (!target)
 		{
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
-		b2Vec2 to = target->position - actor().position;
+		Pakal::Vec2 to = target->position - actor().position;
 		const float distance = to.Length();
 		const bool inSight = sees(game, actor().position, target->position);
 		if (!m_awake)
@@ -625,7 +626,7 @@ namespace Dungeon
 			m_awake = distance <= m_rules.aggro && inSight;
 			if (!m_awake)
 			{
-				body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+				body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 				return;
 			}
 		}
@@ -644,18 +645,18 @@ namespace Dungeon
 		{
 			if (distance < m_rules.attackRange)
 			{
-				b2Vec2 away = -to;
+				Pakal::Vec2 away = -to;
 				away.Normalize();
 				body->move(away, m_rules.runSpeed);
 				return;
 			}
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			if (m_wait <= 0.0f && skills->use(shot->name, to)) m_wait = random.uniform(m_rules.waitMin, m_rules.waitMax);
 			return;
 		}
 		if (!shot && distance <= reach && inSight)
 		{
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			if (m_wait > 0.0f) return;
 			// one of its blows that is ready, at random
 			std::vector<const AbilityRules*> choices;

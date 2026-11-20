@@ -41,8 +41,14 @@ def terrain_surfaces(net, mesh, clip, seed=1, hill_height=14.0):
     # el shader lo pinta turquesa en lo bajo y azul hondo mar adentro (sin ese dato, el mar lejano es hondo)
     deep = 35.0
     shore = a['land'].boundary
-    mesh.heightfield(a['sea'].intersection(world), lambda x, y: WATER_SEA, 'water', step=6.0,
-                     uv1_of=lambda x, y: (max(0.0, 1.0 - shore.distance(Point(x, y)) / deep) ** 1.5, 0.0))
+    shore_of = lambda x, y: (max(0.0, 1.0 - shore.distance(Point(x, y)) / deep) ** 1.5, 0.0)  # noqa: E731
+    # the shallows (within 'near' meters of the land) on a fine grid, so the shader's foam line along the shore is not blurred
+    # by a 6 m triangle; the open sea on the coarse one
+    near = 14.0
+    shallows = a['sea'].intersection(a['land'].buffer(near)).intersection(world)
+    mesh.heightfield(a['sea'].difference(a['land'].buffer(near)).intersection(world), lambda x, y: WATER_SEA, 'water', step=6.0,
+                     uv1_of=shore_of)
+    mesh.heightfield(shallows, lambda x, y: WATER_SEA, 'water', step=1.5, uv1_of=shore_of)
     land = a['land'].intersection(world)
     # la playa: arena casi a nivel, y una franja que baja al agua
     beach = a.get('beach', Polygon())

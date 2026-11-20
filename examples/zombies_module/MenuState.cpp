@@ -197,7 +197,7 @@ namespace Zombies
 				m_shotTaken = true;
 				auto* graphics = static_cast<Pakal::BgfxGraphicsSystem*>(m_engine->graphics_system());
 				const std::string path = shot;
-				graphics->execute_block([graphics, path]() { graphics->request_screenshot(path.c_str()); });
+				graphics->take_screenshot(path);
 			}
 		}
 		std::vector<std::string> clicks;

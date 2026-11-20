@@ -8,10 +8,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <functional>
 #include <set>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -23,12 +24,12 @@ namespace Pakal::TopDown
 	{
 	public:
 		// Makes an enemy of 'type' at 'at'; returns its actor id, or 0 when it cannot (no model free)
-		using Factory = std::function<uintptr_t(const std::string& type, const b2Vec2& at)>;
+		using Factory = std::function<uintptr_t(const std::string& type, const Pakal::Vec2& at)>;
 
 		SpawnSystem(Factory factory, float clearance);
 
 		// 'group': the spawners can be in groups that take turns (a defend mission's sides); -1 none
-		void add_point(const b2Vec2& at, int group = -1) { m_points.push_back({ at, 0.0f, group }); }
+		void add_point(const Pakal::Vec2& at, int group = -1) { m_points.push_back({ at, 0.0f, group }); }
 		// Only the points of this group are used (and those of none); -1: all of them
 		void set_active_group(int group) { m_activeGroup = group; }
 		int active_group() const { return m_activeGroup; }
@@ -47,7 +48,7 @@ namespace Pakal::TopDown
 	private:
 		struct Point
 		{
-			b2Vec2 position;
+			Pakal::Vec2 position;
 			float readyAt = 0.0f; // seconds of the game clock
 			int group = -1;
 		};

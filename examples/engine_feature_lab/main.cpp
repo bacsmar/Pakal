@@ -12,6 +12,7 @@
 #include <GenericEntity.h>
 #include <IPakalApplication.h>
 #include <OSManager.h>
+#include <SplashState.h>
 #include <components/CameraComponent2D.h>
 #include <components/MusicComponent.h>
 #include <components/SFXComponent.h>
@@ -346,7 +347,11 @@ public:
 	void start(Engine& engine) override
 	{
 		std::cout << "Pakal Engine - Feature Lab" << std::endl;
-		engine.game_state_manager()->push_state(new FeatureLabState(), true);
+		// the engine's logo first (no image named: SplashState shows Pakal's), then the lab
+		auto* states = engine.game_state_manager();
+		SplashState::Settings splash;
+		splash.done = [states]() { states->transition_to_state(new FeatureLabState(), true); };
+		states->push_state(new SplashState(splash), true);
 	}
 
 	void end(Engine&) override

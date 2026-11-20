@@ -2,15 +2,16 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: CharacterController2D.cpp
 //
-// Purpose: Top-down character body for a Box2D world - implementation
+// Purpose: Top-down character body for a PhysicsWorld2D - implementation
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "CharacterController2D.h"
+#include "Box2DInternal.h"
 
 namespace Pakal
 {
-	CharacterController2D::CharacterController2D(b2World* world, const b2Vec2& position, float radius,
+	CharacterController2D::CharacterController2D(PhysicsWorld2D& world, const Vec2& position, float radius,
 		uint16 categoryBits, uint16 maskBits, uintptr_t userData) :
 		m_world(world),
 		m_body(nullptr),
@@ -18,12 +19,13 @@ namespace Pakal
 	{
 		b2BodyDef bodyDef;
 		bodyDef.type = b2_dynamicBody;
-		bodyDef.position = position;
+		bodyDef.position = to_b2(position);
 		bodyDef.fixedRotation = true;
 		bodyDef.gravityScale = 0.0f; // top-down: no gravity
 		bodyDef.linearDamping = 0.0f;
-		m_body = m_world->CreateBody(&bodyDef);
-		m_body->GetUserData().pointer = userData;
+		b2Body* body = box2d_world(m_world).CreateBody(&bodyDef);
+		m_body = body;
+		body->GetUserData().pointer = userData;
 
 		b2CircleShape circle;
 		circle.m_radius = radius;
@@ -35,50 +37,61 @@ namespace Pakal
 		fixtureDef.restitution = 0.0f;
 		fixtureDef.filter.categoryBits = categoryBits;
 		fixtureDef.filter.maskBits = maskBits;
-		m_body->CreateFixture(&fixtureDef);
+		body->CreateFixture(&fixtureDef);
 	}
 
 	CharacterController2D::~CharacterController2D()
 	{
-		if (m_world && m_body)
+		if (m_body)
 		{
-			m_world->DestroyBody(m_body);
+			box2d_world(m_world).DestroyBody(box2d_body(m_body));
 		}
 	}
 
-	void CharacterController2D::set_move(const b2Vec2& direction, float speedMetersPerSecond)
+	void CharacterController2D::set_move(const Vec2& direction, float speedMetersPerSecond)
 	{
-		b2Vec2 dir = direction;
+		Vec2 dir = direction;
 		const float length = dir.Normalize();
 		if (length > 0.0f)
 		{
-			m_velocity = b2Vec2(dir.x * speedMetersPerSecond, dir.y * speedMetersPerSecond);
+			m_velocity = Vec2(dir.x * speedMetersPerSecond, dir.y * speedMetersPerSecond);
 		}
 		else
 		{
-			m_velocity = b2Vec2(0.0f, 0.0f);
+			m_velocity = Vec2(0.0f, 0.0f);
 		}
 	}
 
 	void CharacterController2D::update()
 	{
-		m_body->SetLinearVelocity(m_velocity);
+		box2d_body(m_body)->SetLinearVelocity(to_b2(m_velocity));
 	}
 
-	b2Vec2 CharacterController2D::get_position() const
+	Vec2 CharacterController2D::get_position() const
 	{
-		return m_body->GetPosition();
+		return to_vec2(box2d_body(m_body)->GetPosition());
 	}
 
-	void CharacterController2D::teleport(const b2Vec2& position)
+	void CharacterController2D::teleport(const Vec2& position)
 	{
-		m_body->SetTransform(position, 0.0f);
-		m_body->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
+		box2d_body(m_body)->SetTransform(to_b2(position), 0.0f);
+		box2d_body(m_body)->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
 		m_velocity.Set(0.0f, 0.0f);
 	}
 
 	void CharacterController2D::set_enabled(bool enabled)
 	{
-		m_body->SetEnabled(enabled);
+		box2d_body(m_body)->SetEnabled(enabled);
+	}
+
+	void CharacterController2D::set_mask(uint16 maskBits)
+	{
+		for (b2Fixture* fixture = box2d_body(m_body)->GetFixtureList(); fixture; fixture = fixture->GetNext())
+		{
+			b2Filter filter = fixture->GetFilterData();
+			if (filter.maskBits == maskBits) continue;
+			filter.maskBits = maskBits;
+			fixture->SetFilterData(filter);
+		}
 	}
 }
