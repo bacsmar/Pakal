@@ -45,6 +45,7 @@ import pack_textures
 ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / 'build-android'
 DESKTOP_ASSETS = ROOT / 'build-win64' / 'bin' / 'Assets'
+ENGINE_LOGO = ROOT / 'assets' / 'engine' / 'pakal_splash.png'   # SplashState's logo when a game names none
 # bgfx's texture tool (external/bgfx/.build/projects/vs2022/texturec.vcxproj, Release x64)
 HOST_WINDOWS = os.name == 'nt'
 EXE = '.exe' if HOST_WINDOWS else ''
@@ -233,7 +234,8 @@ def game_files(game):
     its rules name (only those)."""
     wanted = [(DESKTOP_ASSETS / game, f'Assets/{game}'),
               (BUILD / 'apk_assets' / 'Assets' / 'shaders', 'Assets/shaders'),
-              (DESKTOP_ASSETS / 'ui', 'Assets/ui')]
+              (DESKTOP_ASSETS / 'ui', 'Assets/ui'),
+              (ENGINE_LOGO, 'Assets/pakal/splash.png')]
     downtown = DESKTOP_ASSETS / 'zombies' / 'downtown'   # (it may be a link to another checkout's)
     for model in sorted(referenced_files([DESKTOP_ASSETS / game], [downtown])):
         wanted.append((model, (Path('Assets/zombies/downtown') / model.relative_to(downtown.resolve())).as_posix()))
@@ -340,6 +342,9 @@ def stage_assets(stage, game='zombies', raw_textures=False):
             destination = stage / target / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(file, destination)
+    logo = stage / 'Assets' / 'pakal' / 'splash.png'   # the engine's logo (SplashState's default)
+    logo.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ENGINE_LOGO, logo)
     finish_stage(stage, raw_textures)
 
 

@@ -15,6 +15,12 @@ namespace Pakal
 		m_settings.fixed_seconds = std::clamp(m_settings.fixed_seconds, 1.0f, 2.0f);   // (a): 1 to 2 seconds
 		m_settings.min_after_ready = std::max(m_settings.min_after_ready, 1.0f);
 		m_settings.fade_seconds = std::max(m_settings.fade_seconds, 0.0f);
+		if (m_settings.image.empty())
+		{
+			m_settings.image = kEngineLogo;
+			if (m_settings.background.empty()) m_settings.background = kEngineBackground;
+		}
+		if (m_settings.background.empty()) m_settings.background = "#000000";
 	}
 
 	bool SplashState::skipped_by_environment()
