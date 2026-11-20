@@ -1,9 +1,9 @@
-# bgfx, bx, bimg and shaderc for the desktop, built from the submodules with bgfx's own tools (GENie, then MSBuild on
+# bgfx, bx, bimg, shaderc and texturec for the desktop, built from the submodules with bgfx's own tools (GENie, then MSBuild on
 # Windows or make on Linux), the first time CMake configures, and again when the submodules or our patches change.
 # Sets BGFX_DIR and BGFX_BUILD_DIR. A clone needs nothing done by hand: `cmake --preset win64` builds them (a few minutes,
 # once). PAKAL_BGFX_AUTOBUILD=OFF skips it, for someone who builds bgfx themselves (docs/BUILDING.md).
 
-option(PAKAL_BGFX_AUTOBUILD "Build bgfx, bx, bimg and shaderc from external/ when they are missing" ON)
+option(PAKAL_BGFX_AUTOBUILD "Build bgfx, bx, bimg, shaderc and texturec from external/ when they are missing" ON)
 
 set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
 set(BGFX_DIR ${PAKAL_ROOT}/external/bgfx)
@@ -22,10 +22,11 @@ file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
 
 if(WIN32)
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/win64_vs2022/bin)
-    set(PAKAL_BGFX_OUTPUTS bgfxRelease.lib bxRelease.lib bimgRelease.lib bimg_decodeRelease.lib shadercRelease.exe)
+    # texturec: the texture tool android/build_apk.py compresses the APK's textures with
+    set(PAKAL_BGFX_OUTPUTS bgfxRelease.lib bxRelease.lib bimgRelease.lib bimg_decodeRelease.lib shadercRelease.exe texturecRelease.exe)
 else()
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/linux64_gcc/bin)
-    set(PAKAL_BGFX_OUTPUTS libbgfxRelease.a libbxRelease.a libbimgRelease.a libbimg_decodeRelease.a shadercRelease)
+    set(PAKAL_BGFX_OUTPUTS libbgfxRelease.a libbxRelease.a libbimgRelease.a libbimg_decodeRelease.a shadercRelease texturecRelease)
 endif()
 
 set(PAKAL_BGFX_MISSING "")
@@ -61,7 +62,7 @@ else()
 endif()
 
 if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
-    message(STATUS "bgfx: building bgfx, bx, bimg and shaderc from external/ (once; a few minutes)")
+    message(STATUS "bgfx: building bgfx, bx, bimg, shaderc and texturec from external/ (once; a few minutes)")
     if(WIN32)
         if(NOT MSVC)
             message(FATAL_ERROR "bgfx: the Windows build needs MSVC. Configure from a Developer shell for Visual Studio 2022 or 2026.")
@@ -93,7 +94,7 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
         if(failed)
             message(FATAL_ERROR "bgfx: GENie could not generate the Visual Studio projects")
         endif()
-        foreach(project bx bimg bimg_decode bgfx shaderc)
+        foreach(project bx bimg bimg_decode bgfx shaderc texturec)
             message(STATUS "bgfx: building ${project} (${PAKAL_VS_TOOLSET}, Release x64)")
             execute_process(COMMAND ${PAKAL_MSBUILD} ${project}.vcxproj /m /nologo /v:minimal
                     /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=${PAKAL_VS_TOOLSET}
