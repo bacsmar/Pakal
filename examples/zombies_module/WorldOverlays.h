@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <functional>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -38,7 +39,7 @@ namespace Zombies
 		const std::vector<int>& markers;              // the script's beacons (ShowMarker)
 		uintptr_t playerId = 0;
 		float alpha = 1.0f;                            // how far the frame is between two steps
-		std::function<bool(int id, b2Vec2& at)> pointPosition; // a named point of the level
+		std::function<bool(int id, Pakal::Vec2& at)> pointPosition; // a named point of the level
 		bool showColliders = false;
 	};
 

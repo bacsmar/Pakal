@@ -177,7 +177,22 @@ def export_model(name, level_dir):
 
 UAL1 = REPO / 'examples/zombies_module/assets/source/universal-animation-library/Unreal-Godot/UAL1_Standard.glb'
 UAL2 = REPO / 'examples/zombies_module/assets/source/universal-animation-library-2/Unreal-Godot/UAL2_Standard.glb'
-BLENDER = Path(os.environ.get('PAKAL_BLENDER', r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'))
+def find_blender():
+    """Blender 5.x: $PAKAL_BLENDER, else `blender` on the PATH, else where each system installs it."""
+    if os.environ.get('PAKAL_BLENDER'):
+        return Path(os.environ['PAKAL_BLENDER'])
+    found = shutil.which('blender')
+    if found:
+        return Path(found)
+    for candidate in (Path(r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'),
+                      Path('/Applications/Blender.app/Contents/MacOS/Blender'),
+                      Path.home() / 'blender' / 'blender', Path('/opt/blender/blender')):
+        if candidate.is_file():
+            return candidate
+    return Path('blender')   # not found: the call fails naming it, PAKAL_BLENDER says where it is
+
+
+BLENDER = find_blender()
 
 
 def export_retargeted(name, clips, level_dir, source=UAL1, strip=()):

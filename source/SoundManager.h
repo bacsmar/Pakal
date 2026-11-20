@@ -4,10 +4,18 @@
 #include "PakalMath.h"
 #include "MusicMixer.h"
 
+#include <memory>
 #include <string>
 
 namespace Pakal
 {
+	// A sound effect a SoundManager loaded (its samples, decoded once): what it holds is the platform's. It is played by
+	// the manager that loaded it.
+	class SoundEffect
+	{
+	public:
+		virtual ~SoundEffect() = default;
+	};
 
 	struct SoundSettings
 	{
@@ -40,6 +48,15 @@ namespace Pakal
 		virtual bool play_music(const std::string& path, const MusicSettings& settings) { (void)path; (void)settings; return false; }
 		virtual void stop_music(float fadeSeconds) { (void)fadeSeconds; }
 		virtual void set_music_volume(float volume) { (void)volume; }
+		// Sound effects: a resource (a folder, a zip, the APK; WAV, or OGG where the platform decodes it), read and decoded
+		// once. nullptr when the platform has no sound or the file does not load.
+		virtual std::shared_ptr<SoundEffect> load_effect(const std::string& path) { (void)path; return nullptr; }
+		// Plays it now (several play at once): settings.volume 0..100 and pitch; its position, where the platform places
+		// sounds (relative_to_source with attenuation 0: heard as is). 'effect' comes from this manager's load_effect.
+		virtual void play_effect(const std::shared_ptr<SoundEffect>& effect, const SoundSettings& settings) { (void)effect; (void)settings; }
+		// A mono sine tone made in memory (no asset: a test, an audio check), played like a loaded effect. nullptr where the
+		// platform has no sound.
+		virtual std::shared_ptr<SoundEffect> create_tone(float frequencyHz, float seconds) { (void)frequencyHz; (void)seconds; return nullptr; }
 		// Everything that sounds holds where it is (the engine paused: the app went to the background) and goes on from there
 		virtual void set_paused(bool paused) { (void)paused; }
 	};

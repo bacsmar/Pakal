@@ -24,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 
@@ -84,19 +85,19 @@ namespace
 		return out;
 	}
 
-	b2Vec2 to_meters(float x, float y)
+	Pakal::Vec2 to_meters(float x, float y)
 	{
-		return b2Vec2(x / kUnitsPerMeter, y / kUnitsPerMeter);
+		return Pakal::Vec2(x / kUnitsPerMeter, y / kUnitsPerMeter);
 	}
 
 	// Walks in one direction for some seconds. Reports the distance traveled and the smallest gap
 	// between the character center and any wall surface during the walk.
-	float walk(PhysicsWorld2D& world, CharacterController2D& character, const b2Vec2& direction,
+	float walk(PhysicsWorld2D& world, CharacterController2D& character, const Pakal::Vec2& direction,
 		float seconds, float& travelled)
 	{
 		const float step = 1.0f / 60.0f;
 		const int steps = static_cast<int>(seconds / step);
-		const b2Vec2 start = character.get_position();
+		const Pakal::Vec2 start = character.get_position();
 		float minClearance = world.distance_to_static(character.get_position());
 
 		character.set_move(direction, 5.0f); // 5 m/s
@@ -112,7 +113,7 @@ namespace
 		}
 
 		travelled = (character.get_position() - start).Length();
-		character.set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+		character.set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 		character.update();
 		return minClearance;
 	}
@@ -139,22 +140,22 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	PhysicsWorld2D world(b2Vec2(0.0f, 0.0f)); // top-down
+	PhysicsWorld2D world(Pakal::Vec2(0.0f, 0.0f)); // top-down
 	for (const auto& r : rects)
 	{
-		world.add_static_box(to_meters(r.x, r.y), b2Vec2(0.5f * r.a / kUnitsPerMeter, 0.5f * r.b / kUnitsPerMeter), kWallCategory);
+		world.add_static_box(to_meters(r.x, r.y), Pakal::Vec2(0.5f * r.a / kUnitsPerMeter, 0.5f * r.b / kUnitsPerMeter), kWallCategory);
 	}
 	for (const auto& c : circles)
 	{
 		world.add_static_circle(to_meters(c.x, c.y), 0.5f * c.a / kUnitsPerMeter, kWallCategory);
 	}
 
-	const b2Vec2 start = to_meters(spawns[0].x, spawns[0].y);
-	auto character = std::make_unique<CharacterController2D>(world.native(), start, kCharacterRadius,
+	const Pakal::Vec2 start = to_meters(spawns[0].x, spawns[0].y);
+	auto character = std::make_unique<CharacterController2D>(world, start, kCharacterRadius,
 		kCharacterCategory, 0xFFFF);
 
 	// 1. Walking in four directions, two seconds each: the center never gets closer than the radius
-	const b2Vec2 directions[] = { b2Vec2(1, 0), b2Vec2(0, 1), b2Vec2(-1, 0), b2Vec2(0, -1) };
+	const Pakal::Vec2 directions[] = { Pakal::Vec2(1, 0), Pakal::Vec2(0, 1), Pakal::Vec2(-1, 0), Pakal::Vec2(0, -1) };
 	const char* names[] = { "east", "north", "west", "south" };
 	float worstClearance = kCharacterRadius;
 	float totalTravelled = 0.0f;
@@ -174,7 +175,7 @@ int main(int argc, char* argv[])
 	check(totalTravelled > 0.5f, "character moves when given a direction");
 
 	// 2. Ray toward the nearest wall, from the character
-	const b2Vec2 from = character->get_position();
+	const Pakal::Vec2 from = character->get_position();
 	const LevelLine* target = nullptr;
 	float bestDistance = 1e9f;
 	for (const auto& r : rects)
@@ -203,7 +204,7 @@ int main(int argc, char* argv[])
 	// 3. Walk into that wall: the character stops at its surface and never passes through it
 	if (toward.hit)
 	{
-		b2Vec2 dir = toward.point - from;
+		Pakal::Vec2 dir = toward.point - from;
 		const float distanceToWall = dir.Normalize();
 		float travelled = 0.0f;
 		const float clearance = walk(world, *character, dir, 8.0f, travelled); // 40 m if unobstructed
@@ -232,7 +233,7 @@ int main(int argc, char* argv[])
 	}
 	if (enemy)
 	{
-		const b2Vec2 center = to_meters(enemy->x, enemy->y);
+		const Pakal::Vec2 center = to_meters(enemy->x, enemy->y);
 		const float radius = 0.5f * enemy->a / kUnitsPerMeter;
 		const RayCastHit seen = world.raycast(from, center, kWallCategory);
 		const float surfaceError = seen.hit ? std::fabs((seen.point - center).Length() - radius) : 1e9f;
@@ -242,10 +243,48 @@ int main(int argc, char* argv[])
 	}
 
 	// 5. A ray that excludes wall categories reports nothing, even with walls in the way
-	const RayCastHit none = world.raycast(from, from + b2Vec2(500.0f, 0.0f), kCharacterCategory);
+	const RayCastHit none = world.raycast(from, from + Pakal::Vec2(500.0f, 0.0f), kCharacterCategory);
 	check(!none.hit, "ray with a mask that excludes walls reports nothing");
 
 	character.reset();
+
+	// 6. The world's shapes as a debug view sees them (for_each_shape), in world coordinates, and a character made on
+	// the world itself (no Box2D world in the caller's hands)
+	{
+		PhysicsWorld2D small(Pakal::Vec2(0.0f, 0.0f));
+		small.add_static_box(Pakal::Vec2(10.0f, 5.0f), Pakal::Vec2(1.0f, 2.0f), 0x0002, 77);
+		small.add_static_chain({ Pakal::Vec2(0.0f, 0.0f), Pakal::Vec2(4.0f, 0.0f), Pakal::Vec2(4.0f, 3.0f) }, false, 0x0004);
+		CharacterController2D walker(small, Pakal::Vec2(-3.0f, 1.0f), 0.4f, 0x0008, 0xFFFF, 5);
+		// (a static chain is made of one edge per segment: solid from both sides)
+		int boxes = 0, edges = 0, circles = 0;
+		bool boxRight = false, edgesRight = true, circleRight = false;
+		small.for_each_shape([&](const PhysicsShape2D& shape)
+		{
+			if (shape.kind == PhysicsShape2D::Kind::Polygon)
+			{
+				++boxes;
+				boxRight = shape.isStatic && shape.count == 4 && shape.categoryBits == 0x0002 && shape.userData == 77 &&
+					std::fabs(shape.lower.x - 9.0f) < 0.02f && std::fabs(shape.upper.y - 7.0f) < 0.02f;
+			}
+			else if (shape.kind == PhysicsShape2D::Kind::Edge)
+			{
+				++edges;
+				const bool second = std::fabs(shape.points[0].x - 4.0f) < 1e-5f;
+				edgesRight = edgesRight && shape.count == 2 && shape.categoryBits == 0x0004 &&
+					std::fabs(shape.points[1].y - (second ? 3.0f : 0.0f)) < 1e-5f;
+			}
+			else if (shape.kind == PhysicsShape2D::Kind::Circle)
+			{
+				++circles;
+				circleRight = !shape.isStatic && shape.userData == 5 && std::fabs(shape.radius - 0.4f) < 1e-5f &&
+					std::fabs(shape.center.x + 3.0f) < 1e-5f && std::fabs(shape.center.y - 1.0f) < 1e-5f;
+			}
+		});
+		check(boxes == 1 && boxRight, "for_each_shape gives a static box with its corners, category, owner and bounds");
+		check(edges == 2 && edgesRight, "for_each_shape gives a static chain's segments, each with its two ends");
+		check(circles == 1 && circleRight, "a character made on a PhysicsWorld2D is a circle of the world, where it was put");
+	}
+
 	std::printf("%s (%d failures)\n", g_failures == 0 ? "ALL PASSED" : "FAILED", g_failures);
 	std::fflush(stdout);
 	return g_failures == 0 ? 0 : 1;

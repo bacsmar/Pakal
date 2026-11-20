@@ -10,7 +10,7 @@ ContraGame is compiled as a **dynamic module (libContraGameModule.so)** for the 
 Pakal Core (source/)
 ├── CMakeLists.txt
 ├── source/
-│   ├── PakalPlayerMain.cpp          ← SINGLE runtime host (generic for any .so)
+│   ├── (apps/player/) PakalPlayerMain.cpp ← SINGLE runtime host (generic for any .so)
 │   └── (rest of core...)
 └── build-linux/bin/  (build-win64/bin on Windows)
     ├── PakalPlayer                   ← Executable (loads any .so plugin)

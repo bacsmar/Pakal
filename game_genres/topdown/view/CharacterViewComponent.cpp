@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -94,6 +95,35 @@ namespace Pakal::TopDown
 			return out.empty() ? fallback : out;
 		}
 
+		// A list of clips: names, or { "clip": name, "from": seconds, "to": seconds } (its stretch goes to 'ranges')
+		std::vector<std::string> clip_list(const nlohmann::json& value, const std::vector<std::string>& fallback,
+			std::map<std::string, std::array<float, 2>>& ranges)
+		{
+			if (!value.is_array()) return fallback;
+			std::vector<std::string> out;
+			for (const auto& item : value)
+			{
+				if (item.is_string()) out.push_back(item.get<std::string>());
+				else if (item.is_object() && item.contains("clip") && item["clip"].is_string())
+				{
+					const std::string name = item["clip"].get<std::string>();
+					out.push_back(name);
+					ranges[name] = { item.value("from", 0.0f), item.value("to", -1.0f) };
+				}
+			}
+			return out.empty() ? fallback : out;
+		}
+
+		// The stretch of a clip a look plays: [from, to] seconds, the whole clip when it names none
+		std::pair<double, double> clip_span(const CharacterViewComponent::Clips& clips, const std::string& name, double length)
+		{
+			const auto found = clips.ranges.find(name);
+			if (found == clips.ranges.end() || length <= 0.0) return { 0.0, length };
+			const double from = std::clamp(static_cast<double>(found->second[0]), 0.0, length);
+			const double to = found->second[1] > found->second[0] ? std::min(static_cast<double>(found->second[1]), length) : length;
+			return { from, std::max(from, to) };
+		}
+
 		// Returns whether the value had them all
 		bool read_floats(const nlohmann::json& value, float* out, size_t count)
 		{
@@ -105,27 +135,27 @@ namespace Pakal::TopDown
 		// A set of clips from JSON over the defaults already in 'out' (a name not given keeps its default)
 		void read_clips(const nlohmann::json& clips, CharacterViewComponent::Clips& out)
 		{
-			out.idle = string_list(clips.value("idle", nlohmann::json()), out.idle);
-			out.move = string_list(clips.value("move", nlohmann::json()), out.move);
-			out.attack = string_list(clips.value("attack", nlohmann::json()), out.attack);
-			out.death = string_list(clips.value("death", nlohmann::json()), out.death);
-			out.fast = string_list(clips.value("fast", nlohmann::json()), out.fast);
-			out.hit = string_list(clips.value("hit", nlohmann::json()), out.hit);
-			out.knockDown = string_list(clips.value("knockDown", nlohmann::json()), out.knockDown);
-			out.getUp = string_list(clips.value("getUp", nlohmann::json()), out.getUp);
-			out.melee = string_list(clips.value("melee", nlohmann::json()), out.melee);
-			out.fire = string_list(clips.value("fire", nlohmann::json()), out.fire);
-			out.reload = string_list(clips.value("reload", nlohmann::json()), out.reload);
-			out.walkFire = string_list(clips.value("walkFire", nlohmann::json()), out.walkFire);
-			out.meleeIdle = string_list(clips.value("meleeIdle", nlohmann::json()), out.meleeIdle);
-			out.gunIdle = string_list(clips.value("gunIdle", nlohmann::json()), out.gunIdle);
-			out.meleeMove = string_list(clips.value("meleeMove", nlohmann::json()), out.meleeMove);
-			out.meleeMoving = string_list(clips.value("meleeMoving", nlohmann::json()), out.meleeMoving);
+			out.idle = clip_list(clips.value("idle", nlohmann::json()), out.idle, out.ranges);
+			out.move = clip_list(clips.value("move", nlohmann::json()), out.move, out.ranges);
+			out.attack = clip_list(clips.value("attack", nlohmann::json()), out.attack, out.ranges);
+			out.death = clip_list(clips.value("death", nlohmann::json()), out.death, out.ranges);
+			out.fast = clip_list(clips.value("fast", nlohmann::json()), out.fast, out.ranges);
+			out.hit = clip_list(clips.value("hit", nlohmann::json()), out.hit, out.ranges);
+			out.knockDown = clip_list(clips.value("knockDown", nlohmann::json()), out.knockDown, out.ranges);
+			out.getUp = clip_list(clips.value("getUp", nlohmann::json()), out.getUp, out.ranges);
+			out.melee = clip_list(clips.value("melee", nlohmann::json()), out.melee, out.ranges);
+			out.fire = clip_list(clips.value("fire", nlohmann::json()), out.fire, out.ranges);
+			out.reload = clip_list(clips.value("reload", nlohmann::json()), out.reload, out.ranges);
+			out.walkFire = clip_list(clips.value("walkFire", nlohmann::json()), out.walkFire, out.ranges);
+			out.meleeIdle = clip_list(clips.value("meleeIdle", nlohmann::json()), out.meleeIdle, out.ranges);
+			out.gunIdle = clip_list(clips.value("gunIdle", nlohmann::json()), out.gunIdle, out.ranges);
+			out.meleeMove = clip_list(clips.value("meleeMove", nlohmann::json()), out.meleeMove, out.ranges);
+			out.meleeMoving = clip_list(clips.value("meleeMoving", nlohmann::json()), out.meleeMoving, out.ranges);
 			if (clips.contains("actions") && clips["actions"].is_object())
 			{
 				for (auto it = clips["actions"].begin(); it != clips["actions"].end(); ++it)
 				{
-					out.actions[it.key()] = string_list(it.value(), {});
+					out.actions[it.key()] = clip_list(it.value(), {}, out.ranges);
 				}
 			}
 		}
@@ -170,11 +200,14 @@ namespace Pakal::TopDown
 		look.walkRef = json.value("walkRef", look.walkRef);
 		look.runRef = json.value("runRef", look.runRef);
 		look.clipSpeedMax = json.value("clipSpeedMax", look.clipSpeedMax);
+		look.clipSpeed = std::max(0.05f, json.value("clipSpeed", look.clipSpeed));
 		look.fastAbove = json.value("fastAbove", look.fastAbove);
 		look.turnSpeed = json.value("turnSpeed", look.turnSpeed);
 		look.minFacingSpeed = json.value("minFacingSpeed", look.minFacingSpeed);
 		look.hitCooldown = json.value("hitCooldown", look.hitCooldown);
 		look.backpedalCos = json.value("backpedalCos", look.backpedalCos);
+		look.aimAlign = json.value("aimAlign", look.aimAlign);
+		look.aimLinger = json.value("aimLinger", look.aimLinger);
 		look.knockDownAbove = json.value("knockDownAbove", look.knockDownAbove);
 		read_floats(json.value("tint", nlohmann::json()), look.tint, 3);
 		if (json.contains("weapons") && json["weapons"].is_object())
@@ -224,7 +257,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	bool CharacterViewComponent::muzzle_point(const b2Vec2& direction, float out[3]) const
+	bool CharacterViewComponent::muzzle_point(const Pakal::Vec2& direction, float out[3]) const
 	{
 		float bone[16];
 		// the weapon in hand's own mouth: through its bone and its place there (a pair fires each in turn)
@@ -313,11 +346,11 @@ namespace Pakal::TopDown
 			return;
 		}
 		Actor& self = actor();
-		const b2Vec2 drawn = self.drawn_position(alpha);
+		const Pakal::Vec2 drawn = self.drawn_position(alpha);
 		// off the floor (a jump): drawn that high
 		const HeightComponent* body = self.get<HeightComponent>();
 		const float raised = body ? body->drawn_height(alpha) : 0.0f;
-		const b2Vec2 step = drawn - m_lastPosition;
+		const Pakal::Vec2 step = drawn - m_lastPosition;
 		m_lastPosition = drawn;
 		// Speed from the distance walked, smoothed: physics nudges make single frames noisy
 		if (dt > 0.0f)
@@ -406,6 +439,7 @@ namespace Pakal::TopDown
 			hurt = health && health->hurt_recently();
 			attacking = weapon && (weapon->firing() || weapon->swinging());
 			firingGun = weapon && weapon->firing() && !weapon->swinging();
+			m_aimLingerLeft = firingGun ? m_look.aimLinger : std::max(0.0f, m_aimLingerLeft - dt);
 			// a new swing by its count: with the attack held the next one starts before the last stops showing
 			swingStarted = weapon && weapon->swings() != m_swingsSeen;
 			m_swingsSeen = weapon ? weapon->swings() : 0;
@@ -458,14 +492,15 @@ namespace Pakal::TopDown
 					// the player hit on the run: the reaction on the upper body only, the legs keep running (a full-body clip
 					// while the body still moves slid it along the floor; the original and its Unity port kept the legs)
 					const float length = static_cast<float>(m_mesh->get_clip_length_seconds(index));
-					m_mesh->play_overlay(index, m_look.overlayRoot, false, 1.0f);
-					m_hitOverlayTimer = length;
-					m_hitCooldown = m_look.hitCooldown + length;
+					m_mesh->play_overlay(index, m_look.overlayRoot, false, m_look.clipSpeed);
+					m_hitOverlayTimer = length / m_look.clipSpeed;
+					m_hitCooldown = m_look.hitCooldown + m_hitOverlayTimer;
 				}
 				else
 				{
-					m_mesh->play_animation(index, false);
-					m_hitTimer = static_cast<float>(m_mesh->get_animation_length_seconds());
+					const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+					m_mesh->play_animation(index, false, span.first);
+					m_hitTimer = static_cast<float>(span.second - span.first) / m_look.clipSpeed;
 					m_hitCooldown = m_look.hitCooldown + m_hitTimer;
 				}
 				break;
@@ -513,7 +548,7 @@ namespace Pakal::TopDown
 		}
 
 		// The body kicks back from each shot, against the way it aims
-		b2Vec2 shown = drawn;
+		Pakal::Vec2 shown = drawn;
 		if (player)
 		{
 			const WeaponPose* gun = self.get<WeaponPose>();
@@ -537,7 +572,7 @@ namespace Pakal::TopDown
 
 		// The clip: the speed picks walk or run, and the playback follows it so the feet do not slide
 		const bool fast = m_speed > m_look.fastAbove && !clips.fast.empty();
-		float clipSpeed = 1.0f;
+		float clipSpeed = m_look.clipSpeed;   // (a clip at its own pace; the fitted ones and the legs set theirs)
 		auto actionClips = action && !action->name.empty() ? clips.actions.find(action->name) : clips.actions.end();
 		if (!m_forced.empty())
 		{
@@ -558,8 +593,9 @@ namespace Pakal::TopDown
 					const int index = m_mesh->find_animation(name);
 					if (index >= 0)
 					{
-						m_mesh->play_animation(index, false);
-						const double length = m_mesh->get_animation_length_seconds();
+						const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+						m_mesh->play_animation(index, false, span.first);
+						const double length = span.second - span.first;
 						if (length > 0.0 && emergeSeconds > 0.0f) m_actionSpeed = static_cast<float>(length / emergeSeconds);
 						break;
 					}
@@ -574,37 +610,64 @@ namespace Pakal::TopDown
 			{
 				m_actionSerial = action->serial;
 				m_actionSpeed = 1.0f;
+				m_spanLeft = -1.0f;
 				for (const auto& name : actionClips->second)
 				{
 					const int index = m_mesh->find_animation(name);
 					if (index >= 0)
 					{
-						m_mesh->play_animation(index, action->loop);
-						const double length = m_mesh->get_animation_length_seconds();
+						// its stretch (or the whole clip) fitted into the step's seconds; a stretch then holds its last frame
+						const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+						m_mesh->play_animation(index, action->loop, span.first);
+						const double length = span.second - span.first;
 						if (length > 0.0 && action->seconds > 0.0f) m_actionSpeed = static_cast<float>(length / action->seconds);
+						if (!action->loop && clips.ranges.count(name) && m_actionSpeed > 0.0f) m_spanLeft = static_cast<float>(length) / m_actionSpeed;
 						break;
 					}
 				}
 			}
 			clipSpeed = m_actionSpeed;
+			if (m_spanLeft >= 0.0f)
+			{
+				m_spanLeft -= dt;
+				if (m_spanLeft <= 0.0f) clipSpeed = 0.0f;
+			}
 		}
 		else if (dead)
 		{
+			// the death clip once (its stretch, when the look gives one: it then holds the stretch's last frame)
 			m_knockStep = 0;
-			play_clip(*m_mesh, clips.death, false);
+			for (const auto& name : clips.death)
+			{
+				const int index = m_mesh->find_animation(name);
+				if (index < 0) continue;
+				if (m_mesh->get_current_animation() != index)
+				{
+					const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+					m_mesh->play_animation(index, false, span.first);
+					m_spanLeft = clips.ranges.count(name) ? static_cast<float>(span.second - span.first) / m_look.clipSpeed : -1.0f;
+				}
+				else if (m_spanLeft >= 0.0f)
+				{
+					m_spanLeft -= dt;
+					if (m_spanLeft <= 0.0f) clipSpeed = 0.0f;
+				}
+				break;
+			}
 		}
 		else if ((knockStarted && knockLeft >= m_look.knockDownAbove && !clips.knockDown.empty()) || m_knockStep > 0)
 		{
 			// Knocked back: down, then up again, the getting up fitted into what is left of the stun
-			auto play_once = [this](const std::vector<std::string>& names)
+			auto play_once = [this, &clips](const std::vector<std::string>& names)
 			{
 				for (const auto& name : names)
 				{
 					const int index = m_mesh->find_animation(name);
 					if (index >= 0)
 					{
-						m_mesh->play_animation(index, false);
-						return static_cast<float>(m_mesh->get_animation_length_seconds());
+						const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+						m_mesh->play_animation(index, false, span.first);
+						return static_cast<float>(span.second - span.first);
 					}
 				}
 				return 0.0f;
@@ -612,8 +675,19 @@ namespace Pakal::TopDown
 			if (m_knockStep == 0)
 			{
 				m_knockStep = 1;
+				// the fall and the getting up together fitted into the stun (a quick knockdown plays them quicker: the body
+				// is never still lying when the game has it up)
+				float upLength = 0.0f;
+				for (const auto& name : clips.getUp)
+				{
+					const int index = m_mesh->find_animation(name);
+					if (index < 0) continue;
+					const auto span = clip_span(clips, name, m_mesh->get_clip_length_seconds(index));
+					upLength = static_cast<float>(span.second - span.first);
+					break;
+				}
 				m_knockClipLeft = play_once(clips.knockDown);
-				m_actionSpeed = 1.0f;
+				m_actionSpeed = std::max(m_look.clipSpeed, (m_knockClipLeft + upLength) / std::max(0.2f, knockLeft));
 			}
 			m_knockClipLeft -= dt * m_actionSpeed;
 			if (m_knockClipLeft <= 0.0f)
@@ -621,7 +695,7 @@ namespace Pakal::TopDown
 				const float length = m_knockStep == 1 ? play_once(clips.getUp) : 0.0f;
 				m_knockStep = length > 0.0f ? 2 : 0;
 				m_knockClipLeft = length;
-				m_actionSpeed = length > 0.0f ? std::max(1.0f, length / std::max(0.2f, knockLeft)) : 1.0f;
+				m_actionSpeed = length > 0.0f ? std::max(m_look.clipSpeed, length / std::max(0.2f, knockLeft)) : m_look.clipSpeed;
 			}
 			clipSpeed = m_actionSpeed;
 		}
@@ -641,7 +715,7 @@ namespace Pakal::TopDown
 					if (index >= 0)
 					{
 						m_mesh->play_animation(index, false);
-						m_swingClipSeconds = static_cast<float>(m_mesh->get_animation_length_seconds());
+						m_swingClipSeconds = static_cast<float>(m_mesh->get_animation_length_seconds()) / m_look.clipSpeed;
 						m_swingClipLength = m_swingClipSeconds;
 						break;
 					}
@@ -675,7 +749,7 @@ namespace Pakal::TopDown
 			// The player walks while firing (the legs of the walk clip) and runs otherwise; with a melee weapon it has
 			// its own run
 			const auto& legs = player && meleeId != 0 && !clips.meleeMove.empty() ? clips.meleeMove
-				: (player && firingGun && !clips.walkFire.empty() ? clips.walkFire : (fast ? clips.fast : clips.move));
+				: (player && (firingGun || m_aimLingerLeft > 0.0f) && !clips.walkFire.empty() ? clips.walkFire : (fast ? clips.fast : clips.move));
 			play_clip(*m_mesh, legs, true, m_loopPhase);
 			const float reference = &legs == &clips.walkFire ? m_look.walkRef : (fast ? m_look.runRef : m_look.walkRef);
 			clipSpeed = std::clamp(m_speed / reference, 0.6f, std::max(0.6f, m_look.clipSpeedMax));
@@ -684,7 +758,7 @@ namespace Pakal::TopDown
 			{
 				const PlayerControlComponent* control = self.get<PlayerControlComponent>();
 				const float length = step.Length();
-				if (control && length > 1e-5f && b2Dot(step, control->facing()) < -m_look.backpedalCos * length)
+				if (control && length > 1e-5f && Pakal::dot(step, control->facing()) < -m_look.backpedalCos * length)
 				{
 					clipSpeed = -clipSpeed;
 				}
@@ -786,7 +860,7 @@ namespace Pakal::TopDown
 			}
 		}
 		static const bool aimAlignOff = std::getenv("PAKAL_AIM_ALIGN") && std::string(std::getenv("PAKAL_AIM_ALIGN")) == "0";
-		if (aimAlignOff) aimTurnGoal = 0.0f;
+		if (aimAlignOff || m_look.aimAlign == "off" || (m_look.aimAlign == "firing" && !firingGun && m_aimLingerLeft <= 0.0f)) aimTurnGoal = 0.0f;
 		m_aimTurn += (aimTurnGoal - m_aimTurn) * std::min(1.0f, dt * 10.0f);
 
 		// The other hand on the gun (two-bone IK of the look's 'reach' arm toward the weapon's grip): always on a long gun,

@@ -17,6 +17,10 @@
 #include <bx/math.h>
 #include <bx/allocator.h>
 #include <bimg/decode.h>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <memory>
 #include <cmath>
 #include <fstream>
 #include <mutex>
@@ -28,7 +32,9 @@ namespace Pakal
 	namespace
 	{
 		bgfx::UniformHandle s_texColorUniform = BGFX_INVALID_HANDLE;
-		uint32_t s_spriteInstanceCount = 0;
+		// the sprite's own looks (fs_sprite_simple): set for every sprite drawn, since a uniform keeps the last value given
+		bgfx::UniformHandle s_flashUniform = BGFX_INVALID_HANDLE, s_rimUniform = BGFX_INVALID_HANDLE, s_rimDirUniform = BGFX_INVALID_HANDLE,
+			s_hueUniform = BGFX_INVALID_HANDLE, s_lifeUniform = BGFX_INVALID_HANDLE, s_texLifeUniform = BGFX_INVALID_HANDLE;
 
 		// Textures shared by the sprites: loading a file reads and decodes it and makes a GPU texture, so a file shown by many
 		// sprites (every enemy of a kind, every particle) is loaded once. Keyed by the resolved path; destroyed with its last sprite.
@@ -40,17 +46,55 @@ namespace Pakal
 		};
 		std::mutex s_textureMutex;
 		std::unordered_map<std::string, SharedTexture> s_textures;
+		// The textures being loaded (by a preload's worker or a sprite): a thread that asks for one meanwhile waits, it does not read it again
+		struct TextureLoad
+		{
+			bool done = false;
+			bool failed = false;
+		};
+		std::unordered_map<std::string, std::shared_ptr<TextureLoad>> s_loading;
+		std::condition_variable s_textureLoaded;
 		SharedTexture s_white;   // the 1x1 white texture of the solid colors and the placeholders
+	}
+
+	// The sprites' uniforms, made once on the graphics thread when it starts (made from the game's thread with the first sprite, bgfx
+	// kept that thread waiting for seconds on a phone: the first fight of a session loaded seven seconds late)
+	void SpriteComponent_Bgfx::create_uniforms()
+	{
+		if (!bgfx::isValid(s_texColorUniform)) s_texColorUniform = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		if (!bgfx::isValid(s_flashUniform)) s_flashUniform = bgfx::createUniform("u_spriteFlash", bgfx::UniformType::Vec4);
+		if (!bgfx::isValid(s_rimUniform)) s_rimUniform = bgfx::createUniform("u_spriteRim", bgfx::UniformType::Vec4);
+		if (!bgfx::isValid(s_rimDirUniform)) s_rimDirUniform = bgfx::createUniform("u_spriteRimDir", bgfx::UniformType::Vec4);
+		if (!bgfx::isValid(s_hueUniform)) s_hueUniform = bgfx::createUniform("u_spriteHue", bgfx::UniformType::Vec4);
+		if (!bgfx::isValid(s_lifeUniform)) s_lifeUniform = bgfx::createUniform("u_spriteLife", bgfx::UniformType::Vec4);
+		if (!bgfx::isValid(s_texLifeUniform)) s_texLifeUniform = bgfx::createUniform("s_texLife", bgfx::UniformType::Sampler);
+	}
+
+	void SpriteComponent_Bgfx::destroy_uniforms()
+	{
+		for (bgfx::UniformHandle* u : { &s_texColorUniform, &s_flashUniform, &s_rimUniform, &s_rimDirUniform, &s_hueUniform, &s_lifeUniform, &s_texLifeUniform })
+		{
+			if (bgfx::isValid(*u)) bgfx::destroy(*u);
+			*u = BGFX_INVALID_HANDLE;
+		}
 	}
 
 	void SpriteComponent_Bgfx::release_texture()
 	{
+		release_texture_of(m_textureOwner, m_textureKey);
+		m_textureOwner = TextureOwner::None;
+		m_textureKey.clear();
+		m_texture = BGFX_INVALID_HANDLE;
+	}
+
+	void SpriteComponent_Bgfx::release_texture_of(TextureOwner owner, const std::string& key)
+	{
 		std::lock_guard<std::mutex> lock(s_textureMutex);
-		switch (m_textureOwner)
+		switch (owner)
 		{
 		case TextureOwner::Cached:
 		{
-			auto found = s_textures.find(m_textureKey);
+			auto found = s_textures.find(key);
 			if (found != s_textures.end() && --found->second.users <= 0)
 			{
 				if (bgfx::isValid(found->second.handle)) bgfx::destroy(found->second.handle);
@@ -68,9 +112,6 @@ namespace Pakal
 		case TextureOwner::None:
 			break;
 		}
-		m_textureOwner = TextureOwner::None;
-		m_textureKey.clear();
-		m_texture = BGFX_INVALID_HANDLE;
 	}
 
 	void SpriteComponent_Bgfx::acquire_white_texture()
@@ -134,14 +175,7 @@ namespace Pakal
 		m_vertexBufferDirty(true),
 		m_graphics_system(graphicsSystem)
 	{
-		++s_spriteInstanceCount;
-		if (s_spriteInstanceCount == 1)
-		{
-			if (!bgfx::isValid(s_texColorUniform))
-			{
-				s_texColorUniform = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-			}
-		}
+		// (the uniforms are the graphics system's, made when it starts: create_uniforms; a sprite made here touches none)
 		
 		// Initialize texture region to full texture
 		m_texRegion[0] = 0;
@@ -170,7 +204,6 @@ namespace Pakal
 		if (m_graphics_system)
 		{
 			m_graphics_system->register_sprite(this);
-			LOG_INFO("[SpriteComponent_Bgfx] Sprite created and registered");
 		}
 		else
 		{
@@ -180,56 +213,30 @@ namespace Pakal
 	
 	SpriteComponent_Bgfx::~SpriteComponent_Bgfx()
 	{
-		auto releaseResources = [this]()
+		// out of the list the graphics thread draws, at once (under its lock: it is not being drawn now, and never will be again)
+		if (m_graphics_system) m_graphics_system->unregister_sprite(this);
+		// what the GPU holds is let go of on the graphics thread, without waiting for it: a scene of hundreds of sprites leaves in an
+		// instant, instead of a frame for each one (the sprite itself is gone: the block holds the handles, not the sprite)
+		const bgfx::VertexBufferHandle vertices = m_vertexBuffer;
+		const bgfx::IndexBufferHandle indices = m_indexBuffer, meshIndices = m_meshIndexBuffer;
+		const TextureOwner owner = m_textureOwner;
+		const std::string key = m_textureKey;
+		auto releaseResources = [vertices, indices, meshIndices, owner, key]()
 		{
-			if (m_graphics_system)
-			{
-				m_graphics_system->unregister_sprite(this);
-			}
-
-			if (s_spriteInstanceCount > 0)
-			{
-				--s_spriteInstanceCount;
-				if (s_spriteInstanceCount == 0)
-				{
-					if (bgfx::isValid(s_texColorUniform))
-					{
-						bgfx::destroy(s_texColorUniform);
-						s_texColorUniform = BGFX_INVALID_HANDLE;
-					}
-				}
-			}
-
-			release_texture();
-
-			if (bgfx::isValid(m_vertexBuffer))
-			{
-				bgfx::destroy(m_vertexBuffer);
-			}
-
-			if (bgfx::isValid(m_indexBuffer))
-			{
-				bgfx::destroy(m_indexBuffer);
-			}
-
-			m_program = BGFX_INVALID_HANDLE;
-			m_programLoaded = false;
+			release_texture_of(owner, key);
+			if (bgfx::isValid(vertices)) bgfx::destroy(vertices);
+			if (bgfx::isValid(indices)) bgfx::destroy(indices);
+			if (bgfx::isValid(meshIndices)) bgfx::destroy(meshIndices);
 		};
-
 		if (m_graphics_system)
 		{
 			auto state = m_graphics_system->get_state();
 			if (state == SystemState::Running || state == SystemState::Paused)
 			{
-				auto task = m_graphics_system->execute_block(releaseResources);
-				if (task)
-				{
-					task->wait();
-				}
+				m_graphics_system->execute_block(releaseResources);
 				return;
 			}
 		}
-
 		releaseResources();
 	}
 	
@@ -239,131 +246,135 @@ namespace Pakal
 		load_texture(texturePath);
 	}
 	
+	bool SpriteComponent_Bgfx::acquire_texture(const std::string& path, std::string& key, bgfx::TextureHandle& handle, int& width, int& height)
+	{
+		key = ResourceMgr.resolve_file_path(path);
+		// cached: one more user. Being loaded by another thread (a preload, another sprite): wait for it, then take it from the
+		// cache. Else this thread loads it, and the others that ask meanwhile wait for it.
+		std::shared_ptr<TextureLoad> mine;
+		{
+			std::unique_lock<std::mutex> lock(s_textureMutex);
+			for (;;)
+			{
+				auto found = s_textures.find(key);
+				if (found != s_textures.end() && bgfx::isValid(found->second.handle))
+				{
+					++found->second.users;
+					handle = found->second.handle;
+					width = found->second.width;
+					height = found->second.height;
+					return true;
+				}
+				auto loading = s_loading.find(key);
+				if (loading == s_loading.end()) break;
+				const std::shared_ptr<TextureLoad> other = loading->second;
+				s_textureLoaded.wait(lock, [&other]() { return other->done; });
+				if (other->failed) return false;
+			}
+			mine = std::make_shared<TextureLoad>();
+			s_loading[key] = mine;
+		}
+		auto fail = [&]()
+		{
+			std::lock_guard<std::mutex> lock(s_textureMutex);
+			mine->done = true;
+			mine->failed = true;
+			s_loading.erase(key);
+			s_textureLoaded.notify_all();
+			return false;
+		};
+
+		// Through the resource manager (a folder, a zip, the APK's assets on Android). A packed copy, the same name with .ktx
+		// added (compressed: android/pack_textures.py), wins over the original, which the package may leave out.
+		const std::string packed = path + ".ktx";
+		// (a texture slow to come is told in the log, with where its time went: reading, decoding, giving it to the GPU)
+		const auto startedAt = std::chrono::steady_clock::now();
+		const auto file_data = ResourceMgr.read_bytes(ResourceMgr.exists(packed) ? packed : path);
+		const auto readAt = std::chrono::steady_clock::now();
+		if (!file_data || file_data->empty())
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Unable to read texture '%s' (resolved '%s', root '%s'), using placeholder",
+				path.c_str(), key.c_str(), ResourceMgr.get_root_path().c_str());
+			return fail();
+		}
+		bx::DefaultAllocator allocator;
+		bimg::ImageContainer* image = bimg::imageParse(&allocator, file_data->data(), static_cast<uint32_t>(file_data->size()));
+		const auto decodedAt = std::chrono::steady_clock::now();
+		if (!image)
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] Failed to decode texture '%s', using placeholder", path.c_str());
+			return fail();
+		}
+		const bgfx::Memory* mem = bgfx::copy(image->m_data, image->m_size);
+		const bgfx::TextureHandle created = bgfx::createTexture2D(static_cast<uint16_t>(image->m_width), static_cast<uint16_t>(image->m_height),
+			image->m_numMips > 1, image->m_numLayers, static_cast<bgfx::TextureFormat::Enum>(image->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT, mem);
+		width = image->m_width;
+		height = image->m_height;
+		{
+			const auto ms = [](auto a, auto b) { return std::chrono::duration<double, std::milli>(b - a).count(); };
+			const auto doneAt = std::chrono::steady_clock::now();
+			if (ms(startedAt, doneAt) > 100.0)
+				LOG_INFO("[SpriteComponent_Bgfx] '%s' %dx%d took %.0f ms (read %.0f, decode %.0f, to the GPU %.0f)", path.c_str(), width, height,
+					ms(startedAt, doneAt), ms(startedAt, readAt), ms(readAt, decodedAt), ms(decodedAt, doneAt));
+		}
+		bimg::imageFree(image);
+		if (!bgfx::isValid(created))
+		{
+			LOG_WARNING("[SpriteComponent_Bgfx] bgfx texture creation failed for '%s', using placeholder", path.c_str());
+			return fail();
+		}
+		{
+			std::lock_guard<std::mutex> lock(s_textureMutex);
+			SharedTexture& shared = s_textures[key];
+			shared.handle = created;
+			shared.width = width;
+			shared.height = height;
+			shared.users = 1;
+			handle = created;
+			mine->done = true;
+			s_loading.erase(key);
+			s_textureLoaded.notify_all();
+		}
+		LOG_INFO("[SpriteComponent_Bgfx] Texture loaded: %s (%dx%d)", path.c_str(), width, height);
+		return true;
+	}
+
+	void SpriteComponent_Bgfx::release_cached_texture(const std::string& key)
+	{
+		release_texture_of(TextureOwner::Cached, key);
+	}
+
 	void SpriteComponent_Bgfx::load_texture(const std::string& path)
 	{
-		const std::string resolved_path = ResourceMgr.resolve_file_path(path);
-
-		auto set_placeholder_texture = [this]()
+		// a file this sprite already shows: nothing to do
+		if (m_textureOwner == TextureOwner::Cached && m_textureKey == ResourceMgr.resolve_file_path(path) && bgfx::isValid(m_texture))
+		{
+			return;
+		}
+		// shared with the sprites that show it, or preloaded (BgfxGraphicsSystem::preload_textures): nothing is read, decoded or
+		// uploaded again; being loaded by another thread: waited for, not read twice
+		std::string key;
+		bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+		int width = 0, height = 0;
+		if (!acquire_texture(path, key, handle, width, height))
 		{
 			acquire_white_texture();
 			m_textureLoaded = bgfx::isValid(m_texture);
 			m_textureWidth = 1;
 			m_textureHeight = 1;
 			update_texture_coords();
-		};
-
-		// a file some sprite already shows: its texture is shared (nothing is read, decoded or uploaded again)
-		if (m_textureOwner == TextureOwner::Cached && m_textureKey == resolved_path && bgfx::isValid(m_texture))
-		{
 			return;
 		}
-		SharedTexture hit;
-		{
-			std::lock_guard<std::mutex> lock(s_textureMutex);
-			auto found = s_textures.find(resolved_path);
-			if (found != s_textures.end() && bgfx::isValid(found->second.handle))
-			{
-				++found->second.users;
-				hit = found->second;
-			}
-		}
-		if (bgfx::isValid(hit.handle))
-		{
-			release_texture();
-			m_textureOwner = TextureOwner::Cached;
-			m_textureKey = resolved_path;
-			m_texture = hit.handle;
-			m_textureLoaded = true;
-			m_textureWidth = hit.width;
-			m_textureHeight = hit.height;
-			update_texture_coords();
-			return;
-		}
-
-		std::ifstream input(resolved_path, std::ios::binary | std::ios::ate);
-		if (!input.is_open())
-		{
-			LOG_WARNING("[SpriteComponent_Bgfx] Unable to open texture '%s' (resolved '%s', root '%s'), using placeholder",
-				path.c_str(), resolved_path.c_str(), ResourceMgr.get_root_path().c_str());
-			set_placeholder_texture();
-			return;
-		}
-
-		std::streamsize file_size = input.tellg();
-		if (file_size <= 0)
-		{
-			LOG_WARNING("[SpriteComponent_Bgfx] Texture '%s' is empty/unreadable, using placeholder", path.c_str());
-			set_placeholder_texture();
-			return;
-		}
-
-		input.seekg(0, std::ios::beg);
-		std::vector<uint8_t> file_data(static_cast<size_t>(file_size));
-		if (!input.read(reinterpret_cast<char*>(file_data.data()), file_size))
-		{
-			LOG_WARNING("[SpriteComponent_Bgfx] Failed to read texture '%s', using placeholder", path.c_str());
-			set_placeholder_texture();
-			return;
-		}
-
-		bx::DefaultAllocator allocator;
-		bimg::ImageContainer* image = bimg::imageParse(&allocator, file_data.data(), static_cast<uint32_t>(file_data.size()));
-		if (!image)
-		{
-			LOG_WARNING("[SpriteComponent_Bgfx] Failed to decode texture '%s', using placeholder", path.c_str());
-			set_placeholder_texture();
-			return;
-		}
-
 		release_texture();
-
-		const bgfx::Memory* mem = bgfx::copy(image->m_data, image->m_size);
-		bgfx::TextureHandle created = bgfx::createTexture2D(
-			static_cast<uint16_t>(image->m_width),
-			static_cast<uint16_t>(image->m_height),
-			image->m_numMips > 1,
-			image->m_numLayers,
-			static_cast<bgfx::TextureFormat::Enum>(image->m_format),
-			BGFX_TEXTURE_NONE | BGFX_SAMPLER_POINT,
-			mem);
-
-		m_textureLoaded = bgfx::isValid(created);
-		m_textureWidth = image->m_width;
-		m_textureHeight = image->m_height;
-		bimg::imageFree(image);
-		if (m_textureLoaded)
-		{
-			// the first sprite to show the file puts its texture in the cache (another thread may have been faster: its one is used)
-			std::lock_guard<std::mutex> lock(s_textureMutex);
-			SharedTexture& shared = s_textures[resolved_path];
-			if (bgfx::isValid(shared.handle))
-			{
-				bgfx::destroy(created);
-				created = shared.handle;
-			}
-			else
-			{
-				shared.handle = created;
-				shared.width = m_textureWidth;
-				shared.height = m_textureHeight;
-			}
-			++shared.users;
-			m_textureOwner = TextureOwner::Cached;
-			m_textureKey = resolved_path;
-			m_texture = created;
-		}
-
-		if (!m_textureLoaded)
-		{
-			LOG_WARNING("[SpriteComponent_Bgfx] bgfx texture creation failed for '%s', using placeholder", path.c_str());
-			set_placeholder_texture();
-			return;
-		}
-
-		LOG_INFO("[SpriteComponent_Bgfx] Texture loaded: %s (%dx%d)", path.c_str(), m_textureWidth, m_textureHeight);
+		m_textureOwner = TextureOwner::Cached;
+		m_textureKey = key;
+		m_texture = handle;
+		m_textureLoaded = true;
+		m_textureWidth = width;
+		m_textureHeight = height;
 		update_texture_coords();
 	}
-	
+
 	void SpriteComponent_Bgfx::create_solid_color(uint32_t color, int width, int height)
 	{
 		// the shared 1x1 white texture, colored and scaled
@@ -379,6 +390,22 @@ namespace Pakal
 		update_texture_coords();
 	}
 	
+	void SpriteComponent_Bgfx::set_mesh(const SpriteMesh* mesh)
+	{
+		if (mesh && mesh->positions.size() >= 6 && mesh->uvs.size() == mesh->positions.size() && mesh->indices.size() >= 3 && mesh->indices.size() % 3 == 0)
+		{
+			m_mesh = *mesh;
+			m_hasMesh = true;
+			m_meshIndicesDirty = true;
+		}
+		else
+		{
+			m_hasMesh = false;
+			m_mesh = SpriteMesh();
+		}
+		m_vertexBufferDirty = true;
+	}
+
 	void SpriteComponent_Bgfx::set_texture_region(int x, int y, int width, int height)
 	{
 		m_texRegion[0] = x;
@@ -422,6 +449,10 @@ namespace Pakal
 		m_vertexBufferDirty = true;
 	}
 	
+	static_assert(SpriteComponent_Bgfx::sort_depth(5, 123.0f, false) == 5 && SpriteComponent_Bgfx::sort_depth(150, 0.0f, false) == 99);
+	static_assert(SpriteComponent_Bgfx::sort_depth(1, -32767.0f, true) > SpriteComponent_Bgfx::sort_depth(0, 32767.0f, true));
+	static_assert(SpriteComponent_Bgfx::sort_depth(3, 2.0f, true) > SpriteComponent_Bgfx::sort_depth(3, 1.0f, true));
+
 	void SpriteComponent_Bgfx::set_layer(int layer)
 	{
 		m_layer = layer;
@@ -532,7 +563,44 @@ namespace Pakal
 	{
 		if (!m_vertexBufferDirty)
 			return;
-		
+
+		if (m_hasMesh && m_textureWidth > 0 && m_textureHeight > 0)
+		{
+			// A mesh: its own vertices (flipped by mirroring them, the origin moved like the quad's) and indices
+			const size_t count = m_mesh.positions.size() / 2;
+			std::vector<SpriteVertex> vertices(count);
+			for (size_t i = 0; i < count; ++i)
+			{
+				float x = m_mesh.positions[2 * i], y = m_mesh.positions[2 * i + 1];
+				if (m_flipX) x = -x;
+				if (m_flipY) y = -y;
+				vertices[i].x = x + (0.5f - m_origin.x);
+				vertices[i].y = y + (0.5f - m_origin.y);
+				vertices[i].z = 0.0f;
+				vertices[i].u = m_mesh.uvs[2 * i] / static_cast<float>(m_textureWidth);
+				vertices[i].v = m_mesh.uvs[2 * i + 1] / static_cast<float>(m_textureHeight);
+				vertices[i].w = 0.0f;
+				vertices[i].q = 0.0f;
+				vertices[i].abgr = m_color;
+			}
+			if (bgfx::isValid(m_vertexBuffer))
+			{
+				bgfx::destroy(m_vertexBuffer);
+			}
+			m_vertexBuffer = bgfx::createVertexBuffer(bgfx::copy(vertices.data(), static_cast<uint32_t>(vertices.size() * sizeof(SpriteVertex))), SpriteVertex::ms_layout);
+			if (m_meshIndicesDirty)
+			{
+				if (bgfx::isValid(m_meshIndexBuffer))
+				{
+					bgfx::destroy(m_meshIndexBuffer);
+				}
+				m_meshIndexBuffer = bgfx::createIndexBuffer(bgfx::copy(m_mesh.indices.data(), static_cast<uint32_t>(m_mesh.indices.size() * sizeof(uint16_t))));
+				m_meshIndicesDirty = false;
+			}
+			m_vertexBufferDirty = false;
+			return;
+		}
+
 		// Calculate texture coordinates
 		float u0 = 0.0f, v0 = 0.0f, u1 = 1.0f, v1 = 1.0f;
 		
@@ -654,8 +722,10 @@ namespace Pakal
 			update_vertex_buffer();
 		}
 		
+		const bgfx::IndexBufferHandle indexBuffer = m_hasMesh && bgfx::isValid(m_meshIndexBuffer) ? m_meshIndexBuffer : m_indexBuffer;
+
 		// Bail early if any handle is invalid
-		if (!bgfx::isValid(m_vertexBuffer) || !bgfx::isValid(m_indexBuffer) || !bgfx::isValid(m_program))
+		if (!bgfx::isValid(m_vertexBuffer) || !bgfx::isValid(indexBuffer) || !bgfx::isValid(m_program))
 		{
 			LOG_ERROR("[SpriteComponent_Bgfx] INVALID handle: vb=%d ib=%d prog=%d",
 				bgfx::isValid(m_vertexBuffer) ? 1 : 0,
@@ -674,7 +744,7 @@ namespace Pakal
 		bgfx::setTransform(transform);
 
 		bgfx::setVertexBuffer(0, m_vertexBuffer);
-		bgfx::setIndexBuffer(m_indexBuffer);
+		bgfx::setIndexBuffer(indexBuffer);
 
 		if (bgfx::isValid(s_texColorUniform) && bgfx::isValid(m_texture))
 		{
@@ -686,9 +756,31 @@ namespace Pakal
 				bgfx::isValid(s_texColorUniform) ? 1 : 0, bgfx::isValid(m_texture) ? 1 : 0);
 		}
 
+		if (bgfx::isValid(s_flashUniform))
+		{
+			// (the rim's light in the texture: x mirrored with the sprite, y down as the texture's rows)
+			const float rimDir[4] = { m_flipX ? -m_rimDir[0] : m_rimDir[0], m_flipY ? m_rimDir[1] : -m_rimDir[1],
+				m_textureWidth > 0 ? 1.0f / static_cast<float>(m_textureWidth) : 0.0f, m_textureHeight > 0 ? 1.0f / static_cast<float>(m_textureHeight) : 0.0f };
+			bgfx::setUniform(s_flashUniform, m_flash);
+			bgfx::setUniform(s_rimUniform, m_rim);
+			bgfx::setUniform(s_rimDirUniform, rimDir);
+			bgfx::setUniform(s_hueUniform, m_hue);
+			// life (set_life): its mask in the second sampler; a sprite without one draws with strength 0 (the shader skips it)
+			const bool life = m_life[1] > 0.0f && m_lifeMask && bgfx::isValid(m_lifeMask->m_texture) && bgfx::isValid(s_texLifeUniform);
+			const float lifeNow[4] = { m_life[0], life ? m_life[1] : 0.0f, 0.0f, 0.0f };
+			if (bgfx::isValid(s_lifeUniform)) bgfx::setUniform(s_lifeUniform, lifeNow);
+			// (the mask smoothly: linear between its texels, so its edges and its half size do not show as blocks)
+			if (life) bgfx::setTexture(1, s_texLifeUniform, m_lifeMask->m_texture, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
+		}
+
 		uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
 		bgfx::setState(state);
 
-		bgfx::submit(viewId, m_program);
+		// its layer is its depth: the main view sorts by depth (BgfxGraphicsSystem: DepthAscending), and with all at 0 bgfx ordered the
+		// sprites by their program, so a sprite of a lower layer with another program (a fighter's, its rim and flash) was drawn over
+		// a higher one (a black cover). 0 to 99: still before any mesh past a meter (a mesh's depth is its distance in centimetres)
+		// (LayerThenOrder: a 2D game's choice, its layer then its order within it)
+		const bool byOrder = m_graphics_system && m_graphics_system->sprite_order() == GraphicsSystem::SpriteOrder::LayerThenOrder;
+		bgfx::submit(viewId, m_program, sort_depth(m_layer, m_order, byOrder));
 	}
 }

@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -222,20 +223,20 @@ namespace Pakal::TopDown
 		return m_current >= 0 && m_timelines[static_cast<size_t>(m_current)].busy();
 	}
 
-	b2Vec2 AbilityComponent::facing() const
+	Pakal::Vec2 AbilityComponent::facing() const
 	{
 		if (busy()) return m_direction;
 		const PlayerControlComponent* control = actor().get<PlayerControlComponent>();
 		return control ? control->facing() : m_facing;
 	}
 
-	void AbilityComponent::face(const b2Vec2& direction)
+	void AbilityComponent::face(const Pakal::Vec2& direction)
 	{
-		b2Vec2 way = direction;
+		Pakal::Vec2 way = direction;
 		if (!busy() && way.Normalize() > 1.0e-4f) m_facing = way;
 	}
 
-	bool AbilityComponent::use(const std::string& name, const b2Vec2& direction)
+	bool AbilityComponent::use(const std::string& name, const Pakal::Vec2& direction)
 	{
 		if (busy() || down(actor())) return false;
 		auto found = std::find_if(m_abilities.begin(), m_abilities.end(), [&](const AbilityRules& a) { return a.name == name; });
@@ -245,7 +246,7 @@ namespace Pakal::TopDown
 		const AbilityRules& ability = *found;
 		ResourceComponent* pools = actor().get<ResourceComponent>();
 		auto pay = [&]() { return ability.cost <= 0.0f || ability.resource.empty() || (pools && pools->spend(ability.resource, ability.cost)); };
-		b2Vec2 way = direction;
+		Pakal::Vec2 way = direction;
 		if (way.Normalize() < 1.0e-4f) way = facing();
 		m_direction = way;
 		m_facing = way;
@@ -318,13 +319,13 @@ namespace Pakal::TopDown
 		const AbilityRules* ability = current();
 		if (busy() && ability && !ability->moves)
 		{
-			if (CharacterBodyComponent* body = actor().get<CharacterBodyComponent>()) body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			if (CharacterBodyComponent* body = actor().get<CharacterBodyComponent>()) body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 		}
 	}
 
 	void AbilityComponent::apply(TopDownGame& game, const AbilityRules& ability)
 	{
-		const b2Vec2 at = actor().position;
+		const Pakal::Vec2 at = actor().position;
 		const int faction = game.faction_of(actor());
 		const DamageInfo hit{ .amount = ability.damage * stat_of(actor(), Stat::damage), .type = ability.damageType, .source = actor().id,
 			.from = at, .knockback = ability.push > 0.0f, .hitstun = 0.2f };
@@ -335,9 +336,9 @@ namespace Pakal::TopDown
 			const float halfArc = 0.5f * ability.arcDegrees * 0.0174532925f;
 			for (Actor* foe : foes_of(game, faction, [&](const Actor& other)
 			{
-				b2Vec2 to = other.position - at;
+				Pakal::Vec2 to = other.position - at;
 				const float distance = to.Normalize();
-				return distance <= ability.reach + game.hit_radius(other) && (distance < 0.3f || std::acos(std::clamp(b2Dot(to, m_direction), -1.0f, 1.0f)) <= halfArc);
+				return distance <= ability.reach + game.hit_radius(other) && (distance < 0.3f || std::acos(std::clamp(Pakal::dot(to, m_direction), -1.0f, 1.0f)) <= halfArc);
 			}))
 			{
 				game.damage(*foe, hit);
@@ -383,7 +384,7 @@ namespace Pakal::TopDown
 
 	// ProjectileComponent --------------------------------------------------------------------------
 
-	ProjectileComponent::ProjectileComponent(uintptr_t thrower, int faction, const b2Vec2& direction, float speed, float range, float damage,
+	ProjectileComponent::ProjectileComponent(uintptr_t thrower, int faction, const Pakal::Vec2& direction, float speed, float range, float damage,
 		float radius, int damageType) :
 		m_thrower(thrower), m_faction(faction), m_direction(direction), m_speed(speed), m_left(range), m_damage(damage), m_radius(radius),
 		m_damageType(damageType)
@@ -393,12 +394,12 @@ namespace Pakal::TopDown
 	void ProjectileComponent::update(TopDownGame& game, float dt)
 	{
 		if (m_burst) return;
-		const b2Vec2 from = actor().position;
+		const Pakal::Vec2 from = actor().position;
 		const float step = std::min(m_left, m_speed * dt);
-		const b2Vec2 to = from + step * m_direction;
+		const Pakal::Vec2 to = from + step * m_direction;
 		// a wall stops it
 		const Pakal::RayCastHit wall = game.world().raycast(from, to, game.layers.wall);
-		const b2Vec2 end = wall.hit ? wall.point : to;
+		const Pakal::Vec2 end = wall.hit ? wall.point : to;
 		// the first foe along the way
 		Actor* struck = nullptr;
 		float nearest = (end - from).Length();
@@ -408,8 +409,8 @@ namespace Pakal::TopDown
 			{
 				continue;
 			}
-			const b2Vec2 toCenter = other->position - from;
-			const float along = std::clamp(b2Dot(toCenter, m_direction), 0.0f, nearest);
+			const Pakal::Vec2 toCenter = other->position - from;
+			const float along = std::clamp(Pakal::dot(toCenter, m_direction), 0.0f, nearest);
 			if ((from + along * m_direction - other->position).Length() <= game.hit_radius(*other) + 0.15f && along <= nearest)
 			{
 				nearest = along;
@@ -428,7 +429,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void ProjectileComponent::explode(TopDownGame& game, const b2Vec2& at)
+	void ProjectileComponent::explode(TopDownGame& game, const Pakal::Vec2& at)
 	{
 		m_burst = true;
 		if (m_radius > 0.0f)

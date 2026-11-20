@@ -1,0 +1,8 @@
+{
+  "emitters": [
+    { "shape": "sphere", "radius": 0.2, "height": 0.4, "burst": 12, "life": [1.2, 2.0], "speed": [2.0, 4.5],
+      "size": [0.04, 0.08], "gravity": 9.8, "color": [0.45, 0.3, 0.16, 1], "floor": "bounce", "restitution": 0.3 },
+    { "shape": "sphere", "radius": 0.3, "height": 0.3, "burst": 6, "life": [0.6, 1.0], "speed": [0.4, 1.0], "drag": 2,
+      "size": [0.15, 0.25], "sizeOverLife": [[0, 0.6], [1, 1.8]], "color": [[0, 0.6, 0.55, 0.45, 0.5], [1, 0.6, 0.55, 0.45, 0]] }
+  ]
+}

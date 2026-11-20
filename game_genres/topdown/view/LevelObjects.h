@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -77,7 +78,7 @@ namespace Pakal::TopDown
 		Instance make(size_t index, const Pakal::LevelObject& object, TopDownGame* game, const Handle& handle);
 		void release(Instance& instance, TopDownGame* game);
 		// Its footprint on the floor (meters) and its size across, from its model's box through its placement
-		void footprint(const Pakal::MeshComponent3D_Bgfx& mesh, const Mat4& placement, b2Vec2& low, b2Vec2& high, float& size) const;
+		void footprint(const Pakal::MeshComponent3D_Bgfx& mesh, const Mat4& placement, Pakal::Vec2& low, Pakal::Vec2& high, float& size) const;
 
 		std::string m_levelDir;
 		double m_unitsPerMeter = 100.0;

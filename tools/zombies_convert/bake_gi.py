@@ -76,7 +76,8 @@ def in_shadow(points, to_sun, boxes):
     return np.any((far >= np.maximum(near, 0.0)) & (far > 0.0), axis=0)
 
 
-GPU_PYTHON = os.environ.get('PAKAL_GPU_PYTHON', str(Path.home() / '.cache' / 'pakal-gpu-venv' / 'Scripts' / 'python.exe'))
+_GPU_VENV = Path.home() / '.cache' / 'pakal-gpu-venv'
+GPU_PYTHON = os.environ.get('PAKAL_GPU_PYTHON', str(_GPU_VENV / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')))
 
 
 def bake_on_gpu(job):

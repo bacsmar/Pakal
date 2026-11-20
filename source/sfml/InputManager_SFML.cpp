@@ -8,6 +8,8 @@
 #include "OSManager.h"
 #include "sfml/WindowFocus_SFML.h"
 #include <atomic>
+#include <algorithm>
+#include <chrono>
 
 
 using namespace Pakal;
@@ -79,7 +81,10 @@ IButtonDevice* InputManager_SFML::get_button_device(unsigned id) const
 }
 
 IAxisDevice* InputManager_SFML::get_axis_device(unsigned id) const
-{	
+{
+	// the QA tools' sticks, while they push them, are the first pad's
+	if (id == 0)
+		if (IAxisDevice* sticks = synthetic_sticks()) return sticks;
 	return id < m_axis_devices.size() ? m_axis_devices[id] : nullptr;
 }
 
@@ -137,9 +142,70 @@ tmath::vector2di InputManager_SFML::get_mouse_position() const
 	return{ pos.x, pos.y };
 }
 
+// What each pad slot holds now, a bit for each PadInput (a joystick takes the next slot the first time it presses something; past the last
+// slot, pads share it). SFML reads the pads through DirectInput on Windows (an Xbox's too: its triggers come together as one axis) and the
+// system's joystick files on Linux. The buttons are the usual order of a standard pad (A, B, X, Y, the bumpers, back, start, the sticks' clicks)
+void InputManager_SFML::poll_pads()
+{
+	const long long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+	if (now - m_pad_polled_at < 4) return;
+	m_pad_polled_at = now;
+	for (unsigned& slot : m_pad_state) slot = 0;
+	if (m_pad_bindings.empty()) return;
+	std::lock_guard<std::mutex> joysticks(JoystickLock_SFML::mutex());
+	sf::Joystick::update();
+	const float dead = 50.0f;
+	for (unsigned pad = 0; pad < sf::Joystick::Count && pad < 8; ++pad)
+	{
+		if (!sf::Joystick::isConnected(pad)) continue;
+		unsigned state = 0;
+		auto set = [&state](PadInput input) { state |= 1u << static_cast<unsigned>(input); };
+		static const PadInput buttons[10] = { PadInput::A, PadInput::B, PadInput::X, PadInput::Y, PadInput::LeftBumper, PadInput::RightBumper, PadInput::Back, PadInput::Start, PadInput::LeftStick, PadInput::RightStick };
+		for (unsigned b = 0; b < 10 && b < sf::Joystick::getButtonCount(pad); ++b)
+			if (sf::Joystick::isButtonPressed(pad, b)) set(buttons[b]);
+		const float x = sf::Joystick::getAxisPosition(pad, sf::Joystick::X), y = sf::Joystick::getAxisPosition(pad, sf::Joystick::Y);
+		const float povX = sf::Joystick::getAxisPosition(pad, sf::Joystick::PovX), povY = sf::Joystick::getAxisPosition(pad, sf::Joystick::PovY);
+		if (x < -dead || povX < -dead) set(PadInput::Left);
+		if (x > dead || povX > dead) set(PadInput::Right);
+		if (y < -dead || povY > dead) set(PadInput::Up);      // (the stick's y grows downward, the hat's grows upward)
+		if (y > dead || povY < -dead) set(PadInput::Down);
+		const float triggers = sf::Joystick::getAxisPosition(pad, sf::Joystick::Z);   // (an Xbox's two triggers, as one axis: the left adds, the right takes away)
+		if (triggers > dead) set(PadInput::LeftTrigger);
+		if (triggers < -dead) set(PadInput::RightTrigger);
+		if (!state) continue;
+		if (m_pad_slot[pad] < 0) m_pad_slot[pad] = std::min(m_pad_slots_given++, kPadSlots - 1);
+		m_pad_state[m_pad_slot[pad]] |= state;
+	}
+}
+
+bool InputManager_SFML::any_pad_pressed()
+{
+	if (!WindowFocus_SFML::focused()) return false;
+	std::lock_guard<std::mutex> joysticks(JoystickLock_SFML::mutex());
+	sf::Joystick::update();
+	for (unsigned pad = 0; pad < sf::Joystick::Count; ++pad)
+	{
+		if (!sf::Joystick::isConnected(pad)) continue;
+		for (unsigned b = 0; b < sf::Joystick::getButtonCount(pad); ++b)
+			if (sf::Joystick::isButtonPressed(pad, b)) return true;
+	}
+	return false;
+}
+
 bool InputManager_SFML::is_key_pressed(Pakal::Key key)
 {
+	if (synthetic_pressed(key, m_pad_bindings)) return true;   // (the QA tools' keys and pad: whatever window has the focus)
 	if (!WindowFocus_SFML::focused()) return false;   // (another window's keys are not the game's)
 	auto k = (sf::Keyboard::Key)(key);
-	return sf::Keyboard::isKeyPressed(k);
+	if (sf::Keyboard::isKeyPressed(k)) return true;
+	if (m_pad_bindings.empty()) return false;
+	poll_pads();
+	unsigned any = 0;
+	for (unsigned slot : m_pad_state) any |= slot;
+	for (const PadBinding& binding : m_pad_bindings)
+	{
+		const unsigned held = binding.pad < 0 ? any : (binding.pad < kPadSlots ? m_pad_state[binding.pad] : 0u);
+		if (binding.key == key && (held & (1u << static_cast<unsigned>(binding.input)))) return true;
+	}
+	return false;
 }

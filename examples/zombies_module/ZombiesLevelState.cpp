@@ -46,6 +46,7 @@
 #include <cstdlib>
 #include <set>
 #include <sstream>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 
@@ -402,7 +403,7 @@ namespace Zombies
 			{
 				const std::string path = std::string(prefix) + std::to_string(m_shotsTaken) + ".tga";
 				++m_shotsTaken;
-				m_graphics->execute_block([this, path]() { m_graphics->request_screenshot(path.c_str()); });
+				m_graphics->take_screenshot(path);
 			}
 		}
 
@@ -425,7 +426,7 @@ namespace Zombies
 		{
 			m_screenshotTaken = true;
 			const std::string path = shot;
-			m_graphics->execute_block([this, path]() { m_graphics->request_screenshot(path.c_str()); });
+			m_graphics->take_screenshot(path);
 		}
 	}
 
@@ -496,11 +497,11 @@ namespace Zombies
 		{
 			const float width = static_cast<float>(m_graphics->get_width()), height = static_cast<float>(m_graphics->get_height());
 			const Actor* focus = m_game->find(m_playerId);
-			const tmath::vector3df p = floor_point(focus ? focus->position : b2Vec2(0.0f, 0.0f));
+			const tmath::vector3df p = floor_point(focus ? focus->position : Pakal::Vec2(0.0f, 0.0f));
 			static const float scale = env_number("ZOMBIES_CAM_SCALE", 1.0f);
 			Vec3 eye, target;
 			m_rig->rest_pose(Vec3{ p.x, p.y, p.z }, scale, eye, target);
-			b2Vec2 low(1e9f, 1e9f), high(-1e9f, -1e9f);
+			Pakal::Vec2 low(1e9f, 1e9f), high(-1e9f, -1e9f);
 			int corners = 0;
 			for (const float px : { 0.0f, width - 1.0f })
 			{
@@ -509,8 +510,8 @@ namespace Zombies
 					float x = 0.0f, y = 0.0f;
 					if (mouse_on_plane(eye, target, m_rig->settings().fovY, px, py, width, height, 0.0f, x, y))
 					{
-						low = b2Vec2(std::min(low.x, x), std::min(low.y, y));
-						high = b2Vec2(std::max(high.x, x), std::max(high.y, y));
+						low = Pakal::Vec2(std::min(low.x, x), std::min(low.y, y));
+						high = Pakal::Vec2(std::max(high.x, x), std::max(high.y, y));
 						++corners;
 					}
 				}
@@ -544,7 +545,7 @@ namespace Zombies
 		}
 	}
 
-	void ZombiesLevelState::play_sound(const std::string& name, const b2Vec2& at)
+	void ZombiesLevelState::play_sound(const std::string& name, const Pakal::Vec2& at)
 	{
 		if (!m_audio)
 		{
@@ -613,7 +614,7 @@ namespace Zombies
 		}
 		const Actor* player = m_game ? m_game->find(m_playerId) : nullptr;
 		// the player's chest and head: hidden by something, that fades
-		const b2Vec2 at = player ? player->drawn_position(m_clock.alpha()) : b2Vec2(0.0f, 0.0f);
+		const Pakal::Vec2 at = player ? player->drawn_position(m_clock.alpha()) : Pakal::Vec2(0.0f, 0.0f);
 		m_occluders.update(m_rig->eye(), OccluderFade::body_points(at.x, at.y), player && !m_rig->panning(), dt);
 	}
 
@@ -642,13 +643,13 @@ namespace Zombies
 			}
 		}
 		// drawn between simulation steps, so it moves smoothly
-		tmath::vector3df p = floor_point(focus ? focus->drawn_position(m_clock.alpha()) : b2Vec2(0.0f, 0.0f));
+		tmath::vector3df p = floor_point(focus ? focus->drawn_position(m_clock.alpha()) : Pakal::Vec2(0.0f, 0.0f));
 		static const char* camAt = std::getenv("ZOMBIES_CAM_AT"); // debug: look at a point "x,y" (meters) instead
 		if (camAt)
 		{
 			float ax = 0.0f, ay = 0.0f;
 			std::sscanf(camAt, "%f,%f", &ax, &ay);
-			p = floor_point(b2Vec2(ax, ay));
+			p = floor_point(Pakal::Vec2(ax, ay));
 		}
 		static const float scale = env_number("ZOMBIES_CAM_SCALE", 1.0f); // debug: pull the camera back
 		m_rig->update(Vec3{ p.x, p.y, p.z }, m_game->timeMs, scale);
@@ -660,7 +661,7 @@ namespace Zombies
 		OverlayScene scene{ *m_graphics, *m_game, m_rules, *m_rig, *m_controls, *m_world, m_markers };
 		scene.playerId = m_playerId;
 		scene.alpha = m_clock.alpha();
-		scene.pointPosition = [this](int id, b2Vec2& at) { return point_position(id, at); };
+		scene.pointPosition = [this](int id, Pakal::Vec2& at) { return point_position(id, at); };
 		scene.showColliders = m_showColliders;
 		draw_world_overlays(scene);
 	}

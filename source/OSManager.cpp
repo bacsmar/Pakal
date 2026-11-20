@@ -2,6 +2,7 @@
 #include "SingletonHolder.h"
 #include "IInputManager.h"
 #include "LogMgr.h"
+#include "HttpPost.h"
 
 using namespace Pakal;
 
@@ -58,6 +59,18 @@ void OSManager::close_window()
 void OSManager::process_window_events()
 {
 	m_window_impl->process_window_events();
+	// the synthetic input that is due, right after the platform's own: on the same thread, through the same path
+	if (m_input_manager && m_input_manager->synthetic_pending())
+	{
+		tmath::vector2di area = m_input_manager->get_touch_area();
+		if (area.x <= 0 || area.y <= 0) area = m_window_impl->get_size();
+		m_input_manager->deliver_synthetic(area);
+	}
+	if (m_closeRequested.exchange(false))
+	{
+		LOG_INFO("[OSManager] closing, as asked (the QA tools' quit)");
+		event_app_finished();
+	}
 }
 
 void OSManager::on_window_created(const WindowArgs& arg)
@@ -79,4 +92,49 @@ bool OSManager::share_file(const std::string& path, const std::string& title)
 	}
 	LOG_INFO("[OSManager] %s: %s", title.c_str(), path.c_str());
 	return false;
+}
+
+bool OSManager::share_text(const std::string& text, const std::string& title)
+{
+	if (m_shareText)
+	{
+		return m_shareText(text, title);
+	}
+	LOG_INFO("[OSManager] %s: %s", title.c_str(), text.c_str());
+	return false;
+}
+
+std::string OSManager::take_link()
+{
+	std::string link;
+	link.swap(m_link);
+	if (link.empty() && m_takeLink) link = m_takeLink();
+	return link;
+}
+
+bool OSManager::open_url(const std::string& url)
+{
+	if (m_openUrl)
+	{
+		return m_openUrl(url);
+	}
+	return platform_open_url(url);   // (win32/HttpPostImpl.cpp: the shell; unix: none)
+}
+
+int OSManager::http_post(const std::string& url, const HttpHeaders& headers, const std::string& body, int timeoutMs)
+{
+	if (m_post)
+	{
+		return m_post(url, headers, body, timeoutMs);
+	}
+	return platform_http_post(url, headers, body, timeoutMs);   // (win32/ or unix/HttpPostImpl.cpp)
+}
+
+int OSManager::http_request(const std::string& method, const std::string& url, const HttpHeaders& headers, const std::string& body, std::string* response, int timeoutMs)
+{
+	if (m_request)
+	{
+		return m_request(method, url, headers, body, timeoutMs, response);
+	}
+	return platform_http_request(method, url, headers, body, timeoutMs, response);
 }

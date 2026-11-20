@@ -73,9 +73,10 @@ namespace Pakal
 			}
 		}
 
-		// Each entity not removed, in the order they joined
+		// Each entity not removed, in the order they joined (after before_entities_update)
 		void update_entities(float dt)
 		{
+			before_entities_update(dt);
 			for (auto& entity : m_entities)
 			{
 				if (!entity->removed)
@@ -115,6 +116,9 @@ namespace Pakal
 
 		// A game forgets what it kept about an entity that leaves
 		virtual void entity_removed(SyncEntity& entity) { (void)entity; }
+		// Before each step's entities update (update_entities, however it is reached): a world's own per-step work (the
+		// TopDown holds' count)
+		virtual void before_entities_update(float dt) { (void)dt; }
 
 	private:
 		std::vector<std::unique_ptr<SyncEntity>> m_entities;

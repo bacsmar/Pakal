@@ -14,7 +14,7 @@
 #include "LevelDocument.h"
 #include "LevelEditor.h"
 
-#include <box2d/box2d.h>
+#include "math/Vec2.h"
 
 #include <filesystem>
 #include <functional>
@@ -45,7 +45,7 @@ namespace Pakal::TopDown
 		void draw();
 		// Each frame: picking and dragging with the mouse on the floor while editing, and the gizmos. 'mouseFree': the click
 		// is not over a panel.
-		void update(bool mouseDown, bool mouseFree, bool aimed, const b2Vec2& mouseFloor, Pakal::BgfxGraphicsSystem& graphics);
+		void update(bool mouseDown, bool mouseFree, bool aimed, const Pakal::Vec2& mouseFloor, Pakal::BgfxGraphicsSystem& graphics);
 
 		bool editing() const { return m_editing; }
 		void set_editing(bool editing) { m_editing = editing; }
@@ -88,7 +88,7 @@ namespace Pakal::TopDown
 		// a drag of the selected object (the mouse or a field): where it started, so it is one undoable move
 		bool m_dragging = false;
 		bool m_wasDown = false;
-		b2Vec2 m_grab = b2Vec2(0.0f, 0.0f);   // from the mouse to the object's center
+		Pakal::Vec2 m_grab = Pakal::Vec2(0.0f, 0.0f);   // from the mouse to the object's center
 		Pakal::LevelObject m_before;
 		std::filesystem::file_time_type m_savedAt{};
 	};

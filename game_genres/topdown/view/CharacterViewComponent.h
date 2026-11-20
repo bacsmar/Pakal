@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -51,6 +52,11 @@ namespace Pakal::TopDown
 			// The steps of a special attack by name (CharacterAction, from the brain): "attack", "prepare", "explode",
 			// "backOff", "release", "spawn", "run", "pounce", "inAir", "windmill"
 			std::map<std::string, std::vector<std::string>> actions;
+			// The stretch of a clip that is played (seconds from its start: from, to), by the clip's name: a clip written as
+			// { "clip": name, "from": s, "to": s } in any list. A step of an action fits that stretch into its seconds and holds
+			// its last frame; hit, knocked down, getting up and death play it at their own pace (death
+			// holding its last frame). A name alone plays the whole clip.
+			std::map<std::string, std::array<float, 2>> ranges;
 		};
 
 		// A model held in a hand: the bone it follows and where it sits there (meters, degrees)
@@ -95,10 +101,18 @@ namespace Pakal::TopDown
 			float runRef = 4.5f;    // ... of the fast clip
 			float fastAbove = 3.2f; // speed (m/s) from which the fast clip is used
 			float clipSpeedMax = 2.0f; // the legs never play faster than this (a fast mover past it slides a little)
+			// The clips that play at their own pace (hit, death, knocked down and getting up, a melee swing, standing) this much
+			// faster; the ones fitted to a time (actions, attacks, climbing out) and the legs (walkRef, runRef) keep theirs
+			float clipSpeed = 1.0f;
 			float turnSpeed = 6.2831853f;   // radians per second the body turns toward where it goes or aims
 			float minFacingSpeed = 0.4f;    // slower than this (m/s) the body keeps its facing
 			float hitCooldown = 0.6f;       // seconds between two hit reactions of the same body
 			float backpedalCos = 0.35f;     // walking farther than this from the aim (the cosine; ~110 degrees) walks backwards
+			// When the body turns so the gun's barrel points where the shots go: "always" (clips that hold it off the body's
+			// facing), "firing" (clips that carry it down or across while not firing, and aim it along the facing when they
+			// fire), "off"
+			std::string aimAlign = "always";
+			float aimLinger = 0.0f;         // seconds the legs keep their firing clip (walkFire) after the last shot
 			float knockDownAbove = 1.0f;    // a knockback stun this long or longer throws the body down
 			std::string overlayRoot = "Abdomen"; // the bone from which up the fire and reload clips play
 			// Where shots leave: this bone (the gun hand), 'muzzleAhead' meters further along the shot. Empty: the
@@ -115,7 +129,7 @@ namespace Pakal::TopDown
 			static Look from_json(const nlohmann::json& json, const Look& defaults);
 		};
 	private:
-		static inline std::function<float(const b2Vec2&)> s_floor;
+		static inline std::function<float(const Pakal::Vec2&)> s_floor;
 	public:
 
 		CharacterViewComponent(std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh, const Look& look);
@@ -132,7 +146,7 @@ namespace Pakal::TopDown
 
 		// The height of the floor as the level draws it (level meters; the game's floor is flat at 0): characters are drawn
 		// on it, their soles on it. None set: 0. Shared by every character view.
-		static void set_floor(std::function<float(const b2Vec2&)> floor) { s_floor = std::move(floor); }
+		static void set_floor(std::function<float(const Pakal::Vec2&)> floor) { s_floor = std::move(floor); }
 		// Places the model and picks its clip (called once per drawn frame). 'alpha' is how far the frame is between the
 		// last simulation step and the next (Actor::drawn_position).
 		void sync(float dt, float alpha = 1.0f);
@@ -155,7 +169,7 @@ namespace Pakal::TopDown
 		void freeze(bool on) { m_frozen = on; }
 		// Where a shot toward 'direction' (level plane) leaves the gun, in render space: the look's muzzle bone as the
 		// clip has it now. False when the look names none.
-		bool muzzle_point(const b2Vec2& direction, float out[3]) const;
+		bool muzzle_point(const Pakal::Vec2& direction, float out[3]) const;
 
 	private:
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> m_mesh;
@@ -165,7 +179,8 @@ namespace Pakal::TopDown
 		bool m_handsFree = false;
 		std::map<int, std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_pairMeshes;   // the twins, by weapon (0: the start gun)
 		mutable unsigned m_shots = 0;   // the shots so far (a pair fires each gun in turn)
-		float m_aimTurn = 0.0f;           // radians the body is turned so its gun's barrel points along the aim   // what the hand shows (last drawn frame): its muzzle for the shots
+		float m_aimLingerLeft = 0.0f;     // seconds left of the look's aimLinger since the last shot
+		float m_aimTurn = 0.0f;          // radians the body is turned so its gun's barrel points along the aim   // what the hand shows (last drawn frame): its muzzle for the shots
 		// The clips of what is in hand: its own when it has them, else the look's
 		const Clips& clips_in_hand(int weaponId) const;
 		static Held read_held(const nlohmann::json& json, const Clips& clips);
@@ -173,7 +188,7 @@ namespace Pakal::TopDown
 		std::map<int, Held> m_weaponHeld;   // how each of them sits in the hand (for the other hand's grip)
 		float m_reachWeight = 0.0f;         // the other hand on the gun, blended in and out
 		Look m_look;
-		b2Vec2 m_lastPosition = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 m_lastPosition = Pakal::Vec2(0.0f, 0.0f);
 		bool m_moving = false;
 		float m_speed = 0.0f;         // meters per second, smoothed
 		float m_yawTarget = 0.0f;
@@ -199,6 +214,7 @@ namespace Pakal::TopDown
 		bool m_swingQueued = false;       // a swing that waits for the last to be half shown
 		int m_actionSerial = 0;      // the special attack step being shown
 		float m_actionSpeed = 1.0f;
+		float m_spanLeft = -1.0f;   // seconds until a step's clip stretch reaches its end, then it holds (-1: none)
 		std::string m_forced;
 		std::string m_modelKey;
 		float m_loopPhase = 0.0f;

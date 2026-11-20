@@ -1,10 +1,11 @@
-// Makes and keeps the AsyncEntities (see AsyncEntity.h and docs/ARCHITECTURE.md).
+// Makes and keeps the AsyncEntities (see AsyncEntity.h and docs/ARCHITECTURE.md): what a game draws and hears, never its
+// simulation (that is a SimWorld's). Entities are made by type name from the factories registered here
+// (Pakal::GenericEntity by the engine).
 #pragma once
 #include "Config.h"
 #include "EntityHandle.h"
 #include "IManager.h"
 #include "RTTI.h"
-#include "persist/PersistUtils.h"
 #include "ComponentManager.h"
 #include <string>
 #include <vector>
@@ -14,22 +15,16 @@
 namespace Pakal
 {
 	class AsyncEntity;
-	class IEntityProvider;
-	class EntityDescriptor;
 
-	class _PAKALExport EntityManager : public IManager, public IFactoryManager
+	class _PAKALExport EntityManager : public IManager
 	{
 		ComponentManager* m_componentManager;
-		std::unordered_map<std::string, EntityDescriptor*> m_descriptors;
 		std::unordered_map<std::string, IFactory<AsyncEntity>*> m_entityFactories;
-		std::unordered_map<std::string, IFactory<EntityDescriptor>*> m_descriptorFactories;
 		std::unordered_set<AsyncEntity*> m_liveEntities;
 		std::unordered_set<AsyncEntity*> m_pendingDispose;
 		std::unordered_map<uint64_t, AsyncEntity*> m_entitiesById;
 		std::unordered_map<uint64_t, uint32_t> m_generations;
 		uint64_t m_nextEntityId = 1;
-
-		void* create_object(const std::string& className) override;
 
 	public:
 		explicit EntityManager(ComponentManager* componentManager);
@@ -37,21 +32,10 @@ namespace Pakal
 
 		ComponentManager* get_component_manager() { return m_componentManager; };
 
-		const EntityDescriptor* get_descriptor(const std::string& name);
-		template<class TDescriptor>
-		const TDescriptor* get_descriptor(const std::string& name);
-
 		void initialize() override;
 		void terminate() override;
 
-		void clear_descriptors();
-
-		void add_descriptor(EntityDescriptor* descriptor);
-		void remove_descriptor(const std::string& descriptor);
-
-		void register_provider(IEntityProvider* provider);
 		void add_entity_factory(IFactory<AsyncEntity>* factory);
-		void add_descriptor_factory(IFactory<EntityDescriptor>* factory);
 
 
 		AsyncEntity* create_entity(const std::string& name, const std::string& descriptor = "");
@@ -68,12 +52,6 @@ namespace Pakal
 		void register_live_entity(AsyncEntity* entity);
 
 	};
-
-	template <class TDescriptor>
-	const TDescriptor* EntityManager::get_descriptor(const std::string& name)
-	{
-		return static_cast<const TDescriptor*>(get_descriptor(name));
-	}
 
 	template <class TEntity>
 	TEntity* EntityManager::create_entity(const std::string& descriptor)

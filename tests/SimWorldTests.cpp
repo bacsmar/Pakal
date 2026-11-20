@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace
 {
@@ -83,15 +84,15 @@ int main()
 		check(shapes.get<Circle>() == &circle && shapes.get<Shape>() == &circle, "by its own type and by its base");
 	}
 
-	a.position = b2Vec2(3.0f, 4.0f);
+	a.position = Pakal::Vec2(3.0f, 4.0f);
 	world.step(1.0f / 60.0f);
 	check(g_log == std::vector<std::string>({ "a1", "a2", "b1" }), "components run in the order the entities joined and they were added");
 	check(a.previousPosition.x == 3.0f && a.previousPosition.y == 4.0f, "an entity joins where it is (not slid in from the origin)");
 
-	a.position = b2Vec2(5.0f, 4.0f);
+	a.position = Pakal::Vec2(5.0f, 4.0f);
 	world.step(1.0f / 60.0f);
-	a.position = b2Vec2(7.0f, 4.0f);
-	const b2Vec2 half = a.drawn_position(0.5f);
+	a.position = Pakal::Vec2(7.0f, 4.0f);
+	const Pakal::Vec2 half = a.drawn_position(0.5f);
 	check(a.previousPosition.x == 5.0f && half.x == 6.0f, "drawn halfway between the last step and now");
 
 	g_log.clear();

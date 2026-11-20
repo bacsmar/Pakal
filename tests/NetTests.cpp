@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <fstream>
 #include <thread>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 using namespace Pakal::TopDown;
@@ -58,9 +59,9 @@ int main(int argc, char** argv)
 	// An input and a snapshot through their codecs
 	{
 		PlayerInput input;
-		input.move = b2Vec2(0.6f, -0.8f);
+		input.move = Pakal::Vec2(0.6f, -0.8f);
 		input.hasAimPoint = true;
-		input.aimPoint = b2Vec2(10.25f, -3.5f);
+		input.aimPoint = Pakal::Vec2(10.25f, -3.5f);
 		input.fire = true;
 		input.held = 5;
 		input.pressed = 4;
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
 		hero.kind = 0;
 		hero.faction = 1;
 		hero.name = "hero";
-		hero.position = b2Vec2(3.0f, 4.0f);
+		hero.position = Pakal::Vec2(3.0f, 4.0f);
 		hero.health = 0.5f;
 		hero.attacking = true;
 		hero.action = "strike";
@@ -94,13 +95,29 @@ int main(int argc, char** argv)
 			&& b.actors[0].faction == 1 && std::fabs(b.actors[0].health - 0.5f) < 0.01f && b.actors[0].action == "strike" && b.actors[0].attacking,
 			"a snapshot comes back, and a name sent once is remembered");
 		check(second.size() < first.size(), "a snapshot without the names is smaller");
+		check(a.actors.size() == 1 && a.actors[0].holdSteps == 0 && a.actors[0].speedScale == 1.0f, "... an actor neither held nor slowed sends no extras");
+		// a held, slowed actor: its hold and its speed's scale come back (the extras)
+		{
+			Snapshot extra;
+			ActorState held = hero;
+			held.holdSteps = 9;
+			held.speedScale = 0.6f;
+			extra.actors.push_back(held);
+			ByteWriter out;
+			write_snapshot(out, extra, [](uintptr_t) { return true; });
+			Snapshot back;
+			ByteReader in(out.data());
+			check(read_snapshot(in, back, known) && back.actors.size() == 1 && back.actors[0].holdSteps == 9
+				&& std::fabs(back.actors[0].speedScale - 0.6f) < 0.011f && back.actors[0].action == "strike",
+				"a held actor's steps and a slowed one's speed scale come back in a snapshot");
+		}
 
 		// between two snapshots
 		SnapshotBuffer buffer(3.0f);
 		Snapshot s1 = snapshot, s2 = snapshot;
 		s1.step = 100;
 		s2.step = 103;
-		s2.actors[0].position = b2Vec2(6.0f, 4.0f);
+		s2.actors[0].position = Pakal::Vec2(6.0f, 4.0f);
 		buffer.add(s1);
 		buffer.add(s2);
 		buffer.advance(0.0f);   // starts 3 steps behind the latest: at the first
@@ -120,8 +137,8 @@ int main(int argc, char** argv)
 		check(one.connect("127.0.0.1", server.port(), "one") && two.connect("127.0.0.1", server.port(), "two"), "two clients connect");
 		ReplicaGame replica;
 		PlayerInput walkEast;
-		walkEast.move = b2Vec2(1.0f, 0.0f);
-		b2Vec2 heroStart(0.0f, 0.0f);
+		walkEast.move = Pakal::Vec2(1.0f, 0.0f);
+		Pakal::Vec2 heroStart(0.0f, 0.0f);
 		bool started = false;
 		// a second of play, in real time (the packets go through the loopback)
 		for (int i = 0; i < 180; ++i)

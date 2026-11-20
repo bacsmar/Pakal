@@ -9,6 +9,8 @@
 
 #pragma once
 #include "BaseGameState.h"
+#include "GraphicsSystem.h"
+#include "components/SpriteComponent2D.h"
 #include "BrawlerGame.h"
 #include "topdown/view/LevelRuntime.h"
 #include "topdown/view/UiPanel.h"
@@ -16,6 +18,7 @@
 #include <atomic>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace Pakal
 {
@@ -42,6 +45,7 @@ namespace Brawler
 	private:
 		bool load();
 		void update_camera();
+		void show_hits();
 		void update_hud();
 
 		Pakal::Engine* m_engine = nullptr;
@@ -57,9 +61,15 @@ namespace Brawler
 		bool m_restartHeld = false;
 		std::atomic<int> m_impacts{ 0 };   // clip marks "impact" seen (graphics thread)
 		int m_impactsShaken = 0;
+		int m_hitsShown = 0;   // the hero's hits that already got their blood and sparks
+		uint32_t m_vfx = 0;   // BRAWLER_VFX's effect
 		int m_shownHits = 0;
 		bool m_reported = false;
 		double m_seconds = 0.0;            // real seconds since the start (screenshots)
 		bool m_shot = false;
+		// BRAWLER_PRELOAD (a check of GraphicsSystem::preload_textures)
+		std::shared_ptr<Pakal::TexturePreload> m_preload;
+		std::vector<std::unique_ptr<Pakal::SpriteComponent2D>> m_preloadSprites;
+		bool m_preloadStarted = false, m_preloadChecked = false;
 	};
 }

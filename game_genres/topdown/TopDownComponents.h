@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -41,7 +42,7 @@ namespace Pakal::TopDown
 	{
 		bool dead = false;
 		bool attacking = false;
-		b2Vec2 attackDirection = b2Vec2(0.0f, 1.0f);
+		Pakal::Vec2 attackDirection = Pakal::Vec2(0.0f, 1.0f);
 		float attackSeconds = 0.0f;        // how long an attack lasts (its clip is stretched over it)
 		bool hurt = false;                 // hit a moment ago (the body flashes)
 		int hurtClips = 0;                 // how many times its hurt clip started: the model plays it when this changes
@@ -57,7 +58,7 @@ namespace Pakal::TopDown
 		// A special attack: its steps have clips of their own, and it faces the way its brain turns it
 		bool special = false;
 		const CharacterAction* action = nullptr;
-		b2Vec2 facing = b2Vec2(0.0f, 1.0f);
+		Pakal::Vec2 facing = Pakal::Vec2(0.0f, 1.0f);
 	};
 
 	// A component that tells the view how its character looks now (EnemyBrainComponent)
@@ -106,14 +107,20 @@ namespace Pakal::TopDown
 	class CharacterBodyComponent : public Component
 	{
 	public:
-		CharacterBodyComponent(TopDownGame& game, const b2Vec2& at, float radius, uint16_t layer = 0);
+		CharacterBodyComponent(TopDownGame& game, const Pakal::Vec2& at, float radius, uint16_t layer = 0);
 		~CharacterBodyComponent() override;
 
-		void move(const b2Vec2& direction, float speed);
-		void teleport(const b2Vec2& at);
+		void move(const Pakal::Vec2& direction, float speed);
+		void teleport(const Pakal::Vec2& at);
 		// Off: nothing bumps into it (a body on the floor)
 		void set_enabled(bool enabled);
+		// The collision layers it bumps into (all of them unless set): a body up on something passes over its layer
+		void set_mask(uint16_t mask);
 		void update(TopDownGame& game, float dt) override;
+		void on_held(TopDownGame& game, float dt) override;
+		// Its speed's share (brush that slows, mud, ice...): every move() is scaled by it (never below 0); sim state, the
+		// network snapshot carries it from 0 to 2.55 (in hundredths)
+		float speedScale = 1.0f;
 
 	private:
 		std::unique_ptr<Pakal::CharacterController2D> m_body;
@@ -126,7 +133,7 @@ namespace Pakal::TopDown
 	{
 	public:
 		enum class State { Waiting, Walking, Arrived, Dead };
-		explicit EscortComponent(std::vector<b2Vec2> route) : m_route(std::move(route)) {}
+		explicit EscortComponent(std::vector<Pakal::Vec2> route) : m_route(std::move(route)) {}
 		State state() const { return m_state; }
 		size_t next_point() const { return m_next; }
 		void update(TopDownGame& game, float dt) override;
@@ -140,9 +147,9 @@ namespace Pakal::TopDown
 		float pointReach = 1.5f;         // it reaches a point of its route within this (m)
 
 	private:
-		std::vector<b2Vec2> m_route;
+		std::vector<Pakal::Vec2> m_route;
 		size_t m_next = 0;
-		std::vector<b2Vec2> m_path;
+		std::vector<Pakal::Vec2> m_path;
 		float m_pathTimer = 0.0f;
 		bool m_noRoute = false;   // the last search found none: the next one waits for the timer
 		State m_state = State::Waiting;
@@ -204,17 +211,26 @@ namespace Pakal::TopDown
 
 		bool enabled = true;          // EnableControls
 		bool moving() const { return m_moving; }
-		b2Vec2 facing() const { return m_facing; }
+		Pakal::Vec2 facing() const { return m_facing; }
 		// Turns it to face this way (where it starts, a cut scene); its input turns it again
-		void face(const b2Vec2& direction);
+		void face(const Pakal::Vec2& direction);
 		// A slowing hit (a flash): the player walks at 'factor' of its speed for 'seconds' (a modifier of its speed stat with that
 		// duration, the one of a flash before it replaced; without stats, its move is scaled meanwhile)
 		void slow_down(float factor, float seconds);
 		bool slowed() const;
+		// Walking and running (off by default: any push of the stick goes at the full speed, as always). With it, a push
+		// shorter than 'runAbove' (0..1, PlayerInput::move's length) walks at 'walkShare' of the full speed, and a longer one runs.
+		// A game that runs on a double tap sends a full push then, and a half one otherwise.
+		void set_walk(float walkShare, float runAbove);
+		// It walks now (the walk is on and the push is short), for the view's clip
+		bool walking() const { return m_walking; }
 
 	private:
 		bool m_moving = false;
-		b2Vec2 m_facing = b2Vec2(0.0f, 1.0f);
+		bool m_walking = false;
+		float m_walkShare = 0.0f;     // 0: no walk
+		float m_runAbove = 0.6f;
+		Pakal::Vec2 m_facing = Pakal::Vec2(0.0f, 1.0f);
 		float m_slowFactor = 1.0f;
 		float m_slowTimer = 0.0f;
 		uint32_t m_slowModifier = 0;   // of the speed stat, while it slows it
@@ -278,9 +294,9 @@ namespace Pakal::TopDown
 		float max_health() const { return m_rules.health; }
 		const PropRules& rules() const { return m_rules; }
 		// Its footprint (an axis-aligned box, level meters)
-		void set_box(const b2Vec2& low, const b2Vec2& high) { m_low = low; m_high = high; }
+		void set_box(const Pakal::Vec2& low, const Pakal::Vec2& high) { m_low = low; m_high = high; }
 		// Where something at 'from' stands to reach it: the nearest point of its footprint, 'out' meters off it
-		b2Vec2 reach_point(const b2Vec2& from, float out) const;
+		Pakal::Vec2 reach_point(const Pakal::Vec2& from, float out) const;
 		// A barricade: repaired while the player stands next to it; how much of it is up while broken (0..1)
 		float repair_share() const { return m_rules.health > 0.0f ? std::max(0.0f, m_health) / m_rules.health : 0.0f; }
 		void update(TopDownGame& game, float dt) override;
@@ -298,7 +314,7 @@ namespace Pakal::TopDown
 		float m_size = 1.0f;
 		float m_health;
 		bool m_broken = false;
-		b2Vec2 m_low = b2Vec2(0.0f, 0.0f), m_high = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 m_low = Pakal::Vec2(0.0f, 0.0f), m_high = Pakal::Vec2(0.0f, 0.0f);
 	};
 
 	// The gift box: armed by EnableRandomObject, it gives the player one consumable of its table

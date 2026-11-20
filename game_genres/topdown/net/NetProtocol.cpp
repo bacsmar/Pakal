@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown::Net
 {
@@ -17,7 +18,7 @@ namespace Pakal::TopDown::Net
 
 		enum Flags : uint8_t
 		{
-			Named = 1, Dead = 2, Attacking = 4, Hurt = 8, Special = 16, HasHealth = 32, HasAction = 64,
+			Named = 1, Dead = 2, Attacking = 4, Hurt = 8, Special = 16, HasHealth = 32, HasAction = 64, HasExtras = 128,
 		};
 
 		float wrap_angle(float a)
@@ -62,7 +63,7 @@ namespace Pakal::TopDown::Net
 		if (flags & 4)
 		{
 			const float a = in.angle();
-			input.aimDirection = b2Vec2(std::cos(a), std::sin(a));
+			input.aimDirection = Pakal::Vec2(std::cos(a), std::sin(a));
 		}
 		input.held = static_cast<uint32_t>(in.varuint());
 		input.pressed = static_cast<uint32_t>(in.varuint());
@@ -78,6 +79,8 @@ namespace Pakal::TopDown::Net
 		state.name = actor.name;
 		state.position = actor.position;
 		state.yaw = actor.yaw;
+		state.holdSteps = static_cast<uint8_t>(std::clamp(game.held_steps(actor), 0, 255));
+		if (const CharacterBodyComponent* body = actor.get<CharacterBodyComponent>()) state.speedScale = body->speedScale;
 		if (const HealthComponent* health = actor.get<HealthComponent>())
 		{
 			state.health = std::clamp(health->current() / std::max(0.001f, health->maximum()), 0.0f, 1.0f);
@@ -113,6 +116,10 @@ namespace Pakal::TopDown::Net
 			const bool withName = !named || !named(a.id);
 			uint8_t flags = (withName ? Named : 0) | (a.dead ? Dead : 0) | (a.attacking ? Attacking : 0) | (a.hurt ? Hurt : 0)
 				| (a.special ? Special : 0) | (a.health >= 0.0f ? HasHealth : 0) | (!a.action.empty() ? HasAction : 0);
+			// (the extras, a byte of their own flags: held, a speed scale; most actors have none)
+			const bool scaled = std::fabs(a.speedScale - 1.0f) > 0.005f;
+			const uint8_t extras = (a.holdSteps > 0 ? 1 : 0) | (scaled ? 2 : 0);
+			if (extras) flags |= HasExtras;
 			out.varuint(a.id);
 			out.u8(flags);
 			if (withName)
@@ -133,6 +140,12 @@ namespace Pakal::TopDown::Net
 			}
 			out.u8(a.hurtClips);
 			out.angle(std::atan2(a.facing.y, a.facing.x));
+			if (flags & HasExtras)
+			{
+				out.u8(extras);
+				if (extras & 1) out.u8(a.holdSteps);
+				if (extras & 2) out.u8(static_cast<uint8_t>(std::clamp(std::lround(a.speedScale * 100.0f), 0L, 255L)));
+			}
 		}
 		out.bytes(snapshot.own);
 	}
@@ -181,7 +194,13 @@ namespace Pakal::TopDown::Net
 			}
 			a.hurtClips = in.u8();
 			const float facing = in.angle();
-			a.facing = b2Vec2(std::cos(facing), std::sin(facing));
+			a.facing = Pakal::Vec2(std::cos(facing), std::sin(facing));
+			if (flags & HasExtras)
+			{
+				const uint8_t extras = in.u8();
+				if (extras & 1) a.holdSteps = in.u8();
+				if (extras & 2) a.speedScale = static_cast<float>(in.u8()) / 100.0f;
+			}
 			snapshot.actors.push_back(std::move(a));
 		}
 		snapshot.own = in.bytes();

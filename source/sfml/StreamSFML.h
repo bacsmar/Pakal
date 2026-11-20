@@ -17,8 +17,10 @@ namespace Pakal
 		sf::Int64 read(void* data, sf::Int64 size) override
 		{
 			m_source->read(static_cast<char*>(data), size);
+			const sf::Int64 count = m_source->gcount();
+			m_source->clear();   // a short read at the end sets eof/fail: tell() would then be -1 and a decoder (Vorbis) can loop forever
 
-			return m_source->gcount();
+			return count;
 		}
 		sf::Int64 seek(sf::Int64 position) override
 		{
@@ -30,6 +32,7 @@ namespace Pakal
 		}
 		sf::Int64 tell() override
 		{
+			m_source->clear();
 			return m_source->tellg();
 		}
 		sf::Int64 getSize() override

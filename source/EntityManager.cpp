@@ -2,9 +2,7 @@
 #include "Utils.h"
 #include "AsyncEntity.h"
 #include "GenericEntity.h"
-#include "EntityDescriptor.h"
-#include "ResourceManager.h"
-#include "IEntityProvider.h"
+#include "LogMgr.h"
 
 #include <vector>
 
@@ -16,85 +14,31 @@ EntityManager::EntityManager(ComponentManager* componentManager) : m_componentMa
 EntityManager::~EntityManager()
 {}
 
-const EntityDescriptor* EntityManager::get_descriptor(const std::string& name)
-{
-	EntityDescriptor* descriptor;
-
-	return map_utils::try_get(m_descriptors, name, descriptor) 
-		? descriptor 
-		: nullptr;
-}
-
 void EntityManager::initialize()
 {
-	ASSERT(m_descriptors.empty());
 }
 
 void EntityManager::terminate()
 {
 	dispose_all_entities();
-	clear_descriptors();
-
-	for (auto& pair : m_descriptorFactories)
-		delete pair.second;
 
 	for (auto& pair : m_entityFactories)
 		delete pair.second;
 
 	m_entityFactories.clear();
-	m_descriptorFactories.clear();
-}
-
-void EntityManager::clear_descriptors()
-{
-	for(auto& pair : m_descriptors)
-		delete pair.second;
-
-	m_descriptors.clear();
-}
-
-void EntityManager::add_descriptor(EntityDescriptor* descriptor)
-{
-	m_descriptors.insert(std::make_pair(descriptor->get_name(), descriptor));
-}
-
-void EntityManager::remove_descriptor(const std::string& descriptorName)
-{
-	m_descriptors.erase(descriptorName);
-}
-
-void EntityManager::register_provider(IEntityProvider* provider)
-{
-	std::vector<IFactory<AsyncEntity>*> entity_factories;
-	std::vector<IFactory<EntityDescriptor>*> descriptor_factories;
-
-	provider->register_entities(entity_factories);
-	provider->register_descriptors(descriptor_factories);
-
-	for(auto ef : entity_factories)
-	{
-		add_entity_factory(ef);
-	}
-
-	for (auto df : descriptor_factories)
-	{
-		add_descriptor_factory(df);
-	}
-	
 }
 
 void EntityManager::add_entity_factory(IFactory<AsyncEntity>* factory)
 {
-	m_entityFactories.insert(std::make_pair(factory->get_typename(), factory));
+	// the manager owns its factories: one for a type already registered is not kept (the first stays), and is deleted
+	// instead of leaked
+	if (!m_entityFactories.insert(std::make_pair(factory->get_typename(), factory)).second)
+	{
+		LOG_WARNING("[EntityManager] a factory for '%s' is already registered: the new one is discarded", factory->get_typename().c_str());
+		delete factory;
+		return;
+	}
 	LOG_DEBUG("[EntityManager] registered factory for: '%s' entity type.", factory->get_typename().c_str());
-
-}
-
-void EntityManager::add_descriptor_factory(IFactory<EntityDescriptor>* factory)
-{
-	m_descriptorFactories.insert(std::make_pair(factory->get_typename(), factory));
-	LOG_DEBUG("[EntityManager] registered factory for: '%s' descriptor type.", factory->get_typename().c_str());
-
 }
 
 AsyncEntity* EntityManager::create_entity(const std::string& name, const std::string& descriptor)
@@ -104,6 +48,11 @@ AsyncEntity* EntityManager::create_entity(const std::string& name, const std::st
 	if (map_utils::try_get(m_entityFactories, name, factory))
 	{
 		AsyncEntity* entity = factory->create();
+		if (!entity)
+		{
+			LOG_ERROR("[EntityManager] the factory of '%s' made no entity", name.c_str());
+			return nullptr;
+		}
 		entity->set_descriptor(descriptor);
 		register_live_entity(entity);
 		
@@ -127,13 +76,10 @@ void EntityManager::register_live_entity(AsyncEntity* entity)
 		return;
 	}
 
+	// ids are never reused, so a disposed entity's handle no longer resolves (its id is gone); the generation stays in
+	// the handle for when slots are reused
 	const uint64_t entityId = m_nextEntityId++;
-	uint32_t generation = 1;
-	auto generationIt = m_generations.find(entityId);
-	if (generationIt != m_generations.end())
-	{
-		generation = generationIt->second;
-	}
+	const uint32_t generation = 1;
 	m_generations[entityId] = generation;
 	entity->m_handle = { entityId, generation };
 	m_entitiesById[entityId] = entity;
@@ -210,11 +156,8 @@ size_t EntityManager::process_pending_disposals()
 
 		m_liveEntities.erase(entity);
 		m_entitiesById.erase(entity->m_handle.id);
-		auto generationIt = m_generations.find(entity->m_handle.id);
-		if (generationIt != m_generations.end())
-		{
-			generationIt->second++;
-		}
+		// forgotten, not kept with a higher generation: the map grew by one entry for every entity ever made
+		m_generations.erase(entity->m_handle.id);
 		delete entity;
 		disposedCount++;
 	}
@@ -231,9 +174,4 @@ size_t EntityManager::dispose_all_entities()
 	}
 
 	return process_pending_disposals();
-}
-
-void* EntityManager::create_object(const std::string& className)
-{
-	return m_descriptorFactories.at(className)->create();
 }

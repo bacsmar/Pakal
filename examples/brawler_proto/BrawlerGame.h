@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Brawler
 {
@@ -29,6 +30,7 @@ namespace Brawler
 		float radius = 0.35f;       // its body (meters)
 		float tall = 1.8f;
 		float blockFactor = 0.2f;   // what a hit does to it while it guards
+		float guardStunShare = 0.0f, guardPushShare = 0.0f;   // its blows guarded: the guard held and pushed back (blockstun)
 		std::vector<MoveRules> moves;
 		// An enemy: it closes in to this distance in front of the player and does one of 'attacks' every so often
 		float attackRange = 1.0f;
@@ -42,8 +44,8 @@ namespace Brawler
 		float halfWidth = 8.0f, halfDepth = 3.5f;   // the arena: x from -halfWidth to halfWidth, y likewise (meters)
 		std::map<std::string, FighterRules> fighters;
 		std::string player = "hero";
-		b2Vec2 playerAt = b2Vec2(-4.0f, 0.0f);
-		struct Spawn { std::string type; b2Vec2 at; };
+		Pakal::Vec2 playerAt = Pakal::Vec2(-4.0f, 0.0f);
+		struct Spawn { std::string type; Pakal::Vec2 at; };
 		std::vector<Spawn> enemies;
 		// The player's buttons: each one tries its moves in order (the first one that can be done now)
 		std::map<std::string, std::vector<std::string>> buttons;
@@ -70,7 +72,7 @@ namespace Brawler
 		void start();
 		// One step: the player's input (walking; its buttons do their moves)
 		void step(float dt, const PlayerInput& input);
-		Actor& add_fighter(const std::string& type, const b2Vec2& at, bool player);
+		Actor& add_fighter(const std::string& type, const Pakal::Vec2& at, bool player);
 
 		int enemies_left() const;
 		bool won() const { return enemies_left() == 0; }

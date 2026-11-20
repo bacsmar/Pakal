@@ -181,9 +181,11 @@ def main():
     receivers = [bpy.context.view_layer.objects.active]
     print(f'LIGHTMAP scene ready: {count} receiving meshes, {len(molds)} models', flush=True)
 
-    # el suelo de afuera: un plano gris grande, un poco abajo del piso de la escena
+    # el suelo de afuera: un plano gris grande, un poco abajo del piso de la escena (del más bajo de los que reciben: la
+    # arena de la orilla y el mar de una ciudad costera bajan de -0.2, y bajo el plano no les llegaba el cielo: ambiente negro)
     x0, y0, x1, y1 = plan['bounds']
-    bpy.ops.mesh.primitive_plane_add(size=1.0, location=((x0 + x1) / 2, (y0 + y1) / 2, -0.2))
+    lowest = min((obj.matrix_world @ Vector(corner)).z for obj in receivers for corner in obj.bound_box)
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=((x0 + x1) / 2, (y0 + y1) / 2, min(-0.2, lowest - 0.3)))
     floor = bpy.context.active_object
     floor.scale = (x1 - x0 + 400.0, y1 - y0 + 400.0, 1.0)
     gray = bpy.data.materials.new('outside')

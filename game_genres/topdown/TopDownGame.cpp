@@ -10,6 +10,7 @@
 #include "topdown/TopDownComponents.h"
 
 #include <algorithm>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -40,7 +41,7 @@ namespace Pakal::TopDown
 		return health && health->is_dead();
 	}
 
-	Actor* TopDownGame::nearest_player(const b2Vec2& at, bool living) const
+	Actor* TopDownGame::nearest_player(const Pakal::Vec2& at, bool living) const
 	{
 		Actor* nearest = nullptr;
 		float best = 0.0f;

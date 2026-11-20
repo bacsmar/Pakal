@@ -26,6 +26,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 
@@ -58,12 +59,12 @@ namespace Zombies
 		}
 	}
 
-	bool ZombiesLevelState::point_position(int id, b2Vec2& at) const
+	bool ZombiesLevelState::point_position(int id, Pakal::Vec2& at) const
 	{
 		auto point = m_warpPoints.find(id);
 		if (point != m_warpPoints.end()) { at = point->second; return true; }
 		auto anchor = m_cameraAnchors.find(id);
-		if (anchor != m_cameraAnchors.end()) { at = b2Vec2(anchor->second[0], -anchor->second[2]); return true; }
+		if (anchor != m_cameraAnchors.end()) { at = Pakal::Vec2(anchor->second[0], -anchor->second[2]); return true; }
 		return false;
 	}
 
@@ -116,13 +117,13 @@ namespace Zombies
 				token.sound = m_rules.sound("pickup");
 				m_rules.pickups[kTokenPickupId] = token;
 			}
-			b2Vec2 at;
+			Pakal::Vec2 at;
 			if (!point_position(pointId, at)) { LOG_WARNING("[ZombiesLevel] DropPickup: no point %d", pointId); return; }
 			m_game->drop_pickup(pickupId, at);
 		};
 		host.isPlayerNear = [this](int pointId, float radiusCm)
 		{
-			b2Vec2 at;
+			Pakal::Vec2 at;
 			const Actor* player = m_game->find(m_playerId);
 			return player && point_position(pointId, at) && (player->position - at).Length() <= meters(radiusCm);
 		};
@@ -133,12 +134,12 @@ namespace Zombies
 		};
 		host.startEscort = [this](const std::string& hero, const std::vector<int>& points)
 		{
-			b2Vec2 start;
+			Pakal::Vec2 start;
 			if (points.empty() || !point_position(points[0], start)) { LOG_WARNING("[ZombiesLevel] StartEscort: no start point"); return; }
-			std::vector<b2Vec2> route;
+			std::vector<Pakal::Vec2> route;
 			for (size_t i = 1; i < points.size(); ++i)
 			{
-				b2Vec2 at;
+				Pakal::Vec2 at;
 				if (point_position(points[i], at)) route.push_back(at);
 			}
 			Actor& ally = m_game->add_actor(ActorKind::Character, "Survivor", m_game->survivors);
@@ -262,7 +263,7 @@ namespace Zombies
 		const Json points = doc.script.value("points", Json::object());
 		for (auto it = points.begin(); it != points.end(); ++it)
 		{
-			m_warpPoints[std::atoi(it.key().c_str())] = b2Vec2(doc.meters(it.value()[0].get<double>()), doc.meters(it.value()[1].get<double>()));
+			m_warpPoints[std::atoi(it.key().c_str())] = Pakal::Vec2(doc.meters(it.value()[0].get<double>()), doc.meters(it.value()[1].get<double>()));
 		}
 		const Json anchors = doc.script.value("anchors", Json::object());
 		for (auto it = anchors.begin(); it != anchors.end(); ++it)
@@ -352,7 +353,7 @@ namespace Zombies
 			LOG_INFO("[ZombiesLevel] WarpPlayer(%d): no such point", id);
 			return;
 		}
-		b2Vec2 at = point->second;
+		Pakal::Vec2 at = point->second;
 		static const char* start = std::getenv("ZOMBIES_START"); // debug: warps go to this point "x,y" (meters) instead
 		if (start)
 		{

@@ -237,12 +237,12 @@ def bake(scene, catalog, placed):
                                   reference=kind(catalog, e['asset']) == 'ground'))
         elif occludes(catalog, e):
             occluders.append(dict(where, path=str(citykit.find_model(e['asset']))))
-    # the receivers' water (its overrides say so) stays out: it keeps the light probes' light
+    # the receivers' water and the decals too thin to bake (their overrides say so) stay out: the light probes light them
     skip = set()
     for r in receivers:
         sidecar = Path(r['path'] + '.materials.xml')
         if sidecar.is_file():
-            skip.update(re.findall(r'<material name="([^"]+)"[^>]*water="', sidecar.read_text(encoding='utf-8')))
+            skip.update(re.findall(r'<material name="([^"]+)"[^>]*(?:water="|lightmap="off")', sidecar.read_text(encoding='utf-8')))
     plan = {'atlas': ATLAS, 'samples': SAMPLES, 'relative': relative(scene), 'skip_materials': sorted(skip), 'sun': {'travel': sun_travel, 'color': lighting['sunColor']},
             'sky': {'top': lighting['skyTop'], 'horizon': lighting['skyHorizon']}, 'ambient': lighting['ambient'],
             'bounds': scene.data['bounds'], 'receivers': receivers, 'occluders': occluders}

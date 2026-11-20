@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "topdown/net/ReplicaGame.h"
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown::Net
 {
@@ -32,7 +33,7 @@ namespace Pakal::TopDown::Net
 		return view;
 	}
 
-	ReplicaGame::ReplicaGame() : m_world(b2Vec2(0.0f, 0.0f)), m_nav(1.0f), m_random(1)
+	ReplicaGame::ReplicaGame() : m_world(Pakal::Vec2(0.0f, 0.0f)), m_nav(1.0f), m_random(1)
 	{
 	}
 

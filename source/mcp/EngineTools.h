@@ -12,7 +12,8 @@
 //            shadows, the render scale, FSR, the sharpness, the governor;
 //          - set_camera: the camera held at a pose, or let go; screenshot.
 //          A game adds its own tools to the same server (McpServer::active()), e.g. its data's tuned values
-//          written back ("write_back").
+//          written back ("write_back"). With a token and outside a release, start_engine_tools adds the QA hooks
+//          too (mcp/QaTools.h: input, state, log, time scale, quit; docs/QA_HOOKS.md).
 //
 // Off unless asked for: PAKAL_MCP_PORT=<port> (and PAKAL_MCP_TOKEN=<token> for a bearer token) in the
 // environment, or the Android app's pakal_env.txt. It listens on 127.0.0.1 only.

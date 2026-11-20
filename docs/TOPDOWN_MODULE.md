@@ -129,8 +129,10 @@ walls, collision polygons and walkable grid from its `LevelDocument`, on the gam
 What the genre's parts do comes from fields a game sets, with neutral defaults: a gun's muzzle (`muzzleForward`,
 `muzzleSide`, `muzzleHeight`) and fire pose (`fireClipSeconds`); a melee weapon's trapezoid (`nearHalfWidth`,
 `farHalfWidth`), `height` and `clipSeconds`; a barricade's `repairReach`; an escort's `waitDistance` and `pointReach`;
-`HealthComponent::hurtFlashSeconds`; a character look's `turnSpeed`, `minFacingSpeed`, `hitCooldown`, `backpedalCos` and
-`knockDownAbove` (its visuals' JSON); and `EffectsSystem::Settings` (which prop effect a name is, the lasting effects'
+`HealthComponent::hurtFlashSeconds`; a character look's `turnSpeed`, `minFacingSpeed`, `hitCooldown`, `backpedalCos`,
+`knockDownAbove`, `aimAlign` (when the body turns so the gun's barrel points along the aim: `"always"`, `"firing"` for
+clips that carry the gun across the body until it fires, `"off"`) and `aimLinger` (seconds the legs keep `walkFire` after
+the last shot) (its visuals' JSON); and `EffectsSystem::Settings` (which prop effect a name is, the lasting effects'
 seconds and rates, the blood's color).
 
 ## Views
@@ -149,14 +151,14 @@ celebration),
 `PropMesh` (a prop's model; a hit on one that breaks lights it up and shakes it, `PropView::show_hit`, for the seconds the game gives `PropComponent::set_hit_seconds`, none by default), `EffectsSystem` (bullet trails, muzzle flashes, casings, sparks, blood, the
 props' water, fire, glass and debris; and what lies on the floor, drawn with `BgfxGraphicsSystem::draw_ground_spot`: the
 muzzle's light flickering around the shooter, blood pools and splats that stay and fade after a while, bodies blown to
-pieces, the dirt of what climbs out of it), `AudioCues` (sounds by name from `audio.json`, and the game's own with `add(name, path)`; SFML on desktops, AAudio on
+pieces, the dirt of what climbs out of it), `AudioCues` (the engine's since 2026-11, `audio/AudioCues.h`, `Pakal::AudioCues`, like `MusicPlayer`; the old path and name still work: sounds by name from `audio.json`, and the game's own with `add(name, path)`; a volume over all of them with `set_volume`; SFML on desktops, AAudio on
 Android), `CameraRig` (the camera at a fixed offset from what it follows, scripted pans, the shake; its `rest_pose` is
 what the simulation may use), `InputMapper` (the step's `PlayerInput` from the keys, the mouse and the sticks, relative to
 the camera), `SceneLook` (the light and the picture of a scene, from a level's `lighting` and `post` sections; the clouds' shadows
 (`lighting.shadows.clouds`) and the bloom (`post.bloom`) are drawn at the Extreme quality only, docs/ANDROID.md), `LevelRuntime` (what a
 level state does around its game: the camera and the input, models as instances of prototypes in an `AssetCache`, the
 scenery and the look, each character's animated model, the fixed steps and the views drawn between them, and letting it all
-go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand), `UiPanel` (a
+go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand), `UiPanel` (the engine's too, `ui/UiPanel.h`, `Pakal::UiPanel`: a
 game's interface of one RmlUi document: text, bars, style properties and classes by element id, and the buttons pressed
 on it),
 `LevelObjects` (a level document's objects by key: each one's model from its prefab or its own mesh, and for one with

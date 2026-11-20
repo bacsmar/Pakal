@@ -22,6 +22,9 @@ namespace Pakal::TopDown
 		float verticalSpeed = 0.0f;    // meters per second, up
 		float gravity = 20.0f;         // meters per second squared
 		float tall = 1.8f;             // how tall it is (meters): what a hit at a height can reach
+		// What it stands on, that high (meters; 0: the floor): a game raises it where something can be stood on (a car's
+		// roof, a crate) and lowers it again off it. It lands there, and lowered under it, it falls
+		float floor = 0.0f;
 
 		// Leaves the floor at this speed (only from the floor, unless 'inAir')
 		bool jump(float speed, bool inAir = false)
@@ -30,7 +33,9 @@ namespace Pakal::TopDown
 			verticalSpeed = speed;
 			return true;
 		}
-		bool airborne() const { return height > 0.0f || verticalSpeed > 0.0f; }
+		bool airborne() const { return height > floor || verticalSpeed > 0.0f; }
+		// Standing on something over the floor (not in the air)
+		bool raised() const { return floor > 0.0f && !airborne(); }
 		// Where to draw it 'alpha' of the way from the last step to this one
 		float drawn_height(float alpha) const { return m_previous + alpha * (height - m_previous); }
 
@@ -41,9 +46,9 @@ namespace Pakal::TopDown
 			if (!airborne()) return;
 			verticalSpeed -= gravity * dt;
 			height += verticalSpeed * dt;
-			if (height <= 0.0f)
+			if (height <= floor)
 			{
-				height = 0.0f;
+				height = floor;
 				verticalSpeed = 0.0f;   // landed
 			}
 		}

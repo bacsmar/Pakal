@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "TimeScale.h"
+
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -21,15 +23,16 @@ namespace Pakal
 	public:
 		explicit SimulationClock(float step = 1.0f / 60.0f, float maxFrame = 0.25f) : m_step(step), m_maxFrame(maxFrame) {}
 
-		// Real seconds since the last call (0 the first time), cut to maxFrame. It reads a steady clock: the engine's dt
-		// comes in whole milliseconds, which would make the steps uneven.
+		// Real seconds since the last call (0 the first time), cut to maxFrame, times the engine's time scale (TimeScale.h:
+		// 1 unless the QA tools change it; 0 stops the game). It reads a steady clock: the engine's dt comes in whole
+		// milliseconds, which would make the steps uneven.
 		float frame_seconds()
 		{
 			const auto now = std::chrono::steady_clock::now();
 			const float seconds = m_started ? std::min(std::chrono::duration<float>(now - m_last).count(), m_maxFrame) : 0.0f;
 			m_last = now;
 			m_started = true;
-			return seconds;
+			return seconds * sim_time_scale();
 		}
 
 		// Adds a frame's seconds and returns how many steps to run now

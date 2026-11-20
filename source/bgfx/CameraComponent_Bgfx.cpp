@@ -39,6 +39,7 @@ namespace Pakal
 		m_viewport[1] = 0;
 		m_viewport[2] = 800;
 		m_viewport[3] = 600;
+		for (int i = 0; i < 4; ++i) m_applied[i] = m_viewport[i];
 		
 		// Initialize bounds
 		m_bounds[0] = m_bounds[1] = m_bounds[2] = m_bounds[3] = 0.0f;
@@ -112,6 +113,8 @@ namespace Pakal
 		m_viewport[1] = y;
 		m_viewport[2] = width;
 		m_viewport[3] = height;
+		if (width > 0 && height > 0)
+			for (int i = 0; i < 4; ++i) m_applied[i] = m_viewport[i];   // (an automatic one is worked out when it draws)
 	}
 	
 	void CameraComponent_Bgfx::set_position(float x, float y)
@@ -290,15 +293,30 @@ namespace Pakal
 		// Set view and projection matrices
 		bgfx::setViewTransform(viewId, m_view, m_proj);
 		
-		// Set viewport
-		bgfx::setViewRect(viewId, m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
+		// Set viewport. Automatic (width or height 0): the whole back buffer, in the shape of the camera's view, centered; the rest
+		// of the screen stays the clear color (the bars of a screen that is wider or taller than the view)
+		for (int i = 0; i < 4; ++i) m_applied[i] = m_viewport[i];
+		if (m_viewport[2] <= 0 || m_viewport[3] <= 0)
+		{
+			const int screenW = m_graphics_system ? static_cast<int>(m_graphics_system->get_width()) : 800;
+			const int screenH = m_graphics_system ? static_cast<int>(m_graphics_system->get_height()) : 600;
+			const float shape = m_orthoWidth / std::max(m_orthoHeight, 0.0001f);
+			int w = screenW, h = screenH;
+			if (static_cast<float>(screenW) / static_cast<float>(std::max(screenH, 1)) > shape) w = static_cast<int>(std::lround(static_cast<float>(screenH) * shape));
+			else h = static_cast<int>(std::lround(static_cast<float>(screenW) / shape));
+			m_applied[0] = (screenW - w) / 2;
+			m_applied[1] = (screenH - h) / 2;
+			m_applied[2] = std::max(w, 1);
+			m_applied[3] = std::max(h, 1);
+		}
+		bgfx::setViewRect(viewId, static_cast<uint16_t>(m_applied[0]), static_cast<uint16_t>(m_applied[1]), static_cast<uint16_t>(m_applied[2]), static_cast<uint16_t>(m_applied[3]));
 	}
 	
 	void CameraComponent_Bgfx::screen_to_world(float screenX, float screenY, float& worldX, float& worldY) const
 	{
 		// Convert screen coordinates to normalized device coordinates (-1 to 1)
-		float ndcX = (screenX / (float)m_viewport[2]) * 2.0f - 1.0f;
-		float ndcY = 1.0f - (screenY / (float)m_viewport[3]) * 2.0f; // Flip Y
+		float ndcX = ((screenX - (float)m_applied[0]) / (float)m_applied[2]) * 2.0f - 1.0f;
+		float ndcY = 1.0f - ((screenY - (float)m_applied[1]) / (float)m_applied[3]) * 2.0f; // Flip Y
 		
 		// Apply inverse projection and view
 		float halfWidth = (m_orthoWidth / m_zoom) * 0.5f;
@@ -318,8 +336,8 @@ namespace Pakal
 		float ndcY = (worldY - m_position.y) / halfHeight;
 		
 		// Convert from NDC to screen coordinates
-		screenX = (ndcX + 1.0f) * 0.5f * (float)m_viewport[2];
-		screenY = (1.0f - ndcY) * 0.5f * (float)m_viewport[3];
+		screenX = (float)m_applied[0] + (ndcX + 1.0f) * 0.5f * (float)m_applied[2];
+		screenY = (float)m_applied[1] + (1.0f - ndcY) * 0.5f * (float)m_applied[3];
 	}
 	
 	tmath::vectorn<float, 2> CameraComponent_Bgfx::screen_to_world(const tmath::vectorn<float, 2>& screen) const

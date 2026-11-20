@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 
 #include <algorithm>
+#include <android/api-level.h>
 #include <chrono>
 #include <cstring>
 #include <dlfcn.h>
@@ -16,6 +17,12 @@ namespace Pakal
 		const size_t kMaxVoices = 24;
 		const size_t kRingFrames = 8192;   // ~0.17 s at 48 kHz: how far the music is decoded ahead
 		const int kFeedFrames = 1024;
+
+		// Android 8 (API 26, 27) has bugs in AAudio's state changes: pausing a stream crashed with a pure virtual call inside the library, and closing a
+		// stream that had been disconnected let go of a binder object twice (a SIGSEGV in a binder thread, a few seconds after the audio stopped).
+		// There, the stream is never paused, started again or closed while the app lives: pausing is silence (the callback gives none and the
+		// feeder waits), and a stream that was lost is left where it is and a new one is opened
+		bool aaudio_state_changes_are_safe() { static const bool safe = android_get_device_api_level() >= 28; return safe; }
 
 		uint16_t read16(const uint8_t* p) { return static_cast<uint16_t>(p[0] | (p[1] << 8)); }
 		uint32_t read32(const uint8_t* p) { return static_cast<uint32_t>(p[0] | (p[1] << 8) | (p[2] << 16) | (static_cast<uint32_t>(p[3]) << 24)); }
@@ -80,6 +87,11 @@ namespace Pakal
 	{
 		AAudioStream* stream = m_stream.exchange(nullptr);
 		if (!stream) return;
+		if (!aaudio_state_changes_are_safe() && m_lost)
+		{
+			LOG_INFO("[SoundManagerAAudio] a lost stream is left open (closing it crashes Android 8)");
+			return;
+		}
 		// stopped before it is closed: Android 8's AAudio closed while still stopping let go of a binder object twice,
 		// and the app crashed as it quit
 		AAudioStream_requestStop(stream);
@@ -180,7 +192,11 @@ namespace Pakal
 		{
 			std::lock_guard<std::mutex> lock(m_streamMutex);
 			m_paused = paused;
-			if (m_stream && !m_lost)
+			if (!aaudio_state_changes_are_safe())
+			{
+				if (paused || (m_stream && !m_lost)) return;   // (silence: the stream goes on, the callback gives nothing)
+			}
+			else if (m_stream && !m_lost)
 			{
 				const aaudio_result_t result = paused ? AAudioStream_requestPause(m_stream) : AAudioStream_requestStart(m_stream);
 				if (result == AAUDIO_OK || paused) return;
@@ -214,7 +230,12 @@ namespace Pakal
 		std::vector<float> block(static_cast<size_t>(kFeedFrames) * 2);
 		while (m_feeding)
 		{
-			if (m_lost && !m_paused) reopen_stream();
+			if (m_paused)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(20));
+				continue;
+			}
+			if (m_lost) reopen_stream();
 			const size_t read = m_ringRead.load(std::memory_order_acquire);
 			size_t write = m_ringWrite.load(std::memory_order_relaxed);
 			if (!m_musicOn || write - read + kFeedFrames > kRingFrames)
@@ -242,6 +263,11 @@ namespace Pakal
 
 	void SoundManagerAAudio::mix(int16_t* out, int32_t frames)
 	{
+		if (m_paused && !aaudio_state_changes_are_safe())
+		{
+			std::fill(out, out + 2 * frames, static_cast<int16_t>(0));   // (paused where the stream is not: silence, and the sounds wait)
+			return;
+		}
 		std::vector<float> accumulator(static_cast<size_t>(frames), 0.0f);   // the effects, mono
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);

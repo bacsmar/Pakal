@@ -4,7 +4,7 @@
 // Purpose: A game's interface made of one RmlUi document - implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "topdown/view/UiPanel.h"
+#include "ui/UiPanel.h"
 
 #include "IUIManager.h"
 #include "LogMgr.h"
@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <cstdio>
 
-namespace Pakal::TopDown
+namespace Pakal
 {
 	bool UiPanel::load(const std::string& document, const std::string& body)
 	{
@@ -88,6 +88,16 @@ namespace Pakal::TopDown
 	void UiPanel::attribute(const std::string& element, const std::string& name, const std::string& value)
 	{
 		if (m_loaded && changed("a|" + element + "|" + name, value)) m_ui->set_attribute(m_id, element, name, value);
+	}
+
+	void UiPanel::scroll_by(const std::string& element, float dp)
+	{
+		if (m_loaded && dp != 0.0f) m_ui->scroll_by(m_id, element, dp);
+	}
+
+	void UiPanel::scroll_into_view(const std::string& element)
+	{
+		if (m_loaded) m_ui->scroll_into_view(m_id, element);
 	}
 
 	std::vector<std::string> UiPanel::clicks()

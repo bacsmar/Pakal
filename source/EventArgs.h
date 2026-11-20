@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "config.h"
+#include "Config.h"
 
 namespace Pakal
 {
@@ -238,7 +238,7 @@ namespace Pakal
 
 			"KeyCount"      ///< Keep last -- the total number of keyboard keys
 		};
-		return names[static_cast<int>(key)];
+		return names[static_cast<int>(key) + 1];   // (names[0] is Key::Unknown, which is -1)
 	}
 
 	struct MouseArgs

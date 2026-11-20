@@ -20,6 +20,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/GltfMaterial.h>
+#include <nlohmann/json.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bimg/decode.h>
@@ -159,7 +160,7 @@ namespace Pakal
 					s_flatNormalTexture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_NONE, bgfx::copy(flat, 4));
 					s_plainOrmTexture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_NONE, bgfx::copy(plain, 4));
 					const uint8_t white4[4] = { 255, 255, 255, 255 };
-					if (bgfx::getCaps()->supported & BGFX_CAPS_TEXTURE_3D)
+					// (3D textures: every renderer has them since bgfx raised its baseline)
 					{
 						s_dummyVolume = bgfx::createTexture3D(1, 1, 1, false, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_NONE, bgfx::copy(white4, 4));
 					}
@@ -791,6 +792,7 @@ namespace Pakal
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Indices, 4, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Weight, 4, bgfx::AttribType::Float)
 			.end();
@@ -903,6 +905,7 @@ namespace Pakal
 			m_nodesByName = source.m_nodesByName;
 			m_channelsByNode = source.m_channelsByNode;
 			m_clipChannels = source.m_clipChannels;
+			m_borrowed = source.m_borrowed;   // (the channels those maps point at)
 			m_activeChannels = nullptr;
 			m_ticksPerSecond = source.m_ticksPerSecond;
 			m_timelineEndTicks = source.m_timelineEndTicks;
@@ -967,6 +970,9 @@ namespace Pakal
 		m_nodeGlobal.clear();
 		m_paletteMatrices.clear();
 		m_channelsByNode.clear();
+		m_clipChannels.clear();
+		m_activeChannels = nullptr;
+		m_borrowed.reset();
 		m_animations.clear();
 		m_scene = nullptr;
 		m_importer.reset();
@@ -1270,10 +1276,14 @@ namespace Pakal
 						normal.Normalize();
 						const aiVector3D uv = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : aiVector3D(0.0f, 0.0f, 0.0f);
 
+						aiVector3D tangent = mesh->HasTangentsAndBitangents() ? mesh->mTangents[vi] : aiVector3D(1.0f, 0.0f, 0.0f);
+						tangent.Normalize();
+
 						SkinnedVertex v;
 						v.x = pos.x; v.y = pos.y; v.z = pos.z;
 						v.nx = normal.x; v.ny = normal.y; v.nz = normal.z;
 						v.u = uv.x; v.v = flipV ? 1.0f - uv.y : uv.y;
+						v.tx = tangent.x; v.ty = tangent.y; v.tz = tangent.z;
 						for (int s = 0; s < 4; ++s)
 						{
 							v.boneIndex[s] = static_cast<float>(slots[s].first);
@@ -1382,8 +1392,8 @@ namespace Pakal
 				}
 			}
 
-			// glTF: the normal map and the ORM texture (static models draw with them), and how the material blends
-			if (!m_skinned)
+			// glTF: the normal map and the ORM texture (static and skinned models draw with them: vs_pbr, vs_skin_pbr), and
+			// how the material blends
 			{
 				auto load_extra = [&](aiTextureType type, int slot, bool& ok) -> bgfx::TextureHandle
 				{
@@ -1562,6 +1572,7 @@ namespace Pakal
 		}
 
 		load_clips(path);
+		borrow_clips(path);
 
 		// Root of the motion: the top-most node (breadth first) whose position really changes.
 		// Exporters may sample every channel, so a channel with many keys can still be constant.
@@ -1803,7 +1814,7 @@ namespace Pakal
 		const bool unseen = !m_paletteMatrices.empty() && s_cullFrusta[0].valid && outside_frustum(0) && !casts_into_view();
 		if (unseen)
 		{
-			for (const auto& mark : passedMarks) onClipMark(markedClip, mark);
+			m_marks.report(markedClip, passedMarks, onClipMark);
 			return;
 		}
 		// Not posed this frame, or its clip settled at its end and already posed there: last bones where the model is now
@@ -1812,7 +1823,7 @@ namespace Pakal
 		{
 			set_transform();
 			build_palette();
-			for (const auto& mark : passedMarks) onClipMark(markedClip, mark);
+			m_marks.report(markedClip, passedMarks, onClipMark);
 			return;
 		}
 		set_transform();
@@ -1821,10 +1832,7 @@ namespace Pakal
 		m_settledClip = settled ? m_currentAnimation : -1;
 		apply_reach();
 		build_palette();
-		for (const auto& mark : passedMarks)
-		{
-			onClipMark(markedClip, mark);
-		}
+		m_marks.report(markedClip, passedMarks, onClipMark);
 	}
 
 	void MeshComponent3D_Bgfx::set_reach(const std::string& upper, const std::string& lower, const std::string& end,
@@ -1835,7 +1843,8 @@ namespace Pakal
 			m_reach.weight = 0.0f;
 			return;
 		}
-		if (!m_reach.upper || m_reach.upper->mName.C_Str() != upper || m_reach.anchor->mName.C_Str() != anchor)
+		// (looked up again when a bone was missing: a look that names another rig's bones does not keep a null one)
+		if (!m_reach.upper || !m_reach.anchor || m_reach.upper->mName.C_Str() != upper || m_reach.anchor->mName.C_Str() != anchor)
 		{
 			m_reach.upper = m_scene->mRootNode->FindNode(upper.c_str());
 			m_reach.lower = m_scene->mRootNode->FindNode(lower.c_str());
@@ -1916,39 +1925,83 @@ namespace Pakal
 	// from the channel of the node with the most keys of it; components without a channel keep the
 	// value of the node's bind-pose transform. Under the overlay's root node, the overlay clip is
 	// blended over the main one by its weight.
+	const std::vector<MeshComponent3D_Bgfx::NodeChannels>& MeshComponent3D_Bgfx::node_channels(const void* map)
+	{
+		// (clips borrowed or shared later change the maps: the channels found before are let go)
+		const auto now = std::make_tuple(static_cast<const void*>(m_clipChannels.data()), m_clipChannels.size(), m_channelsByNode.size());
+		if (now != m_nodeChannelsFor)
+		{
+			m_nodeChannels.clear();
+			m_nodeChannelsFor = now;
+		}
+		auto found = m_nodeChannels.find(map);
+		if (found != m_nodeChannels.end()) return found->second;
+		const ChannelMap& channels = *static_cast<const ChannelMap*>(map);
+		std::vector<NodeChannels> out;
+		out.reserve(m_nodeBind.size());
+		// (depth first, children in order: compute_nodes' order)
+		std::function<void(const aiNode*)> visit = [&](const aiNode* node)
+		{
+			NodeChannels picked;
+			auto it = channels.find(node->mName.C_Str());
+			if (it != channels.end())
+			{
+				picked.found = true;
+				// A file can split one node's motion over several channels, and each channel also carries the components it
+				// does not animate as a constant (one or few keys). The channel with the most keys of a component animates it.
+				for (const aiNodeAnim* channel : it->second)
+				{
+					if (channel->mNumPositionKeys > 0 && (!picked.pos || channel->mNumPositionKeys > picked.pos->mNumPositionKeys)) picked.pos = channel;
+					if (channel->mNumRotationKeys > 0 && (!picked.rot || channel->mNumRotationKeys > picked.rot->mNumRotationKeys)) picked.rot = channel;
+					if (channel->mNumScalingKeys > 0 && (!picked.scale || channel->mNumScalingKeys > picked.scale->mNumScalingKeys)) picked.scale = channel;
+				}
+			}
+			out.push_back(picked);
+			for (unsigned i = 0; i < node->mNumChildren; ++i) visit(node->mChildren[i]);
+		};
+		visit(m_scene->mRootNode);
+		return m_nodeChannels.emplace(map, std::move(out)).first->second;
+	}
+
 	void MeshComponent3D_Bgfx::compute_node_transforms(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay)
 	{
+		// each node's bind pose decomposed once (by the nodes' order)
+		if (m_nodeBindScene != m_scene || m_nodeBind.empty())
+		{
+			m_nodeBind.clear();
+			std::function<void(const aiNode*)> visit = [&](const aiNode* n)
+			{
+				NodeBind bind;
+				n->mTransformation.Decompose(bind.scale, bind.rot, bind.pos);
+				m_nodeBind.push_back(bind);
+				for (unsigned i = 0; i < n->mNumChildren; ++i) visit(n->mChildren[i]);
+			};
+			visit(m_scene->mRootNode);
+			m_nodeBindScene = m_scene;
+			m_nodeChannels.clear();
+		}
+		size_t index = 0;
+		compute_nodes(node, parent, animated, timeTicks, inOverlay, index);
+	}
+
+	void MeshComponent3D_Bgfx::compute_nodes(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay, size_t& index)
+	{
+		const size_t at = index++;
 		aiMatrix4x4 local = node->mTransformation;
 		inOverlay = inOverlay || (m_overlay >= 0 && node == m_overlayRoot);
 
-		aiVector3D bindScale;
-		aiQuaternion bindRot;
-		aiVector3D bindPos;
-		node->mTransformation.Decompose(bindScale, bindRot, bindPos);
+		const NodeBind& bind = m_nodeBind[at];
+		const aiVector3D bindScale = bind.scale, bindPos = bind.pos;
+		const aiQuaternion bindRot = bind.rot;
 
 		// Samples this node in a set of channels; false when the set has no channel for it
 		auto sample = [&](const ChannelMap& channels, double ticks, aiVector3D& pos, aiQuaternion& rot, aiVector3D& scl)
 		{
-			auto channelsIt = channels.find(node->mName.C_Str());
-			if (channelsIt == channels.end())
-			{
-				return false;
-			}
-			const aiNodeAnim* posChannel = nullptr;
-			const aiNodeAnim* rotChannel = nullptr;
-			const aiNodeAnim* sclChannel = nullptr;
-			// A file can split one node's motion over several channels, and each channel also carries
-			// the components it does not animate as a constant (one or few keys). The channel with the
-			// most keys of a component is the one that animates it.
-			for (const aiNodeAnim* channel : channelsIt->second)
-			{
-				if (channel->mNumPositionKeys > 0 && (!posChannel || channel->mNumPositionKeys > posChannel->mNumPositionKeys)) posChannel = channel;
-				if (channel->mNumRotationKeys > 0 && (!rotChannel || channel->mNumRotationKeys > rotChannel->mNumRotationKeys)) rotChannel = channel;
-				if (channel->mNumScalingKeys > 0 && (!sclChannel || channel->mNumScalingKeys > sclChannel->mNumScalingKeys)) sclChannel = channel;
-			}
-			pos = posChannel ? sample_vector(posChannel->mPositionKeys, posChannel->mNumPositionKeys, ticks, bindPos) : bindPos;
-			rot = rotChannel ? sample_rotation(rotChannel->mRotationKeys, rotChannel->mNumRotationKeys, ticks, bindRot) : bindRot;
-			scl = sclChannel ? sample_vector(sclChannel->mScalingKeys, sclChannel->mNumScalingKeys, ticks, bindScale) : bindScale;
+			const NodeChannels& picked = node_channels(&channels)[at];
+			if (!picked.found) return false;
+			pos = picked.pos ? sample_vector(picked.pos->mPositionKeys, picked.pos->mNumPositionKeys, ticks, bindPos) : bindPos;
+			rot = picked.rot ? sample_rotation(picked.rot->mRotationKeys, picked.rot->mNumRotationKeys, ticks, bindRot) : bindRot;
+			scl = picked.scale ? sample_vector(picked.scale->mScalingKeys, picked.scale->mNumScalingKeys, ticks, bindScale) : bindScale;
 			return true;
 		};
 
@@ -1999,7 +2052,7 @@ namespace Pakal
 		m_nodeGlobal[node] = global;
 		for (unsigned int i = 0; i < node->mNumChildren; ++i)
 		{
-			compute_node_transforms(node->mChildren[i], global, animated, timeTicks, inOverlay);
+			compute_nodes(node->mChildren[i], global, animated, timeTicks, inOverlay, index);
 		}
 	}
 
@@ -2198,6 +2251,123 @@ namespace Pakal
 				m_hasTransparent = true;
 			}
 		}
+	}
+
+	struct MeshComponent3D_Bgfx::BorrowedClips
+	{
+		std::vector<std::unique_ptr<aiNodeAnim>> channels;   // the copies the maps point at
+		std::vector<ChannelMap> clipChannels;
+		std::vector<AnimationClip> clips;
+		double ticksPerSecond = 1.0;
+	};
+
+	void MeshComponent3D_Bgfx::borrow_clips(const std::string& path)
+	{
+		const auto text = ResourceMgr.read_bytes(path + ".clips.json");
+		if (!text) return;
+		if (m_animations.size() != m_clipChannels.size())
+		{
+			LOG_ERROR("[MeshComponent3D_Bgfx] %s.clips.json: the model's own clips are not glTF's, none borrowed", path.c_str());
+			return;
+		}
+		const nlohmann::json spec = nlohmann::json::parse(text->begin(), text->end(), nullptr, false);
+		if (!spec.is_object() || !spec.contains("from") || !spec["from"].is_string())
+		{
+			LOG_ERROR("[MeshComponent3D_Bgfx] %s.clips.json: no \"from\"", path.c_str());
+			return;
+		}
+		const std::string from = (fs::path(path).parent_path() / spec["from"].get<std::string>()).lexically_normal().generic_string();
+		const bool filter = spec.contains("translate") && spec["translate"].is_object();
+		std::map<std::string, float> translate;
+		if (filter)
+		{
+			for (auto it = spec["translate"].begin(); it != spec["translate"].end(); ++it)
+			{
+				if (it.value().is_number()) translate[it.key()] = it.value().get<float>();
+			}
+		}
+		std::string key = from + (filter ? "|" : "|*");
+		for (const auto& [node, scale] : translate) key += node + "=" + std::to_string(scale) + ";";
+
+		static std::mutex cacheMutex;
+		static std::map<std::string, std::weak_ptr<const BorrowedClips>> cache;
+		std::shared_ptr<const BorrowedClips> borrowed;
+		{
+			std::lock_guard<std::mutex> lock(cacheMutex);
+			borrowed = cache[key].lock();
+		}
+		if (!borrowed)
+		{
+			Assimp::Importer importer;
+			importer.SetIOHandler(new ResourceIOSystem());
+			const aiScene* scene = importer.ReadFile(from, 0);
+			if (!scene || scene->mNumAnimations == 0)
+			{
+				LOG_ERROR("[MeshComponent3D_Bgfx] %s.clips.json: no clips in '%s'", path.c_str(), from.c_str());
+				return;
+			}
+			auto made = std::make_shared<BorrowedClips>();
+			made->ticksPerSecond = scene->mAnimations[0]->mTicksPerSecond > 0.0 ? scene->mAnimations[0]->mTicksPerSecond : 1.0;
+			made->clipChannels.resize(scene->mNumAnimations);
+			for (unsigned int ai = 0; ai < scene->mNumAnimations; ++ai)
+			{
+				const aiAnimation* anim = scene->mAnimations[ai];
+				std::string name = anim->mName.C_Str();
+				made->clips.push_back({ name.empty() ? "animation" + std::to_string(ai) : name, 0.0, anim->mDuration });
+				for (unsigned int ci = 0; ci < anim->mNumChannels; ++ci)
+				{
+					const aiNodeAnim* source = anim->mChannels[ci];
+					const auto kept = translate.find(source->mNodeName.C_Str());
+					const bool keepMoves = !filter || kept != translate.end();
+					const float moveScale = filter && kept != translate.end() ? kept->second : 1.0f;
+					auto copy = std::make_unique<aiNodeAnim>();
+					copy->mNodeName = source->mNodeName;
+					copy->mPreState = source->mPreState;
+					copy->mPostState = source->mPostState;
+					if (source->mNumRotationKeys > 0)
+					{
+						copy->mNumRotationKeys = source->mNumRotationKeys;
+						copy->mRotationKeys = new aiQuatKey[source->mNumRotationKeys];
+						std::copy(source->mRotationKeys, source->mRotationKeys + source->mNumRotationKeys, copy->mRotationKeys);
+					}
+					if (keepMoves && source->mNumPositionKeys > 0)
+					{
+						copy->mNumPositionKeys = source->mNumPositionKeys;
+						copy->mPositionKeys = new aiVectorKey[source->mNumPositionKeys];
+						for (unsigned int k = 0; k < source->mNumPositionKeys; ++k)
+						{
+							copy->mPositionKeys[k] = source->mPositionKeys[k];
+							copy->mPositionKeys[k].mValue *= moveScale;
+						}
+					}
+					if (!filter && source->mNumScalingKeys > 0)
+					{
+						copy->mNumScalingKeys = source->mNumScalingKeys;
+						copy->mScalingKeys = new aiVectorKey[source->mNumScalingKeys];
+						std::copy(source->mScalingKeys, source->mScalingKeys + source->mNumScalingKeys, copy->mScalingKeys);
+					}
+					if (copy->mNumRotationKeys + copy->mNumPositionKeys + copy->mNumScalingKeys == 0) continue;
+					made->clipChannels[ai][copy->mNodeName.C_Str()].push_back(copy.get());
+					made->channels.push_back(std::move(copy));
+				}
+			}
+			borrowed = made;
+			std::lock_guard<std::mutex> lock(cacheMutex);
+			cache[key] = borrowed;
+		}
+		if (m_animations.empty()) m_ticksPerSecond = borrowed->ticksPerSecond;
+		for (size_t i = 0; i < borrowed->clips.size(); ++i)
+		{
+			m_animations.push_back(borrowed->clips[i]);
+			m_clipChannels.push_back(borrowed->clipChannels[i]);
+			m_timelineEndTicks = std::max(m_timelineEndTicks, borrowed->clips[i].endTicks);
+			for (const auto& [node, list] : borrowed->clipChannels[i])
+			{
+				auto& all = m_channelsByNode[node];
+				all.insert(all.end(), list.begin(), list.end());
+			}
+		}
+		m_borrowed = std::move(borrowed);
 	}
 
 	void MeshComponent3D_Bgfx::load_clips(const std::string& path)

@@ -41,6 +41,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -53,9 +54,14 @@ namespace Pakal
 	class PhysicsWorld2D;
 }
 
+namespace Pakal
+{
+	class AudioCues;   // (the engine's: audio/AudioCues.h)
+}
+
 namespace Pakal::TopDown
 {
-	class AudioCues;
+	using AudioCues = Pakal::AudioCues;
 	class EffectsSystem;
 	class SpawnSystem;
 }
@@ -77,8 +83,8 @@ namespace Zombies
 		struct Edit
 		{
 			bool keep = false;
-			b2Vec2 playerAt = b2Vec2(0.0f, 0.0f);
-			b2Vec2 focus = b2Vec2(0.0f, 0.0f);   // the editing camera's
+			Pakal::Vec2 playerAt = Pakal::Vec2(0.0f, 0.0f);
+			Pakal::Vec2 focus = Pakal::Vec2(0.0f, 0.0f);   // the editing camera's
 			bool editing = false;
 			bool liveReload = false;
 			std::string selected;
@@ -117,7 +123,7 @@ namespace Zombies
 		void build_physics(const LevelDocument& doc);
 		void build_objects(const LevelDocument& doc);
 		void build_player(const LevelDocument& doc);
-		uintptr_t spawn_enemy(const std::string& type, const b2Vec2& at);
+		uintptr_t spawn_enemy(const std::string& type, const Pakal::Vec2& at);
 		// Models: one loaded prototype per file (from the asset cache), shared by every object and character that uses it
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> create_instance(const std::string& file);
 
@@ -141,7 +147,7 @@ namespace Zombies
 		void update_fade();
 		void draw_gameplay_lines();
 		void draw_hud();
-		void play_sound(const std::string& name, const b2Vec2& at);
+		void play_sound(const std::string& name, const Pakal::Vec2& at);
 
 
 		std::string m_levelPath;
@@ -216,13 +222,13 @@ namespace Zombies
 		bool m_levelComplete = false;
 		bool m_levelFailed = false;                // Fail(): lost (the timer ran out, what had to be protected fell)
 		std::vector<int> m_markers;                // ShowMarker: the points with a beacon
-		bool point_position(int id, b2Vec2& at) const; // a named point or a camera anchor, in meters
+		bool point_position(int id, Pakal::Vec2& at) const; // a named point or a camera anchor, in meters
 		std::string m_failText;              // DoneKillAll
 		std::string m_objectiveKey;                // SetObjectiveText; empty after RemoveObjectiveText
 		double m_timerEndMs = -1.0;                // StartTimer: game time the countdown reaches 0 (< 0: no countdown)
 		std::string m_dialog;                      // ShowAutoDialog text, shown until m_dialogUntilMs
 		double m_dialogUntilMs = 0.0;
-		std::map<int, b2Vec2> m_warpPoints;        // named points of the level by game id
+		std::map<int, Pakal::Vec2> m_warpPoints;        // named points of the level by game id
 
 		// Camera
 		std::unique_ptr<Pakal::CameraComponent3D_Bgfx> m_camera;
@@ -276,7 +282,7 @@ namespace Zombies
 		std::filesystem::file_time_type m_levelWriteTime{};
 		float m_liveCheck = 0.0f;
 		bool m_wasEditing = false;
-		b2Vec2 m_editFocus = b2Vec2(0.0f, 0.0f);   // what the camera looks at while editing (WASD moves it)
+		Pakal::Vec2 m_editFocus = Pakal::Vec2(0.0f, 0.0f);   // what the camera looks at while editing (WASD moves it)
 		LevelCarry::Edit m_carryEdit;
 		void update_editing();
 		bool m_devGodMode = false;          // the player takes no damage

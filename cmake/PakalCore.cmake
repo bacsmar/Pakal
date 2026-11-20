@@ -6,19 +6,18 @@
 file(GLOB_RECURSE PAKAL_CORE_SOURCES FOLLOW_SYMLINKS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/source/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/*.h")
-# the backends and what is built on them
-list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/source/(bgfx|box2D|sfml|android|win32|unix|mcp|net|scripting|gameplay)/.*")
+# the backends and what is built on them (source/runtime: the full engine's default systems, which name the backends;
+# the core's own are in source/core_only)
+list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/source/(bgfx|box2D|sfml|android|win32|unix|mcp|net|scripting|gameplay|runtime)/.*")
 # DynamicMesh draws through a graphics backend; the examples of the persist submodule are not the engine
 list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/source/components/DynamicMesh/.*")
 list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/examples/.*")
-# the desktop player is the full engine's (it starts bgfx and the MCP server)
-list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/source/PakalPlayerMain\\.cpp$")
 # pugixml is compiled once, through the unity unit source/CompileUnit_1.cpp
 list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/persist/pugixml/pugixml\\.cpp$")
 if(WIN32)
-    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/win32/ClockImpl.cpp)
+    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/win32/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/win32/HttpPostImpl.cpp)
 else()
-    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp)
+    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/unix/HttpPostImpl.cpp)
 endif()
 
 add_library(PakalCore STATIC ${PAKAL_CORE_SOURCES})
@@ -39,3 +38,7 @@ endif()
 add_executable(CoreTests ${CMAKE_SOURCE_DIR}/tests/CoreTests.cpp)
 target_link_libraries(CoreTests PRIVATE PakalCore)
 add_test(NAME CoreTests COMMAND CoreTests)
+# The file watcher behind reloading in dev builds (docs/UI_RELOAD.md)
+add_executable(FileWatcherTests ${CMAKE_SOURCE_DIR}/tests/FileWatcherTests.cpp)
+target_link_libraries(FileWatcherTests PRIVATE PakalCore)
+add_test(NAME FileWatcherTests COMMAND FileWatcherTests)

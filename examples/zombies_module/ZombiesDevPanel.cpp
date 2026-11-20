@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <limits>
 #include <string>
+#include "math/Vec2.h"
 
 using namespace Pakal;
 
@@ -123,7 +124,7 @@ namespace Zombies
 				if (ImGui::SmallButton(label))
 				{
 					const float angle = m_random["dev"].uniform(0.0f, 6.2831853f);
-					spawn_enemy(type, player->position + 8.0f * b2Vec2(std::cos(angle), std::sin(angle)));
+					spawn_enemy(type, player->position + 8.0f * Pakal::Vec2(std::cos(angle), std::sin(angle)));
 				}
 				ImGui::SameLine();
 			}
@@ -191,7 +192,7 @@ namespace Zombies
 	void ZombiesLevelState::update_editing()
 	{
 		if (!m_edit || !m_graphics) return;
-		b2Vec2 mouse(0.0f, 0.0f);
+		Pakal::Vec2 mouse(0.0f, 0.0f);
 		const bool aimed = m_controls->mouse_aim(*m_rig, static_cast<float>(m_graphics->get_width()), static_cast<float>(m_graphics->get_height()), mouse);
 		m_edit->update(m_controls->mouse_left(), !m_graphics->get_debug_ui().wants_mouse(), aimed, mouse, *m_graphics);
 		static auto lastFrame = std::chrono::steady_clock::now();
@@ -204,7 +205,7 @@ namespace Zombies
 			if (!m_wasEditing)
 			{
 				const Actor* player = m_game->find(m_playerId);
-				m_editFocus = player ? player->position : b2Vec2(0.0f, 0.0f);
+				m_editFocus = player ? player->position : Pakal::Vec2(0.0f, 0.0f);
 			}
 			m_paused = true;
 			const PlayerInput walk = m_controls->read(*m_rig, static_cast<float>(m_graphics->get_width()), static_cast<float>(m_graphics->get_height()));
@@ -263,7 +264,7 @@ namespace Zombies
 		if (!reload) return;
 		const Actor* player = m_game->find(m_playerId);
 		m_carryEdit.keep = true;
-		m_carryEdit.playerAt = player ? player->position : b2Vec2(0.0f, 0.0f);
+		m_carryEdit.playerAt = player ? player->position : Pakal::Vec2(0.0f, 0.0f);
 		m_carryEdit.focus = m_editFocus;
 		m_carryEdit.editing = m_edit->editing();
 		m_carryEdit.liveReload = m_edit->live_reload();

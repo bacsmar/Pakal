@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -124,19 +125,19 @@ namespace Pakal::TopDown
 		m_fingers.erase(std::remove_if(m_fingers.begin(), m_fingers.end(), [id](const Finger& f) { return f.id == id; }), m_fingers.end());
 	}
 
-	bool InputMapper::stick_value(int stick, b2Vec2& value) const
+	bool InputMapper::stick_value(int stick, Pakal::Vec2& value) const
 	{
 		const tmath::vector2di area = m_input ? m_input->get_touch_area() : tmath::vector2di(0, 0);
 		std::lock_guard<std::mutex> lock(m_touchMutex);
-		value = b2Vec2(0.0f, 0.0f);
+		value = Pakal::Vec2(0.0f, 0.0f);
 		if (!m_touchOn || area.y <= 0) return false;
 		for (const Finger& finger : m_fingers)
 		{
 			if (finger.stick != stick) continue;
 			const float radius = m_settings.touchStickRadius * float(area.y);
-			value = b2Vec2((finger.x - finger.originX) / radius, (finger.originY - finger.y) / radius);   // up on the screen is positive
+			value = Pakal::Vec2((finger.x - finger.originX) / radius, (finger.originY - finger.y) / radius);   // up on the screen is positive
 			const float length = value.Length();
-			if (length < m_settings.touchDeadZone) value = b2Vec2(0.0f, 0.0f);
+			if (length < m_settings.touchDeadZone) value = Pakal::Vec2(0.0f, 0.0f);
 			else if (length > 1.0f) value *= 1.0f / length;
 			return true;
 		}
@@ -191,14 +192,14 @@ namespace Pakal::TopDown
 		m_taps.emplace_back(bit, reads);
 	}
 
-	b2Vec2 InputMapper::camera_relative(const b2Vec2& v) const
+	Pakal::Vec2 InputMapper::camera_relative(const Pakal::Vec2& v) const
 	{
 		float x, y;
 		Pakal::TopDown::camera_relative(v.x, v.y, m_settings.cameraAngle, x, y);
-		return b2Vec2(x, y);
+		return Pakal::Vec2(x, y);
 	}
 
-	bool InputMapper::mouse_aim(const CameraRig& camera, float width, float height, b2Vec2& at) const
+	bool InputMapper::mouse_aim(const CameraRig& camera, float width, float height, Pakal::Vec2& at) const
 	{
 		if (m_keyboardAim || !m_mouse.seen || camera.panning())
 		{
@@ -210,7 +211,7 @@ namespace Pakal::TopDown
 		{
 			return false;
 		}
-		at = b2Vec2(ax, ay);
+		at = Pakal::Vec2(ax, ay);
 		return true;
 	}
 
@@ -226,10 +227,10 @@ namespace Pakal::TopDown
 		if (key_down(Key::D) || key_down(Key::Right)) mx += 1.0f;
 		if (key_down(Key::W) || key_down(Key::Up)) my += 1.0f;
 		if (key_down(Key::S) || key_down(Key::Down)) my -= 1.0f;
-		input.move = camera_relative(b2Vec2(mx, my));
+		input.move = camera_relative(Pakal::Vec2(mx, my));
 
 		// Aim: the keys IJKL take over until the mouse moves again
-		b2Vec2 aim(0.0f, 0.0f);
+		Pakal::Vec2 aim(0.0f, 0.0f);
 		if (m_settings.aimKeys)
 		{
 			if (key_down(Key::J)) aim.x -= 1.0f;
@@ -249,7 +250,7 @@ namespace Pakal::TopDown
 			m_lastMouseX = x;
 			m_lastMouseY = y;
 		}
-		b2Vec2 aimPoint;
+		Pakal::Vec2 aimPoint;
 		if (mouse_aim(camera, width, height, aimPoint))
 		{
 			input.hasAimPoint = true;
@@ -272,13 +273,13 @@ namespace Pakal::TopDown
 
 		// Sticks (a gamepad's, the platform's: axes 0-1 move, 2-3 aim, y up; the touch screen's, read here). Aiming past
 		// the fire threshold fires.
-		b2Vec2 move(0.0f, 0.0f), stick(0.0f, 0.0f);
+		Pakal::Vec2 move(0.0f, 0.0f), stick(0.0f, 0.0f);
 		if (Pakal::IAxisDevice* sticks = m_input->get_axis_device(0))
 		{
-			move = b2Vec2(sticks->get_axis_state(0), sticks->get_axis_state(1));
-			stick = b2Vec2(sticks->get_axis_state(2), sticks->get_axis_state(3));
+			move = Pakal::Vec2(sticks->get_axis_state(0), sticks->get_axis_state(1));
+			stick = Pakal::Vec2(sticks->get_axis_state(2), sticks->get_axis_state(3));
 		}
-		b2Vec2 touched;
+		Pakal::Vec2 touched;
 		if (stick_value(0, touched)) move = touched;
 		if (stick_value(1, touched)) stick = touched;
 		if (move.LengthSquared() > 0.0f)

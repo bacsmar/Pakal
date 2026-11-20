@@ -14,7 +14,8 @@ uniform vec4 u_shadowFilter;  // x: the filter's taps on each side (2 to 4), y: 
 PAKAL_SAMPLER3D_HIGH(s_giVolume, 5);
 
 uniform vec4 u_giOrigin;      // xyz: corner of the baked grid (world space), w: how much of the ambient comes from it (0: none)
-uniform vec4 u_giSize;        // xyz: size of the grid in world space (the sign flips an axis)
+uniform vec4 u_giSize;        // xyz: size of the grid in world space (the sign flips an axis), w: the grid turned about the
+                              // vertical (radians: a level drawn turned, LevelRuntime::place_level's yaw; 0: not turned)
 uniform vec4 u_lightmap;      // xyz: this instance's place in the atlas (the vertex shader uses it), w: 0 none, 1 + baked shadow
                               // strength (the atlas is the ambient light), or minus that (the atlas is relative to the open floor)
 
@@ -26,7 +27,15 @@ vec3 ambient_light(vec3 worldPos, vec3 n, vec3 sky, vec3 ground)
 	// (a surface whose lightmap is its ambient light does not read the grid; a relative one scales the grid's)
 	if (u_giOrigin.w > 0.0 && u_lightmap.w <= 0.0)
 	{
-		vec3 uvw = vec3(worldPos.x - u_giOrigin.x, worldPos.z - u_giOrigin.z, worldPos.y - u_giOrigin.y) / vec3(u_giSize.x, u_giSize.z, u_giSize.y);
+		vec3 p = worldPos;
+		if (u_giSize.w != 0.0)
+		{
+			// the world point in the grid's own frame (the level was drawn turned by -w)
+			float c = cos(u_giSize.w);
+			float s = sin(u_giSize.w);
+			p = vec3(c * worldPos.x + s * worldPos.z, worldPos.y, -s * worldPos.x + c * worldPos.z);
+		}
+		vec3 uvw = vec3(p.x - u_giOrigin.x, p.z - u_giOrigin.z, p.y - u_giOrigin.y) / vec3(u_giSize.x, u_giSize.z, u_giSize.y);
 		vec3 baked = texture3D(s_giVolume, clamp(uvw, vec3_splat(0.001), vec3_splat(0.999))).rgb * 2.0 * (0.8 + 0.2 * n.y);
 		return mix(hemisphere, baked, u_giOrigin.w);
 	}
