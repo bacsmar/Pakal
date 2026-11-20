@@ -1,0 +1,56 @@
+# The whole engine, its genres and examples built with ThreadSanitizer, and every test run under it (the asset loader's
+# workers, network play, the systems' threads). Too long for every pull request (the core alone runs there, in build.yml):
+# once a week, and by hand from the Actions tab.
+name: thread-sanitizer (full build)
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  linux-tsan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache keys
+        id: keys
+        run: echo "bgfx=$(git rev-parse HEAD:external/bgfx HEAD:external/bx HEAD:external/bimg | sha1sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      # the same bgfx libraries as build.yml's Linux job (bgfx itself is not instrumented)
+      - name: bgfx build cache
+        uses: actions/cache@v4
+        with:
+          path: external/bgfx/.build/linux64_gcc/bin
+          key: bgfx-linux-${{ steps.keys.outputs.bgfx }}-${{ hashFiles('patches/bgfx/*.patch', 'cmake/BgfxBuild.cmake') }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Empty build context
+        run: mkdir -p "$RUNNER_TEMP/empty"
+
+      - name: Build environment (Dockerfile.linux)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ runner.temp }}/empty
+          file: Dockerfile.linux
+          tags: pakal-linux
+          load: true
+          cache-from: type=gha,scope=pakal-linux
+          cache-to: type=gha,scope=pakal-linux,mode=max
+
+      - name: Build everything with ThreadSanitizer and run the tests
+        run: >
+          sudo sysctl -w vm.mmap_rnd_bits=28 &&
+          docker run --rm -v "$PWD:/workspace" -w /workspace -e TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
+          pakal-linux bash -c
+          "git config --global --add safe.directory '*' &&
+          cmake -S . -B build-tsan-full -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          '-DCMAKE_CXX_FLAGS=-fsanitize=thread -fno-omit-frame-pointer' '-DCMAKE_C_FLAGS=-fsanitize=thread -fno-omit-frame-pointer'
+          -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread -DCMAKE_SHARED_LINKER_FLAGS=-fsanitize=thread -DCMAKE_MODULE_LINKER_FLAGS=-fsanitize=thread &&
+          cmake --build build-tsan-full -j 4 &&
+          cd build-tsan-full && ctest -E Mcp --output-on-failure"

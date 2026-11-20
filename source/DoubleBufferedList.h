@@ -54,8 +54,16 @@ namespace Pakal
 
 		inline void push(T t)
 		{
-			mutex_guard lock(BaseClass::m_push_mutex);
-			BaseClass::m_push_list.push(t);
+			{
+				mutex_guard lock(BaseClass::m_push_mutex);
+				BaseClass::m_push_list.push(t);
+			}
+			// through the waiter's mutex: a pop that just found the list empty is either not waiting yet (it will see the
+			// item) or already waiting (it gets the notice); without it the notice could fall in between and be lost, and
+			// a paused system's thread (waiting here for its resume) slept on until the next task
+			{
+				mutex_guard lock(BaseClass::m_block_mutex);
+			}
 			BaseClass::m_condition.notify_one();
 		}
 
@@ -64,7 +72,11 @@ namespace Pakal
 			if (block && BaseClass::empty())
 			{
 				std::unique_lock<std::mutex> lk(BaseClass::m_block_mutex);
-				BaseClass::m_condition.wait(lk, [this]() { return !BaseClass::m_push_list.empty(); });
+				BaseClass::m_condition.wait(lk, [this]()
+				{
+					mutex_guard lock(BaseClass::m_push_mutex);
+					return !BaseClass::m_push_list.empty();
+				});
 				BaseClass::swap_buffer();
 			}
 

@@ -1,0 +1,951 @@
+{
+ "_about": "Free rules for the Downtown levels, written for Pakal (not taken from any converted level): what build_downtown.py uses when the converted Survival level is not there. Speeds cm/s, times ms, damage and health in the game points of game_genres/topdown/TopDownRules.h (the built-in Glock does 0.39).",
+ "rules": {
+  "objects": {
+   "35001": {
+    "name": "Player",
+    "components": {
+     "Health": {
+      "HealthValue": 100.0,
+      "DelayAfterDeath": 2000.0
+     },
+     "Player": {
+      "InvincibilityAfterHitTime": 900.0
+     }
+    }
+   },
+   "25001": {
+    "name": "Walker",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 190.0
+       },
+       {
+        "MoveSpeed": 218.49999999999997
+       },
+       {
+        "MoveSpeed": 247.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 1.4
+       },
+       {
+        "HealthValue": 1.6099999999999999
+       },
+       {
+        "HealthValue": 1.8199999999999998
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 3.0
+       },
+       {
+        "AttackDamage": 3.4499999999999997
+       },
+       {
+        "AttackDamage": 3.9000000000000004
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 1
+       },
+       {
+        "XpValue": 1
+       },
+       {
+        "XpValue": 1
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "MeleeAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 1.0,
+      "Size": "120, 120"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.25
+     }
+    }
+   },
+   "25009": {
+    "name": "Runner",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 380.0
+       },
+       {
+        "MoveSpeed": 436.99999999999994
+       },
+       {
+        "MoveSpeed": 494.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 1.0
+       },
+       {
+        "HealthValue": 1.15
+       },
+       {
+        "HealthValue": 1.3
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 2.5
+       },
+       {
+        "AttackDamage": 2.875
+       },
+       {
+        "AttackDamage": 3.25
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 2
+       },
+       {
+        "XpValue": 2
+       },
+       {
+        "XpValue": 2
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "MeleeAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 1.0,
+      "Size": "120, 120"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.25
+     }
+    }
+   },
+   "25016": {
+    "name": "Spitter",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 150.0
+       },
+       {
+        "MoveSpeed": 172.5
+       },
+       {
+        "MoveSpeed": 195.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 4.0
+       },
+       {
+        "HealthValue": 4.6
+       },
+       {
+        "HealthValue": 5.2
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 4.0
+       },
+       {
+        "AttackDamage": 4.6
+       },
+       {
+        "AttackDamage": 5.2
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 5
+       },
+       {
+        "XpValue": 5
+       },
+       {
+        "XpValue": 5
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "BoomerAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 3.0,
+      "Size": "170, 170"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.6
+     },
+     "ProjectileBullet": {
+      "Speed": 900.0,
+      "Damage": 8.0
+     }
+    }
+   },
+   "25010": {
+    "name": "Burster",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 320.0
+       },
+       {
+        "MoveSpeed": 368.0
+       },
+       {
+        "MoveSpeed": 416.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 1.0
+       },
+       {
+        "HealthValue": 1.15
+       },
+       {
+        "HealthValue": 1.3
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 12.0
+       },
+       {
+        "AttackDamage": 13.799999999999999
+       },
+       {
+        "AttackDamage": 15.600000000000001
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 4
+       },
+       {
+        "XpValue": 4
+       },
+       {
+        "XpValue": 4
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "BomberAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 1.0,
+      "Size": "120, 120"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.5
+     }
+    }
+   },
+   "25011": {
+    "name": "Brute",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 160.0
+       },
+       {
+        "MoveSpeed": 184.0
+       },
+       {
+        "MoveSpeed": 208.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 9.0
+       },
+       {
+        "HealthValue": 10.35
+       },
+       {
+        "HealthValue": 11.700000000000001
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 6.0
+       },
+       {
+        "AttackDamage": 6.8999999999999995
+       },
+       {
+        "AttackDamage": 7.800000000000001
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 8
+       },
+       {
+        "XpValue": 8
+       },
+       {
+        "XpValue": 8
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "ConstantAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 4.0,
+      "Size": "190, 190"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.8
+     }
+    }
+   },
+   "25012": {
+    "name": "Handler",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 170.0
+       },
+       {
+        "MoveSpeed": 195.49999999999997
+       },
+       {
+        "MoveSpeed": 221.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 2.5
+       },
+       {
+        "HealthValue": 2.875
+       },
+       {
+        "HealthValue": 3.25
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 3.0
+       },
+       {
+        "AttackDamage": 3.4499999999999997
+       },
+       {
+        "AttackDamage": 3.9000000000000004
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 4
+       },
+       {
+        "XpValue": 4
+       },
+       {
+        "XpValue": 4
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "DogWalkerAttack": {
+      "SpawnEnemyType": "25013"
+     },
+     "BuiltinCollision2DPolygon": {
+      "Mass": 1.0,
+      "Size": "120, 120"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.5
+     }
+    }
+   },
+   "25013": {
+    "name": "Hound",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 430.0
+       },
+       {
+        "MoveSpeed": 494.49999999999994
+       },
+       {
+        "MoveSpeed": 559.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 0.8
+       },
+       {
+        "HealthValue": 0.9199999999999999
+       },
+       {
+        "HealthValue": 1.04
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 2.0
+       },
+       {
+        "AttackDamage": 2.3
+       },
+       {
+        "AttackDamage": 2.6
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 1
+       },
+       {
+        "XpValue": 1
+       },
+       {
+        "XpValue": 1
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "DogAttack": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 0.7,
+      "Size": "90, 90"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 0.1
+     }
+    }
+   },
+   "25026": {
+    "name": "Big One",
+    "components": {
+     "Enemy": {
+      "MoveSpeeds": [
+       {
+        "MoveSpeed": 220.0
+       },
+       {
+        "MoveSpeed": 252.99999999999997
+       },
+       {
+        "MoveSpeed": 286.0
+       }
+      ],
+      "HealthValues": [
+       {
+        "HealthValue": 40.0
+       },
+       {
+        "HealthValue": 46.0
+       },
+       {
+        "HealthValue": 52.0
+       }
+      ],
+      "AttackDamages": [
+       {
+        "AttackDamage": 10.0
+       },
+       {
+        "AttackDamage": 11.5
+       },
+       {
+        "AttackDamage": 13.0
+       }
+      ],
+      "XpValues": [
+       {
+        "XpValue": 40
+       },
+       {
+        "XpValue": 40
+       },
+       {
+        "XpValue": 40
+       }
+      ],
+      "AttackIntervalMin": 600.0,
+      "AttackIntervalMax": 900.0,
+      "RotateSpeed": 300.0
+     },
+     "ZombieBear": {},
+     "BuiltinCollision2DPolygon": {
+      "Mass": 8.0,
+      "Size": "240, 240"
+     },
+     "Health": {
+      "IsFadeOut": true,
+      "FadeOutTime": 1500.0,
+      "ShowHealthOnDamage": true
+     },
+     "PickupSpawn": {
+      "Random": true,
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ],
+      "SpawnRate": 1.0
+     },
+     "ChainAttack": {}
+    }
+   },
+   "25006": {
+    "name": "Coin",
+    "components": {
+     "Pickup": {
+      "PickupType": "Money",
+      "Value": 5.0,
+      "Radius": 200.0,
+      "LifeTime": 10000.0
+     }
+    }
+   },
+   "15020": {
+    "name": "Medkit",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "ADD_HP",
+        "value": 40.0
+       }
+      ]
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     }
+    }
+   },
+   "15030": {
+    "name": "Drops",
+    "components": {
+     "PickupManager": {
+      "Pickups": [
+       {
+        "Pickup": 25006.0
+       },
+       {
+        "Pickup": 15020.0
+       }
+      ]
+     }
+    }
+   },
+   "63": {
+    "name": "Battle Axe",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "TIMER",
+        "value": 20000.0
+       }
+      ],
+      "EquipSlot": "WEAPON"
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     },
+     "MeleeWeapon": {
+      "Reach": 220.0,
+      "AttackRate": 450.0,
+      "Damage": 1.6,
+      "RunSpeed": 560.0,
+      "DeathType": "FLING_DEATH"
+     }
+    }
+   },
+   "62": {
+    "name": "Saw Bat",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "TIMER",
+        "value": 20000.0
+       }
+      ],
+      "EquipSlot": "WEAPON"
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     },
+     "MeleeWeapon": {
+      "Reach": 200.0,
+      "AttackRate": 280.0,
+      "Damage": 1.0,
+      "RunSpeed": 560.0,
+      "DeathType": "FLING_DEATH"
+     }
+    }
+   },
+   "15010": {
+    "name": "Guitar",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "TIMER",
+        "value": 20000.0
+       }
+      ],
+      "EquipSlot": "WEAPON"
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     },
+     "MeleeWeapon": {
+      "Reach": 190.0,
+      "AttackRate": 400.0,
+      "Damage": 1.3,
+      "RunSpeed": 560.0,
+      "DeathType": "FLING_DEATH"
+     }
+    }
+   },
+   "15013": {
+    "name": "Barbed Bat",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "TIMER",
+        "value": 20000.0
+       }
+      ],
+      "EquipSlot": "WEAPON"
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     },
+     "MeleeWeapon": {
+      "Reach": 210.0,
+      "AttackRate": 330.0,
+      "Damage": 1.2,
+      "RunSpeed": 560.0,
+      "DeathType": "FLING_DEATH"
+     }
+    }
+   },
+   "15012": {
+    "name": "Spear",
+    "components": {
+     "Market": {
+      "Functions": [
+       {
+        "valueType": "TIMER",
+        "value": 20000.0
+       }
+      ],
+      "EquipSlot": "WEAPON"
+     },
+     "Pickup": {
+      "Radius": 200.0,
+      "LifeTime": 12000.0
+     },
+     "MeleeWeapon": {
+      "Reach": 300.0,
+      "AttackRate": 420.0,
+      "Damage": 1.4,
+      "RunSpeed": 560.0,
+      "DeathType": "FLING_DEATH"
+     }
+    }
+   },
+   "15031": {
+    "name": "Gift",
+    "components": {
+     "GiftBox": {
+      "Radius": 180.0,
+      "Consumables": [
+       {
+        "Consumable": 63.0,
+        "Chance": 0.4
+       },
+       {
+        "Consumable": 62.0,
+        "Chance": 0.2
+       },
+       {
+        "Consumable": 15010.0,
+        "Chance": 0.15
+       },
+       {
+        "Consumable": 15013.0,
+        "Chance": 0.15
+       },
+       {
+        "Consumable": 15012.0,
+        "Chance": 0.1
+       }
+      ]
+     }
+    }
+   },
+   "15001": {
+    "name": "Pistols",
+    "components": {
+     "ProjectileWeapon": {
+      "FireRate": 350.0,
+      "MagazineSize": 20,
+      "Rounds": 1000,
+      "ReloadTime": 750.0,
+      "RunSpeed": 475.0,
+      "FireSpeed": 350.0,
+      "DualMuzzles": true
+     },
+     "ProjectileBullet": {
+      "Speed": 2000.0,
+      "Damage": 0.39,
+      "BulletWidth": 50.0,
+      "PiercingFactor": 1.0
+     }
+    }
+   }
+  },
+  "startingWeapon": 15001,
+  "player": 35001
+ },
+ "destructibles": [
+  {
+   "name": "Traffic Cone",
+   "components": {
+    "Health": {
+     "HealthValue": 0.5
+    }
+   }
+  },
+  {
+   "name": "Fire Hydrant",
+   "components": {
+    "Health": {
+     "HealthValue": 3.0
+    }
+   }
+  },
+  {
+   "name": "Trash Can",
+   "components": {
+    "Health": {
+     "HealthValue": 1.5
+    },
+    "PickupSpawn": {
+     "Random": true,
+     "Pickups": [
+      {
+       "Pickup": 25006.0
+      }
+     ],
+     "SpawnRate": 0.5
+    }
+   }
+  },
+  {
+   "name": "Explosive_Gazelle_Blue",
+   "components": {
+    "Health": {
+     "HealthValue": 8.0
+    },
+    "Explosive": {
+     "BlastRadius": 450.0,
+     "BlastDamage": 6.0
+    }
+   }
+  },
+  {
+   "name": "Explosive_Stang_red",
+   "components": {
+    "Health": {
+     "HealthValue": 8.0
+    },
+    "Explosive": {
+     "BlastRadius": 450.0,
+     "BlastDamage": 6.0
+    }
+   }
+  },
+  {
+   "name": "Explosive_CopCar",
+   "components": {
+    "Health": {
+     "HealthValue": 8.0
+    },
+    "Explosive": {
+     "BlastRadius": 450.0,
+     "BlastDamage": 6.0
+    }
+   }
+  },
+  {
+   "name": "Explosive_Gazelle_Brown",
+   "components": {
+    "Health": {
+     "HealthValue": 8.0
+    },
+    "Explosive": {
+     "BlastRadius": 450.0,
+     "BlastDamage": 6.0
+    }
+   }
+  },
+  {
+   "name": "Explosive_Stang_purple",
+   "components": {
+    "Health": {
+     "HealthValue": 8.0
+    },
+    "Explosive": {
+     "BlastRadius": 450.0,
+     "BlastDamage": 6.0
+    }
+   }
+  }
+ ],
+ "script": "",
+ "roles": {}
+}

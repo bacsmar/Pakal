@@ -18,7 +18,7 @@ namespace Pakal
 	{
 		ASSERT(m_threaded);
 
-		while (m_dispatcher_ready == false) {}
+		while (m_dispatcher_ready == false) std::this_thread::yield();
 				
 		Clock clock;
 		unsigned dt = 0;
@@ -94,6 +94,25 @@ namespace Pakal
 	System::~System()
 	{
 		ASSERT(m_state == SystemState::Terminated || m_state == SystemState::Created);
+		join_thread();
+	}
+
+	// The system's thread leaves its loop right after its terminate task: it is joined here (it used to detach itself
+	// from inside that task, and could still be in its loop, reading this system, when the system was deleted). A thread
+	// still running (a system never terminated) is let go as before, not waited on forever.
+	void System::join_thread()
+	{
+		if (m_thread == nullptr)
+			return;
+
+		if (m_thread->joinable())
+		{
+			if (m_state == SystemState::Terminated && m_thread->get_id() != THIS_THREAD)
+				m_thread->join();
+			else
+				m_thread->detach();
+		}
+		SAFE_DEL(m_thread);
 	}
 
 	System::System(bool usesThread) : m_state(SystemState::Created), m_threaded(usesThread)
@@ -103,6 +122,9 @@ namespace Pakal
 	BasicTaskPtr System::initialize()
 	{
 		ASSERT(m_state == SystemState::Created || m_state == SystemState::Terminated);
+
+		// started again after it ended: the thread of the last run has left its loop (joined while still Terminated)
+		join_thread();
 
 		m_state = SystemState::Created;
 		if (is_threaded())
@@ -140,13 +162,8 @@ namespace Pakal
 
 			EventScheduler::instance().deregister_dispatcher(&m_dispatcher);
 
+			// a threaded system's loop ends with this; its thread is joined by join_thread()
 			m_state = SystemState::Terminated;
-
-			if (is_threaded())
-			{
-				m_thread->detach();
-				SAFE_DEL(m_thread);
-			}
 		}, m_dispatcher.thread_id());
 	}
 

@@ -28,7 +28,10 @@ namespace Pakal
 		std::mutex m_mutex;
 		ThreadPool m_pool;
 
-		InboxTask* find_inbox_for_thread(std::thread::id tid);	
+		// with m_mutex held (the inboxes change when a system starts or ends, on its own thread)
+		InboxTask* find_inbox_for_thread(std::thread::id tid);
+		// a task sent to a thread that has no inbox (its system ended, or never started) is dropped: said in the log
+		static void report_no_inbox(std::thread::id tid);
 
 		EventScheduler() {}
 		virtual	~EventScheduler();
@@ -49,7 +52,13 @@ namespace Pakal
 			if (currentTid == tid)
 				return TaskUtils::from_result(fn());
 
-			return find_inbox_for_thread(tid)->push_task(fn);
+			{
+				mutex_guard lock(m_mutex);
+				if (InboxTask* inbox = find_inbox_for_thread(tid))
+					return inbox->push_task(fn);
+			}
+			report_no_inbox(tid);
+			return std::make_shared<Task<TArgs>>(fn);	// never runs
 		}
 		template<typename TArgs>
 		void execute_in_thread( TaskPtr<TArgs> task, std::thread::id tid)
@@ -57,9 +66,19 @@ namespace Pakal
 			auto currentTid = THIS_THREAD;
 
 			if (currentTid == tid)
+			{
 				task->run();
-			else
-				find_inbox_for_thread(tid)->push_task(task);
+				return;
+			}
+			{
+				mutex_guard lock(m_mutex);
+				if (InboxTask* inbox = find_inbox_for_thread(tid))
+				{
+					inbox->push_task(task);
+					return;
+				}
+			}
+			report_no_inbox(tid);
 		}
 
 		BasicTaskPtr execute_in_thread(const std::function<void()>& fn, std::thread::id tid);

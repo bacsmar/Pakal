@@ -104,3 +104,15 @@ jobs:
           cmake --preset linux-release &&
           cmake --build --preset linux-release -j 4 &&
           cd build-linux && ctest -j 4 --output-on-failure -E Mcp"
+
+      # The core again with ThreadSanitizer: any data race while CoreTests runs (the task queues, the systems' threads,
+      # the pool) fails the job. Newer kernels randomize addresses past what TSan maps; 28 bits is what it expects
+      - name: Data races (ThreadSanitizer on the core)
+        run: >
+          sudo sysctl -w vm.mmap_rnd_bits=28 &&
+          docker run --rm -v "$PWD:/workspace" -w /workspace -e TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
+          pakal-linux bash -c
+          "git config --global --add safe.directory '*' &&
+          cmake --preset linux-tsan &&
+          cmake --build --preset linux-tsan -j 4 &&
+          cd build-tsan && ctest --output-on-failure"

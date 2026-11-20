@@ -5,14 +5,24 @@ arena, hand to hand, a hero (Matt) against a thug and a brute. It uses the Brawl
 (`game_genres/topdown/kits/brawler/FighterComponent`), heights (`HeightComponent`), actions with phases (`ActionTimeline`) and
 clip marks (`MeshComponent3D_Bgfx::add_clip_mark`). Nothing else in `game_genres/topdown` was changed for it.
 
+## The models it needs (free packs, one command)
+
+From a fresh clone, after the build:
+1. Download the free Quaternius packs and put them in place: `python tools/fetch_free_assets.py` (it lists the pages).
+2. Install [Blender](https://www.blender.org) (it copies the animation clips onto the characters; `PAKAL_BLENDER`
+   points to it when it is not in the default folder).
+3. Export the shared models: `python tools/zombies_convert/build_downtown.py --meshes-only`.
+4. Configure again (`cmake --preset win64`), so the build copies the pack's pieces, and build.
+
+No converted level is needed.
+
 ## Run
 
 ```
 build-win64\bin\PakalPlayer.exe BrawlerModule.dll
 ```
 
-It needs the Zombies example's models (`Assets/zombies/downtown/meshes`, installed with the free packs; see
-docs/ASSET_INDEX.md). Keys: WASD walk, J light (pressed again: jab, jab, cross), K heavy, I guard (held: a fifth of a hit from the front, no
+It needs the Zombies example's models (`Assets/zombies/downtown/meshes`, above). Keys: WASD walk, J light (pressed again: jab, jab, cross), K heavy, I guard (held: a fifth of a hit from the front, no
 stun), L dodge (a roll that nothing hits), Space jump (J or K in the air: a kick), R fight again. The hero's punches and roll are clips of the animation library retargeted onto the kit's characters
 (`PLAYER_UAL_CLIPS` in tools/zombies_convert/build_downtown.py).
 

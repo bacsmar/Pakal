@@ -34,7 +34,7 @@ Pakal.dll is a shared library. ContraGameModule.dll and PakalPlayer.exe link to 
 
 ### 2. bgfx (built for you)
 
-`cmake --preset win64` builds bgfx, bx, bimg and shaderc from the submodules the first time, with bgfx's own tools
+`cmake --preset win64` builds bgfx, bx, bimg, shaderc and texturec from the submodules the first time, with bgfx's own tools
 (GENie, then MSBuild with your compiler's toolset), after applying our patches (`cmake/BgfxBuild.cmake`). It takes a few
 minutes, once; it builds them again when the submodules or our patches change. Clone into a short folder: shaderc's
 third-party sources have deep paths, and past 260 characters MSBuild reports "Cannot open source file".
@@ -50,6 +50,7 @@ msbuild bimg.vcxproj   /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:Pl
 msbuild bimg_decode.vcxproj /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 msbuild bgfx.vcxproj   /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
+msbuild texturec.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 ```
 
 `PlatformToolset=v145` is the toolset of Visual Studio 2026. Use `v143` with Visual Studio 2022. The libraries are written to `external\bgfx\.build\win64_vs2022\bin`.
@@ -192,6 +193,22 @@ are compiled for OpenGL 4.3 and SPIR-V. Outputs are in `build-linux/bin` and `bu
 On a Linux desktop with X11 or XWayland, `tools/run_linux.sh [module.so]` runs a module with the image's libraries and
 software OpenGL (ContraGame by default). It forwards the X authority and the PulseAudio socket when they exist, and the
 `PAKAL_*` and `ZOMBIES_*` variables you set.
+
+### Data races (ThreadSanitizer)
+
+The `linux-tsan` preset builds the engine's core and `CoreTests` with `-fsanitize=thread`; CI runs it on every pull
+request, and any data race fails it:
+
+```bash
+cmake --preset linux-tsan && cmake --build --preset linux-tsan
+cd build-tsan && TSAN_OPTIONS=halt_on_error=1 ctest --output-on-failure
+```
+
+The whole engine, its genres and examples, with every test, is checked the same way once a week, and by hand from
+GitHub's Actions tab (`.github/workflows/tsan-full.yml`): too long for every pull request.
+
+On kernels that randomize addresses with more bits than TSan expects ("unexpected memory mapping"), run
+`sudo sysctl -w vm.mmap_rnd_bits=28` first.
 
 ### Notes
 

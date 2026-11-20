@@ -5,7 +5,8 @@ name on the launcher), so they are all installed side by side.
 
 Needs the Android NDK/SDK/JDK (point ANDROID_NDK, ANDROID_SDK and JAVA_HOME at them, or write them in
 android/local_paths.json as {"ANDROID_NDK": ..., "ANDROID_SDK": ..., "JAVA_HOME": ...}, a file Git ignores) and the vcpkg
-arm64-android packages:
+arm64-android packages, which it installs the first time with VCPKG_ROOT's vcpkg (PAKAL_VCPKG_ANDROID: another
+install tree to use instead):
 
     vcpkg install --triplet arm64-android --x-manifest-root=android/vcpkg --x-install-root=build-android/vcpkg_installed
 
@@ -87,7 +88,23 @@ def run(command, **kwargs):
     subprocess.check_call([str(part) for part in command], **kwargs)
 
 
+def install_vcpkg_android():
+    """The arm64-android libraries (Lua, Assimp, RmlUi...) into build-android/vcpkg_installed, the first time: vcpkg
+    builds them with the NDK. A tree already installed (or PAKAL_VCPKG_ANDROID pointing to another) is left alone."""
+    installed = BUILD / 'vcpkg_installed'
+    if os.environ.get('PAKAL_VCPKG_ANDROID') or (installed / 'arm64-android' / 'lib' / 'liblua.a').is_file():
+        return
+    vcpkg = Path(os.environ.get('VCPKG_ROOT', '')) / ('vcpkg' + EXE)
+    if not os.environ.get('VCPKG_ROOT') or not vcpkg.is_file():
+        sys.exit('the arm64-android libraries are not installed and VCPKG_ROOT does not point to vcpkg: set VCPKG_ROOT '
+                 '(the folder of vcpkg' + EXE + '), or install them yourself:\n    vcpkg install --triplet arm64-android '
+                 '--x-manifest-root=android/vcpkg --x-install-root=build-android/vcpkg_installed')
+    run([vcpkg, 'install', '--triplet', 'arm64-android', f'--x-manifest-root={ROOT / "android" / "vcpkg"}',
+         f'--x-install-root={installed}'], env=dict(os.environ, ANDROID_NDK_HOME=str(NDK)))
+
+
 def build_native(games, cheats=False, tools=False):
+    install_vcpkg_android()
     env = dict(os.environ, PATH=str(CMAKE_BIN) + os.pathsep + os.environ['PATH'])
     run([CMAKE_BIN / ('cmake' + EXE), '-S', ROOT / 'android', '-B', BUILD, '-G', 'Ninja',
          f'-DPAKAL_GAME_CHEATS={"ON" if cheats else "OFF"}',   # a game's cheats (its android.cmake reads it)
@@ -96,6 +113,7 @@ def build_native(games, cheats=False, tools=False):
          '-DANDROID_ABI=arm64-v8a', '-DANDROID_PLATFORM=android-26', '-DANDROID_STL=c++_static',
          '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON', '-DCMAKE_BUILD_TYPE=Release',
          *([f'-DPAKAL_BOX2D_SRC={os.environ["PAKAL_BOX2D_SRC"]}'] if os.environ.get('PAKAL_BOX2D_SRC') else []),
+         *([f'-DPAKAL_VCPKG_ANDROID={os.environ["PAKAL_VCPKG_ANDROID"]}'] if os.environ.get('PAKAL_VCPKG_ANDROID') else []),
          f'-DCMAKE_MAKE_PROGRAM={CMAKE_BIN / ("ninja" + EXE)}'], env=env)
     targets = [arg for game in games for arg in ('--target', GAMES[game]['library'])]
     run([CMAKE_BIN / ('cmake' + EXE), '--build', BUILD, *targets, '--target', 'PakalShadersEssl'], env=env)
@@ -290,6 +308,9 @@ def finish_stage(stage, raw_textures):
         (stage / 'Assets').mkdir(parents=True, exist_ok=True)
         (stage / 'Assets' / 'build.json').write_text(json.dumps(IDENTITY, indent=1) + '\n')
     if not raw_textures:
+        if not TEXTUREC.is_file():
+            sys.exit(f"bgfx's texture tool is missing ({TEXTUREC}): configure the desktop build again (cmake --preset "
+                     f"win64 builds it with bgfx), or pass --raw-textures to pack the textures uncompressed")
         count, before, after = pack_textures.compress_textures(stage, BUILD / 'texture_cache', TEXTUREC)
         print(f'{count} textures compressed ({pack_textures.FORMAT} with mips): {before / 1e6:.0f} MB -> {after / 1e6:.0f} MB')
     count, before, after = downsample_sounds(stage)

@@ -2,7 +2,9 @@
 #include "SingletonHolder.h"
 #include "InboxQueue.h"
 #include "AsyncTaskDispatcher.h"
+#include "LogMgr.h"
 #include <algorithm>
+#include <sstream>
 
 
 Pakal::EventScheduler& Pakal::EventScheduler::instance() 
@@ -13,26 +15,35 @@ Pakal::EventScheduler& Pakal::EventScheduler::instance()
 
 Pakal::EventScheduler::~EventScheduler()
 {
-	for(auto& item : m_inboxes)
-		delete item.second;
+	mutex_guard lock(m_mutex);
 
+	// the dispatchers still registered first, while their inboxes exist, then the inboxes
 	for(auto dispatcher : m_dispatchers)
 	{
 		ASSERT(dispatcher->m_inbox->size() == 0);
 		dispatcher->m_inbox = nullptr;
 	}
 
-	mutex_guard lock(m_mutex);
+	for(auto& item : m_inboxes)
+		delete item.second;
+
 	m_dispatchers.clear();
 	m_inboxes.clear();	
 }
 
+void Pakal::EventScheduler::report_no_inbox(std::thread::id tid)
+{
+	std::ostringstream ss;
+	ss << tid;
+	LOG_ERROR("[EventScheduler] a task for thread %s was dropped: that thread has no dispatcher (its system ended?)", ss.str().c_str());
+}
+
 void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condition, bool blocking)
 {
-	// just wait for other thread to trigger our condition
+	// just wait for other thread to trigger our condition (giving the core away meanwhile, not spinning on it)
 	if( blocking)
 	{
-		while (!condition());
+		while (!condition()) std::this_thread::yield();
 	}		
 	else// the condition could be in this thread.. so dispatch tasks...
 	{
@@ -40,17 +51,21 @@ void Pakal::EventScheduler::wait_this_thread(const std::function<bool()>& condit
 			return;
 
 		auto currentTid = THIS_THREAD;
-		m_mutex.lock();
-		auto dispatcher = std::find_if(m_dispatchers.begin(), m_dispatchers.end(), [currentTid](AsyncTaskDispatcher* d)
+		AsyncTaskDispatcher* dispatcher = nullptr;
 		{
-			return d->thread_id() == currentTid;
-		});
-		m_mutex.unlock();
+			mutex_guard lock(m_mutex);
+			auto found = std::find_if(m_dispatchers.begin(), m_dispatchers.end(), [currentTid](AsyncTaskDispatcher* d)
+			{
+				return d->thread_id() == currentTid;
+			});
+			if (found != m_dispatchers.end()) dispatcher = *found;
+		}
 
-		if (dispatcher != m_dispatchers.end())
-			while (!condition()) (*dispatcher)->dispatch_one_task(false);
-		else
-			while (!condition());
+		while (!condition())
+		{
+			if (dispatcher) dispatcher->dispatch_one_task(false);
+			std::this_thread::yield();
+		}
 	}
 }
 
@@ -73,7 +88,13 @@ Pakal::BasicTaskPtr Pakal::EventScheduler::execute_in_thread(const std::function
 		return TaskUtils::completed_task();
 	}
 
-	return find_inbox_for_thread(tid)->push_task(fn);
+	{
+		mutex_guard lock(m_mutex);
+		if (InboxTask* inbox = find_inbox_for_thread(tid))
+			return inbox->push_task(fn);
+	}
+	report_no_inbox(tid);
+	return TaskUtils::completed_task();
 }
 
 void Pakal::EventScheduler::execute_in_thread(BasicTaskPtr task, std::thread::id tid)
@@ -81,16 +102,26 @@ void Pakal::EventScheduler::execute_in_thread(BasicTaskPtr task, std::thread::id
 	auto currentTid = THIS_THREAD;
 
 	if (currentTid == tid)
+	{
 		task->run();
-	else
-		find_inbox_for_thread(tid)->push_task(task);
+		return;
+	}
+	{
+		mutex_guard lock(m_mutex);
+		if (InboxTask* inbox = find_inbox_for_thread(tid))
+		{
+			inbox->push_task(task);
+			return;
+		}
+	}
+	report_no_inbox(tid);
 }
 
 void Pakal::EventScheduler::register_dispatcher_for_thread(AsyncTaskDispatcher* dispatcher, std::thread::id tid)
 {
-	ASSERT(m_dispatchers.find(dispatcher) == m_dispatchers.end());
-
 	mutex_guard lock(m_mutex);
+
+	ASSERT(m_dispatchers.find(dispatcher) == m_dispatchers.end());
 
 	auto inbox = find_inbox_for_thread(tid);
 
