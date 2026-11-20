@@ -8,6 +8,15 @@ Games are modules: a DLL that the player loads on the desktop, or one library on
 abstractions (graphics, physics, input, sound, interface) and never the libraries behind them, so the backends can change
 under it.
 
+<p align="center">
+  <img src="docs/images/demo_town.webp" width="32%" alt="A town made by the level builder, played by its bot">
+  <img src="docs/images/demo_brawler.webp" width="32%" alt="A fight in the brawler example">
+  <img src="docs/images/demo_dungeon.webp" width="32%" alt="Combat in the dungeon example">
+</p>
+
+<p align="center"><sub>A town from the level builder, the brawler and the dungeon, each playing itself. Made with
+the free CC0 model packs by <a href="https://quaternius.com">Quaternius</a>, who is not involved with Pakal.</sub></p>
+
 ## What it can do
 
 ### Rendering
