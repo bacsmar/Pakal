@@ -25,7 +25,7 @@
 #ifndef PAKAL_CLOCK_HPP
 #define PAKAL_CLOCK_HPP
 
-#include "config.h"
+#include "Config.h"
 #include "PakalTime.h"
 
 

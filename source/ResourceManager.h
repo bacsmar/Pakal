@@ -12,7 +12,9 @@
 #include "ZipSource.h"
 
 #include <cstdint>
+#include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -21,10 +23,12 @@
 
 namespace Pakal
 {
+	class FileWatcher;
 
 	class _PAKALExport ResourceManager final : public  IManager
 	{
-		ResourceManager() {}
+		ResourceManager();
+		~ResourceManager();
 
 		template <class ResourceManager> friend class SingletonHolder;
 
@@ -87,12 +91,13 @@ namespace Pakal
 			if (source->initialize(std::forward<arguments>(args)...))
 			{
 				
-				LOG_DEBUG("[ResourceManager] source %s created with arguments %s", sourceName.c_str(), file_utils::stringer(args...).c_str());
+				// (not its arguments: a sealed pack's key is one of them, and the log is read off a phone)
+				LOG_DEBUG("[ResourceManager] source %s created", sourceName.c_str());
 				return source;
 			}
 			else
 			{
-				LOG_WARNING("ResourceManager, could not add %s with arguments %s", sourceName.c_str(), file_utils::stringer(args...).c_str());
+				LOG_WARNING("ResourceManager, could not add a %s source", sourceName.c_str());
 				return nullptr;
 			}
 
@@ -135,12 +140,35 @@ namespace Pakal
 		std::string read_text(const std::string& path, bool* found = nullptr);
 		// Whether a file is there, in any of those places
 		bool exists(const std::string& path);
+		// A file's bytes in place, from the first mounted source that can show them without a copy (ISource::map_resource: the
+		// APK's assets on Android); false when none can (a file on the disk is read, not mapped)
+		bool map_resource(const std::string& path, const void*& data, size_t& size);
 		// A resource's name as the game knows it, wherever it was found: normalized ('/', no "." or ".."), and without the
 		// root folder when it is under it ("<root>/Assets/x/../y.png" -> "Assets/y.png"). The same on every platform, so
 		// two names can be compared or made relative to each other.
 		std::string logical_path(const std::string& path) const;
 
+		// --- Reloading while the game runs (docs/UI_RELOAD.md): dev builds and Android's --tools builds only ---
+		// Whether files are watched: compiled in (FileWatcher.h, PAKAL_FILE_RELOAD) and not turned off (PAKAL_RELOAD=0, or
+		// PAKAL_RELEASE=1, a players' copy)
+		bool reload_enabled() const;
+		// A file the game reads ('path' as it reads it: "Assets/game/tuning.json") watched: when it changes on the disk the
+		// callback gets 'path' on the engine's thread (the one the game's states update on), and what this manager kept of
+		// the file is forgotten, so reading it again reads the new one. The file found where read_bytes would find it on the
+		// disk; one that is only in a zip or the APK is watched under the root folder, where a copy put later (adb push to a
+		// --tools build) is read first. 0 (and nothing watched) when reload_enabled() is false. Any thread.
+		using WatchCallback = std::function<void(const std::string& path)>;
+		unsigned watch(const std::string& path, WatchCallback callback);
+		void unwatch(unsigned id);
+		// The callbacks of the files that changed (the engine calls it once per update, on its thread)
+		void dispatch_changes();
+		// What this manager kept of a file (its bytes, whether it is there) forgotten: the next read reads it again
+		void forget(const std::string& path);
+
 	private:
+		std::string watch_target(const std::string& path) const;
+		std::unique_ptr<FileWatcher> m_watcher;
+		std::mutex m_watcher_mutex;
 		SharedPtr<std::istream> open_from_any(const std::string& path);
 		std::map<std::string, WeakPtr<const std::vector<uint8_t>>> m_bytes;
 		std::mutex m_bytes_mutex;

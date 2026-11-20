@@ -61,6 +61,15 @@ namespace Pakal
 
 #if PAKAL_USE_LOG == 1
 		mutex_guard guard(logMutex);
+		if (m_sink)
+		{
+			va_list copy;
+			va_copy(copy, args);
+			char line[2048];
+			std::vsnprintf(line, sizeof(line), format, copy);
+			va_end(copy);
+			m_sink(level, line);
+		}
 		if (m_log == nullptr) return;
 
 #ifdef COLOURED_LOG
@@ -112,6 +121,12 @@ namespace Pakal
 		{
 			fclose( m_log );
 		}
+	}
+
+	void LogMgr::set_sink(Sink sink)
+	{
+		mutex_guard guard(logMutex);
+		m_sink = std::move(sink);
 	}
 
 	void LogMgr::setFile( const std::string &_filename )

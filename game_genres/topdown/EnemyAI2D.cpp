@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -19,11 +20,11 @@ namespace Pakal::TopDown
 		const float kWaypointReached = 0.25f;
 	}
 
-	EnemyAI2D::EnemyAI2D(PhysicsWorld2D& world, const b2Vec2& position, const EnemyConfig& config, uintptr_t id) :
+	EnemyAI2D::EnemyAI2D(PhysicsWorld2D& world, const Pakal::Vec2& position, const EnemyConfig& config, uintptr_t id) :
 		m_config(config),
 		m_id(id),
 		m_state(EnemyState::Idle),
-		m_body(new CharacterController2D(world.native(), position, config.radius, config.bodyCategory, 0xFFFF, id)),
+		m_body(new CharacterController2D(world, position, config.radius, config.bodyCategory, 0xFFFF, id)),
 		m_pathTimer(0.0f),
 		m_attackTimer(0.0f),
 		m_random(static_cast<uint32>(id) * 2654435761u + 1u)
@@ -62,13 +63,13 @@ namespace Pakal::TopDown
 		m_holdAttacks = std::max(m_holdAttacks, seconds);
 	}
 
-	void EnemyAI2D::knock_back(const b2Vec2& from, float speed, float seconds)
+	void EnemyAI2D::knock_back(const Pakal::Vec2& from, float speed, float seconds)
 	{
 		if (is_dead() || seconds <= 0.0f)
 		{
 			return;
 		}
-		b2Vec2 away = m_body->get_position() - from;
+		Pakal::Vec2 away = m_body->get_position() - from;
 		if (away.Normalize() < 0.0001f)
 		{
 			away = -m_facing;
@@ -88,16 +89,16 @@ namespace Pakal::TopDown
 		m_scripted = false;
 	}
 
-	void EnemyAI2D::teleport(const b2Vec2& position)
+	void EnemyAI2D::teleport(const Pakal::Vec2& position)
 	{
 		m_body->teleport(position);
 		m_path.clear();
 		m_pathTimer = 0.0f;
 	}
 
-	bool EnemyAI2D::has_line_of_sight(PhysicsWorld2D& world, const b2Vec2& target) const
+	bool EnemyAI2D::has_line_of_sight(PhysicsWorld2D& world, const Pakal::Vec2& target) const
 	{
-		const b2Vec2 from = m_body->get_position();
+		const Pakal::Vec2 from = m_body->get_position();
 		const RayCastHit hit = world.raycast(from, target, m_config.sightBlockers);
 		if (!hit.hit)
 		{
@@ -108,11 +109,11 @@ namespace Pakal::TopDown
 		return hit.fraction * distance >= distance - 0.05f;
 	}
 
-	float EnemyAI2D::update(float dt, const b2Vec2& target, const NavGrid2D& nav, PhysicsWorld2D& world)
+	float EnemyAI2D::update(float dt, const Pakal::Vec2& target, const NavGrid2D& nav, PhysicsWorld2D& world)
 	{
 		if (is_dead())
 		{
-			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			m_body->update();
 			return 0.0f;
 		}
@@ -143,7 +144,7 @@ namespace Pakal::TopDown
 			return 0.0f;
 		}
 
-		const b2Vec2 position = m_body->get_position();
+		const Pakal::Vec2 position = m_body->get_position();
 		const float distance = (target - position).Length();
 		const bool sees = distance <= m_config.sightRange && has_line_of_sight(world, target);
 		float dealt = 0.0f;
@@ -152,7 +153,7 @@ namespace Pakal::TopDown
 		if (m_attacking > 0.0f && m_windup <= 0.0f)
 		{
 			m_attacking = std::max(0.0f, m_attacking - dt);
-			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			m_body->update();
 			return 0.0f;
 		}
@@ -167,15 +168,15 @@ namespace Pakal::TopDown
 				bool inArc = true;
 				if (m_config.attackArcDegrees > 0.0f && distance > 0.0001f)
 				{
-					const b2Vec2 toTarget = (1.0f / distance) * (target - position);
-					inArc = b2Dot(toTarget, m_attackDirection) >= std::cos(0.5f * m_config.attackArcDegrees * 0.0174533f);
+					const Pakal::Vec2 toTarget = (1.0f / distance) * (target - position);
+					inArc = Pakal::dot(toTarget, m_attackDirection) >= std::cos(0.5f * m_config.attackArcDegrees * 0.0174533f);
 				}
 				if (distance <= m_config.attackRange && inArc)
 				{
 					dealt = m_config.attackDamage;
 				}
 			}
-			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			m_body->update();
 			return dealt;
 		}
@@ -184,7 +185,7 @@ namespace Pakal::TopDown
 		{
 			m_state = EnemyState::Idle;
 			m_path.clear();
-			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			m_body->update();
 			return 0.0f;
 		}
@@ -207,7 +208,7 @@ namespace Pakal::TopDown
 		// It turns toward the target at its turn speed (at once without one); a scripted attack turns only when it says so
 		if (distance > 0.0001f && (!m_scripted || m_attackTurns))
 		{
-			const b2Vec2 toTarget = (1.0f / distance) * (target - position);
+			const Pakal::Vec2 toTarget = (1.0f / distance) * (target - position);
 			if (m_config.turnDegreesPerSecond <= 0.0f)
 			{
 				m_facing = toTarget;
@@ -220,16 +221,16 @@ namespace Pakal::TopDown
 				while (diff < -3.14159265f) diff += 6.2831853f;
 				const float most = m_config.turnDegreesPerSecond * 0.0174533f * dt;
 				const float angle = current + std::max(-most, std::min(most, diff));
-				m_facing = b2Vec2(std::cos(angle), std::sin(angle));
+				m_facing = Pakal::Vec2(std::cos(angle), std::sin(angle));
 			}
 		}
-		const bool facesTarget = distance <= 0.0001f || b2Dot(m_facing, (1.0f / distance) * (target - position)) > 0.94f;
+		const bool facesTarget = distance <= 0.0001f || Pakal::dot(m_facing, (1.0f / distance) * (target - position)) > 0.94f;
 		const float stopDistance = m_config.stopDistance >= 0.0f ? m_config.stopDistance : m_config.attackRange;
 
 		// A scripted attack moves as the game says: along the path toward the target, or straight back from it
 		if (m_scripted)
 		{
-			b2Vec2 way(0.0f, 0.0f);
+			Pakal::Vec2 way(0.0f, 0.0f);
 			float speed = std::fabs(m_attackSpeed); // its own speed (the scale is for chasing)
 			if (m_attackSpeed > 0.0f)
 			{
@@ -254,7 +255,7 @@ namespace Pakal::TopDown
 		// barricade's mouth used to wait there for ever)
 		if (canAttack || (sees && distance <= m_config.attackRange && distance <= stopDistance))
 		{
-			m_body->set_move(b2Vec2(0.0f, 0.0f), 0.0f);
+			m_body->set_move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			float wait = m_config.attackCooldown;
 			if (canAttack && m_config.attackCooldownMax > m_config.attackCooldown)
 			{
@@ -296,7 +297,7 @@ namespace Pakal::TopDown
 		}
 		else
 		{
-			const b2Vec2 goal = m_path.empty() ? target : m_path.front();
+			const Pakal::Vec2 goal = m_path.empty() ? target : m_path.front();
 			m_body->set_move(goal - position, m_config.speed * speedScale);
 		}
 

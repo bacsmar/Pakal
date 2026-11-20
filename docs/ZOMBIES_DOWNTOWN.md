@@ -56,6 +56,9 @@ those sections (the original) look as before.
   it is rebaked only if the boxes or the light change. Per-piece lightmap slabs are not used: the modular pieces share UVs.
 - **Metal-rough PBR** for glTFs with a normal map and ORM (Downtown): relief on asphalt and sidewalks, GGX sun highlights, baked occlusion in
   the ambient. `alphaMode` is also read from glTFs (crosswalks, glass). The original's models do not change.
+  Skinned models get it too (`vs_skin_pbr` with `fs_pbr`: the bones carry the tangent frame): a character whose glTF has a
+  normal map and an ORM texture draws metal-rough; one without keeps `vs_skin` with `fs_mesh`. `BgfxGraphicsSystem::program_for`
+  picks the program.
 - **Post-processing** (`PostSettings`): the frame goes to a framebuffer with depth and a final pass applies color (exposure, contrast,
   saturation, tint, vignette), tilt-shift (blur at the top and bottom, miniature effect) and screen-space ambient occlusion (passes of its own at half the size: up to 8 samples on a spiral turned by interleaved gradient noise, nothing past the radius, then a blur across and down that keeps the depth's edges; `fs_ao`, `fs_ao_blur`, views 14-16).
   **Fog** (`post.fog`: `density` per meter, `start` meters, `max`, `sky`, `color`) uses the same pass's depth. It lerps

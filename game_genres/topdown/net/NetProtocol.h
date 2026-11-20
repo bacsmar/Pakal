@@ -20,10 +20,11 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown::Net
 {
-	constexpr uint32_t kProtocolVersion = 2;
+	constexpr uint32_t kProtocolVersion = 3;   // (3: the snapshot's extras, an actor's hold and speed scale)
 	constexpr uint8_t kReliableChannel = 0;     // hello, welcome
 	constexpr uint8_t kUnreliableChannel = 1;   // inputs, snapshots: the latest wins
 
@@ -53,7 +54,7 @@ namespace Pakal::TopDown::Net
 		int kind = 0;
 		int faction = 0;
 		std::string name;
-		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		Pakal::Vec2 position = Pakal::Vec2(0.0f, 0.0f);
 		float yaw = 0.0f;
 		float health = -1.0f;         // share of its maximum (0..1); negative: it has none
 		bool dead = false, attacking = false, hurt = false, special = false;
@@ -61,7 +62,9 @@ namespace Pakal::TopDown::Net
 		uint8_t actionSerial = 0;     // changes when an action starts again
 		float actionSeconds = 0.0f;
 		uint8_t hurtClips = 0;
-		b2Vec2 facing = b2Vec2(0.0f, 1.0f);
+		Pakal::Vec2 facing = Pakal::Vec2(0.0f, 1.0f);
+		uint8_t holdSteps = 0;        // held (TopDownGame::hold): its steps left, its model still meanwhile
+		float speedScale = 1.0f;      // its body's (CharacterBodyComponent::speedScale)
 	};
 
 	struct Snapshot

@@ -26,7 +26,7 @@ namespace Pakal
 		uint32_t cacheReadSize(uint64_t id) override;
 		bool cacheRead(uint64_t id, void* data, uint32_t size) override;
 		void cacheWrite(uint64_t id, const void* data, uint32_t size) override;
-		void screenShot(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch,
+		void screenShot(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch, bgfx::TextureFormat::Enum format,
 			const void* data, uint32_t size, bool yflip) override;
 		void captureBegin(uint32_t width, uint32_t height, uint32_t pitch, bgfx::TextureFormat::Enum format, bool yflip) override;
 		void captureEnd() override;

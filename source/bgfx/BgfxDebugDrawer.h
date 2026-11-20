@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "config.h"
+#include "Config.h"
 
 #if PAKAL_USE_BOX2D == 1
 

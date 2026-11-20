@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -91,7 +92,7 @@ namespace Pakal::TopDown
 		{
 			return false;
 		}
-		const b2Vec2 target = player->position;
+		const Pakal::Vec2 target = player->position;
 
 		// Nearest ready points first; the first few with a walkable route to the player are candidates
 		std::vector<size_t> byDistance(m_points.size());
@@ -129,7 +130,7 @@ namespace Pakal::TopDown
 		for (size_t p : reachable)
 		{
 			const int quadrant = game.random("spawn").between(0, 3);
-			const b2Vec2 delta = m_points[p].position - target;
+			const Pakal::Vec2 delta = m_points[p].position - target;
 			const bool inQuadrant = (quadrant == 0 && delta.x < 0 && delta.y < 0) || (quadrant == 1 && delta.x > 0 && delta.y < 0)
 				|| (quadrant == 2 && delta.x < 0 && delta.y > 0) || (quadrant == 3 && delta.x > 0 && delta.y > 0);
 			if (inQuadrant)

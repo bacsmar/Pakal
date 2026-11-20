@@ -10,7 +10,9 @@
 
 #pragma once
 #include <cmath>
+#include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Pakal
@@ -64,4 +66,39 @@ namespace Pakal
 		}
 		return passed;
 	}
+
+	// The marks a model passed, reported as they come, or held while it is posed off its thread (a worker of the
+	// graphics system) and reported later, on that thread and in the same order (flush)
+	class MarkReports
+	{
+	public:
+		using Call = std::function<void(int clip, const std::string& mark)>;
+
+		void defer(bool on) { m_defer = on; }
+		bool deferred() const { return m_defer; }
+		size_t held() const { return m_held.size(); }
+
+		void report(int clip, const std::vector<std::string>& marks, const Call& call)
+		{
+			for (const auto& mark : marks)
+			{
+				if (m_defer) m_held.emplace_back(clip, mark);
+				else if (call) call(clip, mark);
+			}
+		}
+
+		// The held marks, each once (none are kept: a mark held without a call is dropped, as one reported without it)
+		void flush(const Call& call)
+		{
+			if (m_held.empty()) return;
+			const auto marks = std::move(m_held);
+			m_held.clear();
+			if (!call) return;
+			for (const auto& [clip, mark] : marks) call(clip, mark);
+		}
+
+	private:
+		bool m_defer = false;
+		std::vector<std::pair<int, std::string>> m_held;
+	};
 }

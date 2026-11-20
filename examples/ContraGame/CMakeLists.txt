@@ -216,13 +216,13 @@ if(EXISTS ${SPRITE_SHADERC})
         COMMAND ${SPRITE_SHADERC}
             -f ${SPRITE_SHADER_SRC_DIR}/vs_sprite.sc
             -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/vs_sprite.bin
-            --type vertex --platform linux --profile 120
+            --type vertex --platform linux --profile 430
             --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
             -i ${SPRITE_SHADER_INCLUDE_DIR}
         COMMAND ${SPRITE_SHADERC}
             -f ${SPRITE_SHADER_SRC_DIR}/fs_sprite.sc
             -o ${PAKAL_RUNTIME_DIR}/Assets/shaders/glsl/fs_sprite.bin
-            --type fragment --platform linux --profile 120
+            --type fragment --platform linux --profile 430
             --varyingdef ${SPRITE_SHADER_SRC_DIR}/varying.def.sc
             -i ${SPRITE_SHADER_INCLUDE_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

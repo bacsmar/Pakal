@@ -100,7 +100,8 @@ namespace Pakal
 		float m_bounds[4]; // minX, minY, maxX, maxY
 		
 		// Viewport
-		int m_viewport[4]; // x, y, width, height
+		int m_viewport[4]; // x, y, width, height (a width or height of 0: automatic, see set_viewport)
+		int m_applied[4] = { 0, 0, 800, 600 };   // the rectangle of the screen it drew in the last time (the automatic one, as it came out)
 		
 		// Flags
 		bool m_matricesDirty;

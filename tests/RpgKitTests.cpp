@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstdio>
 #include <memory>
+#include "math/Vec2.h"
 
 using namespace Pakal::TopDown;
 
@@ -28,7 +29,7 @@ namespace
 	class TestGame : public TopDownGame
 	{
 	public:
-		TestGame() : m_world(b2Vec2(0.0f, 0.0f)), m_nav(0.5f), m_random(7)
+		TestGame() : m_world(Pakal::Vec2(0.0f, 0.0f)), m_nav(0.5f), m_random(7)
 		{
 			factions.set(heroes, monsters, Relation::Hostile);
 		}
@@ -45,7 +46,7 @@ namespace
 		float random01() override { return m_random["sim"].uniform(); }
 		Pakal::RandomStream& random(const std::string& stream) override { return m_random[stream]; }
 
-		Actor& character(int faction, const b2Vec2& at, float health = 100.0f)
+		Actor& character(int faction, const Pakal::Vec2& at, float health = 100.0f)
 		{
 			Actor& actor = add_actor(ActorKind::Character, "c", faction);
 			actor.position = at;
@@ -101,7 +102,7 @@ int main()
 	// Resources: spent only when there is enough, refilled over time
 	{
 		TestGame game;
-		Actor& hero = game.character(game.heroes, b2Vec2(0.0f, 0.0f));
+		Actor& hero = game.character(game.heroes, Pakal::Vec2(0.0f, 0.0f));
 		ResourceComponent& pools = hero.add<ResourceComponent>();
 		pools.set("mana", 50.0f, 10.0f);
 		check(pools.spend("mana", 30.0f) && !pools.spend("mana", 30.0f), "a resource is spent only when there is enough");
@@ -117,7 +118,7 @@ int main()
 			"perLevel": { "strength": 2, "vitality": 2, "intelligence": 2 },
 			"gives": { "strength": { "damage": 0.02 }, "vitality": { "health": 5 }, "intelligence": { "resource:mana": 4 } } })"));
 		TestGame game;
-		Actor& hero = game.character(game.heroes, b2Vec2(0.0f, 0.0f));
+		Actor& hero = game.character(game.heroes, Pakal::Vec2(0.0f, 0.0f));
 		hero.add<ResourceComponent>();
 		ProgressionComponent& growth = hero.add<ProgressionComponent>(rules);
 		game.step(kDt);
@@ -136,7 +137,7 @@ int main()
 			"bonuses": [ { "stat": "damage", "multiply": 1.5 } ] })"));
 		catalog["ring"] = ItemRules::from_json(nlohmann::json::parse(R"({ "id": "ring", "slot": "ring", "bonuses": [ { "stat": "speed", "add": 0.1 } ] })"));
 		TestGame game;
-		Actor& hero = game.character(game.heroes, b2Vec2(0.0f, 0.0f));
+		Actor& hero = game.character(game.heroes, Pakal::Vec2(0.0f, 0.0f));
 		EquipmentComponent& gear = hero.add<EquipmentComponent>(catalog, 2);
 		check(gear.take("axe") && gear.take("ring") && !gear.take("axe") && !gear.take("nothing"), "the bag holds what fits of known items");
 		check(gear.equip("axe") && stat_of(hero, Stat::damage) == 1.5f && gear.bag().size() == 1, "wearing an item applies its bonuses");
@@ -153,23 +154,23 @@ int main()
 		std::vector<AbilityRules> abilities;
 		for (const auto& entry : data) abilities.push_back(AbilityRules::from_json(entry));
 		TestGame game;
-		Actor& hero = game.character(game.heroes, b2Vec2(0.0f, 0.0f));
+		Actor& hero = game.character(game.heroes, Pakal::Vec2(0.0f, 0.0f));
 		hero.add<ResourceComponent>().set("mana", 40.0f, 0.0f);
 		AbilityComponent& skills = hero.add<AbilityComponent>(abilities, 4.0f);
-		Actor& ahead = game.character(game.monsters, b2Vec2(1.0f, 0.0f));
-		Actor& behind = game.character(game.monsters, b2Vec2(-1.0f, 0.0f));
-		Actor& far = game.character(game.monsters, b2Vec2(6.0f, 0.3f));
+		Actor& ahead = game.character(game.monsters, Pakal::Vec2(1.0f, 0.0f));
+		Actor& behind = game.character(game.monsters, Pakal::Vec2(-1.0f, 0.0f));
+		Actor& far = game.character(game.monsters, Pakal::Vec2(6.0f, 0.3f));
 		game.step(kDt);
-		check(skills.use("strike", b2Vec2(1.0f, 0.0f)) && !skills.use("strike"), "an ability starts, and not again while it is under way");
+		check(skills.use("strike", Pakal::Vec2(1.0f, 0.0f)) && !skills.use("strike"), "an ability starts, and not again while it is under way");
 		for (int i = 0; i < 20; ++i) game.step(kDt);
 		check(health_of(ahead) == 90.0f && health_of(behind) == 100.0f, "a swing hits what is in its arc ahead, not behind");
-		check(!skills.use("strike", b2Vec2(1.0f, 0.0f)) && skills.cooldown_share("strike") > 0.0f, "then it cools down");
+		check(!skills.use("strike", Pakal::Vec2(1.0f, 0.0f)) && skills.cooldown_share("strike") > 0.0f, "then it cools down");
 		check(skills.use("whirl") && !skills.use("whirl"), "a blow all around costs its mana");
 		for (int i = 0; i < 20; ++i) game.step(kDt);
 		check(health_of(ahead) == 85.0f && health_of(behind) == 95.0f && health_of(far) == 100.0f, "and hits everything within its radius");
 		for (int i = 0; i < 150; ++i) game.step(kDt);
 		check(!skills.use("whirl"), "without mana for it, it does not start");
-		check(skills.use("bolt", b2Vec2(1.0f, 0.05f)), "a projectile is thrown");
+		check(skills.use("bolt", Pakal::Vec2(1.0f, 0.05f)), "a projectile is thrown");
 		for (int i = 0; i < 60; ++i) game.step(kDt);
 		check(health_of(ahead) == 77.0f, "it bursts on the first foe in its way");
 		hero.get<HealthComponent>()->damage(60.0f);

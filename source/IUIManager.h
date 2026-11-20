@@ -4,6 +4,7 @@
 #include "TaskFwd.h"
 #include "PakalPath.h"
 #include "IComponentProvider.h"
+#include "BuildIdentity.h"
 
 #include <functional>
 #include <map>
@@ -22,20 +23,45 @@ namespace Pakal
 
 		virtual bool load_document(unsigned id, const Path& resourcePath) = 0;
 		virtual bool unload_document(unsigned id) = 0;
+		// A document from its markup (the engine's own screens: the splash); its relative paths are the resources' root's
+		virtual bool load_document_from_text(unsigned id, const std::string& markup) { (void)id; (void)markup; return false; }
 
 		virtual void show_document(unsigned id, bool autoresize = true) = 0;
 		virtual void hide_document(unsigned id) = 0;
 		// Over the other documents (a panel opened over a screen)
 		virtual void bring_to_front(unsigned id) { (void)id; }
+		// A loaded document read again from its files, in place (docs/UI_RELOAD.md): the same id, shown or hidden as it was, its
+		// click listeners, the focus, what the game set on its elements (set_text, set_class...) put back, and the data models
+		// bound again. In dev and --tools builds a document reloads by itself when its .rml or a style sheet it links changes;
+		// a game calls these after it changed what the documents read as they load (set_strings: their texts). The game's thread.
+		virtual bool reload_document(unsigned id) { (void)id; return false; }
+		virtual void reload_documents() {}
 
 		virtual bool load_font(const Path& resourcePath) = 0;
 		// A font for the characters the documents' own fonts lack (another script: Chinese, Cyrillic)
 		virtual bool load_fallback_font(const Path& resourcePath) { return load_font(resourcePath); }
 		virtual void set_theme(const Path& themePath) = 0;
 
+		// The build's label (BuildIdentity::label, C-ID-7), drawn over every document in a corner, never taking a click or the
+		// focus. The engine sets it; an empty text hides it. It uses the first font loaded (load_font)
+		virtual void set_build_label(const std::string& text, BuildLabelCorner corner) { (void)text; (void)corner; }
+		// The label while this manager cannot draw it (no font loaded yet, or none at all): the graphics system draws it as
+		// debug text instead. Empty when it is drawn here, or hidden
+		virtual std::string undrawn_build_label(BuildLabelCorner* corner) const { (void)corner; return {}; }
 		virtual void draw_ui() = 0;
 		virtual void initialize() = 0;
 		virtual void terminate() = 0;
+
+		// The documents loaded now, by id: the file each came from, its title, and whether it is shown (the QA tools' "state").
+		// From any thread.
+		struct DocumentInfo
+		{
+			unsigned id = 0;
+			std::string source;
+			std::string title;
+			bool visible = false;
+		};
+		virtual std::vector<DocumentInfo> documents() const { return {}; }
 
 		// --- Working with the elements of a loaded document (by the element's id); nothing happens if they do not exist ---
 		virtual bool is_document_visible(unsigned id) const { (void)id; return false; }
@@ -46,6 +72,21 @@ namespace Pakal
 		// A style property ("width", "50%") or an attribute ("src", "images/x.png")
 		virtual void set_property(unsigned document, const std::string& element, const std::string& name, const std::string& value) { (void)document; (void)element; (void)name; (void)value; }
 		virtual void set_attribute(unsigned document, const std::string& element, const std::string& name, const std::string& value) { (void)document; (void)element; (void)name; (void)value; }
+		// A scrolling element (overflow-y: auto) moved by 'dp' (down positive), for keys and pads (a finger drags it itself); and
+		// the one that holds 'element' scrolled until it is in sight
+		virtual void scroll_by(unsigned document, const std::string& element, float dp) { (void)document; (void)element; (void)dp; }
+		virtual void scroll_into_view(unsigned document, const std::string& element) { (void)document; (void)element; }
+		// Keys and gamepads through a document's buttons, as a finger or the mouse would press them (UiNav reads the keys for
+		// it). The buttons are the elements its style makes focusable (tab-index: auto) that are shown. navigate moves the
+		// focus to the nearest one that way (the first one, when none has it yet), shown with :focus-visible and scrolled into
+		// sight; activate clicks the focused one. While an element of class "nav-trap" is shown (a dialog over the screen), only
+		// the buttons inside it take the focus.
+		enum class NavDirection { Up, Down, Left, Right };
+		virtual void navigate(unsigned document, NavDirection direction) { (void)document; (void)direction; }
+		virtual void activate(unsigned document) { (void)document; }
+		// The first button takes the focus when none of the document's has it (a screen that just came up, a dialog that
+		// opened or closed): with keys or a pad, one button is always lit and Return (a pad's A) always presses one
+		virtual void focus_first(unsigned document) { (void)document; }
 
 		// Clicks (and taps) in a document: the callback gets the id of the clicked element, or of its nearest parent that has one.
 		// Returns an id for remove_click_listener.
@@ -72,6 +113,9 @@ namespace Pakal
 
 		// Whether a point of the screen (pixels) is on an element that takes input; the game then leaves that touch or click alone
 		virtual bool is_over_ui(int x, int y) const { (void)x; (void)y; return false; }
+		// Screen pixels per dp: interfaces are laid out for 1280x720 dp, fit whole on the screen (by its height when it is 16:9 or
+		// wider, by its width on a narrower one). What a game drawing its own controls (a touch stick) sizes them by. 1 without a UI.
+		virtual float dp_ratio() const { return 1.0f; }
 		// Touch screens: the platform sends the touches that land on the interface
 		virtual void pointer(int x, int y, bool down) { (void)x; (void)y; (void)down; }
 		virtual void pointer_move(int x, int y) { (void)x; (void)y; }

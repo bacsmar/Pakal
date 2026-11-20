@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include "math/Vec2.h"
 
 namespace Zombies
 {
@@ -111,7 +112,7 @@ namespace Zombies
 		}
 	}
 
-	EnemyBrainComponent::EnemyBrainComponent(ZombiesGame& game, const std::string& type, const b2Vec2& at, uintptr_t id) :
+	EnemyBrainComponent::EnemyBrainComponent(ZombiesGame& game, const std::string& type, const Pakal::Vec2& at, uintptr_t id) :
 		m_type(type),
 		m_layers(game.layers),
 		m_rules(&game.rules().enemy(type)),
@@ -131,9 +132,9 @@ namespace Zombies
 	bool EnemyBrainComponent::is_dead() const { return m_ai->is_dead(); }
 	bool EnemyBrainComponent::is_attacking() const { return m_ai->is_attacking(); }
 	bool EnemyBrainComponent::attack_started() const { return m_ai->attack_started(); }
-	b2Vec2 EnemyBrainComponent::attack_direction() const { return m_ai->get_attack_direction(); }
-	b2Vec2 EnemyBrainComponent::position() const { return m_ai->get_position(); }
-	b2Vec2 EnemyBrainComponent::facing() const { return m_ai->get_facing(); }
+	Pakal::Vec2 EnemyBrainComponent::attack_direction() const { return m_ai->get_attack_direction(); }
+	Pakal::Vec2 EnemyBrainComponent::position() const { return m_ai->get_position(); }
+	Pakal::Vec2 EnemyBrainComponent::facing() const { return m_ai->get_facing(); }
 
 	void EnemyBrainComponent::set_berserk(bool on)
 	{
@@ -153,7 +154,7 @@ namespace Zombies
 		}
 		float amount = hit.amount;
 		const bool knockback = hit.knockback;
-		const b2Vec2& from = hit.from;
+		const Pakal::Vec2& from = hit.from;
 		const DeathKind death = hit.death;
 		if (m_reared) amount *= m_rules->abdomenMul;   // the bear standing shows its belly
 		m_ai->apply_damage(amount);
@@ -168,7 +169,7 @@ namespace Zombies
 			else if (death == DeathKind::Fling)
 			{
 				m_flung = true;
-				b2Vec2 away = actor().position - from;
+				Pakal::Vec2 away = actor().position - from;
 				if (away.Normalize() < 0.0001f) away = -m_ai->get_facing();
 				m_flingVelocity = kFlingSpeed * away;
 				m_liftSpeed = kFlingLift;
@@ -217,7 +218,7 @@ namespace Zombies
 		return std::max(config.attackDuration, config.attackWindup);
 	}
 
-	void EnemyBrainComponent::teleport(const b2Vec2& at) { m_ai->teleport(at); }
+	void EnemyBrainComponent::teleport(const Pakal::Vec2& at) { m_ai->teleport(at); }
 
 	void EnemyBrainComponent::kill(ZombiesGame& game)
 	{
@@ -238,7 +239,7 @@ namespace Zombies
 		for (size_t i = 0; i < m_carried.size(); ++i)
 		{
 			const float angle = static_cast<float>(i) * 2.4f;
-			game.drop_pickup(m_carried[i], actor().position + 0.5f * static_cast<float>(i > 0) * b2Vec2(std::cos(angle), std::sin(angle)));
+			game.drop_pickup(m_carried[i], actor().position + 0.5f * static_cast<float>(i > 0) * Pakal::Vec2(std::cos(angle), std::sin(angle)));
 		}
 		m_carried.clear();
 		m_coin = 0;
@@ -249,13 +250,13 @@ namespace Zombies
 		return !m_ai->is_dead() && !special_attack() && !m_ai->is_attacking() && !m_ai->is_knocked_back() && m_coin == 0 && m_fleeSeconds <= 0.0f;
 	}
 
-	void EnemyBrainComponent::choose_victim(ZombiesGame& game, Actor* player, b2Vec2& target, Actor*& victim)
+	void EnemyBrainComponent::choose_victim(ZombiesGame& game, Actor* player, Pakal::Vec2& target, Actor*& victim)
 	{
 		if (special_attack())
 		{
 			return;   // the special ones keep to the player
 		}
-		const b2Vec2 at = actor().position;
+		const Pakal::Vec2 at = actor().position;
 		// The survivor escorted: whichever of the two is nearer
 		if (Actor* ally = game.escorted ? game.find(game.escorted) : nullptr)
 		{
@@ -286,8 +287,8 @@ namespace Zombies
 			{
 				continue;
 			}
-			const b2Vec2 point = prop->reach_point(at, 0.35f);
-			if ((point - at).Length() < kBarricadeNear && b2Dot(target - at, prop->reach_point(at, 0.0f) - at) > 0.0f)
+			const Pakal::Vec2 point = prop->reach_point(at, 0.35f);
+			if ((point - at).Length() < kBarricadeNear && Pakal::dot(target - at, prop->reach_point(at, 0.0f) - at) > 0.0f)
 			{
 				victim = barricade;
 				target = point;
@@ -296,7 +297,7 @@ namespace Zombies
 		}
 	}
 
-	bool EnemyBrainComponent::sees(ZombiesGame& game, const b2Vec2& at) const
+	bool EnemyBrainComponent::sees(ZombiesGame& game, const Pakal::Vec2& at) const
 	{
 		return (at - actor().position).Length() <= m_ai->get_config().sightRange && m_ai->has_line_of_sight(game.world(), at);
 	}
@@ -376,7 +377,7 @@ namespace Zombies
 			}
 			return;
 		}
-		b2Vec2 target = player ? player->position : actor().position;
+		Pakal::Vec2 target = player ? player->position : actor().position;
 		Actor* victim = player;   // who its swings hurt
 		if (m_coin == 0 && m_fleeSeconds <= 0.0f)
 		{
@@ -409,12 +410,12 @@ namespace Zombies
 		{
 			// away from the player: straight back, or the nearest turn of that with floor to run on
 			m_fleeSeconds -= dt;
-			b2Vec2 away = actor().position - player->position;
-			if (away.Normalize() < 0.001f) away = b2Vec2(1.0f, 0.0f);
+			Pakal::Vec2 away = actor().position - player->position;
+			if (away.Normalize() < 0.001f) away = Pakal::Vec2(1.0f, 0.0f);
 			const float base = std::atan2(away.y, away.x);
 			for (float turn : { 0.0f, 0.6f, -0.6f, 1.2f, -1.2f, 1.8f, -1.8f })
 			{
-				const b2Vec2 way(std::cos(base + turn), std::sin(base + turn));
+				const Pakal::Vec2 way(std::cos(base + turn), std::sin(base + turn));
 				if (game.nav().is_walkable(actor().position + 2.0f * way))
 				{
 					target = actor().position + 5.0f * way;
@@ -501,7 +502,7 @@ namespace Zombies
 		m_exploded = true;
 		m_burst = true;
 		m_action.name.clear();
-		const b2Vec2 at = actor().position;
+		const Pakal::Vec2 at = actor().position;
 		const float radius = meters(m_rules->attackRange);
 		game.events.emit(ExplosionEvent{ at, radius, game.rules().shake.enemyBlast });
 		game.enemy_blast(at, radius, m_ai->get_config().attackDamage, actor().id);
@@ -509,8 +510,8 @@ namespace Zombies
 
 	void EnemyBrainComponent::update_special(ZombiesGame& game, float dt, Actor* player)
 	{
-		const b2Vec2 position = actor().position;
-		const b2Vec2 target = player ? player->position : position;
+		const Pakal::Vec2 position = actor().position;
+		const Pakal::Vec2 target = player ? player->position : position;
 		const float distance = (target - position).Length();
 		const float damage = m_ai->get_config().attackDamage;
 		const bool started = m_ai->attack_started();
@@ -542,8 +543,8 @@ namespace Zombies
 				{
 					game.damage(*player, { .amount = damage, .type = DamageType::Attack, .source = actor().id });
 				}
-				const b2Vec2 ahead = m_ai->get_attack_direction();
-				for (const b2Vec2& way : { ahead, -ahead, b2Vec2(-ahead.y, ahead.x), b2Vec2(ahead.y, -ahead.x) })
+				const Pakal::Vec2 ahead = m_ai->get_attack_direction();
+				for (const Pakal::Vec2& way : { ahead, -ahead, Pakal::Vec2(-ahead.y, ahead.x), Pakal::Vec2(ahead.y, -ahead.x) })
 				{
 					game.fire_enemy_bullet(position + kShotStart * way, way, meters(m_rules->shotSpeed), m_rules->shotDamage, meters(m_rules->shotRangeCm));
 				}

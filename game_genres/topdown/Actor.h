@@ -36,6 +36,8 @@ namespace Pakal::TopDown
 
 		// Called once per fixed step, in the order the components were added
 		virtual void update(TopDownGame& game, float dt) { (void)game; (void)dt; }
+		// ... instead, while its actor is held (TopDownGame::hold): nothing, unless the component must keep something still
+		virtual void on_held(TopDownGame& game, float dt) { (void)game; (void)dt; }
 
 	private:
 		// The world of a TopDown actor is always a TopDownGame

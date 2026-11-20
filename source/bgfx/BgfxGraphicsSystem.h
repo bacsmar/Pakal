@@ -74,6 +74,7 @@ namespace Pakal
 		bgfx::ViewId m_rcas_view_id = 8;        // ... and sharpened onto the back buffer (FSR 1 RCAS)
 		bgfx::ViewId m_bloom_view_id = 9;       // bloom (Extreme): 9 the bright parts a quarter of the size, 10-13 their blur
 		bgfx::ViewId m_ao_view_id = 14;         // ambient occlusion: 14 at half the size, 15-16 its blur (across, down)
+		bgfx::ViewId m_clear_view_id = 17;      // clears the whole target first: a camera's viewport may cover only part of it (bars)
 		BgfxDebugUI m_debug_ui;
 		uint32_t m_width = 800;           // the size everything is drawn at (the camera, the interface, the input)
 		uint32_t m_height = 600;
@@ -103,6 +104,11 @@ namespace Pakal
 			double secondsSinceUp = 1e9;     // since it last stepped up
 			double backoff = 1.0;            // the waits before stepping up, doubled each time a step up does not hold
 			bool fsrDropped = false;         // its first step: FSR's upscale traded for a plain stretch (far cheaper on phones)
+			bool lowestSet = false;          // the lowest quality's start taken (no FSR, a smaller picture)
+			// FSR tried again after it was dropped. Once a launch: what FSR costs is the GPU's, which a phone does not let us
+			// measure, so the room to spare (the game thread's) cannot tell whether it will hold, and a retry that fails is a
+			// stutter the player feels (3 seconds at half the frames)
+			int fsrRetries = 0;
 			int warmup = 0;                  // seconds still not counted after a load (the driver's first draws of it are slow)
 			int frames = 0;
 			double workMs = 0.0, lastWorkMs = 0.0, lastFps = 0.0, worstMs = 0.0;
@@ -116,6 +122,10 @@ namespace Pakal
 
 		std::vector<IDebugDrawerClient*> m_debug_renderers;
 		std::vector<SpriteComponent_Bgfx*> m_sprites;
+		std::atomic<SpriteOrder> m_spriteOrder{ SpriteOrder::Layer };   // (set on the game's thread, read on the graphics thread)
+		std::shared_ptr<TexturePreload> m_preloaded;   // the last set preloaded (preload_textures), kept until the next one or release_preloaded
+		std::mutex m_preloadMutex;
+		std::mutex m_spritesMutex;   // (the list is changed on the game's thread and drawn on the graphics thread)
 		ICameraComponent_Bgfx* m_active_camera = nullptr;
 		float m_debug_text_timer = 0.0f;
 		bool m_debug_text_visible = true;
@@ -150,6 +160,9 @@ namespace Pakal
 		bgfx::ProgramHandle m_mesh_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_skin_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_pbr_program = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle m_skin_pbr_program = BGFX_INVALID_HANDLE;   // a skinned model with a metal-rough material
+		// The program a model draws with: skinned or not, metal-rough (a normal map) or not
+		bgfx::ProgramHandle program_for(const MeshComponent3D_Bgfx& mesh) const;
 		// Many copies of one static model in one draw (GPU instancing): the same shading, the transform per instance
 		bgfx::ProgramHandle m_pbr_inst_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_mesh_inst_program = BGFX_INVALID_HANDLE;
@@ -165,6 +178,8 @@ namespace Pakal
 		std::vector<GridCell> m_gridCells;
 		std::vector<MeshComponent3D_Bgfx*> m_loose;        // not in the grid: walked every frame
 		std::vector<MeshComponent3D_Bgfx*> m_frameMeshes;  // this frame's: the loose ones and those of the squares in view
+		std::vector<MeshComponent3D_Bgfx*> m_posing;       // a frame's skinned models posed on the workers
+		std::vector<char> m_posingFull;                    // ... each one posed this frame (a crowd: every other frame)
 		bool m_gridStale = true;
 		uint32_t m_gridAge = 0;
 		void update_grid();
@@ -288,7 +303,7 @@ namespace Pakal
 		bool prepare_upscale();           // (re)makes the targets; false when the picture is drawn at the screen's size
 		void render_upscale();
 		void destroy_upscale_resources();
-		void reset_backbuffer();
+		void reset_backbuffer(void* newWindow = nullptr);   // (a new native window moves the main swap chain there)
 		bgfx::ProgramHandle m_easu_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle m_rcas_program = BGFX_INVALID_HANDLE;
 		bgfx::FrameBufferHandle m_frame_target = BGFX_INVALID_HANDLE;
@@ -299,6 +314,7 @@ namespace Pakal
 		bgfx::UniformHandle m_u_fsr[5] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
 		bgfx::UniformHandle m_s_fsr_input = BGFX_INVALID_HANDLE;
 		bool m_upscale_active = false;    // this frame goes through the frame target
+		bool m_label_as_text = false;   // the build's label drawn as debug text last frame (no font for the interface)
 
 	public:
 		// Image post-processing: the frame goes to a target and is composed onto the screen with color grading, a tilt-shift
@@ -355,8 +371,10 @@ namespace Pakal
 			float cloudWind[2] = { 1.5f, 0.6f };
 		};
 		// Baked ambient light: a 3D grid of RGB8 probes covering a box of the world (render space; a negative size flips that axis).
-		// 'strength' is how much of the ambient light comes from it (1: all). Call on the graphics thread.
-		void set_gi_volume(const uint8_t* rgba, uint16_t nx, uint16_t ny, uint16_t nz, const float origin[3], const float size[3], float strength);
+		// 'strength' is how much of the ambient light comes from it (1: all). 'yaw': a world point is turned by it about the
+		// vertical (rotation_y) before it is looked up in the box (a level drawn turned by -yaw). Call on the graphics thread.
+		void set_gi_volume(const uint8_t* rgba, uint16_t nx, uint16_t ny, uint16_t nz, const float origin[3], const float size[3], float strength,
+			float yaw = 0.0f);
 		void clear_gi_volume();
 		// The lightmap atlas of the level's fixed models (each says where it is in it: MeshComponent3D_Bgfx::set_lightmap_rect)
 		// and how much its baked sun shadow darkens; 'relative': the atlas is relative to the open floor and scales the light
@@ -403,6 +421,9 @@ namespace Pakal
 		void set_quality_preset(Quality quality, const QualityPreset& preset) { m_presets[size_t(quality)] = preset; apply_quality(); }
 		const QualityPreset& get_quality_preset(Quality quality) const { return m_presets[size_t(quality)]; }
 		void set_quality(Quality quality) { m_quality = quality; apply_quality(); }
+		int quality_levels() const override { return static_cast<int>(Quality::Extreme) + 1; }
+		int get_quality_level() const override { return static_cast<int>(m_quality); }
+		void set_quality_level(int level) override { m_qualityRequest.store(level < 0 ? -1 : std::min(level, quality_levels() - 1)); }
 		Quality get_quality() const { return m_quality; }
 		// PAKAL_QUALITY=low|medium|high|ultra|extreme, else Ultra on desktops and, on Android, a level from the system's age
 		static Quality default_quality();
@@ -423,12 +444,15 @@ namespace Pakal
 			default_preset(Quality::High), default_preset(Quality::Ultra), default_preset(Quality::Extreme) };
 		PostSettings m_postWanted;
 		ShadowSettings m_shadowsWanted;
+		std::atomic<int> m_qualityRequest{ -2 };   // set_quality_level's, for the next frame (-2: none, -1: the device's)
 		PostSettings m_post;
 		float m_fade[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ShadowSettings m_shadows;
 
 	public:
 		void register_sprite(SpriteComponent_Bgfx* sprite);
+		void set_sprite_order(SpriteOrder order) override { m_spriteOrder = order; }
+		SpriteOrder sprite_order() const { return m_spriteOrder; }
 		void unregister_sprite(SpriteComponent_Bgfx* sprite);
 		void register_mesh3d(MeshComponent3D_Bgfx* mesh);
 		void unregister_mesh3d(MeshComponent3D_Bgfx* mesh);
@@ -442,7 +466,12 @@ namespace Pakal
 		void set_sky_clouds(float cover) { m_sky_clouds = cover < 0.0f ? 0.0f : (cover > 1.0f ? 1.0f : cover); }
 		bgfx::ProgramHandle get_mesh_program() const { return m_mesh_program; }
 		// Saves the next presented frame as a TGA file. Call from the graphics thread (e.g. execute_block).
+		// (on the graphics thread; from any thread: GraphicsSystem::take_screenshot)
 		void request_screenshot(const char* filePath);
+		bool take_screenshot(const std::string& path) override;
+		std::shared_ptr<TexturePreload> preload_textures(const std::vector<std::string>& paths) override;
+		void release_preloaded() override;
+		IParticleRenderer* particle_renderer() override;
 		// The window of the app changed (Android gives a new surface when the app comes back from the background): bgfx draws on it
 		// width x height: what the picture is drawn at; outputWidth x outputHeight: the window's buffers when bigger (scaled up)
 		void set_native_window(void* window, unsigned width, unsigned height, unsigned outputWidth = 0, unsigned outputHeight = 0);
@@ -519,7 +548,7 @@ namespace Pakal
 		void clear_gpu_particles() { m_gpuParticles.clear(); }
 		// From the game thread, at the end of its frame: what it queued since the last call (lines, triangles, particles,
 		// screen lines) is its whole frame, drawn until the next call. A game that never calls it has its queue taken each frame.
-		void commit_frame_drawing();
+		void commit_frame_drawing() override;
 		void set_active_camera(ICameraComponent_Bgfx* camera);
 		void clear_active_camera(ICameraComponent_Bgfx* camera);
 		bgfx::ProgramHandle get_sprite_program() const { return m_sprite_program; }
@@ -540,6 +569,7 @@ namespace Pakal
 		bgfx::ProgramHandle load_program(const char* vsName, const char* fsName);
 		bgfx::ProgramHandle load_compute(const char* csName);
 		GpuParticles m_gpuParticles;
+		std::unique_ptr<IParticleRenderer> m_particleRenderer;   // (particle_renderer: made the first time it is asked for)
 		// Development panels (Dear ImGui): games add their own with get_debug_ui().add_panel(...)
 		BgfxDebugUI& get_debug_ui() { return m_debug_ui; }
 	private:

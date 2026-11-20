@@ -47,19 +47,26 @@ cd external\bgfx
 cd .build\projects\vs2022
 msbuild bx.vcxproj     /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 msbuild bimg.vcxproj   /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
+set CL=/DBIMG_CONFIG_PARSE_EXR=0 /DBIMG_CONFIG_PARSE_AVIF=0
 msbuild bimg_decode.vcxproj /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
+set CL=
 msbuild bgfx.vcxproj   /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 msbuild shaderc.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 msbuild texturec.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
 ```
 
+`bimg_decode` is built without EXR and AVIF (`CL` passes the two switches to the compiler): the engine loads neither, EXR
+brings bimg's own copy of miniz, whose names clash with the one Assimp links (LNK2005 on `mz_*`), and AVIF brings the
+dav1d decoder. The Android build sets the same switches (`android/CMakeLists.txt`).
+
 `PlatformToolset=v145` is the toolset of Visual Studio 2026. Use `v143` with Visual Studio 2022. The libraries are written to `external\bgfx\.build\win64_vs2022\bin`.
 
-Pakal carries a few fixes to bgfx as patches (`patches/bgfx/*.patch`, e.g. the OpenGL barrier that lets draws read
-what a compute shader wrote), not a fork. Every build applies them to the submodule when it configures, the ones it does
-not have yet (`cmake/BgfxPatches.cmake`), and the desktop build then builds bgfx again with them. Building bgfx by hand
-(`PAKAL_BGFX_AUTOBUILD=OFF`), configure Pakal once first (it warns when it has just patched bgfx: rebuild its libraries
-then), or apply them yourself: `git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
+Pakal carries its fixes to bgfx as patches (`patches/bgfx/*.patch`), not a fork. There are none at the moment: the last
+one, the OpenGL barrier that lets draws read what a compute shader wrote, is in bgfx itself since its 2026-11 update.
+Every build applies them to the submodule when it configures, the ones it does not have yet (`cmake/BgfxPatches.cmake`),
+and the desktop build then builds bgfx again with them. Building bgfx by hand (`PAKAL_BGFX_AUTOBUILD=OFF`), configure
+Pakal once first (it warns when it has just patched bgfx: rebuild its libraries then), or apply them yourself:
+`git -C external/bgfx apply --ignore-whitespace ../../patches/bgfx/<name>.patch`.
 The submodule is marked `ignore = dirty` in `.gitmodules`, so the patched files do not show as changes.
 
 ### 3. Configure and build
@@ -74,6 +81,11 @@ cmake --build --preset win64-release
 
 The build output is in `build-win64\bin`: `PakalPlayer.exe`, `Pakal.dll`, `ContraGameModule.dll`, and the bgfx shaders for Direct3D 11.
 
+`PakalPlayerWindowed.exe` is the same player without a console window, for a game handed out. Renamed to the game's name,
+started without arguments, it runs the module that `pakal_module.txt` beside it names, with the `KEY=VALUE` lines of
+`pakal_env.txt` beside it as its environment (what the environment already says wins). `PAKAL_TITLE` there gives the window
+the game's name instead of the systems' FPS.
+
 ### 3b. The core alone
 
 Every build also builds `PakalCore` (`cmake/PakalCore.cmake`): the engine's core without its backends (no bgfx, Box2D,
@@ -86,6 +98,25 @@ cmake --preset win64-core
 cmake --build --preset win64-core-release
 build-core\bin\CoreTests.exe
 ```
+
+### 3c. A game module
+
+A game is a module that PakalPlayer loads (`PakalPlayer <Name>Module.dll`). It is built with
+`pakal_add_game_module()` (`cmake/PakalGameModule.cmake`) and links the engine's libraries by name:
+
+```cmake
+pakal_add_game_module(MyGameModule
+    SOURCES ${GAME_DIR}/ZombiesModule.cpp ...
+    LINKS Pakal::TopDownView Pakal::TopDownEditor Pakal::Scripting Pakal::LevelDoc nlohmann_json::nlohmann_json
+    INCLUDES ${GAME_DIR}
+    DATA ${GAME_DIR}/ui mygame/ui ${GAME_DIR}/game mygame/game)   # copied to Assets/mygame/... next to the player
+```
+
+The names are `Pakal::Pakal` (linked by the function), `Pakal::TopDown`, `Pakal::TopDownView`,
+`Pakal::TopDownEditor`, `Pakal::TopDownNet`, `Pakal::Net`, `Pakal::Scripting` and `Pakal::LevelDoc`. The engine's headers come with them: a game names no folder of the engine, and it includes the
+engine's abstractions only, never a backend's header (docs/ARCHITECTURE.md; every build checks it). A package of the
+engine would give the same names and function, so a game moved out of the engine's tree would
+change how it finds the engine, not how it builds.
 
 ### 4. Run ContraGame
 
@@ -103,6 +134,19 @@ PakalMeshViewer.exe path\to\model.dae 10 1 0 shot.tga
 ```
 
 Skinned models (with bones) are animated on the GPU. The viewer plays the first clip, switches to the second at a third of the session and returns to the first at two thirds. Clips come from the `<animation_clip>` entries of the Collada file. Screenshots are taken during clip 0 (`shot.tga`) and clip 1 (`shot_clip1.tga`).
+
+In a glTF file every animation is a clip, by its name. Models skinned to the same skeleton (the same bone names) can share
+one file's clips: a `<model>.gltf.clips.json` beside the model names the file, and its clips are added after the model's
+own.
+
+```json
+{ "from": "../../characters/base_character.gltf", "translate": { "pelvis": 1.05 } }
+```
+
+`from` is relative to the model. With `translate`, only the nodes it names keep their position tracks, each scaled by its
+number (a taller body's hips), and every other node plays its rotations only, so the bones keep the model's lengths;
+without it every track plays as it is. The channels are read once per file and `translate`, and every model that names
+them shares them.
 
 Limits of the current loader:
 - Assimp rejects some exporter output. Collada files from the Zombies data need cleaning first: `<extra>` blocks inside `<vertices>`, `<instance_effect>` references to other `.bdae` files, and animation channels that target non-transform properties such as `AuraIntensity`. This cleaning belongs in the data converter.

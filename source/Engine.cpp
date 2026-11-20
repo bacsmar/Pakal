@@ -15,6 +15,7 @@
 #include <sstream>
 #include <chrono>
 #include <cstdlib>
+#include <stdexcept>
 #include "IUIManager.h"
 #include "Profiler.h"
 
@@ -24,6 +25,7 @@ using namespace Pakal;
 //////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
+	if (m_label_flag_thread.joinable()) m_label_flag_thread.join();
 	stop_timer_system();
 	os_manager()->terminate();
 	SAFE_DEL(m_graphics_system)
@@ -36,14 +38,20 @@ Engine::~Engine()
 }
 //////////////////////////////////////////////////////////////////////////
 Engine::Engine(const Settings& settings) :
-	System(settings.uses_thread),
-	m_application(nullptr),
-	m_graphics_system(nullptr),
-	m_physics_system(nullptr),
-	m_game_state_manager(nullptr),
-	m_component_manager(nullptr)
+	System(settings.uses_thread)
 {
-	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);	
+	// which copy this is, first: a log, a capture or a crash report always says it (C-BLD-1)
+	m_build = BuildIdentity::load();
+	LOG_INFO("%s", m_build.describe().c_str());
+	LOG_INFO("Initializing Pakal Engine Version " PAKAL_VERSION_NAME);
+
+	// a host that cleared an allocator (or one that made nothing) is told so, not left to crash on a null system
+	if (!settings.sound_manager_allocator || !settings.graphic_system_allocator || !settings.physics_system_allocator)
+	{
+		LOG_ERROR("[Engine] Settings without an allocator for the %s", !settings.sound_manager_allocator ? "sound manager"
+			: !settings.graphic_system_allocator ? "graphics system" : "physics system");
+		throw std::invalid_argument("Pakal::Engine: Settings lacks a system allocator");
+	}
 
 	//un tio diferente
 	os_manager()->initialize(settings.os_manager_settings);
@@ -57,6 +65,19 @@ Engine::Engine(const Settings& settings) :
 
 	m_graphics_system	= settings.graphic_system_allocator(this,settings.graphic_system_settings);
 	m_physics_system	= settings.physics_system_allocator(this,settings.physic_system_settings);
+
+	if (!m_sound_manager || !m_graphics_system || !m_physics_system)
+	{
+		LOG_ERROR("[Engine] an allocator made no %s", !m_sound_manager ? "sound manager" : !m_graphics_system ? "graphics system" : "physics system");
+		SAFE_DEL(m_graphics_system)
+		SAFE_DEL(m_physics_system)
+		SAFE_DEL(m_sound_manager)
+		SAFE_DEL(m_entity_manager)
+		SAFE_DEL(m_component_manager)
+		SAFE_DEL(m_game_state_manager)
+		os_manager()->terminate();
+		throw std::runtime_error("Pakal::Engine: a system allocator made nothing");
+	}
 
 	this->set_target_fps(settings.max_fps);
 	m_physics_system->set_target_fps(settings.physic_system_settings.max_fps);
@@ -80,6 +101,40 @@ Engine::Engine(const Settings& settings) :
 	
 	add_system(m_physics_system);
 	add_system(m_graphics_system);
+
+	// Production: a store bundle asks whether it was promoted to production; its label waits for the answer (at most the request's
+	// timeout) and stays when there is none
+	if (m_build.channel == "store" && !m_build.label_flag_url.empty())
+	{
+		m_build_label_state = 1;
+		m_label_flag_thread = std::thread([this]()
+		{
+			std::string answer;
+			const int status = os_manager()->http_request("GET", m_build.label_flag_url, {}, {}, &answer, 3000);
+			const bool hidden = status == 200 && label_hidden_by_flag(answer, m_build.code);
+			LOG_INFO("[Build] label flag: HTTP %d, the label %s", status, hidden ? "hidden (production)" : "shown");
+			m_build_label_state = hidden ? 2 : 0;
+			show_build_label();
+		});
+	}
+	show_build_label();
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::show_build_label()
+{
+	if (IUIManager* ui = m_graphics_system ? m_graphics_system->get_ui_interface() : nullptr)
+		ui->set_build_label(build_label_shown() ? m_build.label() : std::string(), m_build_label_corner);
+}
+//////////////////////////////////////////////////////////////////////////
+void Engine::set_build_label_corner(BuildLabelCorner corner)
+{
+	m_build_label_corner = corner;
+	show_build_label();
+}
+//////////////////////////////////////////////////////////////////////////
+bool Engine::build_label_shown() const
+{
+	return m_build_label_state == 0 && !m_build.label().empty();
 }
 //////////////////////////////////////////////////////////////////////////
 void Engine::run(IPakalApplication* application)
@@ -90,6 +145,7 @@ void Engine::run(IPakalApplication* application)
 	LOG_INFO("Running %s", application->get_name());
 
 	m_application = application;
+	m_update_count = 0;
 	
 	
 	//Initialize managers
@@ -141,7 +197,12 @@ void Engine::run(IPakalApplication* application)
 	if (get_state() != SystemState::Terminated)
 	{
 		LOG_INFO("[Engine] Entering main game loop");
-		static int loop_count = 0;
+		// Per run, not per process (they were statics: a second run of an engine, or a second engine, kept the first's).
+		// The environment is read once the game has started (it may set PAKAL_TITLE in its start).
+		int loop_count = 0;
+		const char* title = std::getenv("PAKAL_TITLE");		// a game's own window title, instead of the systems' FPS
+		const bool logFps = std::getenv("PAKAL_FPS_LOG") != nullptr;	// one log line per second with every system's FPS
+		auto lastLog = std::chrono::steady_clock::now();
 		
 		while (get_state() != SystemState::Terminated)
 		{
@@ -150,12 +211,17 @@ void Engine::run(IPakalApplication* application)
 				LOG_INFO("[Engine] First iteration of game loop");
 			}
 			
-			//Update the caption
-			m_graphics_system->set_window_caption(get_systems_fps().c_str());
+			// The caption: the systems' FPS, or a game's own title (set once)
+			if (!title)
+			{
+				m_graphics_system->set_window_caption(get_systems_fps().c_str());
+			}
+			else if (loop_count == 1)
+			{
+				m_graphics_system->set_window_caption(title);
+			}
 
 			// Performance runs: one log line per second with every system's FPS (PAKAL_FPS_LOG=1)
-			static const bool logFps = std::getenv("PAKAL_FPS_LOG") != nullptr;
-			static auto lastLog = std::chrono::steady_clock::now();
 			if (logFps && std::chrono::steady_clock::now() - lastLog >= std::chrono::seconds(1))
 			{
 				lastLog = std::chrono::steady_clock::now();
@@ -250,16 +316,23 @@ void Engine::run(IPakalApplication* application)
 //////////////////////////////////////////////////////////////////////////
 void Engine::on_update(unsigned long dtMilliSeconds)
 {
-	static int update_count = 0;
-	if (update_count++ == 0)
+	if (m_update_count++ == 0)
 	{
 		LOG_INFO("[Engine] on_update() called for first time, dt=%llu ms", dtMilliSeconds);
 	}
 	
-	m_game_state_manager->update(dtMilliSeconds);
-	m_entity_manager->process_pending_disposals();
+	// files that changed on the disk (dev and --tools builds: docs/UI_RELOAD.md), their callbacks on this, the game's thread
+	resource_manager()->dispatch_changes();
+
+	{
+		// the game's own work on its thread (its states, their simulation and AI): a slow frame outside the graphics
+		// thread's sections shows here
+		PAKAL_PROFILE_SCOPE("game.update");
+		m_game_state_manager->update(dtMilliSeconds);
+		m_entity_manager->process_pending_disposals();
+	}
 	
-	if (update_count == 1)
+	if (m_update_count == 1)
 	{
 		LOG_INFO("[Engine] on_update() completed, state=%d", (int)get_state());
 	}
@@ -269,6 +342,11 @@ void Engine::on_update(unsigned long dtMilliSeconds)
 void Engine::on_initialize()
 {
 	m_listener_terminate = os_manager()->event_app_finished.add_listener([this]() {this->terminate(); });
+	m_listener_focus = os_manager()->event_window_focused.add_listener([this](const bool& focused)
+	{
+		m_sound_focused = focused;
+		apply_sound_pause();
+	});
 
 	m_application->start(*this);	
 }
@@ -277,6 +355,7 @@ void Engine::on_terminate()
 {
 	
 	os_manager()->event_app_finished.remove_listener(m_listener_terminate);
+	os_manager()->event_window_focused.remove_listener(m_listener_focus);
 
 	m_application->end(*this);
 	
@@ -295,13 +374,15 @@ void Engine::on_pause()
 	}
 
 	TaskUtils::wait_all(pauseTaks);
-	if (m_sound_manager) m_sound_manager->set_paused(true);
+	m_sound_engine_paused = true;
+	apply_sound_pause();
 }
 //////////////////////////////////////////////////////////////////////////
 
 void Engine::on_resume()
 {
-	if (m_sound_manager) m_sound_manager->set_paused(false);
+	m_sound_engine_paused = false;
+	apply_sound_pause();
 	std::vector<BasicTaskPtr> resumeTasks;
 
 	for (auto s : m_systems)
@@ -313,6 +394,14 @@ void Engine::on_resume()
 	}
 
 	TaskUtils::wait_all(resumeTasks);
+}
+//////////////////////////////////////////////////////////////////////////
+
+void Engine::apply_sound_pause()
+{
+	const bool paused = !m_sound_focused || m_sound_engine_paused;
+	LOG_INFO("[Engine] sound %s (focus %d, engine paused %d)", paused ? "held" : "plays", m_sound_focused ? 1 : 0, m_sound_engine_paused ? 1 : 0);
+	if (m_sound_manager) m_sound_manager->set_paused(paused);
 }
 //////////////////////////////////////////////////////////////////////////
 

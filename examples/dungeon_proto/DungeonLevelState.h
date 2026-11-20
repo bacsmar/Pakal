@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -79,7 +80,7 @@ namespace Dungeon
 		// graphics thread: the ambient light the walls let reach each spot, baked into the light grid (darker by the walls and
 		// in the corners), in place of the screen's ambient occlusion
 		void bake_occlusion(const SceneLook& look);
-		void place(Pakal::MeshComponent3D_Bgfx& mesh, const b2Vec2& at, float yaw);
+		void place(Pakal::MeshComponent3D_Bgfx& mesh, const Pakal::Vec2& at, float yaw);
 		void update_online();
 		void draw_frame(TopDownGame& world, const Actor* hero);
 		void sync_loot(TopDownGame& world);
@@ -119,9 +120,9 @@ namespace Dungeon
 		OccluderFade m_walls;
 		std::map<uintptr_t, int> m_hurtSeen;     // react(): each character's hurt clips so far
 		std::map<uintptr_t, int> m_actionSeen;   // online: each character's action serial
-		struct Flying { b2Vec2 at; std::string name; };
+		struct Flying { Pakal::Vec2 at; std::string name; };
 		std::map<uintptr_t, Flying> m_flying;    // online: the missiles in the air
-		struct Pool { std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh; b2Vec2 at; float age = 0.0f; float size = 0.3f; };
+		struct Pool { std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh; Pakal::Vec2 at; float age = 0.0f; float size = 0.3f; };
 		std::map<uintptr_t, Pool> m_pools;       // by the body's actor
 		struct Chest { std::unique_ptr<Pakal::MeshComponent3D_Bgfx> mesh; bool opened = false; float glow = 0.0f; };
 		std::map<uintptr_t, Chest> m_chests;     // by the chest's actor

@@ -10,6 +10,7 @@
 #pragma once
 #include "topdown/Action.h"
 #include "topdown/TopDownComponents.h"
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -39,7 +40,7 @@ namespace Pakal::TopDown
 		float run_speed() const override;
 		// One swing of a melee weapon: it hits the characters hostile to the player and the props its shape touches
 		// 'toward': the way it swings (none: the way the player faces)
-		void swing(TopDownGame& game, const MeleeRules& melee, float damageFactor, const b2Vec2* toward = nullptr);
+		void swing(TopDownGame& game, const MeleeRules& melee, float damageFactor, const Pakal::Vec2* toward = nullptr);
 
 	private:
 		void fire_gun(TopDownGame& game, float damageFactor);

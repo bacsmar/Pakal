@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -18,17 +19,17 @@ namespace Pakal::TopDown
 		// Whether a circle at (x, y) touches the trapezoid from (-near, 0)-(near, 0) to (-far, reach)-(far, reach)
 		bool circle_touches_trapezoid(float x, float y, float radius, float nearHalf, float farHalf, float reach)
 		{
-			const b2Vec2 corners[4] = { b2Vec2(-nearHalf, 0.0f), b2Vec2(nearHalf, 0.0f), b2Vec2(farHalf, reach), b2Vec2(-farHalf, reach) };
-			const b2Vec2 point(x, y);
+			const Pakal::Vec2 corners[4] = { Pakal::Vec2(-nearHalf, 0.0f), Pakal::Vec2(nearHalf, 0.0f), Pakal::Vec2(farHalf, reach), Pakal::Vec2(-farHalf, reach) };
+			const Pakal::Vec2 point(x, y);
 			bool inside = true;
 			float nearest = 1.0e9f;
 			for (int i = 0; i < 4; ++i)
 			{
-				const b2Vec2 a = corners[i];
-				const b2Vec2 edge = corners[(i + 1) % 4] - a;
+				const Pakal::Vec2 a = corners[i];
+				const Pakal::Vec2 edge = corners[(i + 1) % 4] - a;
 				// the corners go counterclockwise: the inside is to the left of each edge
-				if (b2Cross(edge, point - a) < 0.0f) inside = false;
-				const float t = std::clamp(b2Dot(point - a, edge) / edge.LengthSquared(), 0.0f, 1.0f);
+				if (Pakal::cross(edge, point - a) < 0.0f) inside = false;
+				const float t = std::clamp(Pakal::dot(point - a, edge) / edge.LengthSquared(), 0.0f, 1.0f);
 				nearest = std::min(nearest, (point - (a + t * edge)).Length());
 			}
 			return inside || nearest <= radius;
@@ -93,7 +94,7 @@ namespace Pakal::TopDown
 			// its reach and a little more when the player does not aim
 			if ((m_trigger || melee->autoSwing) && m_melee.start({ .cooldown = melee->attackRateMs / 1000.0f }))
 			{
-				b2Vec2 toward(0.0f, 0.0f);
+				Pakal::Vec2 toward(0.0f, 0.0f);
 				bool aimed = false;
 				if (!m_trigger)
 				{
@@ -101,7 +102,7 @@ namespace Pakal::TopDown
 					for (const auto& other : game.actors())
 					{
 						if (other->removed || other->kind != ActorKind::Character || !game.hostile(actor(), *other) || !game.is_alive(*other)) continue;
-						const b2Vec2 to = other->position - actor().position;
+						const Pakal::Vec2 to = other->position - actor().position;
 						const float distance = to.Length();
 						if (distance < best && distance > 0.01f)
 						{
@@ -169,10 +170,10 @@ namespace Pakal::TopDown
 	void WeaponComponent::fire_gun(TopDownGame& game, float damageFactor)
 	{
 		const PlayerControlComponent* control = actor().get<PlayerControlComponent>();
-		const b2Vec2 facing = control ? control->facing() : b2Vec2(0.0f, 1.0f);
-		const b2Vec2 side(facing.y, -facing.x);
+		const Pakal::Vec2 facing = control ? control->facing() : Pakal::Vec2(0.0f, 1.0f);
+		const Pakal::Vec2 side(facing.y, -facing.x);
 		const GunRules& g = gun();
-		b2Vec2 from = actor().position + g.muzzleForward * facing;
+		Pakal::Vec2 from = actor().position + g.muzzleForward * facing;
 		if (g.dualMuzzles)
 		{
 			m_leftMuzzle = !m_leftMuzzle;
@@ -181,12 +182,12 @@ namespace Pakal::TopDown
 		for (int pellet = 0; pellet < g.pellets; ++pellet)
 		{
 			// the pellets of one shot spread evenly from one side of the angle to the other
-			b2Vec2 direction = facing;
+			Pakal::Vec2 direction = facing;
 			if (g.pellets > 1 && g.spreadDegrees > 0.0f)
 			{
 				const float t = static_cast<float>(pellet) / static_cast<float>(g.pellets - 1) - 0.5f;
 				const float angle = t * g.spreadDegrees * 0.0174532925f;
-				direction = b2Vec2(facing.x * std::cos(angle) - facing.y * std::sin(angle), facing.x * std::sin(angle) + facing.y * std::cos(angle));
+				direction = Pakal::Vec2(facing.x * std::cos(angle) - facing.y * std::sin(angle), facing.x * std::sin(angle) + facing.y * std::cos(angle));
 			}
 			game.fire_bullet(from, direction, meters(g.bulletSpeed), g.bulletDamage * damageFactor, meters(g.rangeCm), g.piercing, g.knockback,
 				game.faction_of(actor()), height_of(actor()) + g.muzzleHeight);
@@ -199,10 +200,10 @@ namespace Pakal::TopDown
 		m_recoil = 1.0f;
 	}
 
-	void WeaponComponent::swing(TopDownGame& game, const MeleeRules& melee, float damageFactor, const b2Vec2* toward)
+	void WeaponComponent::swing(TopDownGame& game, const MeleeRules& melee, float damageFactor, const Pakal::Vec2* toward)
 	{
 		const PlayerControlComponent* control = actor().get<PlayerControlComponent>();
-		const b2Vec2 facing = toward ? *toward : control ? control->facing() : b2Vec2(0.0f, 1.0f);
+		const Pakal::Vec2 facing = toward ? *toward : control ? control->facing() : Pakal::Vec2(0.0f, 1.0f);
 		const float reach = meters(melee.reach);
 		game.play(melee.swingSound, actor().position);
 		m_swingTimer = melee.clipSeconds;
@@ -216,7 +217,7 @@ namespace Pakal::TopDown
 				continue;
 			}
 			const float radius = game.hit_radius(*other);
-			const b2Vec2 to = other->position - actor().position;
+			const Pakal::Vec2 to = other->position - actor().position;
 			bool hit = false;
 			if (melee.circle)
 			{
@@ -225,8 +226,8 @@ namespace Pakal::TopDown
 			else
 			{
 				// in the weapon's frame: y ahead, x to the side
-				const b2Vec2 side(facing.y, -facing.x);
-				hit = circle_touches_trapezoid(b2Dot(to, side), b2Dot(to, facing), radius, melee.nearHalfWidth, melee.farHalfWidth, reach);
+				const Pakal::Vec2 side(facing.y, -facing.x);
+				hit = circle_touches_trapezoid(Pakal::dot(to, side), Pakal::dot(to, facing), radius, melee.nearHalfWidth, melee.farHalfWidth, reach);
 			}
 			if (hit)
 			{

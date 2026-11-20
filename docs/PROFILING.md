@@ -41,8 +41,21 @@ A record (`get_stats`, `get_profile`, the recordings) is the profiler's: `t`, `c
 `p99`, `max`), `sections` (each `ms_per_frame`, `worst_ms`, `calls`), `counters`, and `info` once. The counters the
 renderer adds: `gpu.frame_ms`, `gpu.view.<pass>_ms` (`main`, `transparent`, `shadow`, `post`, `bloom`, `ao`, `fsr_easu`,
 `fsr_rcas`, `ui`, `debug_ui`...), `gpu.draws`, `gpu.primitives`, `gpu.textures_mb`, `gpu.targets_mb`, `cpu.submit_ms`,
-`render.width/height/scale/quality/fsr`, `governor.on`, `governor.cap_fps`; and the profiler's `mem.process_mb` and, on
-Android, `thermal.status`.
+`render.width/height/scale/quality/fsr` (`render.fsr`: the upscale in use, which the governor may have traded for a
+plain stretch; `render.fsr_option`: the game's setting), `governor.on`, `governor.cap_fps`; and the profiler's
+`mem.process_mb` and, on Android, `thermal.status`.
+
+The sections: on the graphics thread `gfx.frame` holds `gfx.particles`, `gfx.meshes` (`gfx.pose` within),
+`gfx.sprites`, `gfx.ui` and `gfx.submit` (bgfx hands the frame to the driver and waits for the one before: vsync shows
+here). `game.update` is the game's own work on its thread (its states, simulation and AI). A long `frame_ms.max` with
+no long section on the graphics thread usually comes from `game.update`, or from the loop around the sections:
+`<system>.tasks` (the work other threads queued for that system, e.g. `BgfxGraphicsSystem.tasks`: loads and uploads)
+and `<system>.wait` (the sleep that keeps its rate; where vsync also paces the frame, a sleep that overshoots makes the
+frame miss a vsync).
+
+With a token (`PAKAL_MCP_TOKEN`) and outside a release, the same server also has the QA hooks: `input.key`, `input.pad`,
+`input.touch`, `input.pointer`, `state`, `log.tail`, `time.scale` and `quit`, to drive the game from a program and run a
+smoke story (docs/QA_HOOKS.md).
 
 A game adds its own tools to the same server (`McpServer::active()->add_tool`): what only it knows, such as its data
 files. A `write_back` tool (`{settings}`: what get_settings answers) is what the editor and pakal_device.py call to keep
@@ -77,4 +90,5 @@ pakal_device.py [--target T] writeback [--map map.json] [--settings tuned.json]
 
 The server binds 127.0.0.1 only; on a phone only adb (USB, the person's authorized computer) reaches it. It is never on
 by default: the environment (or `pakal_env.txt`) asks for it, and on Android only a `--tools` build has it at all. A
-token, when set, is required on every request.
+token, when set, is required on every request. The QA hooks (which drive the game) are only added when a token is set and
+the build is not a release (`PAKAL_RELEASE=1`).

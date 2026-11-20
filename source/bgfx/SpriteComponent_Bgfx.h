@@ -33,7 +33,8 @@ namespace Pakal
 		
 		// Texture management
 		void set_texture(const std::string& texturePath);
-		void set_texture_region(int x, int y, int width, int height); // For sprite sheets
+		void set_texture_region(int x, int y, int width, int height) override; // For sprite sheets
+		void set_mesh(const SpriteMesh* mesh) override;                          // Triangles over the texture instead of the quad
 		
 		// Transform
 		void set_position(const tmath::vectorn<float, 2>& pos);
@@ -54,6 +55,17 @@ namespace Pakal
 		// Rendering properties
 		void set_layer(int layer); // Z-order for sorting
 		int get_layer() const { return m_layer; }
+		void set_order(float order) override { m_order = order; }
+		// The depth a sprite is submitted with (the main view sorts by it): its layer (0..99), or with LayerThenOrder its layer
+		// then its order within it (65536 places a layer)
+		static constexpr uint32_t sort_depth(int layer, float order, bool byOrder)
+		{
+			const uint32_t base = static_cast<uint32_t>(layer < 0 ? 0 : (layer > 99 ? 99 : layer));
+			if (!byOrder) return base;
+			const float clamped = order < -32767.0f ? -32767.0f : (order > 32767.0f ? 32767.0f : order);
+			const int place = static_cast<int>(clamped < 0.0f ? clamped - 0.5f : clamped + 0.5f);
+			return base * 65536u + static_cast<uint32_t>(place + 32768);
+		}
 		
 		void set_color(uint32_t rgba);
 		void set_color(float r, float g, float b, float a = 1.0f);
@@ -63,6 +75,16 @@ namespace Pakal
 		bool get_flip_x() const { return m_flipX; }
 		bool get_flip_y() const { return m_flipY; }
 		
+		void set_flash(float r, float g, float b, float amount) override { m_flash[0] = r; m_flash[1] = g; m_flash[2] = b; m_flash[3] = amount; }
+		void set_rim(float r, float g, float b, float width, float dx = 0.0f, float dy = 0.0f) override
+		{
+			m_rim[0] = r; m_rim[1] = g; m_rim[2] = b; m_rim[3] = width;
+			m_rimDir[0] = dx; m_rimDir[1] = dy;
+		}
+		void set_hue(float turn, float keep = 0.07f, float keepWidth = 0.0f) override { m_hue[0] = turn; m_hue[1] = keep; m_hue[2] = keepWidth; }
+		void set_life(SpriteComponent2D* mask, float strength) override { m_lifeMask = dynamic_cast<SpriteComponent_Bgfx*>(mask); m_life[1] = m_lifeMask ? strength : 0.0f; }
+		void set_life_time(float seconds) override { m_life[0] = std::fmod(seconds, 3600.0f); }   // (wrapped: a phone's float shader loses an hour's precision)
+
 		void set_visible(bool visible) { m_visible = visible; }
 		bool is_visible() const { return m_visible; }
 		
@@ -80,6 +102,13 @@ namespace Pakal
 		
 		// Rendering (called by graphics system)
 		void set_program(bgfx::ProgramHandle program) { m_program = program; m_programLoaded = true; }
+		// the uniforms of every sprite's shader: made and destroyed by the graphics system, on its thread
+		// The cached texture of a file with one more user (what a sprite showing it holds, or a preload): found, waited for when
+		// another thread is loading it, or loaded by this thread. 'key' is what release_cached_texture takes back. Any thread.
+		static bool acquire_texture(const std::string& path, std::string& key, bgfx::TextureHandle& handle, int& width, int& height);
+		static void release_cached_texture(const std::string& key);
+		static void create_uniforms();
+		static void destroy_uniforms();
 		void render(bgfx::ViewId viewId, const float* viewProj);
 		
 		// Create solid color sprite
@@ -107,6 +136,7 @@ namespace Pakal
 		// kept by a count of the sprites using it (see 'acquire_texture' in the .cpp); only the sprite's last release destroys it
 		enum class TextureOwner { None, Cached, White };
 		void release_texture();                       // lets go of the texture this sprite holds (destroying it if it was the last)
+		static void release_texture_of(TextureOwner owner, const std::string& key);   // (the same, of a sprite gone: on the graphics thread)
 		void acquire_white_texture();                 // holds the shared 1x1 white texture
 		bgfx::TextureHandle m_texture;
 		TextureOwner m_textureOwner = TextureOwner::None;
@@ -136,11 +166,18 @@ namespace Pakal
 		
 		// Rendering state
 		int m_layer;
+		float m_order = 0.0f;
 		uint32_t m_color; // ABGR format for bgfx
 		bool m_flipX;
 		bool m_flipY;
 		bool m_visible;
-		
+		float m_flash[4] = { 0.0f, 0.0f, 0.0f, 0.0f };   // set_flash: rgb, amount
+		float m_rim[4] = { 0.0f, 0.0f, 0.0f, 0.0f };     // set_rim: rgb, width (texels)
+		float m_rimDir[2] = { 0.0f, 0.0f };              // set_rim: where its light comes from (world)
+		float m_hue[4] = { 0.0f, 0.07f, 0.0f, 0.0f };    // set_hue: turn, keep, keep's width
+		float m_life[4] = { 0.0f, 0.0f, 0.0f, 0.0f };    // set_life: seconds, strength
+		SpriteComponent_Bgfx* m_lifeMask = nullptr;      // set_life: the sprite that holds the mask's texture
+
 		// Animation
 		int m_currentFrame;
 		int m_frameWidth;
@@ -153,6 +190,12 @@ namespace Pakal
 		float m_animFps;
 		float m_animTime;
 		
+		// A mesh instead of the quad (its texture coordinates are pixels: the vertices are made when the texture's size is known)
+		SpriteMesh m_mesh;
+		bool m_hasMesh = false;
+		bool m_meshIndicesDirty = false;
+		bgfx::IndexBufferHandle m_meshIndexBuffer = BGFX_INVALID_HANDLE;
+
 		// Flags
 		bool m_vertexBufferDirty;
 		

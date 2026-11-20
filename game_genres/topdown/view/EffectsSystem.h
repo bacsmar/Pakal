@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -58,38 +59,38 @@ namespace Pakal::TopDown
 		void set_settings(const Settings& settings) { m_settings = settings; }
 		const Settings& settings() const { return m_settings; }
 
-		void on_shot(const b2Vec2& muzzle, const b2Vec2& direction);
+		void on_shot(const Pakal::Vec2& muzzle, const Pakal::Vec2& direction);
 		// The same, from where the gun really is (render space: the hand of the drawn character)
-		void on_shot_at(const float at[3], const b2Vec2& direction);
-		void on_impact(const b2Vec2& at, const b2Vec2& direction, ImpactKind kind);
+		void on_shot_at(const float at[3], const Pakal::Vec2& direction);
+		void on_impact(const Pakal::Vec2& at, const Pakal::Vec2& direction, ImpactKind kind);
 		// An explosion of 'radius' meters: a big flash and flying sparks
-		void on_blast(const b2Vec2& at, float radius);
+		void on_blast(const Pakal::Vec2& at, float radius);
 		// A ground pound: a ring of dust that runs out to the radius, and a short pale flash on the floor
-		void on_shockwave(const b2Vec2& at, float radius);
+		void on_shockwave(const Pakal::Vec2& at, float radius);
 		// A prop's effect (PropEffectEvent): water, glass, fire and smoke, or "Break" (debris and
 		// dust). 'size' is about how wide the prop is (meters).
-		void on_prop_effect(const b2Vec2& at, const std::string& effect, float size);
+		void on_prop_effect(const Pakal::Vec2& at, const std::string& effect, float size);
 		// A body goes down at 'at', killed from 'from': a pool of blood under it; 'burst' blows it to pieces (chunks, a mist
 		// and splats thrown away from the blow), 'big' throws more
-		void on_body_down(const b2Vec2& at, const b2Vec2& from, bool burst, bool big);
+		void on_body_down(const Pakal::Vec2& at, const Pakal::Vec2& from, bool burst, bool big);
 		// Something climbs out of the floor: dirt and dust, or the grey grit of a manhole
-		void on_climb_out(const b2Vec2& at, bool manhole);
+		void on_climb_out(const Pakal::Vec2& at, bool manhole);
 		// A fountain that runs for good: water rising from 'height' meters and falling back into a basin 'radius' wide
-		void add_fountain(const b2Vec2& at, float radius, float height);
+		void add_fountain(const Pakal::Vec2& at, float radius, float height);
 		// A fire that burns until it is put out (a mission's: a car on fire), known by 'key' (not 0): on lights it (or
 		// keeps it), off lets it die down over a few seconds
-		void set_fire(int key, const b2Vec2& at, float size, bool on);
+		void set_fire(int key, const Pakal::Vec2& at, float size, bool on);
 		// The player is hit: blood from the chest and a drop on the floor
-		void on_player_hit(const b2Vec2& at);
+		void on_player_hit(const Pakal::Vec2& at);
 		// A power-up taken at 'at' (render color 'rgb'): a burst of light climbing around the one who took it and a ring on the
 		// floor
-		void on_power_up(const b2Vec2& at, const float rgb[3]);
+		void on_power_up(const Pakal::Vec2& at, const float rgb[3]);
 		// A camera's flash at 'at' facing 'toward' (unit): a white burst at chest height, a cone of light ahead on the floor
-		void on_camera_flash(const b2Vec2& at, const b2Vec2& toward);
+		void on_camera_flash(const Pakal::Vec2& at, const Pakal::Vec2& toward);
 		// The floor's height at a point (meters; none: 0 everywhere): where what is thrown lands
-		void set_floor(std::function<float(const b2Vec2&)> floor) { m_floor = std::move(floor); }
+		void set_floor(std::function<float(const Pakal::Vec2&)> floor) { m_floor = std::move(floor); }
 		// Whether a point of the floor is water (none: nowhere): no marks there, and what is thrown sinks in it
-		void set_water(std::function<bool(const b2Vec2&)> water) { m_water = std::move(water); }
+		void set_water(std::function<bool(const Pakal::Vec2&)> water) { m_water = std::move(water); }
 		// Pieces to throw (throw_pieces): 'copies' of each model file kept ready (graphics thread), as one set; returns its id
 		int stock_pieces(const std::vector<std::string>& files, int copies);
 		// How a body's pieces fly: 'count' of one set, 'speed' meters per second outward and 'up' upward (each picked
@@ -104,15 +105,15 @@ namespace Pakal::TopDown
 			float spread = 6.2831853f, gravity = 9.8f, bounce = 0.4f, lie = 1.0f, scale = 1.0f;
 			bool tumble = false;
 		};
-		void throw_pieces(const b2Vec2& at, const b2Vec2& from, const PieceThrow& how);
+		void throw_pieces(const Pakal::Vec2& at, const Pakal::Vec2& from, const PieceThrow& how);
 		// Something falls in the water at 'at' (the water's surface 'height' meters up), 'size' about how big: drops thrown up
 		// and a ripple running out over the surface
-		void on_splash(const b2Vec2& at, float height, float size);
+		void on_splash(const Pakal::Vec2& at, float height, float size);
 		// A firework bursting 'height' meters over 'at' in color 'rgb': a ball of glowing stars that falls and fades, and its
 		// light on the floor below
-		void on_firework(const b2Vec2& at, float height, const float rgb[3]);
+		void on_firework(const Pakal::Vec2& at, float height, const float rgb[3]);
 		// While a power-up lasts, call every frame: a glow under the one who has it and sparks rising from it (dt: this frame)
-		void aura(const b2Vec2& at, const float rgb[3], float dt);
+		void aura(const Pakal::Vec2& at, const float rgb[3], float dt);
 		// The enemies' blood: its color (a game's enemies may bleed green), or none at all (an option: no blood, no stains, and
 		// a body that bursts goes up in dust). The player's blood is always red, and also goes with 'shown'.
 		void set_blood(bool shown, float red, float green, float blue);
@@ -164,8 +165,8 @@ namespace Pakal::TopDown
 		std::string m_shell;
 		float m_casingScale, m_casingLife;
 		size_t m_nextCasing = 0;
-		std::function<float(const b2Vec2&)> m_floor;
-		std::function<bool(const b2Vec2&)> m_water;
+		std::function<float(const Pakal::Vec2&)> m_floor;
+		std::function<bool(const Pakal::Vec2&)> m_water;
 
 		struct Casing
 		{
@@ -228,7 +229,7 @@ namespace Pakal::TopDown
 
 		void start_flash(float x, float y, float height, float yaw, float scale, float life, float r, float g, float b);
 		void add_stain(const Stain& stain);
-		void splatter(float x, float y, const b2Vec2& away, int drops, float reach, float size, const float rgb[3]);
+		void splatter(float x, float y, const Pakal::Vec2& away, int drops, float reach, float size, const float rgb[3]);
 		static uint32_t abgr(const float rgb[3], float bright = 1.0f, float alpha = 1.0f);
 		void add_puff(const Puff& puff);
 		void burst_debris(float x, float y, float size, int count);

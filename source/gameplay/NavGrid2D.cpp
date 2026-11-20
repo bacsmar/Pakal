@@ -13,6 +13,7 @@
 #include <functional>
 #include <limits>
 #include <queue>
+#include "math/Vec2.h"
 
 namespace Pakal
 {
@@ -24,7 +25,7 @@ namespace Pakal
 	{
 	}
 
-	void NavGrid2D::build(const PhysicsWorld2D& world, const b2Vec2& minCorner, const b2Vec2& maxCorner, float agentRadius, uint16 obstacleMask)
+	void NavGrid2D::build(const PhysicsWorld2D& world, const Pakal::Vec2& minCorner, const Pakal::Vec2& maxCorner, float agentRadius, uint16 obstacleMask)
 	{
 		m_min = minCorner;
 		m_width = std::max(1, static_cast<int>(std::ceil((maxCorner.x - minCorner.x) / m_cellSize)));
@@ -37,7 +38,7 @@ namespace Pakal
 		{
 			for (int x = 0; x < m_width; ++x)
 			{
-				const b2Vec2 center = center_of(x, y);
+				const Pakal::Vec2 center = center_of(x, y);
 				const bool free = !world.static_within(center, agentRadius, obstacleMask);
 				m_walkable[static_cast<size_t>(y) * m_width + x] = free ? 1 : 0;
 			}
@@ -45,7 +46,7 @@ namespace Pakal
 		label_regions();
 	}
 
-	void NavGrid2D::rebuild_area(const PhysicsWorld2D& world, const b2Vec2& minCorner, const b2Vec2& maxCorner)
+	void NavGrid2D::rebuild_area(const PhysicsWorld2D& world, const Pakal::Vec2& minCorner, const Pakal::Vec2& maxCorner)
 	{
 		if (m_walkable.empty()) return;
 		int x0, y0, x1, y1;
@@ -100,16 +101,16 @@ namespace Pakal
 		}
 	}
 
-	bool NavGrid2D::cell_of(const b2Vec2& point, int& x, int& y) const
+	bool NavGrid2D::cell_of(const Pakal::Vec2& point, int& x, int& y) const
 	{
 		x = static_cast<int>(std::floor((point.x - m_min.x) / m_cellSize));
 		y = static_cast<int>(std::floor((point.y - m_min.y) / m_cellSize));
 		return x >= 0 && y >= 0 && x < m_width && y < m_height;
 	}
 
-	b2Vec2 NavGrid2D::center_of(int x, int y) const
+	Pakal::Vec2 NavGrid2D::center_of(int x, int y) const
 	{
-		return b2Vec2(m_min.x + (x + 0.5f) * m_cellSize, m_min.y + (y + 0.5f) * m_cellSize);
+		return Pakal::Vec2(m_min.x + (x + 0.5f) * m_cellSize, m_min.y + (y + 0.5f) * m_cellSize);
 	}
 
 	bool NavGrid2D::walkable_cell(int x, int y) const
@@ -118,19 +119,19 @@ namespace Pakal
 			&& m_walkable[static_cast<size_t>(y) * m_width + x] != 0;
 	}
 
-	bool NavGrid2D::is_walkable(const b2Vec2& point) const
+	bool NavGrid2D::is_walkable(const Pakal::Vec2& point) const
 	{
 		int x = 0, y = 0;
 		return cell_of(point, x, y) && walkable_cell(x, y);
 	}
 
-	int NavGrid2D::region_of(const b2Vec2& point) const
+	int NavGrid2D::region_of(const Pakal::Vec2& point) const
 	{
 		const int cell = nearest_walkable(point, 2);
 		return cell < 0 ? -1 : m_region[static_cast<size_t>(cell)];
 	}
 
-	int NavGrid2D::nearest_walkable(const b2Vec2& point, int maxRing, int region) const
+	int NavGrid2D::nearest_walkable(const Pakal::Vec2& point, int maxRing, int region) const
 	{
 		int cx = 0, cy = 0;
 		if (!cell_of(point, cx, cy))
@@ -158,13 +159,13 @@ namespace Pakal
 		return -1;
 	}
 
-	bool NavGrid2D::connected(const b2Vec2& from, const b2Vec2& to) const
+	bool NavGrid2D::connected(const Pakal::Vec2& from, const Pakal::Vec2& to) const
 	{
 		const int start = nearest_walkable(from);
 		return start >= 0 && nearest_walkable(to, 16, m_region[start]) >= 0;
 	}
 
-	bool NavGrid2D::find_path(const b2Vec2& from, const b2Vec2& to, std::vector<b2Vec2>& path) const
+	bool NavGrid2D::find_path(const Pakal::Vec2& from, const Pakal::Vec2& to, std::vector<Pakal::Vec2>& path) const
 	{
 		path.clear();
 		const int start = nearest_walkable(from);

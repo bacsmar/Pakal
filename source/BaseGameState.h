@@ -13,6 +13,9 @@ namespace Pakal
 
 	public:
 		inline const char* get_name() const{ return m_name.c_str(); }
+		// A short status line for the QA tools' "state" (the screen shown, "paused", the mission): optional, empty by default.
+		// Called on the game's thread, between two updates.
+		virtual std::string describe() const { return std::string(); }
 
 	private:
 		GameStateManager* m_game_state_manager;

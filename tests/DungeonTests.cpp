@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <fstream>
 #include <memory>
+#include "math/Vec2.h"
 
 using namespace Dungeon;
 
@@ -32,17 +33,17 @@ namespace
 
 	Run play(const DungeonRules& rules, uint32_t seed, float limitSeconds)
 	{
-		Pakal::PhysicsWorld2D world(b2Vec2(0.0f, 0.0f));
+		Pakal::PhysicsWorld2D world(Pakal::Vec2(0.0f, 0.0f));
 		Pakal::NavGrid2D nav(0.5f);
 		DungeonGame game(world, nav, rules, seed);
 		game.start();
 		Run run;
 		run.rooms = static_cast<int>(game.layout().rooms.size());
 		run.monsters = game.monsters_left();
-		const b2Vec2 start = game.player()->position;
+		const Pakal::Vec2 start = game.player()->position;
 		for (const auto& room : game.layout().rooms)
 		{
-			std::vector<b2Vec2> path;
+			std::vector<Pakal::Vec2> path;
 			if (nav.find_path(start, game.layout().room_center(room), path)) ++run.reachable;
 		}
 		DungeonBot bot;
@@ -109,7 +110,7 @@ int main(int argc, char** argv)
 	// Chests: one in the first room; the hero walks to it, it opens once and its loot lies around it; the hero's bag
 	// wears and takes off by the commands its player sends (over the network too)
 	{
-		Pakal::PhysicsWorld2D world(b2Vec2(0.0f, 0.0f));
+		Pakal::PhysicsWorld2D world(Pakal::Vec2(0.0f, 0.0f));
 		Pakal::NavGrid2D nav(0.5f);
 		DungeonGame game(world, nav, rules, 2026u);
 		game.start(1, true);   // (a client's start, without monsters, has no chests either: they are the server's)
@@ -121,7 +122,7 @@ int main(int argc, char** argv)
 			if (actor->kind != ActorKind::Prop || actor->name != "chest") continue;
 			++chests;
 			const auto& first = game.layout().rooms.front();
-			const b2Vec2 low = game.layout().center(first.x, first.y), high = game.layout().center(first.x + first.w - 1, first.y + first.h - 1);
+			const Pakal::Vec2 low = game.layout().center(first.x, first.y), high = game.layout().center(first.x + first.w - 1, first.y + first.h - 1);
 			if (actor->position.x >= low.x && actor->position.x <= high.x && actor->position.y >= low.y && actor->position.y <= high.y) chest = actor.get();
 		}
 		check(chests >= 2 && chest != nullptr, "chests stand in the rooms, one in the first");
@@ -130,7 +131,7 @@ int main(int argc, char** argv)
 		check(chest && !chest->get<ChestComponent>()->opened && game.actors().size() == before, "a chest stays shut while nobody is near");
 		if (chest && hero)
 		{
-			const b2Vec2 near = chest->position + b2Vec2(0.0f, -0.8f);
+			const Pakal::Vec2 near = chest->position + Pakal::Vec2(0.0f, -0.8f);
 			if (CharacterBodyComponent* body = hero->get<CharacterBodyComponent>()) body->teleport(near);
 			hero->position = near;
 			for (int i = 0; i < 3; ++i) game.step(1.0f / 60.0f, PlayerInput());

@@ -9,6 +9,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "BgfxGraphicsSystem.h"
+#include "WorkShare.h"
+#include "BgfxParticleRenderer.h"
+#include <atomic>
+#include <thread>
 #include "IDebugDrawer.h"
 #include "OSManager.h"
 #include "ComponentFactory.h"
@@ -28,7 +32,6 @@
 #include "components/CameraComponent3D.h"
 
 #include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
 #if defined(__ANDROID__)
 #include <sys/system_properties.h>
 #include <dlfcn.h>
@@ -49,6 +52,10 @@
 #include <string>
 #include <cstdlib>
 #include <cstring>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <thread>
 
 namespace
 {
@@ -98,6 +105,17 @@ namespace
 		if (0 == std::strcmp(value, "auto")) return bgfx::RendererType::Count;
 
 		return bgfx::RendererType::Count;
+	}
+}
+
+namespace
+{
+	// Workers that share a frame's posing (every skinned model's pose is its own work: WorkShare). Made the first time a crowd
+	// is posed; one fewer than the cores, at most 6
+	Pakal::WorkShare& pose_workers()
+	{
+		static Pakal::WorkShare workers(Pakal::WorkShare::workers_for_cores(6));
+		return workers;
 	}
 }
 
@@ -160,6 +178,11 @@ namespace Pakal
 		bgfx::setViewRect(m_main_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
 	}
 
+	namespace
+	{
+		constexpr int kGovernorStartSeconds = 8;
+	}
+
 	void BgfxGraphicsSystem::set_governor(bool enabled, unsigned maxFps)
 	{
 		// (what a game configured stays when it is turned on or off)
@@ -172,6 +195,8 @@ namespace Pakal
 		m_governor.enabled = enabled;
 		m_governor.maxFps = m_governor.cap = maxFps;
 		m_governor.baseScale = get_render_scale();
+		// the first seconds of a launch are not judged: the menu loads and the driver compiles its first programs
+		m_governor.warmup = kGovernorStartSeconds;
 		set_target_fps(maxFps);
 		LOG_INFO("[Governor] %s, starting at %u FPS, render scale %.0f%%", enabled ? "on" : "off", maxFps, m_governor.baseScale * 100.0f);
 	}
@@ -179,6 +204,13 @@ namespace Pakal
 	void BgfxGraphicsSystem::set_fsr(bool on)
 	{
 		// PAKAL_FSR (a launch's debug switch) wins over the game's saved option: a run told "no FSR" stays without it
+		// A 2D game (no_3d: sprites) is drawn at its full size with no upscaler: FSR is for a 3D scene, and it only blurs
+		// sprites. The game's option asking for it is refused (a launch's PAKAL_FSR, below, still wins)
+		if (on && m_settings.no_3d)
+		{
+			LOG_INFO("[BgfxGraphicsSystem] FSR asked by a 2D game: it is drawn at its full size instead");
+			on = false;
+		}
 		if (const char* forced = std::getenv("PAKAL_FSR"))
 		{
 			const bool want = std::string(forced) != "0";
@@ -268,6 +300,25 @@ namespace Pakal
 		g.secondsSinceDown += seconds;
 		g.secondsSinceUp += seconds;
 		g.thermal = read_thermal_status();
+		// the lowest quality never upscales with FSR: on an old phone's GPU its passes cost more than the pixels they save (a
+		// a 2016 phone: 16 FPS with it, 28 stretched plainly), so the picture is stretched plainly from the start, not after the
+		// governor's wait and three slow seconds; and it starts at 40% (the S7, fill-bound: 28 FPS at 50%, 41 at 40%: a
+		// steady 30 needs that room, a frame a little over 33 ms waits for the next vsync)
+		if (g.enabled && m_quality == Quality::Low && !g.lowestSet && is_upscaling())
+		{
+			g.lowestSet = true;
+			if (m_upscaler == Upscaler::Fsr)
+			{
+				m_upscaler = Upscaler::Bilinear;
+				g.fsrDropped = true;
+			}
+			if (can_upscale() && get_render_scale() > 0.41f)
+			{
+				set_render_scale(0.4f);
+				g.baseScale = 0.4f;
+			}
+			LOG_INFO("[Governor] the lowest quality: the picture stretched plainly instead of FSR, render scale %.0f%%", g.baseScale * 100.0f);
+		}
 		if (loading) g.warmup = 6;
 		const bool warming = g.warmup > 0;
 		if (warming) --g.warmup;
@@ -315,10 +366,11 @@ namespace Pakal
 				set_target_fps(lower);
 				LOG_INFO("[Governor] %.0f FPS (thermal %d): the picture at %u", g.lastFps, g.thermal, lower);
 			}
-			else if (can_upscale() && m_fsr && scale > 0.51f)
+			else if (const float lowest = m_quality == Quality::Low ? 0.4f : 0.5f; can_upscale() && m_fsr && scale > lowest + 0.01f)
 			{
-				set_render_scale(std::max(0.5f, scale * 0.88f));
-				LOG_INFO("[Governor] %.0f FPS at %u (thermal %d): render scale %.0f%%", g.lastFps, g.cap, g.thermal, std::max(0.5f, scale * 0.88f) * 100.0f);
+				// (the lowest quality may draw smaller still: a 2016 phone, fill-bound, held 28 FPS at 50% and 41 at 40%)
+				set_render_scale(std::max(lowest, scale * 0.88f));
+				LOG_INFO("[Governor] %.0f FPS at %u (thermal %d): render scale %.0f%%", g.lastFps, g.cap, g.thermal, std::max(lowest, scale * 0.88f) * 100.0f);
 			}
 		}
 		else if (g.spare >= 20)
@@ -338,10 +390,11 @@ namespace Pakal
 				set_target_fps(higher);
 				LOG_INFO("[Governor] room to spare (%.1f ms a frame): trying %u FPS", g.lastWorkMs, higher);
 			}
-			else if (g.fsrDropped && g.cap >= g.maxFps && g.secondsSinceDown > 60.0 * g.backoff)
+			else if (g.fsrDropped && m_quality != Quality::Low && g.fsrRetries < 1 && g.cap >= g.maxFps && g.secondsSinceDown > 60.0 * g.backoff)
 			{
 				g.secondsSinceUp = 0.0;
 				g.fsrDropped = false;
+				++g.fsrRetries;
 				m_upscaler = Upscaler::Fsr;
 				LOG_INFO("[Governor] room to spare (%.1f ms a frame): FSR again", g.lastWorkMs);
 			}
@@ -366,9 +419,15 @@ namespace Pakal
 		LOG_INFO("[BgfxGraphicsSystem] Drawing at %ux%u of %ux%u (%.0f%%)", m_width, m_height, outW, outH, scale * 100.0f);
 	}
 
-	void BgfxGraphicsSystem::reset_backbuffer()
+	void BgfxGraphicsSystem::reset_backbuffer(void* newWindow)
 	{
-		bgfx::reset(get_output_width(), get_output_height(), m_reset_flags);
+		// the main window's swap chain at the output's size; a new native window (Android's surface after a resume) moves it
+		// there, keeping the device and every GPU resource
+		bgfx::SwapChain swapChain;
+		swapChain.width = get_output_width();
+		swapChain.height = get_output_height();
+		swapChain.nwh = newWindow;
+		bgfx::reset(m_reset_flags, &swapChain);
 	}
 
 	void BgfxGraphicsSystem::on_init_graphics(const WindowArgs& args)
@@ -445,6 +504,9 @@ namespace Pakal
 #elif defined(PAKAL_LINUX_PLATFORM)
         // The Linux build compiles the engine shaders for OpenGL.
         if (init.type == bgfx::RendererType::Count) init.type = bgfx::RendererType::OpenGL;
+#elif defined(PAKAL_WIN32_PLATFORM)
+		// The Windows build compiles the engine shaders for Direct3D 11 (bgfx would pick Direct3D 12 by itself since 2026)
+		if (init.type == bgfx::RendererType::Count) init.type = bgfx::RendererType::Direct3D11;
 #endif
 		// Which GPU on a computer with two (a laptop's integrated one and a dedicated one): PAKAL_GPU=integrated|intel,
 		// discrete (the default: NVIDIA, else the system's choice), nvidia, amd. Direct3D picks the adapter by vendor.
@@ -475,15 +537,15 @@ namespace Pakal
 		
 		// Set platform data - for X11 we need both display and window
 		#if BX_PLATFORM_ANDROID
-			init.platformData.nwh = args.native_window;
-			init.platformData.ndt = nullptr;
+			init.swapChain.nwh = args.native_window;
+			init.swapChain.ndt = nullptr;
 		#elif BX_PLATFORM_LINUX
-			init.platformData.ndt = args.native_display; // X11 Display* (may be null in non-X11 sessions)
-			init.platformData.nwh = (void*)(uintptr_t)args.windowId; // X11 Window
+			init.swapChain.ndt = args.native_display; // X11 Display* (may be null in non-X11 sessions)
+			init.swapChain.nwh = (void*)(uintptr_t)args.windowId; // X11 Window
 			LOG_INFO("[BgfxGraphicsSystem] Using X11: Display=%p, Window=%u", args.native_display, args.windowId);
 		#else
-			init.platformData.nwh = (void*)(uintptr_t)args.windowId;
-			init.platformData.ndt = nullptr;
+			init.swapChain.nwh = (void*)(uintptr_t)args.windowId;
+			init.swapChain.ndt = nullptr;
 		#endif
 		
 		// Set resolution
@@ -491,13 +553,13 @@ namespace Pakal
 		// The X11 window uses the desktop's opaque RGB visual (OpenGL only; Vulkan picks its own surface format).
 		if (init.type == bgfx::RendererType::OpenGL)
 		{
-			init.resolution.formatColor = bgfx::TextureFormat::RGB8;
+			init.swapChain.formatColor = bgfx::TextureFormat::RGB8;
 		}
 #endif
-		init.resolution.width = get_output_width();
-		init.resolution.height = get_output_height();
-		init.resolution.reset = m_settings.vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
-		m_reset_flags = init.resolution.reset;
+		init.swapChain.width = get_output_width();
+		init.swapChain.height = get_output_height();
+		init.reset = m_settings.vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
+		m_reset_flags = init.reset;
 
 		LOG_INFO("[BgfxGraphicsSystem] Calling bgfx::init()...");
 		
@@ -530,11 +592,14 @@ namespace Pakal
 
 		// Create sprite shader program
 		create_sprite_shader();
+		SpriteComponent_Bgfx::create_uniforms();
 
 		// Create 3D mesh shaders, light uniforms and the sky dome
-		create_mesh_resources();
+		// (a 2D game, Settings::no_3d: without the 3D programs; a mesh it might still make is not drawn, see register_mesh3d)
+		if (!m_settings.no_3d) create_mesh_resources();
+		else LOG_INFO("[BgfxGraphicsSystem] 2D only: the 3D programs are not made");
 		create_post_resources();
-		create_shadow_resources();
+		if (!m_settings.no_3d) create_shadow_resources();
 		const char* fsrNames[5] = { "u_fsrCon0", "u_fsrCon1", "u_fsrCon2", "u_fsrCon3", "u_fsrRcas" };
 		for (int i = 0; i < 5; ++i) m_u_fsr[i] = bgfx::createUniform(fsrNames[i], bgfx::UniformType::Vec4);
 		m_s_fsr_input = bgfx::createUniform("s_fsrInput", bgfx::UniformType::Sampler);
@@ -562,6 +627,8 @@ namespace Pakal
 	{
 		LOG_INFO("[BgfxGraphicsSystem] Terminating bgfx graphics system");
 
+		release_preloaded();   // (its textures, before bgfx goes)
+
 		// Clear sprite registrations
 		m_sprites.clear();
 		m_meshes3d.clear();
@@ -572,6 +639,7 @@ namespace Pakal
 		{
 			bgfx::destroy(m_sprite_program);
 		}
+		SpriteComponent_Bgfx::destroy_uniforms();
 
 		for (auto& job : m_pictureJobs) release_picture(job);
 		m_pictureJobs.clear();
@@ -600,6 +668,11 @@ namespace Pakal
 	void BgfxGraphicsSystem::on_update_graphics(long long dt)
 	{
 		const auto frameStart = std::chrono::steady_clock::now();
+		// a quality asked for (set_quality_level: a game's options), on this thread
+		if (const int asked = m_qualityRequest.exchange(-2); asked != -2)
+		{
+			set_quality(asked < 0 ? default_quality() : static_cast<Quality>(asked));
+		}
         if (m_previousFrame.time_since_epoch().count())
             m_frameTiming.add(std::chrono::duration<double, std::milli>(frameStart - m_previousFrame).count());
         m_previousFrame = frameStart;
@@ -623,6 +696,12 @@ namespace Pakal
 		if (m_post_active) target = m_post_target;
 		bgfx::setViewFrameBuffer(m_main_view_id, target);
 		bgfx::setViewFrameBuffer(m_transparent_view_id, target);
+		// The whole target cleared before anything: a view clears only its own rectangle, and a camera that keeps its shape
+		// (CameraComponent_Bgfx's automatic viewport) leaves bars that would keep old frames when the window changes size
+		bgfx::setViewFrameBuffer(m_clear_view_id, target);
+		bgfx::setViewClear(m_clear_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+		bgfx::setViewRect(m_clear_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
+		bgfx::touch(m_clear_view_id);
 
 		// Solid 3D materials nearest first (MeshComponent3D_Bgfx::set_sort_view): what is hidden fails the depth test before
 		// it is shaded. PAKAL_DEPTH_SORT=0 sorts them by program instead (fewer state changes, every pixel shaded).
@@ -663,7 +742,7 @@ namespace Pakal
 
 		// The sun's view first (view 3 runs before the rest), so the lit meshes can read its depth
 		// The interface goes after the upscale (drawn at the screen's size, not scaled up with the picture)
-		const bgfx::ViewId order[] = { m_shadow_view_id, m_main_view_id, m_transparent_view_id, m_bloom_view_id,
+		const bgfx::ViewId order[] = { m_shadow_view_id, m_clear_view_id, m_main_view_id, m_transparent_view_id, m_bloom_view_id,
 			bgfx::ViewId(m_bloom_view_id + 1), bgfx::ViewId(m_bloom_view_id + 2), bgfx::ViewId(m_bloom_view_id + 3),
 			bgfx::ViewId(m_bloom_view_id + 4), m_ao_view_id, bgfx::ViewId(m_ao_view_id + 1), bgfx::ViewId(m_ao_view_id + 2),
 			m_post_view_id, m_overlay_view_id, m_easu_view_id, m_rcas_view_id, m_ui_view_id,
@@ -680,7 +759,10 @@ namespace Pakal
 		render_sky();
 		m_frameDrawing = take_frame_drawing();
 		// Particles go first in the blended view (it keeps the order): a faded building in front of them is drawn after
-		render_particles();
+		{
+			PAKAL_PROFILE_SCOPE("gfx.particles");
+			render_particles();
+		}
 		// the GPU's particles: moved in the sun's view (the first to run), drawn with the blended things
 		m_gpuParticles.frame(dt_seconds, m_shadow_view_id, m_transparent_view_id);
 		{
@@ -689,7 +771,12 @@ namespace Pakal
 		}
 
 		// Update and render all registered sprites
-		render_sprites(dt_seconds);
+		const auto spritesAt = std::chrono::steady_clock::now();
+		{
+			PAKAL_PROFILE_SCOPE("gfx.sprites");   // the 2D sprites' animation and draws (their textures loaded on first use)
+			render_sprites(dt_seconds);
+		}
+		const auto spritesDoneAt = std::chrono::steady_clock::now();
 
 		// Touch view to ensure it's rendered
 		bgfx::touch(m_main_view_id);
@@ -768,11 +855,28 @@ namespace Pakal
 		}
 
 		// The game's interface, then the development panels
+		const auto uiAt = std::chrono::steady_clock::now();
 		if (m_ui_manager)
 		{
 			PAKAL_PROFILE_SCOPE("gfx.ui");
 			m_ui_manager->draw_ui();
+			// the build's label (C-ID-7) as debug text while the interface cannot draw it (no font loaded)
+			BuildLabelCorner corner = BuildLabelCorner::BottomLeft;
+			const std::string label = m_ui_manager->undrawn_build_label(&corner);
+			if (!label.empty())
+			{
+				const bgfx::Stats* stats = bgfx::getStats();
+				const int columns = stats->textWidth, rows = stats->textHeight, length = int(label.size());
+				const bool top = corner == BuildLabelCorner::TopLeft || corner == BuildLabelCorner::TopRight;
+				const bool left = corner == BuildLabelCorner::TopLeft || corner == BuildLabelCorner::BottomLeft;
+				if (columns > length && rows > 1)
+					draw_text(left ? 1 : columns - length - 1, top ? 0 : rows - 1, label.c_str());
+			}
+			else if (m_label_as_text)
+				bgfx::dbgTextClear();   // debug text stays until cleared: the label drawn by the interface now, or hidden
+			m_label_as_text = !label.empty();
 		}
+		const auto uiDoneAt = std::chrono::steady_clock::now();
 		m_debug_ui.render(get_output_width(), get_output_height(), BGFX_INVALID_HANDLE);
 		if (m_upscale_active) render_upscale();
 		if (!m_pictureJobs.empty()) draw_model_picture();
@@ -784,6 +888,13 @@ namespace Pakal
 		}
 		if (!m_pictureJobs.empty()) finish_model_pictures();
 		const double frameMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - frameStart).count();
+		// (a frame that holds the screen for long is told in the log, with where its time went: every other thread that calls bgfx waits for it)
+		if (frameMs > 300.0)
+		{
+			const auto ms = [](auto a, auto b) { return std::chrono::duration<double, std::milli>(b - a).count(); };
+			LOG_INFO("[BgfxGraphicsSystem] a frame took %.0f ms (before the sprites %.0f, the sprites %.0f, the interface %.0f, the submit and the rest %.0f)", frameMs,
+				ms(frameStart, spritesAt), ms(spritesAt, spritesDoneAt), ms(uiAt, uiDoneAt), frameMs - ms(frameStart, spritesAt) - ms(spritesAt, spritesDoneAt) - ms(uiAt, uiDoneAt));
+		}
 		governor_frame(frameMs);
         {
             std::lock_guard<std::mutex> lock(m_performanceMutex);
@@ -827,7 +938,9 @@ namespace Pakal
 		profiler.counter("render.height", m_height);
 		profiler.counter("render.scale", get_render_scale());
 		profiler.counter("render.quality", double(int(m_quality)));
-		profiler.counter("render.fsr", m_fsr ? 1.0 : 0.0);
+		// the upscale in use: the governor trades FSR for a plain stretch on its own (render.fsr_option: the game's setting)
+		profiler.counter("render.fsr", m_upscaler == Upscaler::Fsr ? 1.0 : 0.0);
+		profiler.counter("render.fsr_option", m_fsr ? 1.0 : 0.0);
 		profiler.counter("governor.on", m_governor.enabled ? 1.0 : 0.0);
 		profiler.counter("governor.cap_fps", m_governor.cap);
 		if (stats->cpuTimerFreq) profiler.counter("cpu.submit_ms", 1000.0 * double(stats->cpuTimeFrame) / double(stats->cpuTimerFreq));
@@ -939,14 +1052,11 @@ namespace Pakal
 	{
 		execute_block([this, window, width, height, outputWidth, outputHeight]()
 		{
-			bgfx::PlatformData data;
-			data.nwh = window;
-			bgfx::setPlatformData(data); // marks the context to be made again on the next reset
 			m_width = width;
 			m_height = height;
 			m_output_width = outputWidth >= width && outputHeight >= height ? outputWidth : 0;
 			m_output_height = outputWidth >= width && outputHeight >= height ? outputHeight : 0;
-			reset_backbuffer();
+			reset_backbuffer(window);   // (the swap chain moves to the new surface; the device and resources stay)
 			bgfx::dbgTextClear(); // text written for the old size would stay where the new layout does not write
 			bgfx::setViewRect(m_main_view_id, 0, 0, uint16_t(m_width), uint16_t(m_height));
 			LOG_INFO("[BgfxGraphicsSystem] New window %p, %ux%u", window, width, height);
@@ -994,13 +1104,13 @@ namespace Pakal
 	{
 		if (sprite)
 		{
+			std::lock_guard<std::mutex> lock(m_spritesMutex);   // (made on the game's thread while the graphics thread draws the list)
 			m_sprites.push_back(sprite);
 			// Assign shader program to sprite
 			if (bgfx::isValid(m_sprite_program))
 			{
 				sprite->set_program(m_sprite_program);
 			}
-			LOG_INFO("[BgfxGraphicsSystem] Sprite registered, total sprites: %zu", m_sprites.size());
 		}
 	}
 
@@ -1008,6 +1118,7 @@ namespace Pakal
 	{
 		if (sprite)
 		{
+			std::lock_guard<std::mutex> lock(m_spritesMutex);
 			auto it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
 			if (it != m_sprites.end())
 			{
@@ -1018,6 +1129,12 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::register_mesh3d(MeshComponent3D_Bgfx* mesh)
 	{
+		if (mesh && m_settings.no_3d)
+		{
+			static bool told = false;
+			if (!told) LOG_WARNING("[BgfxGraphicsSystem] a 3D mesh in a game started 2D only (PAKAL_NO_3D): it is not drawn");
+			told = true;
+		}
 		if (mesh)
 		{
 			m_meshes3d.push_back(mesh);   // drawn one by one until the next regrouping takes it
@@ -1248,6 +1365,88 @@ namespace Pakal
 		bgfx::requestScreenShot(BGFX_INVALID_HANDLE, filePath);
 	}
 
+	namespace
+	{
+		// A set of textures preloaded: a worker thread takes each one into the sprites' cache (SpriteComponent_Bgfx::acquire_texture)
+		// and holds it until the set is gone. The set before it is held until this one is done, so the textures both name are never
+		// let go and loaded again in between.
+		class TexturePreloadBgfx final : public TexturePreload
+		{
+		public:
+			TexturePreloadBgfx(std::vector<std::string> paths, std::shared_ptr<TexturePreload> previous) :
+				m_total(paths.size()), m_previous(std::move(previous))
+			{
+				m_worker = std::thread([this, paths = std::move(paths)]()
+				{
+					const auto startedAt = std::chrono::steady_clock::now();
+					for (const std::string& path : paths)
+					{
+						if (m_stop) break;
+						std::string key;
+						bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+						int width = 0, height = 0;
+						if (SpriteComponent_Bgfx::acquire_texture(path, key, handle, width, height))
+						{
+							std::lock_guard<std::mutex> lock(m_mutex);
+							m_keys.push_back(key);
+						}
+						++m_done;
+					}
+					LOG_INFO("[BgfxGraphicsSystem] preloaded %zu of %zu textures in %.0f ms", m_keys.size(), m_total,
+						std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - startedAt).count());
+					std::shared_ptr<TexturePreload> previous;
+					{
+						std::lock_guard<std::mutex> lock(m_mutex);
+						previous.swap(m_previous);
+					}
+				});
+			}
+
+			~TexturePreloadBgfx() override
+			{
+				m_stop = true;
+				if (m_worker.joinable()) m_worker.join();
+				for (const std::string& key : m_keys) SpriteComponent_Bgfx::release_cached_texture(key);
+			}
+
+			bool ready() const override { return m_done >= m_total; }
+			float progress() const override { return m_total ? static_cast<float>(m_done) / static_cast<float>(m_total) : 1.0f; }
+
+		private:
+			const size_t m_total;
+			std::atomic<size_t> m_done{ 0 };
+			std::atomic<bool> m_stop{ false };
+			std::mutex m_mutex;
+			std::vector<std::string> m_keys;
+			std::shared_ptr<TexturePreload> m_previous;
+			std::thread m_worker;
+		};
+	}
+
+	std::shared_ptr<TexturePreload> BgfxGraphicsSystem::preload_textures(const std::vector<std::string>& paths)
+	{
+		std::lock_guard<std::mutex> lock(m_preloadMutex);
+		auto set = std::make_shared<TexturePreloadBgfx>(paths, m_preloaded);
+		m_preloaded = set;
+		return set;
+	}
+
+	void BgfxGraphicsSystem::release_preloaded()
+	{
+		std::shared_ptr<TexturePreload> gone;
+		{
+			std::lock_guard<std::mutex> lock(m_preloadMutex);
+			gone.swap(m_preloaded);
+		}
+	}
+
+	bool BgfxGraphicsSystem::take_screenshot(const std::string& path)
+	{
+		if (path.empty()) return false;
+		execute_block([this, path]() { request_screenshot(path.c_str()); });
+		return true;
+	}
+
 	void BgfxGraphicsSystem::set_active_camera(ICameraComponent_Bgfx* camera)
 	{
 		m_active_camera = camera;
@@ -1263,6 +1462,7 @@ namespace Pakal
 
 	void BgfxGraphicsSystem::render_sprites(float dt_seconds)
 	{
+		std::lock_guard<std::mutex> lock(m_spritesMutex);   // (a sprite is let go of from the game's thread: not while it is drawn)
 		if (m_sprites.empty())
 		{
 			return;
@@ -1354,6 +1554,7 @@ namespace Pakal
 		m_mesh_program = load_program("vs_mesh", "fs_mesh");
 		m_skin_program = load_program("vs_skin", "fs_mesh");
 		m_pbr_program = load_program("vs_pbr", "fs_pbr");
+		m_skin_pbr_program = load_program("vs_skin_pbr", "fs_pbr");
 		m_pbr_inst_program = load_program("vs_pbr_inst", "fs_pbr");
 		m_mesh_inst_program = load_program("vs_mesh_inst", "fs_mesh");
 		static const bool gpuParticlesWanted = !(std::getenv("PAKAL_GPU_PARTICLES") && std::string(std::getenv("PAKAL_GPU_PARTICLES")) == "0");
@@ -1400,6 +1601,7 @@ namespace Pakal
 		destroyProgram(m_mesh_program);
 		destroyProgram(m_skin_program);
 		destroyProgram(m_pbr_program);
+		destroyProgram(m_skin_pbr_program);
 		destroyProgram(m_pbr_inst_program);
 		destroyProgram(m_mesh_inst_program);
 		destroyProgram(m_sky_program);
@@ -1866,7 +2068,8 @@ namespace Pakal
 		bgfx::submit(m_post_view_id, m_post_program);
 	}
 
-	void BgfxGraphicsSystem::set_gi_volume(const uint8_t* rgba, uint16_t nx, uint16_t ny, uint16_t nz, const float origin[3], const float size[3], float strength)
+	void BgfxGraphicsSystem::set_gi_volume(const uint8_t* rgba, uint16_t nx, uint16_t ny, uint16_t nz, const float origin[3], const float size[3], float strength,
+		float yaw)
 	{
 		clear_gi_volume();
 		const uint64_t flags = BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP;
@@ -1880,7 +2083,7 @@ namespace Pakal
 		std::copy(origin, origin + 3, m_gi_origin);
 		std::copy(size, size + 3, m_gi_size);
 		m_gi_origin[3] = strength;
-		m_gi_size[3] = 0.0f;
+		m_gi_size[3] = yaw;
 		LOG_INFO("[BgfxGraphicsSystem] Baked ambient light %ux%ux%u loaded", nx, ny, nz);
 	}
 
@@ -2220,6 +2423,10 @@ namespace Pakal
 		{
 			return;
 		}
+		// The sky belongs to a 3D view: a 2D game (an orthographic camera) draws its own backdrop, and with no camera at all (a screen
+		// changing, a game still loading) there is nothing to show it behind: the clear color, not a sky that was never asked for
+		float scaleX, scaleY, nearPlane, farPlane;
+		if (!m_active_camera || !m_active_camera->get_projection(scaleX, scaleY, nearPlane, farPlane)) return;
 
 		set_uniform(m_u_sky_top, "u_skyTop", m_sky_top);
 		set_uniform(m_u_sky_horizon, "u_skyHorizon", m_sky_horizon);
@@ -2354,12 +2561,14 @@ namespace Pakal
 			const char* text = std::getenv("PAKAL_INSTANCING");
 			if (text) return std::string(text) != "0";
 #if defined(__ANDROID__)
-			return false;
+			// (but at the lowest quality, an old phone: a 2016 phone's CPU pays for each draw, and grouping a cemetery's
+			// plants took 1132 draws to 872, 26.7 -> 28.3 FPS, p95 73 -> 62 ms)
+			return default_quality() == Quality::Low;
 #else
 			return true;
 #endif
 		}();
-		const bool instancing = instancingWanted && (bgfx::getCaps()->supported & BGFX_CAPS_INSTANCING) != 0
+		const bool instancing = instancingWanted   /* (every renderer instances since bgfx raised its baseline) */
 			&& bgfx::isValid(m_pbr_inst_program) && bgfx::isValid(m_mesh_inst_program);
 		++m_instanceFrame;
 		if (instancing)
@@ -2428,6 +2637,28 @@ namespace Pakal
 			}
 		}
 
+		// Animation advances once per frame, whether or not the mesh is drawn (a model without bones has none: thousands of
+		// them in a town, not timed one by one). The skinned models' poses are each their own work: shared among the workers
+		// (PoseWorkers), their clips' marks held and reported here after; one on another's bone is posed after it, below
+		{
+			PAKAL_PROFILE_SCOPE("gfx.pose");
+			m_posing.clear();
+			m_posingFull.clear();
+			for (auto* mesh : m_frameMeshes)
+			{
+				if (!mesh || !mesh->is_skinned() || mesh->attached() || mesh->instanced_in(m_instanceFrame)) continue;
+				m_posing.push_back(mesh);
+				m_posingFull.push_back(!halve || mesh->carries() || ((crowdIndex++ + frameParity) % 2 == 0));
+			}
+			pose_workers().run(m_posing.size(), [this, dt_seconds](size_t i)
+			{
+				m_posing[i]->defer_marks(true);
+				m_posing[i]->update(dt_seconds, m_posingFull[i] != 0);
+				m_posing[i]->defer_marks(false);
+			});
+			for (auto* mesh : m_posing) mesh->flush_marks();
+		}
+
 		for (auto* mesh : m_frameMeshes)
 		{
 			if (!mesh || mesh->instanced_in(m_instanceFrame))
@@ -2435,20 +2666,18 @@ namespace Pakal
 				continue;
 			}
 
-			// Animation advances once per frame, whether or not the mesh is drawn (a model without bones has none: thousands
-			// of them in a town, not timed one by one)
-			if (mesh->is_skinned())
+			// (one on another model's bone: posed now, after that one)
+			if (mesh->is_skinned() && mesh->attached())
 			{
 				PAKAL_PROFILE_SCOPE("gfx.pose");
-				const bool pose = !halve || mesh->carries() || ((crowdIndex++ + frameParity) % 2 == 0);
-				mesh->update(dt_seconds, pose);
+				mesh->update(dt_seconds, true);
 			}
 			if (m_shadow_active && !(m_shadow_moving_only && mesh->shadow_baked()))
 			{
 				mesh->render_depth(m_shadow_view_id, mesh->is_skinned() ? m_shadow_skin_program : m_shadow_program);
 			}
 
-			bgfx::ProgramHandle program = mesh->is_skinned() ? m_skin_program : (mesh->uses_pbr() && bgfx::isValid(m_pbr_program) ? m_pbr_program : m_mesh_program);
+			bgfx::ProgramHandle program = program_for(*mesh);
 			if (!bgfx::isValid(program))
 			{
 				continue;
@@ -2488,7 +2717,7 @@ namespace Pakal
 		for (const auto& entry : blended)
 		{
 			MeshComponent3D_Bgfx* mesh = entry.second;
-			bgfx::ProgramHandle program = mesh->is_skinned() ? m_skin_program : (mesh->uses_pbr() && bgfx::isValid(m_pbr_program) ? m_pbr_program : m_mesh_program);
+			bgfx::ProgramHandle program = program_for(*mesh);
 			if (!bgfx::isValid(program))
 			{
 				continue;
@@ -2561,5 +2790,16 @@ namespace Pakal
 		{
 			LOG_ERROR("[BgfxGraphicsSystem] Failed to create sprite shader program (missing binaries?)");
 		}
+	}
+	bgfx::ProgramHandle BgfxGraphicsSystem::program_for(const MeshComponent3D_Bgfx& mesh) const
+	{
+		if (mesh.is_skinned()) return mesh.uses_pbr() && bgfx::isValid(m_skin_pbr_program) ? m_skin_pbr_program : m_skin_program;
+		return mesh.uses_pbr() && bgfx::isValid(m_pbr_program) ? m_pbr_program : m_mesh_program;
+	}
+
+	IParticleRenderer* BgfxGraphicsSystem::particle_renderer()
+	{
+		if (!m_particleRenderer) m_particleRenderer = std::make_unique<BgfxParticleRenderer>(*this);
+		return m_particleRenderer.get();
 	}
 }

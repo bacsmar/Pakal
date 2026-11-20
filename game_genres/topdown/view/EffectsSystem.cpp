@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -114,7 +115,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_shot(const b2Vec2& muzzle, const b2Vec2& direction)
+	void EffectsSystem::on_shot(const Pakal::Vec2& muzzle, const Pakal::Vec2& direction)
 	{
 		const float at[3] = { muzzle.x + kMuzzleAhead * direction.x, kGunHeight, -(muzzle.y + kMuzzleAhead * direction.y) };
 		on_shot_at(at, direction);
@@ -138,9 +139,9 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_shot_at(const float at[3], const b2Vec2& direction)
+	void EffectsSystem::on_shot_at(const float at[3], const Pakal::Vec2& direction)
 	{
-		const b2Vec2 muzzle(at[0], -at[2]);
+		const Pakal::Vec2 muzzle(at[0], -at[2]);
 		const float gunHeight = at[1];
 		m_shotHeight = std::clamp(gunHeight - (m_floor ? m_floor(muzzle) : 0.0f), 0.3f, 2.2f) + (m_floor ? m_floor(muzzle) : 0.0f);
 		// The flash model is a flat plane whose flame trails toward -X: that side points the way the bullet flies
@@ -157,7 +158,7 @@ namespace Pakal::TopDown
 			for (auto& casing : m_casings) if (casing.age < 0.0f) { free = &casing; break; }
 			if (!free) free = &m_casings[m_nextCasing++ % m_casings.size()];
 			Casing& casing = *free;
-			const b2Vec2 side(direction.y, -direction.x);
+			const Pakal::Vec2 side(direction.y, -direction.x);
 			casing.age = 0.0f;
 			casing.x = muzzle.x;
 			casing.y = muzzle.y;
@@ -172,7 +173,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_impact(const b2Vec2& at, const b2Vec2& direction, ImpactKind kind)
+	void EffectsSystem::on_impact(const Pakal::Vec2& at, const Pakal::Vec2& direction, ImpactKind kind)
 	{
 		if (kind == ImpactKind::Enemy && !m_bloodShown)
 		{
@@ -187,8 +188,8 @@ namespace Pakal::TopDown
 		{
 			// Sparks bounce back from the wall; blood splashes on through the body
 			const float spread = random(-1.0f, 1.0f);
-			const b2Vec2 base = blood ? direction : -1.0f * direction;
-			const b2Vec2 sideways(-base.y, base.x);
+			const Pakal::Vec2 base = blood ? direction : -1.0f * direction;
+			const Pakal::Vec2 sideways(-base.y, base.x);
 			const float speed = random(2.0f, blood ? 4.5f : 6.5f);
 			Spark spark;
 			spark.x = at.x;
@@ -252,7 +253,7 @@ namespace Pakal::TopDown
 
 	void EffectsSystem::add_stain(const Stain& stain)
 	{
-		if (m_water && m_water(b2Vec2(stain.x, stain.y))) return;   // no blood or cracks on the water
+		if (m_water && m_water(Pakal::Vec2(stain.x, stain.y))) return;   // no blood or cracks on the water
 		// over the most: the oldest start fading out (none disappears at once, a blink when there is a lot of blood); past
 		// a margin more for the ones fading, the oldest goes
 		if (m_stains.size() >= kMostStains)
@@ -269,26 +270,26 @@ namespace Pakal::TopDown
 	}
 
 	// Drops of blood thrown away from a blow: they fly and land as splats, the farther ones smaller
-	void EffectsSystem::splatter(float x, float y, const b2Vec2& away, int drops, float reach, float size, const float rgb[3])
+	void EffectsSystem::splatter(float x, float y, const Pakal::Vec2& away, int drops, float reach, float size, const float rgb[3])
 	{
 		for (int i = 0; i < drops; ++i)
 		{
 			const float spread = random(-0.9f, 0.9f);
 			const float c = std::cos(spread), s = std::sin(spread);
-			const b2Vec2 way(away.x * c - away.y * s, away.x * s + away.y * c);
+			const Pakal::Vec2 way(away.x * c - away.y * s, away.x * s + away.y * c);
 			const float out = random(0.3f, 1.0f) * reach;
 			add_stain(shaped({ x + way.x * out, y + way.y * out, size * random(0.35f, 1.0f) * (1.2f - 0.6f * out / std::max(0.01f, reach)),
 				random(0.05f, 0.2f), 0.0f, kStainLife, rgb[0] * random(0.8f, 1.1f), rgb[1] * random(0.8f, 1.1f), rgb[2], random(0.65f, 0.9f), false }, "splat"));
 		}
 	}
 
-	void EffectsSystem::on_body_down(const b2Vec2& at, const b2Vec2& from, bool burst, bool big)
+	void EffectsSystem::on_body_down(const Pakal::Vec2& at, const Pakal::Vec2& from, bool burst, bool big)
 	{
-		b2Vec2 away = at - from;
+		Pakal::Vec2 away = at - from;
 		if (away.Normalize() < 0.001f)
 		{
 			const float angle = random(0.0f, 6.2831853f);
-			away = b2Vec2(std::cos(angle), std::sin(angle));
+			away = Pakal::Vec2(std::cos(angle), std::sin(angle));
 		}
 		const float scale = big ? 1.5f : 1.0f;
 		if (!m_bloodShown)
@@ -327,7 +328,7 @@ namespace Pakal::TopDown
 		{
 			const float spread = random(-1.0f, 1.0f);
 			const float speed = random(2.5f, 6.0f) * scale;
-			const b2Vec2 side(-away.y, away.x);
+			const Pakal::Vec2 side(-away.y, away.x);
 			Spark spark;
 			spark.x = at.x;
 			spark.y = at.y;
@@ -344,7 +345,7 @@ namespace Pakal::TopDown
 		splatter(at.x, at.y, away, big ? 10 : 6, 2.6f * scale, 0.45f * scale, blood);
 	}
 
-	void EffectsSystem::on_climb_out(const b2Vec2& at, bool manhole)
+	void EffectsSystem::on_climb_out(const Pakal::Vec2& at, bool manhole)
 	{
 		// dirt or grit thrown up, and a cloud that hangs over the hole
 		for (int i = 0; i < 12; ++i)
@@ -366,14 +367,14 @@ namespace Pakal::TopDown
 		if (!manhole) add_stain({ at.x, at.y, 0.65f, 0.4f, 0.0f, 12.0f, 0.16f, 0.12f, 0.08f, 0.7f, false });
 	}
 
-	void EffectsSystem::add_fountain(const b2Vec2& at, float radius, float height)
+	void EffectsSystem::add_fountain(const Pakal::Vec2& at, float radius, float height)
 	{
 		Emitter fountain{ Emitter::Kind::Fountain, at.x, at.y, radius, 1.0e9f };
 		fountain.height = height;
 		m_emitters.push_back(fountain);
 	}
 
-	void EffectsSystem::on_power_up(const b2Vec2& at, const float rgb[3])
+	void EffectsSystem::on_power_up(const Pakal::Vec2& at, const float rgb[3])
 	{
 		// light spiraling up around the body
 		for (int i = 0; i < 36; ++i)
@@ -405,26 +406,26 @@ namespace Pakal::TopDown
 		start_flash(at.x, at.y, 1.0f, random(0.0f, 6.28f), 2.2f, 0.25f, rgb[0], rgb[1], rgb[2]);
 	}
 
-	void EffectsSystem::on_camera_flash(const b2Vec2& at, const b2Vec2& toward)
+	void EffectsSystem::on_camera_flash(const Pakal::Vec2& at, const Pakal::Vec2& toward)
 	{
 		const float white[3] = { 1.0f, 1.0f, 0.95f };
-		const b2Vec2 lens = at + 0.4f * toward;
+		const Pakal::Vec2 lens = at + 0.4f * toward;
 		start_flash(lens.x, lens.y, 1.4f, std::atan2(toward.y, toward.x), 3.0f, 0.12f, white[0], white[1], white[2]);
 		// the glow: on the body's spot and a stretch of floor ahead, gone in a blink
 		m_lights.push_back({ lens.x, lens.y, 2.5f, 0.0f, 0.0f, 0.18f, white[0], white[1], white[2], 1.0f, true });
-		const b2Vec2 ahead = at + 2.2f * toward;
+		const Pakal::Vec2 ahead = at + 2.2f * toward;
 		m_lights.push_back({ ahead.x, ahead.y, 2.0f, 0.0f, 0.0f, 0.18f, white[0], white[1], white[2], 0.7f, true });
 		for (int i = 0; i < 14; ++i)
 		{
 			const float spread = random(-0.5f, 0.5f);
-			const b2Vec2 dir(toward.x * std::cos(spread) - toward.y * std::sin(spread), toward.x * std::sin(spread) + toward.y * std::cos(spread));
+			const Pakal::Vec2 dir(toward.x * std::cos(spread) - toward.y * std::sin(spread), toward.x * std::sin(spread) + toward.y * std::cos(spread));
 			const float speed = random(4.0f, 8.0f);
 			add_puff({ lens.x, lens.y, 1.4f, dir.x * speed, dir.y * speed, random(-0.5f, 0.5f), 0.0f, random(0.12f, 0.22f),
 				random(0.15f, 0.25f), 0.05f, 1.0f, 0.0f, white[0], white[1], white[2], 0.0f, true, false });
 		}
 	}
 
-	void EffectsSystem::on_splash(const b2Vec2& at, float height, float size)
+	void EffectsSystem::on_splash(const Pakal::Vec2& at, float height, float size)
 	{
 		const float water[3] = { 0.85f, 0.93f, 1.0f };
 		for (int i = 0; i < 10; ++i)
@@ -463,12 +464,12 @@ namespace Pakal::TopDown
 		return set;
 	}
 
-	void EffectsSystem::throw_pieces(const b2Vec2& at, const b2Vec2& from, const PieceThrow& how)
+	void EffectsSystem::throw_pieces(const Pakal::Vec2& at, const Pakal::Vec2& from, const PieceThrow& how)
 	{
 		if (m_pieces.empty()) return;
 		int count = how.count;
-		b2Vec2 away = at - from;
-		if (away.Normalize() < 1e-4f) away = b2Vec2(1.0f, 0.0f);
+		Pakal::Vec2 away = at - from;
+		if (away.Normalize() < 1e-4f) away = Pakal::Vec2(1.0f, 0.0f);
 		// free ones, from a random place in the pool (so the same piece is not always first)
 		const size_t start = static_cast<size_t>(random(0.0f, static_cast<float>(m_pieces.size())));
 		for (size_t k = 0; k < m_pieces.size() && count > 0; ++k)
@@ -477,7 +478,7 @@ namespace Pakal::TopDown
 			if (piece.age >= 0.0f || piece.set != how.set) continue;
 			--count;
 			const float angle = random(-0.5f * how.spread, 0.5f * how.spread);
-			const b2Vec2 way(away.x * std::cos(angle) - away.y * std::sin(angle), away.x * std::sin(angle) + away.y * std::cos(angle));
+			const Pakal::Vec2 way(away.x * std::cos(angle) - away.y * std::sin(angle), away.x * std::sin(angle) + away.y * std::cos(angle));
 			const float out = random(how.speed[0], how.speed[1]);
 			piece.age = 0.0f;
 			piece.life = 30.0f;   // (until it settles: then its 'lie')
@@ -500,7 +501,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_firework(const b2Vec2& at, float height, const float rgb[3])
+	void EffectsSystem::on_firework(const Pakal::Vec2& at, float height, const float rgb[3])
 	{
 		// stars thrown out every way (an even spread over the sphere), each a glowing dot that drifts down and dims
 		for (int i = 0; i < 70; ++i)
@@ -531,7 +532,7 @@ namespace Pakal::TopDown
 		m_lights.push_back({ at.x, at.y, 4.0f, 0.0f, 0.0f, 0.7f, rgb[0], rgb[1], rgb[2], 0.3f, true });   // (stronger, ten of them whited the screen out)
 	}
 
-	void EffectsSystem::aura(const b2Vec2& at, const float rgb[3], float dt)
+	void EffectsSystem::aura(const Pakal::Vec2& at, const float rgb[3], float dt)
 	{
 		m_auraClock += dt;
 		const float pulse = 0.5f + 0.5f * std::sin(m_auraClock * 6.0f);
@@ -547,7 +548,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_player_hit(const b2Vec2& at)
+	void EffectsSystem::on_player_hit(const Pakal::Vec2& at)
 	{
 		if (!m_bloodShown) return;
 		for (int i = 0; i < 9; ++i)
@@ -609,7 +610,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::on_prop_effect(const b2Vec2& at, const std::string& effect, float size)
+	void EffectsSystem::on_prop_effect(const Pakal::Vec2& at, const std::string& effect, float size)
 	{
 		// the first of the game's names that fits it
 		const PropEffectName* name = nullptr;
@@ -642,7 +643,7 @@ namespace Pakal::TopDown
 		}
 	}
 
-	void EffectsSystem::set_fire(int key, const b2Vec2& at, float size, bool on)
+	void EffectsSystem::set_fire(int key, const Pakal::Vec2& at, float size, bool on)
 	{
 		for (auto& emitter : m_emitters)
 		{
@@ -739,7 +740,7 @@ namespace Pakal::TopDown
 		m_emitters.erase(std::remove_if(m_emitters.begin(), m_emitters.end(), [](const Emitter& e) { return e.secondsLeft <= 0.0f; }), m_emitters.end());
 	}
 
-	void EffectsSystem::on_shockwave(const b2Vec2& at, float radius)
+	void EffectsSystem::on_shockwave(const Pakal::Vec2& at, float radius)
 	{
 		const int count = 30;
 		for (int i = 0; i < count; ++i)
@@ -754,7 +755,7 @@ namespace Pakal::TopDown
 		start_flash(at.x, at.y, 0.15f, random(0.0f, 6.28f), radius * 0.9f, 0.18f, 1.0f, 0.95f, 0.8f);
 	}
 
-	void EffectsSystem::on_blast(const b2Vec2& at, float radius)
+	void EffectsSystem::on_blast(const Pakal::Vec2& at, float radius)
 	{
 		// a ball of fire and the smoke it leaves
 		int frames = 1;
@@ -880,7 +881,7 @@ namespace Pakal::TopDown
 			}
 			casing.vh -= kGravity * dt;
 			casing.h += casing.vh * dt;
-			const float ground = (m_floor ? m_floor(b2Vec2(casing.x, casing.y)) : 0.0f) + 0.01f;
+			const float ground = (m_floor ? m_floor(Pakal::Vec2(casing.x, casing.y)) : 0.0f) + 0.01f;
 			if (casing.h <= ground)
 			{
 				casing.h = ground;
@@ -908,7 +909,7 @@ namespace Pakal::TopDown
 			const float shrink = casing.age > m_casingLife - 0.25f ? (m_casingLife - casing.age) / 0.25f : 1.0f;
 			casing.mesh->set_position(casing.x, casing.h, -casing.y);
 			// in the air it tumbles end over end; on the floor it lies on its side, turned where it stopped
-			const bool lying = casing.vh == 0.0f && casing.h <= (m_floor ? m_floor(b2Vec2(casing.x, casing.y)) : 0.0f) + 0.011f;
+			const bool lying = casing.vh == 0.0f && casing.h <= (m_floor ? m_floor(Pakal::Vec2(casing.x, casing.y)) : 0.0f) + 0.011f;
 			casing.mesh->set_rotation(lying ? 0.0f : casing.turn, casing.turn * 0.5f, lying ? 0.0f : 1.2f);
 			casing.mesh->set_scale(m_casingScale * shrink);
 		}
@@ -924,7 +925,7 @@ namespace Pakal::TopDown
 				piece.mesh->set_scale(0.0f);
 				continue;
 			}
-			const float ground = (m_floor ? m_floor(b2Vec2(piece.x, piece.y)) : 0.0f) + 0.08f;
+			const float ground = (m_floor ? m_floor(Pakal::Vec2(piece.x, piece.y)) : 0.0f) + 0.08f;
 			if (piece.sinking)
 			{
 				// in the water: it goes down slowly, drifting, and is gone
@@ -945,11 +946,11 @@ namespace Pakal::TopDown
 			}
 			piece.vh -= piece.gravity * dt;
 			piece.h += piece.vh * dt;
-			if (piece.h <= ground && m_water && m_water(b2Vec2(piece.x, piece.y)))
+			if (piece.h <= ground && m_water && m_water(Pakal::Vec2(piece.x, piece.y)))
 			{
 				piece.sinking = true;
 				piece.h = ground;
-				on_splash(b2Vec2(piece.x, piece.y), ground, 0.5f);
+				on_splash(Pakal::Vec2(piece.x, piece.y), ground, 0.5f);
 				piece.vx *= 0.3f;
 				piece.vy *= 0.3f;
 				piece.vh = 0.0f;

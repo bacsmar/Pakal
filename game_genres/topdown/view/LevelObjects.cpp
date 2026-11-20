@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <set>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -41,20 +42,20 @@ namespace Pakal::TopDown
 		m_factory = std::move(factory);
 	}
 
-	void LevelObjects::footprint(const Pakal::MeshComponent3D_Bgfx& mesh, const Mat4& placement, b2Vec2& low, b2Vec2& high, float& size) const
+	void LevelObjects::footprint(const Pakal::MeshComponent3D_Bgfx& mesh, const Mat4& placement, Pakal::Vec2& low, Pakal::Vec2& high, float& size) const
 	{
 		float lo[3], hi[3];
 		mesh.get_bounds(lo, hi);
-		low = b2Vec2(1e9f, 1e9f);
-		high = b2Vec2(-1e9f, -1e9f);
+		low = Pakal::Vec2(1e9f, 1e9f);
+		high = Pakal::Vec2(-1e9f, -1e9f);
 		for (int corner = 0; corner < 8; ++corner)
 		{
 			const float px = (corner & 1) ? hi[0] : lo[0], py = (corner & 2) ? hi[1] : lo[1], pz = (corner & 4) ? hi[2] : lo[2];
 			const float wx = placement[0] * px + placement[4] * py + placement[8] * pz + placement[12];
 			const float wz = placement[2] * px + placement[6] * py + placement[10] * pz + placement[14];
 			// level x, y: render x, -z
-			low = b2Vec2(std::min(low.x, wx), std::min(low.y, -wz));
-			high = b2Vec2(std::max(high.x, wx), std::max(high.y, -wz));
+			low = Pakal::Vec2(std::min(low.x, wx), std::min(low.y, -wz));
+			high = Pakal::Vec2(std::max(high.x, wx), std::max(high.y, -wz));
 		}
 		size = std::clamp(std::max(high.x - low.x, high.y - low.y), 0.3f, 6.0f);
 	}
@@ -98,7 +99,7 @@ namespace Pakal::TopDown
 		if (!game || !m_schema || components.empty()) return instance;
 		Actor& prop = game->add_actor(ActorKind::Prop, object.name);
 		prop.gameId = object.id;
-		prop.position = b2Vec2(static_cast<float>(object.x / m_unitsPerMeter), static_cast<float>(object.y / m_unitsPerMeter));
+		prop.position = Pakal::Vec2(static_cast<float>(object.x / m_unitsPerMeter), static_cast<float>(object.y / m_unitsPerMeter));
 		prop.add<PropComponent>(std::make_unique<PropMesh>(instance.mesh.get(), placement));
 		PlacedObject placed{ *game, prop, object, instance.resolved };
 		footprint(*instance.mesh, placement, placed.low, placed.high, placed.size);
@@ -200,11 +201,11 @@ namespace Pakal::TopDown
 		instance.mesh->set_shadow_baked(object.baked);
 		Actor* actor = game && instance.actor ? game->find(instance.actor) : nullptr;
 		if (!actor) return;
-		actor->position = actor->previousPosition = b2Vec2(static_cast<float>(object.x / m_unitsPerMeter), static_cast<float>(object.y / m_unitsPerMeter));
+		actor->position = actor->previousPosition = Pakal::Vec2(static_cast<float>(object.x / m_unitsPerMeter), static_cast<float>(object.y / m_unitsPerMeter));
 		if (auto* prop = actor->get<PropComponent>()) prop->set_placement(placement);
 		if (auto* breakable = actor->get<DestructibleComponent>())
 		{
-			b2Vec2 low, high;
+			Pakal::Vec2 low, high;
 			float size = 1.0f;
 			footprint(*instance.mesh, placement, low, high, size);
 			breakable->set_box(low, high);

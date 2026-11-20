@@ -66,10 +66,10 @@ MATERIALS = {
     # the wet sand where the sea meets the beach: a foam line at the water, a dark shiny band fading into the dry sand
     # (terrain.shore_wet lays it along the waterline; make_wet_sand paints it the first time)
     'wet_sand': {'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/wet_sand.png', 'alpha': 'BLEND',
-                 'repeat': 8.0, 'roughness': 0.6},
+                 'repeat': 8.0, 'roughness': 0.6, 'lightmap': False},
     # the shallows: the rippled sand seen through the water near the beach (over the water, fading out to sea)
     'shallows': {'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/shallows.png', 'alpha': 'BLEND',
-                 'repeat': 6.0, 'roughness': 0.25},
+                 'repeat': 6.0, 'roughness': 0.25, 'lightmap': False},
     'white': {'factor': [0.92, 0.92, 0.9, 1.0], 'roughness': 0.5},
     'thatch': {'factor': [0.48, 0.37, 0.21, 1.0], 'roughness': 1.0, 'double': True},   # a palapa's palm roof
     'wood_post': {'factor': [0.42, 0.30, 0.18, 1.0], 'roughness': 0.9},
@@ -82,7 +82,7 @@ MATERIALS = {
               'normal': REPO / 'build-win64/bin/Assets/levelgen/_decals/water_ripples_normal.png'},
     # the waves on the beach: foam crests across a band along the waterline, rolling in toward the sand (scroll in v)
     'shore_foam': {'color': REPO / 'build-win64/bin/Assets/levelgen/_decals/shore_foam.png', 'alpha': 'BLEND',
-                   'repeat': 6.0, 'roughness': 0.6, 'scroll': (0.0, -0.11)},
+                   'repeat': 6.0, 'roughness': 0.6, 'scroll': (0.0, -0.11), 'lightmap': False},
     'river': {'factor': [0.18, 0.33, 0.30, 1.0], 'roughness': 0.38, 'repeat': 5.0, 'scroll': (0.0, 0.05), 'water': 0.35,
               'normal': REPO / 'build-win64/bin/Assets/levelgen/_decals/water_ripples_normal.png'},
     # el atlas de desgaste (decals.py): se hace la primera vez que hace falta
@@ -435,6 +435,8 @@ class Mesh:
                         out += f' scroll="{spec["scroll"][0]} {spec["scroll"][1]}"'
                     if spec.get('water'):
                         out += f' water="{spec["water"]}"'
+                    if spec.get('lightmap') is False:   # decals too thin for the bake's atlas: the probes light them
+                        out += ' lightmap="off"'
                     if spec.get('detile'):
                         out += f' detile="{spec["detile"][0]} {spec["detile"][1]}"'
                     # other surfaces in patches (the engine's mix, mix2): their textures beside the others

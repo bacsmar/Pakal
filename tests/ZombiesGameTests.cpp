@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include "math/Vec2.h"
 
 using namespace Zombies;
 
@@ -34,7 +35,7 @@ namespace
 	}
 
 	// Holds the trigger of a gun for 'seconds' and counts the shots
-	int shots_in(const GunRules& gun, float seconds, std::vector<b2Vec2>* directions = nullptr)
+	int shots_in(const GunRules& gun, float seconds, std::vector<Pakal::Vec2>* directions = nullptr)
 	{
 		Pakal::PhysicsWorld2D world({ 0, 0 });
 		Pakal::NavGrid2D nav(0.5f);
@@ -62,26 +63,26 @@ namespace
 	struct Arena
 	{
 		// on the heap: a Box2D world carries a large stack allocator, and main holds many arenas
-		std::unique_ptr<Pakal::PhysicsWorld2D> physics = std::make_unique<Pakal::PhysicsWorld2D>(b2Vec2(0, 0));
+		std::unique_ptr<Pakal::PhysicsWorld2D> physics = std::make_unique<Pakal::PhysicsWorld2D>(Pakal::Vec2(0, 0));
 		Pakal::PhysicsWorld2D& world = *physics;
 		Pakal::NavGrid2D nav{ 0.5f };
 		GameRules rules;
 		std::unique_ptr<ZombiesGame> game;
 		Actor* player = nullptr;
 		Actor* zombie = nullptr;
-		Arena(const EnemyRules& enemy, const b2Vec2& at, const std::string& type = "25001", const GameRules* more = nullptr)
+		Arena(const EnemyRules& enemy, const Pakal::Vec2& at, const std::string& type = "25001", const GameRules* more = nullptr)
 		{
 			if (more) rules = *more;
 			rules.enemies[type] = enemy;
-			nav.build(world, b2Vec2(-30.0f, -30.0f), b2Vec2(30.0f, 30.0f), 0.3f, 0x0001);
+			nav.build(world, Pakal::Vec2(-30.0f, -30.0f), Pakal::Vec2(30.0f, 30.0f), 0.3f, 0x0001);
 			game = std::make_unique<ZombiesGame>(world, nav, rules, 3);
-			game->spawnEnemy = [this](const std::string& kind, const b2Vec2& where) { return add(kind, where).id; };
+			game->spawnEnemy = [this](const std::string& kind, const Pakal::Vec2& where) { return add(kind, where).id; };
 			player = &game->add_actor(ActorKind::Character, "player", game->survivors);
 			player->add<HealthComponent>(1.0e6f, 0.0f);
 			game->add_player(*player);
 			zombie = &add(type, at);
 		}
-		Actor& add(const std::string& type, const b2Vec2& at)
+		Actor& add(const std::string& type, const Pakal::Vec2& at)
 		{
 			Actor& actor = game->add_actor(ActorKind::Character, type, game->undead);
 			actor.position = at;
@@ -209,7 +210,7 @@ int main()
 	GunRules shotgun = single;
 	shotgun.pellets = 4;
 	shotgun.spreadDegrees = 70.0f;
-	std::vector<b2Vec2> directions;
+	std::vector<Pakal::Vec2> directions;
 	shots_in(shotgun, 1.0f / 60.0f, &directions);
 	bool even = directions.size() == 4;
 	if (even)
@@ -236,7 +237,7 @@ int main()
 
 		const float dt = 1.0f / 60.0f;
 
-		Arena fight(business, b2Vec2(1.0f, 0.0f));
+		Arena fight(business, Pakal::Vec2(1.0f, 0.0f));
 		std::vector<float> hitTimes;
 		float last = 0.0f;
 		for (float t = 0.0f; t < 10.0f; t += dt)
@@ -254,7 +255,7 @@ int main()
 		check(cycle, "a ZombieBusiness hits once per 1.83-2.08 s (attack clip, then the wait)");
 
 		// Hurt by a bullet right away: no attack while the hurt clip plays (0.867 s), so the first hit comes later
-		Arena hurt(business, b2Vec2(1.0f, 0.0f));
+		Arena hurt(business, Pakal::Vec2(1.0f, 0.0f));
 		hurt.game->step(dt, PlayerInput());
 		hurt.game->damage(*hurt.zombie, 0.1f);
 		float firstHit = -1.0f;
@@ -268,7 +269,7 @@ int main()
 
 		// Under steady fire it still attacks: its hurt clip (and the stun) comes at most once every 2 s
 		business.health = 1000.0f;
-		Arena steady(business, b2Vec2(1.0f, 0.0f));
+		Arena steady(business, Pakal::Vec2(1.0f, 0.0f));
 		int steadyHits = 0;
 		float lastTaken = 0.0f;
 		for (float t = 0.0f; t < 6.0f; t += dt)
@@ -282,9 +283,9 @@ int main()
 		business.health = 1.5f;
 
 		// Knocked back (melee): mass 1 slides ~3.8 m away in ~0.3 s and stays stunned until 2 s
-		Arena knock(business, b2Vec2(1.0f, 0.0f));
+		Arena knock(business, Pakal::Vec2(1.0f, 0.0f));
 		knock.game->step(dt, PlayerInput());
-		knock.game->damage(*knock.zombie, { .amount = 0.1f, .from = b2Vec2(0.0f, 0.0f), .knockback = true });
+		knock.game->damage(*knock.zombie, { .amount = 0.1f, .from = Pakal::Vec2(0.0f, 0.0f), .knockback = true });
 		float at05 = 0.0f, at19 = 0.0f;
 		for (float t = dt; t < 1.95f; t += dt)
 		{
@@ -316,7 +317,7 @@ int main()
 		const float dt = 1.0f / 60.0f;
 		EnemyRules business;
 		business.health = 100.0f;
-		auto hits = [&](const MeleeRules& melee, const b2Vec2& at)
+		auto hits = [&](const MeleeRules& melee, const Pakal::Vec2& at)
 		{
 			Arena arena(business, at);
 			arena.game->step(dt, PlayerInput());
@@ -332,13 +333,13 @@ int main()
 		axe.reach = 365.0f;
 		axe.circle = true;
 		// the player faces +y
-		check(hits(bambino, b2Vec2(1.5f, 2.4f)), "a swing reaches wide at the end of its reach");
-		check(!hits(bambino, b2Vec2(1.2f, 0.0f)), "a swing misses a zombie right beside the player");
-		check(!hits(bambino, b2Vec2(0.0f, -1.5f)), "a swing misses behind");
-		check(hits(axe, b2Vec2(0.0f, -3.0f)), "the battle axe hits all around");
+		check(hits(bambino, Pakal::Vec2(1.5f, 2.4f)), "a swing reaches wide at the end of its reach");
+		check(!hits(bambino, Pakal::Vec2(1.2f, 0.0f)), "a swing misses a zombie right beside the player");
+		check(!hits(bambino, Pakal::Vec2(0.0f, -1.5f)), "a swing misses behind");
+		check(hits(axe, Pakal::Vec2(0.0f, -3.0f)), "the battle axe hits all around");
 
 		business.health = 1.0f;
-		Arena fling(business, b2Vec2(0.0f, 1.5f));
+		Arena fling(business, Pakal::Vec2(0.0f, 1.5f));
 		fling.game->step(dt, PlayerInput());
 		fling.player->add<WeaponComponent>(glock()).swing(*fling.game, bambino, 1.0f);
 		const EnemyBrainComponent* body = fling.zombie->get<EnemyBrainComponent>();
@@ -356,10 +357,10 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules business;
-		Arena down(business, b2Vec2(-5.0f, 0.0f));
+		Arena down(business, Pakal::Vec2(-5.0f, 0.0f));
 		down.game->step(dt, PlayerInput());
 		down.game->damage(*down.player, 2.0e6f);
-		const b2Vec2 before = down.zombie->position;
+		const Pakal::Vec2 before = down.zombie->position;
 		for (float t = 0.0f; t < 1.0f; t += dt) down.game->step(dt, PlayerInput());
 		check(down.game->frozen() && (down.zombie->position - before).Length() < 0.001f, "the zombies stand still while the player is down");
 	}
@@ -369,7 +370,7 @@ int main()
 		const float dt = 1.0f / 60.0f;
 
 		// Boomer 1.5 m away: DamageDelay 1.6 s into its attack the blast (15) and its forward shot (10) hit; four shots leave
-		Arena boom(boomer(), b2Vec2(-1.5f, 0.0f), "25016");
+		Arena boom(boomer(), Pakal::Vec2(-1.5f, 0.0f), "25016");
 		float blastAt = -1.0f;
 		size_t shotsOut = 0;
 		for (float t = 0.0f; t < 1.75f; t += dt)
@@ -382,13 +383,13 @@ int main()
 		check(shotsOut >= 3 && std::fabs(boom.taken() - 25.0f) < 0.01f, "a boomer's blast (15) and its shot ahead (10) hit a player next to it");
 
 		// Boomer 4 m away: inside AttackRadius 5 m it attacks from there; the blast (2 m) misses, the shot ahead hits
-		Arena far(boomer(), b2Vec2(-4.0f, 0.0f), "25016");
+		Arena far(boomer(), Pakal::Vec2(-4.0f, 0.0f), "25016");
 		for (float t = 0.0f; t < 2.2f; t += dt) far.game->step(dt, PlayerInput());
 		std::printf("  boomer at 4 m: %.1f taken, at x %.2f\n", far.taken(), far.zombie->position.x);
 		check(std::fabs(far.taken() - 10.0f) < 0.01f && far.zombie->position.x < -3.9f, "a boomer attacks from 5 m: only its shot reaches the player 4 m off");
 
 		// Tourist 2 m away: prepare 0.3 s, then 0.5 s into the explode clip it blows up (15) and is gone
-		Arena bomb(tourist(), b2Vec2(-2.0f, 0.0f), "25010");
+		Arena bomb(tourist(), Pakal::Vec2(-2.0f, 0.0f), "25010");
 		float boomAt = -1.0f;
 		for (float t = 0.0f; t < 1.5f && boomAt < 0.0f; t += dt)
 		{
@@ -409,11 +410,11 @@ int main()
 			token.radius = 130.0f;
 			token.lifeTimeMs = -1.0f;
 			withToken.pickups[9002] = token;
-			Arena field(tourist(), b2Vec2(25.0f, 25.0f), "25010", &withToken);
-			field.game->drop_pickup(9002, b2Vec2(5.0f, 0.0f));
+			Arena field(tourist(), Pakal::Vec2(25.0f, 25.0f), "25010", &withToken);
+			field.game->drop_pickup(9002, Pakal::Vec2(5.0f, 0.0f));
 			for (int i = 0; i < 600; ++i) field.game->step(dt, PlayerInput());   // 10 s: it does not go away by itself
 			const int before = field.game->tokens;
-			field.player->position = b2Vec2(4.5f, 0.0f);
+			field.player->position = Pakal::Vec2(4.5f, 0.0f);
 			field.game->step(dt, PlayerInput());
 			field.game->step(dt, PlayerInput());
 			check(before == 0 && field.game->tokens == 1, "a token stays until taken, and taking it counts");
@@ -432,15 +433,15 @@ int main()
 			dropped.radius = 150.0f;
 			dropped.lifeTimeMs = 15000.0f;
 			withHealth.pickups[15020] = dropped;
-			Arena field(tourist(), b2Vec2(25.0f, 25.0f), "25010", &withHealth);
+			Arena field(tourist(), Pakal::Vec2(25.0f, 25.0f), "25010", &withHealth);
 			field.player->add<ConsumableComponent>();
 			HealthComponent* health = field.player->get<HealthComponent>();
 			health->damage(100.0f);
 			const float hurt = health->current();
-			field.game->drop_pickup(15020, b2Vec2(5.0f, 0.0f));
+			field.game->drop_pickup(15020, Pakal::Vec2(5.0f, 0.0f));
 			field.game->step(dt, PlayerInput());
 			const float untouched = health->current();
-			field.player->position = b2Vec2(4.5f, 0.0f);
+			field.player->position = Pakal::Vec2(4.5f, 0.0f);
 			field.game->step(dt, PlayerInput());
 			field.game->step(dt, PlayerInput());
 			check(untouched == hurt && std::fabs(health->current() - (hurt + 25.0f)) < 0.01f, "a dropped health pack heals 25 when taken");
@@ -456,9 +457,9 @@ int main()
 			withMoney.pickups[9001] = coin;
 			EnemyRules walker;
 			walker.attackDamage = 1.0f;
-			Arena field(walker, b2Vec2(-7.0f, 0.0f), "25001", &withMoney);
-			field.player->position = b2Vec2(15.0f, 0.0f);   // far: the zombie is not busy swinging at it
-			field.game->drop_pickup(9001, b2Vec2(-3.0f, 3.0f));
+			Arena field(walker, Pakal::Vec2(-7.0f, 0.0f), "25001", &withMoney);
+			field.player->position = Pakal::Vec2(15.0f, 0.0f);   // far: the zombie is not busy swinging at it
+			field.game->drop_pickup(9001, Pakal::Vec2(-3.0f, 3.0f));
 			auto coins_on_floor = [&]()
 			{
 				int count = 0;
@@ -495,16 +496,16 @@ int main()
 		{
 			EnemyRules walker;
 			walker.attackDamage = 10.0f;
-			Arena field(walker, b2Vec2(-7.0f, 0.0f));
+			Arena field(walker, Pakal::Vec2(-7.0f, 0.0f));
 			PropRules wall;
 			wall.health = 30.0f;
 			wall.repairable = true;
 			wall.repairSeconds = 2.0f;
 			Actor& barricade = field.game->add_actor(ActorKind::Prop, "Barricade");
-			barricade.position = b2Vec2(-3.0f, 0.0f);
+			barricade.position = Pakal::Vec2(-3.0f, 0.0f);
 			DestructibleComponent& planks = barricade.add<DestructibleComponent>(wall);
-			planks.set_box(b2Vec2(-3.4f, -3.0f), b2Vec2(-2.6f, 3.0f));
-			field.world.add_static_box(b2Vec2(-3.0f, 0.0f), b2Vec2(0.4f, 3.0f), field.game->layers.barricade, barricade.id);
+			planks.set_box(Pakal::Vec2(-3.4f, -3.0f), Pakal::Vec2(-2.6f, 3.0f));
+			field.world.add_static_box(Pakal::Vec2(-3.0f, 0.0f), Pakal::Vec2(0.4f, 3.0f), field.game->layers.barricade, barricade.id);
 			field.game->barricades.push_back(barricade.id);
 			float brokeAt = -1.0f;
 			for (float t = 0.0f; t < 20.0f && brokeAt < 0.0f; t += dt)
@@ -517,7 +518,7 @@ int main()
 			std::printf("  barricade: broken at %.2f s, the zombie then at x %.1f, %.1f taken from the player\n", brokeAt, through, field.taken());
 			check(brokeAt > 0.0f && through > -2.0f, "a zombie breaks the barricade in its way and walks through");
 			field.game->damage(*field.zombie, 1.0e9f);
-			field.player->position = b2Vec2(-2.0f, 0.5f);
+			field.player->position = Pakal::Vec2(-2.0f, 0.5f);
 			for (int i = 0; i < 90; ++i) field.game->step(dt, PlayerInput());
 			const bool halfway = planks.is_broken();
 			for (int i = 0; i < 60; ++i) field.game->step(dt, PlayerInput());
@@ -532,7 +533,7 @@ int main()
 				void show_hit(float left) override { last = left; ++hits; }
 			};
 			EnemyRules walker;
-			Arena field(walker, b2Vec2(-30.0f, 0.0f));
+			Arena field(walker, Pakal::Vec2(-30.0f, 0.0f));
 			PropRules can;
 			can.health = 100.0f;
 			Actor& thing = field.game->add_actor(ActorKind::Prop, "Can");
@@ -554,16 +555,16 @@ int main()
 		{
 			EnemyRules walker;
 			walker.attackDamage = 10.0f;
-			Arena field(walker, b2Vec2(-7.0f, 0.0f));
-			field.player->position = b2Vec2(15.0f, 0.0f);
+			Arena field(walker, Pakal::Vec2(-7.0f, 0.0f));
+			field.player->position = Pakal::Vec2(15.0f, 0.0f);
 			PropRules truck;
 			truck.health = 1000.0f;
 			truck.objective = true;
 			Actor& goal = field.game->add_actor(ActorKind::Prop, "Truck");
-			goal.position = b2Vec2(-6.0f, 6.0f);
+			goal.position = Pakal::Vec2(-6.0f, 6.0f);
 			DestructibleComponent& body = goal.add<DestructibleComponent>(truck);
-			body.set_box(b2Vec2(-7.0f, 5.0f), b2Vec2(-5.0f, 7.0f));
-			field.world.add_static_box(b2Vec2(-6.0f, 6.0f), b2Vec2(1.0f, 1.0f), field.game->layers.wall, goal.id);
+			body.set_box(Pakal::Vec2(-7.0f, 5.0f), Pakal::Vec2(-5.0f, 7.0f));
+			field.world.add_static_box(Pakal::Vec2(-6.0f, 6.0f), Pakal::Vec2(1.0f, 1.0f), field.game->layers.wall, goal.id);
 			field.game->objective = goal.id;
 			for (int i = 0; i < 600; ++i) field.game->step(dt, PlayerInput());
 			std::printf("  defend: the truck at %.0f of 1000, zombie id %d\n", body.health(), int(field.zombie->id));
@@ -571,7 +572,7 @@ int main()
 		}
 
 		// Tourist that starts at the edge of its 4 m: it keeps running at the player while it prepares, so its 3 m blast lands
-		Arena edge(tourist(), b2Vec2(-3.9f, 0.0f), "25010");
+		Arena edge(tourist(), Pakal::Vec2(-3.9f, 0.0f), "25010");
 		float edgeDistance = -1.0f;
 		for (float t = 0.0f; t < 3.0f && edge.taken() < 1.0f; t += dt)
 		{
@@ -582,8 +583,8 @@ int main()
 		check(std::fabs(edge.taken() - 15.0f) < 0.01f && edgeDistance >= 0.0f && edgeDistance < 2.0f, "a tourist closes in before it blows up");
 
 		// Shot before it starts: it goes off at once, and a tourist next to it goes off in turn
-		Arena chain(tourist(), b2Vec2(-12.0f, 0.0f), "25010");
-		Actor& second = chain.add("25010", b2Vec2(-13.0f, 0.0f));
+		Arena chain(tourist(), Pakal::Vec2(-12.0f, 0.0f), "25010");
+		Actor& second = chain.add("25010", Pakal::Vec2(-13.0f, 0.0f));
 		chain.game->step(dt, PlayerInput());
 		chain.game->damage(*chain.zombie, 1.0f);
 		chain.game->step(dt, PlayerInput());
@@ -591,7 +592,7 @@ int main()
 		check(second.get<EnemyBrainComponent>()->is_dead() && chain.game->kills == 2, "a tourist shot down blows up at once and sets off the one next to it");
 
 		// Dog 5 m away: spawn clip, a run at 5 m/s, a pounce within 1 m; touching the player it bites once (7) and is gone
-		Arena bite(dog(), b2Vec2(-5.0f, 0.0f), "25013");
+		Arena bite(dog(), Pakal::Vec2(-5.0f, 0.0f), "25013");
 		float biteAt = -1.0f;
 		for (float t = 0.0f; t < 3.0f && biteAt < 0.0f; t += dt)
 		{
@@ -605,7 +606,7 @@ int main()
 		// Dog walker 5 m away (between BackOffRadius and AttackRadius): its first dog comes out 1 s into the release
 		GameRules withDog;
 		withDog.enemies["25013"] = dog();
-		Arena walker(dog_walker(), b2Vec2(-5.0f, 0.0f), "25012", &withDog);
+		Arena walker(dog_walker(), Pakal::Vec2(-5.0f, 0.0f), "25012", &withDog);
 		float dogAt = -1.0f;
 		for (float t = 0.0f; t < 2.0f && dogAt < 0.0f; t += dt)
 		{
@@ -616,13 +617,13 @@ int main()
 		check(dogAt > 0.95f && dogAt < 1.1f, "a dog walker's dog comes out 1 s into its release");
 
 		// Dog walker 2 m away: it backs off at 5 m/s
-		Arena back(dog_walker(), b2Vec2(-2.0f, 0.0f), "25012", &withDog);
+		Arena back(dog_walker(), Pakal::Vec2(-2.0f, 0.0f), "25012", &withDog);
 		for (float t = 0.0f; t < 0.3f; t += dt) back.game->step(dt, PlayerInput());
 		std::printf("  dog walker: backed to x %.2f in 0.3 s\n", back.zombie->position.x);
 		check(back.zombie->position.x < -3.0f, "a dog walker backs off from a player closer than 3.5 m");
 
 		// Zombinator 1.5 m away: it windmills and hurts 20 per second within 2.5 m (no invincibility here)
-		Arena mill(zombinator(), b2Vec2(-1.5f, 0.0f), "25011");
+		Arena mill(zombinator(), Pakal::Vec2(-1.5f, 0.0f), "25011");
 		for (float t = 0.0f; t < 2.0f; t += dt) mill.game->step(dt, PlayerInput());
 		std::printf("  zombinator: %.1f taken in 2 s\n", mill.taken());
 		check(mill.taken() > 36.0f && mill.taken() < 41.0f, "a zombinator's windmill hurts 20 per second up close");
@@ -649,7 +650,7 @@ int main()
 		bear.rearClipMs = 1600.0f;
 		bear.abdomenMul = 1.3f;
 		bear.chainClipMs = 2933.3f;
-		Arena den(bear, b2Vec2(-3.0f, 0.0f), "25026");
+		Arena den(bear, Pakal::Vec2(-3.0f, 0.0f), "25026");
 		EnemyBrainComponent* brain = den.zombie->get<EnemyBrainComponent>();
 		den.game->step(dt, PlayerInput());
 		den.game->damage(*den.zombie, 60.0f);
@@ -674,7 +675,7 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(-25.0f, 0.0f));
+		Arena field(walker, Pakal::Vec2(-25.0f, 0.0f));
 		ConsumableRules strike;
 		strike.id = 777;
 		strike.effect = "airstrike";
@@ -705,7 +706,7 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(-25.0f, 0.0f));
+		Arena field(walker, Pakal::Vec2(-25.0f, 0.0f));
 		StatsComponent& stats = field.player->add<StatsComponent>();
 		stats.resistances[DamageType::Attack] = 0.5f;
 		stats.stats.add_modifier(Stat::defence, 0.0f, 2.0f);
@@ -736,7 +737,7 @@ int main()
 			&& factions.relation(Factions::None, bandits) == Relation::Neutral, "and relations go both ways");
 
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(-25.0f, 0.0f));
+		Arena field(walker, Pakal::Vec2(-25.0f, 0.0f));
 		Actor& survivor = field.game->add_actor(ActorKind::Character, "survivor", field.game->survivors);
 		check(field.game->hostile(*field.player, *field.zombie) && !field.game->hostile(*field.player, survivor)
 			&& field.game->faction_of(*field.zombie) == field.game->undead, "in Zombies the survivors and the zombies are hostile");
@@ -746,7 +747,7 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(0.0f, 1.0f));
+		Arena field(walker, Pakal::Vec2(0.0f, 1.0f));
 		HeightComponent& jumper = field.player->add<HeightComponent>();
 		check(jumper.jump(5.0f) && !jumper.jump(5.0f), "a character on the floor jumps; one in the air does not jump again");
 		float peak = 0.0f;
@@ -777,16 +778,16 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(5.0f, 0.0f));
+		Arena field(walker, Pakal::Vec2(5.0f, 0.0f));
 		HeightComponent& flying = field.zombie->add<HeightComponent>();
 		flying.height = 3.0f;
 		flying.gravity = 0.0f;   // it stays up there
 		EnemyBrainComponent* brain = field.zombie->get<EnemyBrainComponent>();
-		field.game->fire_bullet(b2Vec2(0.0f, 0.0f), b2Vec2(1.0f, 0.0f), 20.0f, 0.1f, 10.0f, 1.0f, false, field.game->survivors, 1.0f);
+		field.game->fire_bullet(Pakal::Vec2(0.0f, 0.0f), Pakal::Vec2(1.0f, 0.0f), 20.0f, 0.1f, 10.0f, 1.0f, false, field.game->survivors, 1.0f);
 		for (int i = 0; i < 40; ++i) field.game->step(dt, PlayerInput());
 		const float afterHigh = brain->health_share();
 		flying.height = 0.0f;
-		field.game->fire_bullet(b2Vec2(0.0f, 0.0f), b2Vec2(1.0f, 0.0f), 20.0f, 0.1f, 10.0f, 1.0f, false, field.game->survivors, 1.0f);
+		field.game->fire_bullet(Pakal::Vec2(0.0f, 0.0f), Pakal::Vec2(1.0f, 0.0f), 20.0f, 0.1f, 10.0f, 1.0f, false, field.game->survivors, 1.0f);
 		for (int i = 0; i < 40; ++i) field.game->step(dt, PlayerInput());
 		check(afterHigh == 1.0f && brain->health_share() < 1.0f, "a bullet passes under a zombie 3 m up and hits it on the floor");
 	}
@@ -795,7 +796,7 @@ int main()
 	{
 		const float dt = 1.0f / 60.0f;
 		EnemyRules walker;
-		Arena field(walker, b2Vec2(-25.0f, 0.0f));
+		Arena field(walker, Pakal::Vec2(-25.0f, 0.0f));
 		field.player->add<StatsComponent>();
 		ConsumableRules boost;
 		boost.id = 778;

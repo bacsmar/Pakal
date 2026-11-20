@@ -16,6 +16,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
@@ -26,14 +27,14 @@ namespace Pakal::TopDown
 		const uint32_t kAxisY = 0xff40ff40u;      // green: north
 		const uint32_t kZone = 0xc0ffd040u;       // light blue
 
-		void ring(Pakal::BgfxGraphicsSystem& graphics, const b2Vec2& at, float radius, uint32_t color)
+		void ring(Pakal::BgfxGraphicsSystem& graphics, const Pakal::Vec2& at, float radius, uint32_t color)
 		{
 			const int sides = 24;
 			for (int i = 0; i < sides; ++i)
 			{
 				const float a = 6.2831853f * static_cast<float>(i) / sides, b = 6.2831853f * static_cast<float>(i + 1) / sides;
-				graphics.draw_line3d(floor_point(at + radius * b2Vec2(std::cos(a), std::sin(a)), 0.05f),
-					floor_point(at + radius * b2Vec2(std::cos(b), std::sin(b)), 0.05f), color, false);
+				graphics.draw_line3d(floor_point(at + radius * Pakal::Vec2(std::cos(a), std::sin(a)), 0.05f),
+					floor_point(at + radius * Pakal::Vec2(std::cos(b), std::sin(b)), 0.05f), color, false);
 			}
 		}
 	}
@@ -125,7 +126,7 @@ namespace Pakal::TopDown
 		return true;
 	}
 
-	void LevelEditPanel::update(bool mouseDown, bool mouseFree, bool aimed, const b2Vec2& mouseFloor, Pakal::BgfxGraphicsSystem& graphics)
+	void LevelEditPanel::update(bool mouseDown, bool mouseFree, bool aimed, const Pakal::Vec2& mouseFloor, Pakal::BgfxGraphicsSystem& graphics)
 	{
 		const bool pressed = mouseDown && !m_wasDown;
 		m_wasDown = mouseDown;
@@ -136,13 +137,13 @@ namespace Pakal::TopDown
 			{
 				// on the selected one: grab it; elsewhere: pick the nearest object
 				const bool onSelected = selected >= 0
-					&& (b2Vec2(meters(m_document->objects[static_cast<size_t>(selected)].x), meters(m_document->objects[static_cast<size_t>(selected)].y)) - mouseFloor).Length() < 1.0f;
+					&& (Pakal::Vec2(meters(m_document->objects[static_cast<size_t>(selected)].x), meters(m_document->objects[static_cast<size_t>(selected)].y)) - mouseFloor).Length() < 1.0f;
 				if (onSelected)
 				{
 					const LevelObject& o = m_document->objects[static_cast<size_t>(selected)];
 					m_dragging = true;
 					m_before = o;
-					m_grab = b2Vec2(meters(o.x), meters(o.y)) - mouseFloor;
+					m_grab = Pakal::Vec2(meters(o.x), meters(o.y)) - mouseFloor;
 				}
 				else
 				{
@@ -151,7 +152,7 @@ namespace Pakal::TopDown
 					for (size_t i = 0; i < m_document->objects.size(); ++i)
 					{
 						const LevelObject& o = m_document->objects[i];
-						const float distance = (b2Vec2(meters(o.x), meters(o.y)) - mouseFloor).Length();
+						const float distance = (Pakal::Vec2(meters(o.x), meters(o.y)) - mouseFloor).Length();
 						if (distance < best)
 						{
 							best = distance;
@@ -165,7 +166,7 @@ namespace Pakal::TopDown
 			{
 				// the model follows the mouse; the document takes one move when it is let go
 				LevelObject& o = m_document->objects[static_cast<size_t>(selected)];
-				const b2Vec2 at = mouseFloor + m_grab;
+				const Pakal::Vec2 at = mouseFloor + m_grab;
 				o.x = at.x * m_document->unitsPerMeter;
 				o.y = at.y * m_document->unitsPerMeter;
 				place(selected);
@@ -177,7 +178,7 @@ namespace Pakal::TopDown
 			if (selected >= 0)
 			{
 				LevelObject& o = m_document->objects[static_cast<size_t>(selected)];
-				const b2Vec2 at(meters(o.x), meters(o.y));
+				const Pakal::Vec2 at(meters(o.x), meters(o.y));
 				o = m_before;
 				apply({ { "op", "move" }, { "object", o.key }, { "x", at.x }, { "y", at.y } });
 			}
@@ -189,17 +190,17 @@ namespace Pakal::TopDown
 		if (shown >= 0)
 		{
 			const LevelObject& o = m_document->objects[static_cast<size_t>(shown)];
-			const b2Vec2 at(meters(o.x), meters(o.y));
+			const Pakal::Vec2 at(meters(o.x), meters(o.y));
 			ring(graphics, at, 0.8f, kSelected);
-			graphics.draw_line3d(floor_point(at, 0.05f), floor_point(at + b2Vec2(1.5f, 0.0f), 0.05f), kAxisX, false);
-			graphics.draw_line3d(floor_point(at, 0.05f), floor_point(at + b2Vec2(0.0f, 1.5f), 0.05f), kAxisY, false);
+			graphics.draw_line3d(floor_point(at, 0.05f), floor_point(at + Pakal::Vec2(1.5f, 0.0f), 0.05f), kAxisX, false);
+			graphics.draw_line3d(floor_point(at, 0.05f), floor_point(at + Pakal::Vec2(0.0f, 1.5f), 0.05f), kAxisY, false);
 			graphics.draw_line3d(floor_point(at, 0.0f), floor_point(at, 2.0f), kSelected, false);
 		}
 		if (m_showZones)
 		{
 			for (const auto& zone : m_document->zones)
 			{
-				const b2Vec2 a(meters(zone.x0), meters(zone.y0)), b(meters(zone.x1), meters(zone.y0)), c(meters(zone.x1), meters(zone.y1)), d(meters(zone.x0), meters(zone.y1));
+				const Pakal::Vec2 a(meters(zone.x0), meters(zone.y0)), b(meters(zone.x1), meters(zone.y0)), c(meters(zone.x1), meters(zone.y1)), d(meters(zone.x0), meters(zone.y1));
 				graphics.draw_line3d(floor_point(a, 0.08f), floor_point(b, 0.08f), kZone, false);
 				graphics.draw_line3d(floor_point(b, 0.08f), floor_point(c, 0.08f), kZone, false);
 				graphics.draw_line3d(floor_point(c, 0.08f), floor_point(d, 0.08f), kZone, false);

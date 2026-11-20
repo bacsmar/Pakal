@@ -4,6 +4,10 @@ named <name>.png.ktx) and the original is removed. The engine loads <file>.ktx i
 ASTC is read by every GPU the game targets (Mali-T880 and later, Adreno 5xx and later); where it is not, bgfx decodes it.
 Normal maps and the ORM textures of glTF materials are encoded as linear data (the materials say which ones they are).
 Results are cached by the source's contents, so only new or changed textures are encoded again.
+
+2D games (sprites, atlases, backgrounds) pass the folders they keep them in as 'sprite_dirs': their textures are encoded
+at their size and without mips (a sprite is drawn point sampled, 1:1 with the atlas rectangles that name its pixels).
+The interface's images (any folder named ui) are not encoded at all: RmlUi decodes PNG/TGA itself and knows no .ktx.
 """
 import hashlib
 import json
@@ -52,6 +56,12 @@ def texture_kinds(stage):
 
 
 def encode(texturec, source, target, kind):
+    if kind == 'sprite':   # (the size of the atlas, no mips, the best quality: pixels with hard edges)
+        command = [str(texturec), '-f', str(source), '-o', str(target), '-t', FORMAT, '-q', 'highest']
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0 or not target.exists():
+            raise RuntimeError(f'texturec failed on {source}: {result.stdout}{result.stderr}')
+        return
     # Lightmap atlases keep their size: halving them leaves the margin around each object's square under a texel
     size = LIGHTMAP_MAX_SIZE if kind == 'lightmap' else MAX_SIZE
     command = [str(texturec), '-f', str(source), '-o', str(target), '-t', FORMAT, '-m', '--max', str(size)]
@@ -77,11 +87,16 @@ def tiny(path, limit=64):
     return 0 < width <= limit and 0 < height <= limit
 
 
-def compress_textures(stage, cache, texturec):
-    """Replaces every PNG/TGA under stage by its KTX. Returns (count, bytes before, bytes after)."""
+def compress_textures(stage, cache, texturec, sprite_dirs=()):
+    """Replaces every PNG/TGA under stage by its KTX. 'sprite_dirs': folders of stage (like 'Assets/mygame/sprites') whose textures
+    are a 2D game's. Returns (count, bytes before, bytes after)."""
     stage, cache = Path(stage), Path(cache)
     cache.mkdir(parents=True, exist_ok=True)
     kinds = texture_kinds(stage)
+    for folder in sprite_dirs:
+        for file in (stage / folder).rglob('*'):
+            if file.is_file() and file.suffix.lower() in SOURCES:
+                kinds.setdefault(file.resolve(), 'sprite')
     # The interface's images stay PNG: RmlUi decodes them itself and knows nothing of the .ktx copies (any folder named
     # ui: Assets/ui, a game's own Assets/<game>/ui, a pack's Assets/<game>/<pack>/ui with the shop's weapon pictures)
     sources = [f for f in stage.rglob('*') if f.is_file() and f.suffix.lower() in SOURCES

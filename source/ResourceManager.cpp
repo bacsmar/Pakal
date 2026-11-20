@@ -1,12 +1,42 @@
 #include "ResourceManager.h"
 #include "DirectorySourceImpl.h"
 #include "SingletonHolder.h"
+#include "FileWatcher.h"
 
 
 #include <algorithm>
 #include <memory>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
+#include <cstdlib>
+
+namespace
+{
+	// PAKAL_LOAD_LOG=1: how long each file a mounted source opens takes (a zip's extracting it, the APK's reading it), to see a
+	// load's hitches
+	bool load_log()
+	{
+		static const bool on = std::getenv("PAKAL_LOAD_LOG") != nullptr;
+		return on;
+	}
+
+	Pakal::SharedPtr<std::istream> timed_open(Pakal::ISource& source, const Pakal::Path& path)
+	{
+		if (!load_log()) return source.open_resource(path);
+		const auto start = std::chrono::steady_clock::now();
+		auto stream = source.open_resource(path);
+		if (stream)
+		{
+			const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+			stream->seekg(0, std::ios::end);
+			const auto size = static_cast<long long>(stream->tellg());
+			stream->seekg(0, std::ios::beg);
+			LOG_INFO("[Load] %.2f ms %lld bytes %s", ms, size, path.c_str());
+		}
+		return stream;
+	}
+}
 
 namespace Pakal
 {
@@ -32,8 +62,21 @@ namespace Pakal
 		}
 	}
 
+	ResourceManager::ResourceManager() = default;
+
+	ResourceManager::~ResourceManager()
+	{
+		// (the engine's terminate() stopped the worker already: a thread joined while a module unloads can hang)
+		if (m_watcher) m_watcher->stop();
+	}
+
 	void ResourceManager::terminate()
 	{
+		{
+			// the watches go with the engine that made them (their callbacks hold its objects)
+			std::lock_guard<std::mutex> guard(m_watcher_mutex);
+			m_watcher.reset();
+		}
 		forget_known();
 		m_sources.clear();
 		m_factories.clear();
@@ -93,6 +136,9 @@ namespace Pakal
 			std::find_if(m_sources.begin(), 
 						 m_sources.end(), 
 						[source](const SharedPtr<ISource>& i) { return i.get() == source; });
+
+		if (sourcePos == m_sources.end())
+			return;	// not mounted (erasing end() was undefined)
 
 		m_sources.erase(sourcePos);
 		forget_known();
@@ -160,7 +206,7 @@ namespace Pakal
 			m_sources_mutex.unlock();
 
 			for (auto& source : tempSources)
-				if ( (stream = source->open_resource(resourcePath)) )
+				if ( (stream = timed_open(*source, resourcePath)) )
 					break;
 		}
 
@@ -212,7 +258,7 @@ namespace Pakal
 			}
 			for (auto& source : sources)
 			{
-				if ((stream = source->open_resource(Path(path)))) break;
+				if ((stream = timed_open(*source, Path(path)))) break;
 			}
 		}
 		return stream;
@@ -256,6 +302,75 @@ namespace Pakal
 		return bytes ? std::string(bytes->begin(), bytes->end()) : std::string();
 	}
 
+	bool ResourceManager::reload_enabled() const
+	{
+#if PAKAL_FILE_RELOAD
+		static const bool on = []()
+		{
+			const char* reload = std::getenv("PAKAL_RELOAD");
+			const char* release = std::getenv("PAKAL_RELEASE");
+			return !(reload && std::string(reload) == "0") && !(release && std::string(release) == "1");
+		}();
+		return on;
+#else
+		return false;
+#endif
+	}
+
+	std::string ResourceManager::watch_target(const std::string& path) const
+	{
+		namespace fs = std::filesystem;
+		std::error_code error;
+		const fs::path requested(path);
+		if (fs::is_regular_file(requested, error)) return requested.string();
+		if (requested.is_absolute() || m_root_path.empty() || m_root_path == ".") return requested.string();
+		// under the root folder: where it is on the desktop, and where a copy is read first on Android (over the APK's)
+		return (fs::path(m_root_path) / requested).string();
+	}
+
+	unsigned ResourceManager::watch(const std::string& path, WatchCallback callback)
+	{
+		if (!reload_enabled() || path.empty() || !callback) return 0;
+		const std::string target = watch_target(path);
+		std::lock_guard<std::mutex> guard(m_watcher_mutex);
+		if (!m_watcher) m_watcher = std::make_unique<FileWatcher>();
+		LOG_DEBUG("[ResourceManager] watching %s", target.c_str());
+		return m_watcher->watch(target, [this, callback](const std::string& name)
+		{
+			forget(name);
+			LOG_INFO("[ResourceManager] %s changed: reloading what it feeds", name.c_str());
+			callback(name);
+		}, path);
+	}
+
+	void ResourceManager::unwatch(unsigned id)
+	{
+		if (!id) return;
+		std::lock_guard<std::mutex> guard(m_watcher_mutex);
+		if (m_watcher) m_watcher->unwatch(id);
+	}
+
+	void ResourceManager::dispatch_changes()
+	{
+		FileWatcher* watcher = nullptr;
+		{
+			std::lock_guard<std::mutex> guard(m_watcher_mutex);
+			watcher = m_watcher.get();
+		}
+		// (outside the lock: a callback watches and unwatches; only terminate() on this same thread destroys it)
+		if (watcher) watcher->dispatch();
+	}
+
+	void ResourceManager::forget(const std::string& path)
+	{
+		const std::string key = std::filesystem::path(path).lexically_normal().generic_string();
+		{
+			mutex_guard guard(m_bytes_mutex);
+			m_bytes.erase(key);
+		}
+		forget_known();
+	}
+
 	void ResourceManager::forget_known()
 	{
 		mutex_guard guard(m_known_mutex);
@@ -275,6 +390,20 @@ namespace Pakal
 		mutex_guard guard(m_known_mutex);
 		m_known[key] = there;
 		return there;
+	}
+
+	bool ResourceManager::map_resource(const std::string& path, const void*& data, size_t& size)
+	{
+		std::vector<SharedPtr<ISource>> sources;
+		{
+			mutex_guard guard(m_sources_mutex);
+			sources = m_sources;
+		}
+		for (auto& source : sources)
+		{
+			if (source->map_resource(Path(path), data, size)) return true;
+		}
+		return false;
 	}
 
 	bool ResourceManager::find_anywhere(const std::string& path)

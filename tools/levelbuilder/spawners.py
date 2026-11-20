@@ -350,6 +350,8 @@ def run(spec, net, regions, catalog, models_for, occupancy, seed, mesh=None, dec
         m = catalog['models'][asset]
         yaw = facing_yaw((x, y), regions, spec.get('yaw', 'random'), angle, rng)
         scale = round(rng.uniform(*spec.get('scale', [1.0, 1.0])), 3)
+        if m.get('scale'):
+            scale = round(m['scale'] * rng.uniform(0.9, 1.1), 3)   # the theme's size for this model, a little different each
         if spec.get('occupy') == 'trunk':
             foot = Point(x, y).buffer(spec.get('trunk', 0.5) * scale)
         else:

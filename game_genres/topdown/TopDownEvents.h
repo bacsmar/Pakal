@@ -10,7 +10,7 @@
 #pragma once
 #include "topdown/Damage.h"
 
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 #include <string>
 
@@ -20,14 +20,14 @@ namespace Pakal::TopDown
 	struct SoundEvent
 	{
 		std::string name;
-		b2Vec2 at;
+		Pakal::Vec2 at;
 	};
 
 	// A shot leaves the gun
 	struct ShotEvent
 	{
-		b2Vec2 muzzle;
-		b2Vec2 direction;
+		Pakal::Vec2 muzzle;
+		Pakal::Vec2 direction;
 	};
 
 	// What a bullet landed on
@@ -40,15 +40,15 @@ namespace Pakal::TopDown
 
 	struct ImpactEvent
 	{
-		b2Vec2 at;
-		b2Vec2 direction;
+		Pakal::Vec2 at;
+		Pakal::Vec2 direction;
 		ImpactKind kind;
 	};
 
 	// An explosion: the level draws the blast and shakes the camera this hard
 	struct ExplosionEvent
 	{
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		float radius;
 		float shake;
 	};
@@ -56,14 +56,14 @@ namespace Pakal::TopDown
 	// A blow all around a point (an ability of the RPG kit): the view shows a ring
 	struct AreaEvent
 	{
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		float radius;
 	};
 
 	// Something else shakes the camera
 	struct ShakeEvent
 	{
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		float power;
 	};
 
@@ -80,7 +80,7 @@ namespace Pakal::TopDown
 	struct ConsumableEvent
 	{
 		uintptr_t actor;
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		int id;
 		float seconds;          // how long it lasts (0: instant)
 		bool melee, firearm;
@@ -93,7 +93,7 @@ namespace Pakal::TopDown
 	struct PickupEvent
 	{
 		uintptr_t taker;
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		int pickupId;
 		std::string type;   // the pickup's type ("Money", "Token", ...)
 	};
@@ -102,7 +102,7 @@ namespace Pakal::TopDown
 	// "Break" when it breaks; 'size' is about how wide it is (meters)
 	struct PropEffectEvent
 	{
-		b2Vec2 at;
+		Pakal::Vec2 at;
 		std::string effect;
 		float size;
 	};

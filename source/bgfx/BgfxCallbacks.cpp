@@ -14,6 +14,8 @@
 #include <bx/error.h>
 
 #include <cstdarg>
+#include <utility>
+#include <vector>
 #include <cstdio>
 #include <cstdlib>
 
@@ -72,10 +74,25 @@ namespace Pakal
 	{
 	}
 
-	void BgfxCallbacks::screenShot(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch,
+	void BgfxCallbacks::screenShot(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch, bgfx::TextureFormat::Enum format,
 		const void* data, uint32_t size, bool yflip)
 	{
-		(void)size;
+		// a TGA holds blue, green, red, alpha: a renderer that hands red first has its channels swapped here
+		std::vector<uint8_t> swapped;
+		if (format == bgfx::TextureFormat::RGBA8)
+		{
+			swapped.assign(static_cast<const uint8_t*>(data), static_cast<const uint8_t*>(data) + size);
+			for (uint32_t y = 0; y < height; ++y)
+			{
+				uint8_t* row = swapped.data() + size_t(y) * pitch;
+				for (uint32_t x = 0; x < width; ++x) std::swap(row[x * 4], row[x * 4 + 2]);
+			}
+			data = swapped.data();
+		}
+		else if (format != bgfx::TextureFormat::BGRA8)
+		{
+			LOG_WARNING("[bgfx] Screenshot: format %d written as BGRA8", int(format));
+		}
 		bx::FileWriter writer;
 		bx::Error err;
 		if (!bx::open(&writer, filePath, false, &err))

@@ -31,8 +31,8 @@ int main()
     {
         Pakal::PhysicsWorld2D filters({0, 0});
         filters.add_static_polygon({{1,-2},{1.2f,-2},{1.2f,2},{1,2}}, 0x0008, 0x0002);
-        Pakal::CharacterController2D player(filters.native(), {0,-0.75f}, 0.2f, 0x0002);
-        Pakal::CharacterController2D enemy(filters.native(), {0,0.75f}, 0.2f, 0x0004);
+        Pakal::CharacterController2D player(filters, {0,-0.75f}, 0.2f, 0x0002);
+        Pakal::CharacterController2D enemy(filters, {0,0.75f}, 0.2f, 0x0004);
         for (int i = 0; i < 120; ++i) {
             player.set_move({1,0}, 2); enemy.set_move({1,0}, 2);
             player.update(); enemy.update(); filters.step(1.0f / 60.0f);

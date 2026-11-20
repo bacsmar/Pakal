@@ -8,14 +8,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "config.h"
+#include "Config.h"
 
-#if PAKAL_USE_IRRLICHT == 1
-	#include "irrlicht/IrrRendererInfo.h"
-	typedef Pakal::IrrRendererInfo BaseRenderInfo;
-#else
-	typedef class NullRenderInfo {} BaseRenderInfo;
-#endif
+typedef class NullRenderInfo {} BaseRenderInfo;
 
 namespace Pakal
 {

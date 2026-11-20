@@ -12,6 +12,31 @@ server: source/mcp/EngineTools, docs/PROFILING.md). Nothing but the standard lib
     pakal_device.py [--target T] ab <setting> <a> <b> [--seconds N] [--rounds R]   two values in turn, measured, compared
     pakal_device.py [--target T] writeback [--map <map.json>] [--settings <file.json>]   the tuned values into the game's data
 
+  QA hooks (docs/QA_HOOKS.md; the game needs PAKAL_MCP_TOKEN, and --token the same):
+    pakal_device.py key <name> [--action tap|down|up] [--hold MS]          a key (Escape, Return, Space, A, Left...)
+    pakal_device.py tap <x> <y> [--px] [--finger N] [--hold MS]            a finger's tap (x, y: 0..1 of the screen; --px: pixels)
+    pakal_device.py touch <down|move|up> <x> <y> [--px] [--finger N]       one touch event
+    pakal_device.py swipe <x> <y> <to_x> <to_y> [--px] [--ms MS]           a finger dragged
+    pakal_device.py click <x> <y> [--px] [--button left|right|middle]      the mouse
+    pakal_device.py pad <button> [--seat N] [--action ...] | pad --stick left|right <x> <y> [--ms MS]
+    pakal_device.py state                                                   the state stack (top first), the UI documents
+    pakal_device.py log [--lines N] [--filter TEXT] [--level warning] [--follow]
+    pakal_device.py timescale [<scale>]                                     0 stops the simulation, 1 normal, up to 4
+    pakal_device.py quit                                                    the game ends as when closed
+    pakal_device.py story <file.json> [--out DIR]                           a scripted smoke story (below)
+
+A story is {"name": ..., "steps": [...]}; each step one of:
+    {"wait": seconds}                         {"key": "Escape", "action": "tap", "hold_ms": 80}
+    {"tap": [x, y]} (0..1; "px": true for pixels, "finger": n)            {"click": [x, y]}
+    {"swipe": [x, y, to_x, to_y], "ms": 300}  {"pad": "A", "seat": 0} or {"stick": "left", "x": 1, "y": 0, "ms": 500}
+    {"timescale": 0}                          {"screenshot": "name"} (a TGA, and a PNG when Pillow is there, in --out)
+    {"expect_state": {"top": "ZombiesMenu", "status": "screen=missions", "document": "menu.rml", "timeout": 10}}
+        (each given field must match: top is the top state's name, status a text the top state's status line contains,
+         document a visible UI document whose source contains it; it is retried until the timeout, 5 s by default)
+    {"expect_log": {"filter": "mission", "timeout": 10}}   a log line containing it, after the story started
+    {"call": "<tool>", "arguments": {...}}    any tool                    {"quit": true}
+    "comment" in any step is printed. The story stops at the first step that fails and exits with 1.
+
 T is "local" (the default: a game on this computer) or a device's serial (adb). --port is the game's PAKAL_MCP_PORT (8765 by
 default; the same port is forwarded from the device), --token its PAKAL_MCP_TOKEN. adb is found from ADB, ANDROID_HOME or
 ANDROID_SDK_ROOT (platform-tools), else on the PATH.
@@ -363,6 +388,228 @@ def cmd_writeback(args):
         path.write_text(json.dumps(document, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
 
 
+# --- QA hooks (source/mcp/QaTools, docs/QA_HOOKS.md) ---
+
+def point(args, x, y):
+    """x, y as the tools take them: 0..1 of the screen, or pixels with --px."""
+    return {'x': float(x), 'y': float(y), 'normalized': not args.px}
+
+
+def cmd_key(args):
+    print(json.dumps(connect(args).call('input.key', {'key': args.name, 'action': args.action, 'hold_ms': args.hold})))
+
+
+def cmd_tap(args):
+    print(json.dumps(connect(args).call('input.touch', {'action': 'tap', 'finger': args.finger, 'hold_ms': args.hold,
+                                                        **point(args, args.x, args.y)})))
+
+
+def cmd_touch(args):
+    print(json.dumps(connect(args).call('input.touch', {'action': args.phase, 'finger': args.finger, **point(args, args.x, args.y)})))
+
+
+def cmd_swipe(args):
+    arguments = {'action': 'swipe', 'finger': args.finger, 'ms': args.ms, **point(args, args.x, args.y),
+                 'to_x': float(args.to_x), 'to_y': float(args.to_y)}
+    print(json.dumps(connect(args).call('input.touch', arguments)))
+
+
+def cmd_click(args):
+    print(json.dumps(connect(args).call('input.pointer', {'action': 'click', 'button': args.button, **point(args, args.x, args.y)})))
+
+
+def cmd_pad(args):
+    if args.stick:
+        if len(args.values) != 2:
+            sys.exit('pad --stick left|right <x> <y>')
+        arguments = {'seat': args.seat, 'stick': args.stick, 'x': float(args.values[0]), 'y': float(args.values[1]), 'ms': args.ms}
+    else:
+        if len(args.values) != 1:
+            sys.exit('pad <button> (A, B, X, Y, LB, RB, Back, Start, LS, RS, Left, Right, Up, Down, LT, RT)')
+        arguments = {'seat': args.seat, 'button': args.values[0], 'action': args.action, 'hold_ms': args.hold}
+    print(json.dumps(connect(args).call('input.pad', arguments)))
+
+
+def print_state(state):
+    for index, entry in enumerate(state.get('states', [])):
+        status = f'  ({entry["status"]})' if entry.get('status') else ''
+        print(f'{"top " if index == 0 else "    "}{entry["name"]}{status}')
+    if state.get('game'):
+        print(f'game: {state["game"]}')
+    for document in state.get('documents', []):
+        print(f'  ui {document["id"]:>4} {"shown " if document["visible"] else "hidden"} {document["source"]}'
+              + (f'  "{document["title"]}"' if document.get('title') else ''))
+    print(f'time scale {state.get("time_scale", 1)}' + ('' if state.get('fresh', True) else '  (the game did not update: last stack seen)'))
+
+
+def cmd_state(args):
+    state = connect(args).call('state')
+    if args.json:
+        print(json.dumps(state, indent=1))
+    else:
+        print_state(state)
+
+
+def cmd_log(args):
+    game = connect(args)
+    arguments = {'lines': args.lines, 'level': args.level}
+    if args.filter:
+        arguments['filter'] = args.filter
+    answer = game.call('log.tail', arguments)
+    for line in answer['lines']:
+        print(line)
+    while args.follow:
+        time.sleep(0.5)
+        answer = game.call('log.tail', {**arguments, 'lines': 2000, 'after': answer['last']})
+        for line in answer['lines']:
+            print(line, flush=True)
+
+
+def cmd_timescale(args):
+    print(json.dumps(connect(args).call('time.scale', {} if args.scale is None else {'scale': args.scale})))
+
+
+def cmd_quit(args):
+    print(json.dumps(connect(args).call('quit')))
+
+
+def tga_to_png(tga, png):
+    """A PNG beside the TGA when Pillow is installed (the TGA stays either way)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    Image.open(tga).convert('RGB').save(png)
+    return png
+
+
+def state_matches(state, expected):
+    """Every field given in 'expected' matches: top (the top state's name), status (text the top's status line has),
+    document (a visible UI document whose source contains it), states (names the stack has, any order)."""
+    states = state.get('states', [])
+    top = states[0] if states else {'name': '', 'status': ''}
+    if 'top' in expected and top['name'] != expected['top']:
+        return False
+    if 'status' in expected and expected['status'] not in top.get('status', ''):
+        return False
+    if 'document' in expected and not any(expected['document'] in d['source'] and d['visible'] for d in state.get('documents', [])):
+        return False
+    if 'states' in expected and not set(expected['states']) <= {s['name'] for s in states}:
+        return False
+    return True
+
+
+def run_story(game, story, out_dir, log=print):
+    """Plays a story's steps in order (the format is in this file's docstring). Returns (passed, results): each step's
+    result as a dict, the first failure ends it."""
+    steps = story.get('steps', [])
+    results = []
+    log_start = game.call('log.tail', {'lines': 1}).get('last', 0)
+    started = time.time()
+    shot_dir = Path(out_dir)
+    for number, step in enumerate(steps, 1):
+        label = step.get('comment', '')
+        began = time.time()
+        ok, detail = True, ''
+        try:
+            if 'wait' in step:
+                time.sleep(float(step['wait']))
+                detail = f'waited {step["wait"]} s'
+            elif 'key' in step:
+                game.call('input.key', {'key': step['key'], 'action': step.get('action', 'tap'), 'hold_ms': step.get('hold_ms', 80)})
+                detail = f'key {step["key"]} {step.get("action", "tap")}'
+            elif 'tap' in step:
+                x, y = step['tap']
+                game.call('input.touch', {'action': 'tap', 'x': x, 'y': y, 'normalized': not step.get('px', False),
+                                          'finger': step.get('finger', 0), 'hold_ms': step.get('hold_ms', 80)})
+                detail = f'tap {x}, {y}'
+            elif 'click' in step:
+                x, y = step['click']
+                game.call('input.pointer', {'action': 'click', 'x': x, 'y': y, 'normalized': not step.get('px', False),
+                                            'button': step.get('button', 'left')})
+                detail = f'click {x}, {y}'
+            elif 'swipe' in step:
+                x, y, to_x, to_y = step['swipe']
+                game.call('input.touch', {'action': 'swipe', 'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y,
+                                          'normalized': not step.get('px', False), 'ms': step.get('ms', 300)})
+                detail = f'swipe {x}, {y} -> {to_x}, {to_y}'
+            elif 'pad' in step:
+                game.call('input.pad', {'seat': step.get('seat', 0), 'button': step['pad'], 'action': step.get('action', 'tap'),
+                                        'hold_ms': step.get('hold_ms', 80)})
+                detail = f'pad {step["pad"]}'
+            elif 'stick' in step:
+                game.call('input.pad', {'seat': step.get('seat', 0), 'stick': step['stick'], 'x': step.get('x', 0.0),
+                                        'y': step.get('y', 0.0), 'ms': step.get('ms', 0)})
+                detail = f'stick {step["stick"]} {step.get("x", 0)}, {step.get("y", 0)}'
+            elif 'timescale' in step:
+                game.call('time.scale', {'scale': step['timescale']})
+                detail = f'time scale {step["timescale"]}'
+            elif 'screenshot' in step:
+                shot_dir.mkdir(parents=True, exist_ok=True)
+                tga = (shot_dir / f'{number:02d}_{step["screenshot"]}.tga').resolve()
+                if tga.exists():
+                    tga.unlink()
+                game.call('screenshot', {'path': str(tga)})
+                for _ in range(100):   # the file appears a frame or two later
+                    if tga.exists() and tga.stat().st_size > 0:
+                        break
+                    time.sleep(0.05)
+                time.sleep(0.2)
+                ok = tga.exists()
+                png = tga_to_png(tga, tga.with_suffix('.png')) if ok else None
+                detail = str(png or tga) if ok else f'{tga} was not written'
+            elif 'expect_state' in step:
+                expected = step['expect_state']
+                timeout = float(expected.get('timeout', 5))
+                state = game.call('state')
+                while not state_matches(state, expected) and time.time() - began < timeout:
+                    time.sleep(0.25)
+                    state = game.call('state')
+                ok = state_matches(state, expected)
+                states = state.get('states', [])
+                top = f'{states[0]["name"]} ({states[0].get("status", "")})' if states else 'no state'
+                detail = f'top {top}' + ('' if ok else f'; expected {json.dumps({k: v for k, v in expected.items() if k != "timeout"})}')
+            elif 'expect_log' in step:
+                expected = step['expect_log']
+                timeout = float(expected.get('timeout', 5))
+                lines = []
+                while True:
+                    lines = game.call('log.tail', {'lines': 5, 'filter': expected['filter'], 'after': log_start})['lines']
+                    if lines or time.time() - began >= timeout:
+                        break
+                    time.sleep(0.25)
+                ok = bool(lines)
+                detail = lines[-1] if ok else f'no log line with "{expected["filter"]}"'
+            elif 'call' in step:
+                answer = game.call(step['call'], step.get('arguments', {}))
+                detail = f'{step["call"]}: {json.dumps(answer)[:200]}'
+            elif step.get('quit'):
+                game.call('quit')
+                detail = 'quit'
+            else:
+                ok, detail = False, f'unknown step {json.dumps(step)}'
+        except (RuntimeError, OSError, ConnectionError, ValueError, KeyError) as error:
+            ok, detail = False, f'{type(error).__name__}: {error}'
+        results.append({'step': number, 'ok': ok, 'comment': label, 'detail': detail, 'seconds': round(time.time() - began, 2)})
+        log(f'{"ok  " if ok else "FAIL"} {number:2d} {label + ": " if label else ""}{detail}')
+        if not ok:
+            return False, results
+    log(f'story "{story.get("name", "")}": {len(steps)} steps passed in {time.time() - started:.1f} s')
+    return True, results
+
+
+def cmd_story(args):
+    story_path = Path(args.file)
+    story = json.loads(story_path.read_text(encoding='utf-8'))
+    out_dir = Path(args.out) if args.out else Path(tempfile.gettempdir()) / 'pakal_story' / story_path.stem
+    print(f'story "{story.get("name", story_path.stem)}" ({len(story.get("steps", []))} steps), captures in {out_dir}')
+    passed, results = run_story(connect(args), story, out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / 'results.json').write_text(json.dumps({'story': str(story_path), 'passed': passed, 'steps': results}, indent=1),
+                                          encoding='utf-8')
+    sys.exit(0 if passed else 1)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--target', default='local', help='"local" or a device serial')
@@ -395,9 +642,50 @@ def main():
     writeback = sub.add_parser('writeback')
     writeback.add_argument('--map')
     writeback.add_argument('--settings')
+    # the QA hooks
+    key = sub.add_parser('key')
+    key.add_argument('name')
+    key.add_argument('--action', default='tap', choices=['tap', 'down', 'up'])
+    key.add_argument('--hold', type=int, default=80)
+    for name in ('tap', 'touch', 'swipe', 'click'):
+        command = sub.add_parser(name)
+        if name == 'touch':
+            command.add_argument('phase', choices=['down', 'move', 'up'])
+        command.add_argument('x')
+        command.add_argument('y')
+        if name == 'swipe':
+            command.add_argument('to_x')
+            command.add_argument('to_y')
+            command.add_argument('--ms', type=int, default=300)
+        command.add_argument('--px', action='store_true', help='x, y in pixels (else 0..1 of the screen)')
+        command.add_argument('--finger', type=int, default=0)
+        command.add_argument('--hold', type=int, default=80)
+        command.add_argument('--button', default='left')
+    pad = sub.add_parser('pad')
+    pad.add_argument('values', nargs='+', help='<button>, or <x> <y> with --stick')
+    pad.add_argument('--seat', type=int, default=0)
+    pad.add_argument('--stick', choices=['left', 'right'])
+    pad.add_argument('--ms', type=int, default=0)
+    pad.add_argument('--action', default='tap', choices=['tap', 'down', 'up'])
+    pad.add_argument('--hold', type=int, default=80)
+    state = sub.add_parser('state')
+    state.add_argument('--json', action='store_true')
+    log = sub.add_parser('log')
+    log.add_argument('--lines', type=int, default=50)
+    log.add_argument('--filter')
+    log.add_argument('--level', default='debug', choices=['debug', 'info', 'warning', 'error'])
+    log.add_argument('--follow', action='store_true')
+    timescale = sub.add_parser('timescale')
+    timescale.add_argument('scale', type=float, nargs='?')
+    sub.add_parser('quit')
+    story = sub.add_parser('story')
+    story.add_argument('file')
+    story.add_argument('--out', help='where the captures and results.json go (a temporary folder by default)')
     args = parser.parse_args()
     commands = {'targets': cmd_targets, 'forward': cmd_forward, 'env': cmd_env, 'tools': cmd_tools, 'call': cmd_call,
-                'stats': cmd_stats, 'set': cmd_set, 'record': cmd_record, 'ab': cmd_ab, 'writeback': cmd_writeback}
+                'stats': cmd_stats, 'set': cmd_set, 'record': cmd_record, 'ab': cmd_ab, 'writeback': cmd_writeback,
+                'key': cmd_key, 'tap': cmd_tap, 'touch': cmd_touch, 'swipe': cmd_swipe, 'click': cmd_click, 'pad': cmd_pad,
+                'state': cmd_state, 'log': cmd_log, 'timescale': cmd_timescale, 'quit': cmd_quit, 'story': cmd_story}
     try:
         commands[args.command](args)
     except (OSError, ConnectionError) as error:

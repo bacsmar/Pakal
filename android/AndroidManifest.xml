@@ -15,6 +15,7 @@
         android:appCategory="game"
         android:isGame="true"
         android:allowBackup="false"
+        android:enableOnBackInvokedCallback="false"
         android:extractNativeLibs="false">
         <activity
             android:name="org.pakalengine.PakalActivity"

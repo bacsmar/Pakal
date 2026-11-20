@@ -55,6 +55,7 @@ namespace Pakal
 		virtual ~ComponentManager();
 		ComponentManager(){}
 	private:
+		void release_factories();
 		std::unordered_map<std::string, IComponentFactory*> m_factories;
 		std::unordered_set<AsyncComponent*> m_pendingDispose;
 	};

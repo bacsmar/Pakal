@@ -189,6 +189,11 @@ namespace Pakal
 		file_reader() = std::move(reader);
 	}
 
+	bool LevelDocument::has_file_reader()
+	{
+		return static_cast<bool>(file_reader());
+	}
+
 	bool LevelDocument::read_file(const std::string& path, std::string& text)
 	{
 		if (file_reader()) return file_reader()(path, text);

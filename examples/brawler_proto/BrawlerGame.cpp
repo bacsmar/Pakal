@@ -11,15 +11,16 @@
 #include "LogMgr.h"
 
 #include <algorithm>
+#include "math/Vec2.h"
 
 namespace Brawler
 {
 	namespace
 	{
-		b2Vec2 point(const nlohmann::json& value, const b2Vec2& fallback)
+		Pakal::Vec2 point(const nlohmann::json& value, const Pakal::Vec2& fallback)
 		{
 			if (!value.is_array() || value.size() < 2) return fallback;
-			return b2Vec2(value[0].get<float>(), value[1].get<float>());
+			return Pakal::Vec2(value[0].get<float>(), value[1].get<float>());
 		}
 
 		MoveRules read_move(const nlohmann::json& data)
@@ -37,12 +38,15 @@ namespace Brawler
 			move.high = data.value("high", move.high);
 			move.hitstun = data.value("hitstun", move.hitstun);
 			move.push = data.value("push", move.push);
+			move.guardstun = data.value("guardstun", move.guardstun);
+			move.guardPush = data.value("guardPush", move.guardPush);
 			move.launch = data.value("launch", move.launch);
 			move.lunge = data.value("lunge", move.lunge);
 			move.air = data.value("air", move.air);
 			move.jump = data.value("jump", move.jump);
 			move.evade = data.value("evade", move.evade);
 			move.next = data.value("next", move.next);
+			move.cancelInto = data.value("cancelInto", move.cancelInto);
 			return move;
 		}
 	}
@@ -66,6 +70,8 @@ namespace Brawler
 			for (const auto& move : moves) f.moves.push_back(read_move(move));
 			f.attackRange = fighter.value("attackRange", f.attackRange);
 			f.blockFactor = fighter.value("blockFactor", f.blockFactor);
+			f.guardStunShare = fighter.value("guardStunShare", f.guardStunShare);
+			f.guardPushShare = fighter.value("guardPushShare", f.guardPushShare);
 			f.waitMin = fighter.value("waitMin", f.waitMin);
 			f.waitMax = fighter.value("waitMax", f.waitMax);
 			f.attacks = fighter.value("attacks", std::vector<std::string>());
@@ -77,7 +83,7 @@ namespace Brawler
 		const nlohmann::json enemies = data.value("enemies", nlohmann::json::array());
 		for (const auto& enemy : enemies)
 		{
-			rules.enemies.push_back({ enemy.value("type", std::string()), point(enemy.value("at", nlohmann::json()), b2Vec2(0.0f, 0.0f)) });
+			rules.enemies.push_back({ enemy.value("type", std::string()), point(enemy.value("at", nlohmann::json()), Pakal::Vec2(0.0f, 0.0f)) });
 		}
 		const nlohmann::json buttons = data.value("buttons", nlohmann::json::object());
 		for (const auto& [button, moves] : buttons.items())
@@ -106,10 +112,10 @@ namespace Brawler
 	{
 		// the arena's walls, a meter thick, around its floor
 		const float w = m_rules.halfWidth, d = m_rules.halfDepth;
-		m_world.add_static_box(b2Vec2(0.0f, d + 0.5f), b2Vec2(w + 1.0f, 0.5f), layers.wall);
-		m_world.add_static_box(b2Vec2(0.0f, -d - 0.5f), b2Vec2(w + 1.0f, 0.5f), layers.wall);
-		m_world.add_static_box(b2Vec2(w + 0.5f, 0.0f), b2Vec2(0.5f, d + 1.0f), layers.wall);
-		m_world.add_static_box(b2Vec2(-w - 0.5f, 0.0f), b2Vec2(0.5f, d + 1.0f), layers.wall);
+		m_world.add_static_box(Pakal::Vec2(0.0f, d + 0.5f), Pakal::Vec2(w + 1.0f, 0.5f), layers.wall);
+		m_world.add_static_box(Pakal::Vec2(0.0f, -d - 0.5f), Pakal::Vec2(w + 1.0f, 0.5f), layers.wall);
+		m_world.add_static_box(Pakal::Vec2(w + 0.5f, 0.0f), Pakal::Vec2(0.5f, d + 1.0f), layers.wall);
+		m_world.add_static_box(Pakal::Vec2(-w - 0.5f, 0.0f), Pakal::Vec2(0.5f, d + 1.0f), layers.wall);
 		add_player(add_fighter(m_rules.player, m_rules.playerAt, true));
 		for (const auto& enemy : m_rules.enemies)
 		{
@@ -118,7 +124,7 @@ namespace Brawler
 		join_added();
 	}
 
-	Actor& BrawlerGame::add_fighter(const std::string& type, const b2Vec2& at, bool player)
+	Actor& BrawlerGame::add_fighter(const std::string& type, const Pakal::Vec2& at, bool player)
 	{
 		auto found = m_rules.fighters.find(type);
 		static const FighterRules none;
@@ -131,12 +137,14 @@ namespace Brawler
 		actor.add<HealthComponent>(rules.health, 0.0f);
 		HeightComponent& height = actor.add<HeightComponent>();
 		height.tall = rules.tall;
-		const b2Vec2 facing(player ? 1.0f : -1.0f, 0.0f);   // the hero looks toward the enemies, they toward it
+		const Pakal::Vec2 facing(player ? 1.0f : -1.0f, 0.0f);   // the hero looks toward the enemies, they toward it
 		if (player) actor.add<PlayerControlComponent>().face(facing);
 		else actor.add<BrainComponent>(rules);
 		FighterComponent& fighter = actor.add<FighterComponent>(rules.moves, rules.runSpeed);
 		fighter.face(facing);
 		fighter.blockFactor = rules.blockFactor;
+		fighter.guardStunShare = rules.guardStunShare;
+		fighter.guardPushShare = rules.guardPushShare;
 		actor.add<CharacterBodyComponent>(*this, at, rules.radius);
 		return actor;
 	}
@@ -226,14 +234,14 @@ namespace Brawler
 		const Actor* target = game.nearest_player(actor().position, true);
 		if (!target)
 		{
-			body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+			body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 			return;
 		}
 		// to one side of the target, the side it is on, facing it: the way fighters stand in a brawler. The other side if
 		// one of its own is nearer to that spot and nobody stands at the other.
 		float side = actor().position.x < target->position.x ? -1.0f : 1.0f;
-		auto spot_of = [&](float which) { return target->position + b2Vec2(which * m_rules.attackRange, 0.0f); };
-		auto someone = [&](const b2Vec2& spot, float within)
+		auto spot_of = [&](float which) { return target->position + Pakal::Vec2(which * m_rules.attackRange, 0.0f); };
+		auto someone = [&](const Pakal::Vec2& spot, float within)
 		{
 			for (const auto& other : game.actors())
 			{
@@ -246,15 +254,15 @@ namespace Brawler
 			return false;
 		};
 		if (someone(spot_of(side), (actor().position - spot_of(side)).Length()) && !someone(spot_of(-side), 0.8f)) side = -side;
-		const b2Vec2 spot = spot_of(side);
+		const Pakal::Vec2 spot = spot_of(side);
 		// around the target, not through it: by a point beside it first
-		b2Vec2 goal = spot;
+		Pakal::Vec2 goal = spot;
 		const bool across = (actor().position.x - target->position.x) * side < 0.0f;
 		if (across && std::fabs(actor().position.y - target->position.y) < 1.0f)
 		{
-			goal = b2Vec2(target->position.x, target->position.y + (actor().position.y >= target->position.y ? 1.3f : -1.3f));
+			goal = Pakal::Vec2(target->position.x, target->position.y + (actor().position.y >= target->position.y ? 1.3f : -1.3f));
 		}
-		b2Vec2 way = goal - actor().position;
+		Pakal::Vec2 way = goal - actor().position;
 		way.Normalize();
 		const float distance = (spot - actor().position).Length();
 		fighter->face(target->position - actor().position);
@@ -264,7 +272,7 @@ namespace Brawler
 			body->move(way, m_rules.runSpeed);
 			return;
 		}
-		body->move(b2Vec2(0.0f, 0.0f), 0.0f);
+		body->move(Pakal::Vec2(0.0f, 0.0f), 0.0f);
 		if (m_wait <= 0.0f && !m_rules.attacks.empty())
 		{
 			Pakal::RandomStream& random = game.random("sim");
@@ -296,17 +304,17 @@ namespace Brawler
 			return command;
 		}
 		// in line with it, then close: then jab, and a heavy hit now and then
-		b2Vec2 to = nearest->position - hero->position;
+		Pakal::Vec2 to = nearest->position - hero->position;
 		const bool inLine = std::fabs(to.y) < 0.35f;
 		const bool close = std::fabs(to.x) < 1.1f;
 		if (!inLine || !close)
 		{
-			b2Vec2 move(close ? 0.0f : to.x, inLine ? 0.0f : to.y);
+			Pakal::Vec2 move(close ? 0.0f : to.x, inLine ? 0.0f : to.y);
 			if (move.Normalize() > 1.0e-4f) command.move = move;
 		}
 		else
 		{
-			command.aimDirection = b2Vec2(to.x > 0.0f ? 1.0f : -1.0f, 0.0f);   // turned to it, standing
+			command.aimDirection = Pakal::Vec2(to.x > 0.0f ? 1.0f : -1.0f, 0.0f);   // turned to it, standing
 			const FighterComponent* fighter = hero->get<FighterComponent>();
 			if (fighter && !fighter->busy() && !fighter->stunned())
 			{

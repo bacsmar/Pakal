@@ -8,11 +8,11 @@
 #pragma once
 #include "PakalMath.h"
 
-#include <box2d/b2_math.h>
+#include "math/Vec2.h"
 
 namespace Pakal::TopDown
 {
-	inline tmath::vector3df floor_point(const b2Vec2& p, float height = 0.0f)
+	inline tmath::vector3df floor_point(const Pakal::Vec2& p, float height = 0.0f)
 	{
 		return tmath::vector3df(p.x, height, -p.y);
 	}
