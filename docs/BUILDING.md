@@ -193,6 +193,19 @@ On a Linux desktop with X11 or XWayland, `tools/run_linux.sh [module.so]` runs a
 software OpenGL (ContraGame by default). It forwards the X authority and the PulseAudio socket when they exist, and the
 `PAKAL_*` and `ZOMBIES_*` variables you set.
 
+### Data races (ThreadSanitizer)
+
+The `linux-tsan` preset builds the engine's core and `CoreTests` with `-fsanitize=thread`; CI runs it on every pull
+request, and any data race fails it:
+
+```bash
+cmake --preset linux-tsan && cmake --build --preset linux-tsan
+cd build-tsan && TSAN_OPTIONS=halt_on_error=1 ctest --output-on-failure
+```
+
+On kernels that randomize addresses with more bits than TSan expects ("unexpected memory mapping"), run
+`sudo sysctl -w vm.mmap_rnd_bits=28` first.
+
 ### Notes
 
 - bgfx owns the graphics context; the SFML backend only supplies the window and its events.
