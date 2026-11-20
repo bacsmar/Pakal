@@ -38,8 +38,16 @@ def _facing(dx, dy):
     return math.degrees(math.atan2(dy, dx)) + 90.0
 
 
+# what a closure's wall stops at (it ends against them) rather than clears away
+SOLID_ROLES = {'building', 'shop', 'apartment', 'house', 'shopfront', 'background_building', 'landmark', 'wall', 'store',
+               'gas_station', 'kiosk', 'seawall', 'pier', 'statue'}
+REACH = 12.0       # how far past the curb a closure's wall may run looking for a building to end against
+
+
 def _occupied(scene, catalog, skip=()):
-    shapes = []
+    """hits(poly, solid_only=False): whether something on the floor is there (solid_only: a building, a wall); clear(poly):
+    takes away the loose things there (cars, cones, bins, plants, posts), so a closure's wall is whole."""
+    shapes, owners = [], []
     for e in scene.data['entities']:
         if e.get('id') in skip or e['asset'] not in catalog['models']:
             continue
@@ -49,11 +57,29 @@ def _occupied(scene, catalog, skip=()):
         foot = parcels.footprint_poly(m, e['x'], e['y'], e['yaw'], e.get('scale', 1.0))
         if foot.area < 400.0:   # not the sky's cloud rings or the backdrop: nothing on the floor is that big
             shapes.append(foot)
+            owners.append(e)
     tree = STRtree(shapes) if shapes else None
 
-    def hits(poly):
-        return bool(tree is not None and len(tree.query(poly, predicate='intersects')))
-    return hits
+    def solid(e, foot):
+        return e.get('role') in SOLID_ROLES or foot.area >= 30.0
+
+    def found(poly):
+        if tree is None:
+            return []
+        return [i for i in tree.query(poly, predicate='intersects') if owners[i] is not None]
+
+    def hits(poly, solid_only=False):
+        return any(solid(owners[i], shapes[i]) or not solid_only for i in found(poly))
+
+    def clear(poly):
+        gone = {owners[i]['id'] for i in found(poly) if not solid(owners[i], shapes[i])}
+        for i in found(poly):
+            if owners[i]['id'] in gone:
+                owners[i] = None
+        if gone:
+            scene.remove(lambda e: e.get('id') in gone)
+        return len(gone)
+    return hits, clear
 
 
 def _street_end(network, x, y, center=(0.0, 0.0)):
@@ -87,15 +113,22 @@ def close_streets(scene, catalog, models_for, seed=1):
     jerseys, blocks, signs, cones = (models_for(catalog, r) for r in ('jersey', 'roadblock', 'stop_sign', 'cone'))
     if not jerseys:
         return []
-    hits = _occupied(scene, catalog)
+    hits, clear = _occupied(scene, catalog)
     added = []
 
-    def put(asset, x, y, yaw, role):
+    def put(asset, x, y, yaw, role, wall=False):
+        """A wall's piece clears the loose things in its way (a parked car would leave a gap) and stops only at a building;
+        the rest (road block, cones, signs) goes where nothing is."""
         m = catalog['models'][asset]
-        foot = parcels.footprint_poly(m, x, y, yaw)
-        if hits(foot.buffer(0.05)):
-            return
+        foot = parcels.footprint_poly(m, x, y, yaw).buffer(0.05)
+        if wall:
+            if hits(foot, solid_only=True):
+                return False
+            clear(foot)
+        elif hits(foot):
+            return False
         added.append(scene.add(asset, round(x, 3), round(y, 3), round(yaw % 360.0, 2), 1.0, zone=None, role=role))
+        return True
 
     bounds = scene.data.get('bounds', [-1.0, -1.0, 1.0, 1.0])
     middle = ((bounds[0] + bounds[2]) / 2.0, (bounds[1] + bounds[3]) / 2.0)
@@ -122,12 +155,17 @@ def close_streets(scene, catalog, models_for, seed=1):
         spread = max(abs((p[0] - gx) * ax + (p[1] - gy) * ay) for p in group)
         half = width / 2.0 + SIDEWALK + spread
         # end to end on one straight line, all at the same angle (as a mission's barricades: a jitter of a degree or two and
-        # the second model's other length read as a wall put up badly)
+        # the second model's other length read as a wall put up badly), from the middle out to each side: across the street
+        # and its sidewalks at least, on until a building (up to REACH more) so nothing walks round its end
         step = max(length_of(catalog['models'][j]) for j in jerseys) + GAP
-        count = max(1, math.ceil(2.0 * half / step))
-        for i in range(count):
-            k = (i - (count - 1) / 2.0) * step
-            put(jerseys[i % len(jerseys)], cx + ax * k, cy + ay * k, _yaw_along(ax, ay), 'barrier')
+        put(jerseys[0], cx, cy, _yaw_along(ax, ay), 'barrier', wall=True)
+        for side in (-1, 1):
+            i = 1
+            while i * step <= half + REACH:
+                k = side * i * step
+                if not put(jerseys[i % len(jerseys)], cx + ax * k, cy + ay * k, _yaw_along(ax, ay), 'barrier', wall=True):
+                    break
+                i += 1
         # in front of them, on the town's side: the road block and two cones; a stop sign at each curb
         if blocks:
             put(blocks[0], cx + dx * 1.3, cy + dy * 1.3, _facing(dx, dy), 'barrier')
@@ -158,7 +196,7 @@ def line_up(scene, catalog, spawner='setpiece:barricade', reach=9.0):
     for group in groups:
         near = [e for e in scene.data['entities'] if e.get('spawner') == spawner and e.get('role') == 'cone'
                 and any(math.hypot(e['x'] - o['x'], e['y'] - o['y']) < reach for o in group)]
-        hits = _occupied(scene, catalog, skip={e['id'] for e in group} | {e['id'] for e in near})
+        hits, _ = _occupied(scene, catalog, skip={e['id'] for e in group} | {e['id'] for e in near})
         placed = []
         sx = sum(math.cos(math.radians(e['yaw'])) for e in group)
         sy = sum(math.sin(math.radians(e['yaw'])) for e in group)

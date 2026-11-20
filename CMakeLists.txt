@@ -39,6 +39,10 @@ if(PAKAL_BUILD_CORE_ONLY)
     return()
 endif()
 
+# Our fixes to bgfx: applied to the submodule here; cmake/BgfxBuild.cmake builds the desktop's libraries again with them
+set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxPatches.cmake)
+
 # Include directories
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/source)
@@ -48,7 +52,7 @@ include_directories(${CMAKE_SOURCE_DIR}/external/bimg/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/bgfx/examples/common)
 
 # Add source files
-file(GLOB_RECURSE PAKAL_SOURCES
+file(GLOB_RECURSE PAKAL_SOURCES FOLLOW_SYMLINKS
     "${CMAKE_SOURCE_DIR}/source/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/*.h"
     "${CMAKE_SOURCE_DIR}/source/components/*.cpp"
@@ -149,6 +153,15 @@ endif()
 # Remove this once source/persist is updated to a pugixml that matches vcpkg's.
 target_compile_definitions(Pakal PRIVATE pugi=pugi_pakal p2t=p2t_pakal)
 
+# stb_vorbis (vcpkg's stb; Linux: libstb-dev's stb_vorbis.h in /usr/include/stb, the same file): the music's OGG decoder
+# (source/MusicMixer.cpp; without it the music is silent)
+find_path(PAKAL_STB_DIR NAMES stb_vorbis.c stb_vorbis.h PATH_SUFFIXES stb)
+if(PAKAL_STB_DIR)
+    target_include_directories(Pakal PRIVATE ${PAKAL_STB_DIR})
+else()
+    message(WARNING "stb_vorbis.c not found (vcpkg's stb): the game plays without music")
+endif()
+
 # SFML
 if(WIN32)
     # vcpkg provides SFML 2.6. The code uses the SFML 2 event API (pollEvent + sf::Event::Closed),
@@ -181,6 +194,8 @@ endif()
 
 # bgfx library (prebuilt from the submodule's own build tools; we link the libraries)
 set(BGFX_DIR ${CMAKE_SOURCE_DIR}/external/bgfx)
+# Built from the submodules the first time CMake configures (cmake/BgfxBuild.cmake), our patches applied
+include(${CMAKE_SOURCE_DIR}/cmake/BgfxBuild.cmake)
 
 if(WIN32)
     # Built with: genie vs2022 --with-dynamic-runtime (external/bgfx), then MSBuild
@@ -196,7 +211,7 @@ if(WIN32)
     )
     set(BGFX_SYSTEM_LIBS "")
 else()
-    # Built via makefile in Dockerfile
+    # Built by cmake/BgfxBuild.cmake (make linux-gcc-release64)
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/linux64_gcc/bin)
     set(BGFX_LIBS
         ${BGFX_BUILD_DIR}/libbgfxRelease.a
@@ -442,7 +457,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     add_executable(PakalMeshViewer ${CMAKE_SOURCE_DIR}/examples/mesh_viewer/main.cpp)
     target_link_libraries(PakalMeshViewer Pakal)
     target_include_directories(PakalMeshViewer PRIVATE ${CMAKE_SOURCE_DIR}/source)
-    if(WIN32)
+    if(TARGET PakalShaders)
         add_dependencies(PakalMeshViewer PakalShaders)
     endif()
 endif()
@@ -718,6 +733,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     add_executable(AudioTests ${CMAKE_SOURCE_DIR}/tests/AudioTests.cpp)
     target_link_libraries(AudioTests Pakal)
     target_include_directories(AudioTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
+    target_compile_definitions(AudioTests PRIVATE PAKAL_TEST_FIXTURES="${CMAKE_SOURCE_DIR}/tests/fixtures")
     add_test(NAME AudioTests COMMAND AudioTests)
 endif()
 

@@ -85,11 +85,17 @@ namespace Pakal
 		// otherwise (a phone's settings, PAKAL_RENDER_SCALE).
 		uint32_t m_auto_render_height = 0;
 		float m_pending_render_scale = 0.0f; // set_render_scale, for the next frame (0: none)
+		unsigned m_ao_divisor = 2, m_ao_taps = 0;
+		float m_ao_boost = 1.0f;
 		struct Governor
 		{
 			bool enabled = false;
 			unsigned maxFps = 60, cap = 60;
 			std::vector<unsigned> steps = { 60, 45, 30 };   // the frame caps it steps through, highest first (set_governor_steps)
+			// the thermal rule (set_governor_thermal): a status from stepDown on counts as too slow; from loadedStepDown on only
+			// while the frame's work takes more than 'load' of the frame's time (a phone with room to spare may be warm)
+			int thermalStepDown = 3, thermalLoadedStepDown = 2;
+			float thermalLoad = 0.7f;
 			float baseScale = 1.0f;          // the render scale it may go back up to
 			int slow = 0, spare = 0;         // seconds in a row too slow / with room to spare
 			int thermal = -1;                // the system's thermal status (Android 11+), -1 unknown
@@ -468,6 +474,10 @@ namespace Pakal
 		bool get_governor() const { return m_governor.enabled; }
 		// The frame caps it steps through (any order; those above its starting cap are left out). A game sets them from its data
 		void set_governor_steps(std::vector<unsigned> steps);
+		void set_governor_thermal(int stepDown, int loadedStepDown, float load);
+		// The screen-space occlusion's cost: drawn 1/divisor of the picture's size (2: half, 4: a quarter), with this many samples
+		// (0: from the post-process quality, 4 to 8), its strength times boost (a cheaper one shows less: more of it makes up)
+		void set_ao_tuning(unsigned divisor, unsigned taps, float boost);
 		// While held (a game's camera pan: a wide shot of the whole town for a few seconds), its seconds count for nothing:
 		// a slow pan does not take the play down to 30. The seconds just after a load do not count either
 		void hold_governor(bool held) { m_governorHeld = held; }

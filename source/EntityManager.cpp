@@ -3,7 +3,6 @@
 #include "AsyncEntity.h"
 #include "GenericEntity.h"
 #include "EntityDescriptor.h"
-#include "persist/XmlReader.h"
 #include "ResourceManager.h"
 #include "IEntityProvider.h"
 
@@ -44,19 +43,6 @@ void EntityManager::terminate()
 
 	m_entityFactories.clear();
 	m_descriptorFactories.clear();
-}
-
-void EntityManager::load_descriptors(const std::string& source)
-{
-	auto stream = ResourceMgr.open_read_resource(source);
-
-	XmlReader reader(this);
-	std::vector<EntityDescriptor*> descriptors;
-	reader.read(*stream, "Descriptors", descriptors);
-
-	clear_descriptors();
-	for(auto desc : descriptors)
-		m_descriptors.insert(std::make_pair(desc->get_name(), desc));
 }
 
 void EntityManager::clear_descriptors()

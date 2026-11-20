@@ -7,10 +7,10 @@ that keeps the game as it was gives the same traces as the ones stored here, lin
 
 ```powershell
 ctest --test-dir build-win64 --output-on-failure
-powershell -File tools\bot_check.ps1
+powershell -File examples\zombies_module\tools\bot_check.ps1
 ```
 
-`bot_check.ps1` plays every `<level>_seed<n>.trace` of this folder with the bot (`tools/bot_run.ps1`) and prints `SAME` or
+`bot_check.ps1` plays every `<level>_seed<n>.trace` of this folder with the bot (`examples/zombies_module/tools/bot_run.ps1`) and prints `SAME` or
 `DIFFERS` per case. A trace is the game's state line every 2 s of game time (time, kills, enemies alive, health, money,
 ammunition, the player's position, the spawn orders) up to the victory, the defeat or the failure.
 

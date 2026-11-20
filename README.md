@@ -1,55 +1,136 @@
 # Pakal Engine
 
-Pakal is a modular game engine written in C++20. Rendering goes through bgfx, 2D physics through Box2D, and games are
-loaded as modules (a DLL on Windows, linked statically on Android).
+Pakal is a C++20 game engine for 2D and 3D games on Windows, Android and Linux. It has a modern renderer built for real
+phones, two ways to write a game's simulation, ready-made pieces for whole genres, network play, and tools that people
+and AI coding agents can both drive.
 
-## Features
+Games are modules: a DLL that the player loads on the desktop, or one library on Android. A game uses the engine's
+abstractions (graphics, physics, input, sound, interface) and never the libraries behind them, so the backends can change
+under it.
 
-- **Rendering (bgfx)**: Direct3D 11 on Windows, OpenGL ES 3 on Android. Static and skinned glTF/Collada meshes (Assimp),
-  metal-rough PBR materials, sun shadows fitted to the camera with simplified shadow casters, a baked ambient light volume,
-  frustum culling, a post-process pass (color grading, tilt-shift blur, ambient occlusion, fades), and quality levels
-  (low, medium, high, ultra) that cap shadows, post-process samples and render resolution per device.
-- **Physics**: Box2D 2D world, character controllers, ray casts, nav grid and an enemy AI controller.
-- **Audio**: SFML on desktops, an AAudio mixer on Android.
-- **Input**: keyboard and mouse; on Android, two virtual sticks exposed as an axis device.
-- **Tooling**: an MCP server in the desktop player (screenshots, FPS, entities), and per-pass performance logs
-  (`PAKAL_FPS_LOG=1`).
+## What it can do
+
+### Rendering
+Rendering goes through [bgfx](https://github.com/bkaradzic/bgfx): Direct3D 11 on Windows, OpenGL ES 3 on Android, and
+OpenGL or Vulkan on Linux.
+
+- **Models:** static and skinned glTF and Collada models (Assimp), with metal-rough PBR materials. Repeated models are
+  drawn instanced.
+- **Light:**
+  - a sun with shadows fitted to the camera, with simplified shadow casters;
+  - baked lightmaps, and a baked ambient light volume;
+  - soft cloud shadows drifting over the ground.
+- **Post-processing:** screen-space ambient occlusion, bloom, FXAA, color grading, tilt-shift blur and fades.
+- **Materials:** water with depth colors, foam and caustics; wind in the foliage. Models can fade, dither, or be cut
+  away when they stand between the camera and the player.
+- **2D and effects:** sprites, a 2D camera, and particles, in the same frame as 3D.
+- **Upscaling:** FSR 1 for scenes drawn below the screen's resolution.
+
+### Built for phones
+- **Quality levels:** five of them (minimum to extreme) set shadow maps, post-process samples and the render height.
+  The engine picks one per device, and a game can redefine each level from its data, with no rebuild.
+- **The governor:** it watches the frame rate and steps the picture down when a phone cannot hold it, then back up when
+  it can. First it steps from 60 to 30 fps, then the render scale. It knows about heat as well.
+- **Android packaging:** textures are compressed to ASTC with mipmaps. One script builds the APK, or the App Bundle a
+  store takes.
+
+### Simulation and gameplay
+- **Two models for a game's world:**
+  - `SimWorld`: synchronous components in fixed steps, for deterministic games and servers.
+  - The asynchronous entity-component model: components with tasks, for presentation.
+- **Genres:** `game_genres/topdown` holds what top-down action games share: actors, the level runtime, damage, spawns,
+  pickups and doors, with its views kept apart from its simulation. It comes with kits:
+  - **shooter:** guns, reloads and fire cycles;
+  - **brawler:** moves as data, combos, guards, launches and dodges;
+  - **action RPG:** resources, levels and attributes, equipment, abilities and loot.
+- **Scripting:** Lua for missions and events.
+- **Physics and AI:** Box2D for 2D physics, character controllers, ray casts, a navigation grid, and an enemy controller.
+
+### Interface, sound and input
+- **Interface:** [RmlUi](https://github.com/mikke89/RmlUi). Screens are HTML/CSS-like documents bound to data models, so
+  text, colors and layout live in files, not in code.
+- **Sound:** sound effects positioned in 3D, and OGG music with crossfades and loops. SFML is used on the desktop and
+  AAudio on Android. The sound pauses with the app.
+- **Input:** keyboard, mouse and gamepads on the desktop; two virtual sticks and touches on phones.
+
+### Network play
+One server runs the simulation, and each player's game sends its input and draws what the server's snapshots show
+(ENet). Games on the same Wi-Fi find each other without typing an address. The server can run headless, with bots.
+
+### Tools
+- **Level editor:** gizmos, an inspector, prefabs, undo, and Play to test the level inside it.
+  Run it with `PakalPlayer <module> --edit <level>`.
+- **`pakal-level`:** edits a level from the command line, with the same operations and the same undo history as the
+  editor. A script or an agent can change a level step by step, even while the game runs.
+- **Level builder:** turns a short brief ("a small town with a park and two missions") into playable levels made from
+  free CC0 model packs. It has generators for streets, lots, parks and buildings, plus placement rules and missions.
+- **MCP server:** a running game, desktop or phone, can be measured and tuned by tools: frame rate, GPU timings per
+  pass, quality settings, a fixed camera, screenshots.
+- **Profiling and telemetry:** per-pass timings, records written to a file, and a profile of how each run went.
 
 ## Examples
 
-- **Zombies** (`examples/zombies_module`): a top-down shooter. Actors, components and a fixed-step simulation, Lua mission
-  scripts, enemy waves, weapons, consumables, destructible props. Its **Downtown** level is built from Quaternius's CC0 packs
-  (see [docs/ZOMBIES_DOWNTOWN.md](docs/ZOMBIES_DOWNTOWN.md)). Runs on Windows and Android.
-- `basic_example`, `engine_feature_lab`: small engine samples.
+| Example | What it shows |
+|---|---|
+| `examples/zombies_module` | A top-down shooter on the TopDown genre, with Lua missions, waves, weapons and destructible props. Its Downtown level is built from free packs. Windows and Android. |
+| `examples/brawler_proto` | A beat 'em up on the brawler kit. |
+| `examples/dungeon_proto` | A dungeon crawler on the action RPG kit, with network play and a headless server. |
+| `examples/engine_feature_lab` | 2D sprites, a camera and generated sounds, with no assets: the first program to run. |
+| `examples/mesh_viewer`, `examples/audio_demo`, `examples/basic_example` | Small samples of one part each. |
 
-The free asset packs are not stored in Git. Download them from Quaternius's site and run
-`python tools/fetch_free_assets.py` (see [docs/ASSETS.md](docs/ASSETS.md)). Some data the Zombies levels still use (game
-rules, sounds and shot effects) comes from a level converted from an original game, which is not free and not included.
+The 3D examples use free CC0 model packs that are not stored in Git: [docs/ASSETS.md](docs/ASSETS.md) says how to get
+them. Today their levels and shared models are built from a level converted from an older game, which is not free and not
+included, so they don't run from a fresh clone yet. A build of their models from the free packs alone is on the way.
+`engine_feature_lab`, `audio_demo` and `basic_example` run without any assets.
 
-## Quick start
+## How it is built
 
-```bash
-git clone https://github.com/bacsmar/Pakal.git
-cd Pakal
-git submodule update --init --recursive
+```mermaid
+flowchart LR
+  G[A game module] --> T[game_genres/topdown]
+  G --> E[Engine: Pakal]
+  T --> E
+  E --> R[bgfx]
+  E --> P[Box2D]
+  E --> U[RmlUi]
+  E --> S[SFML / AAudio]
+  E --> N[ENet]
 ```
 
-Windows (Visual Studio + vcpkg): `cmake --preset win64` then `cmake --build --preset win64-release`.
-Android: `python android/build_apk.py` (NDK, SDK and JDK paths in [docs/ANDROID.md](docs/ANDROID.md)).
-Details: [docs/BUILDING.md](docs/BUILDING.md).
+| Layer | Where | What it knows |
+|---|---|---|
+| Engine | `source/` | No game. Graphics, physics, sound, input, interface, resources, the simulation clock. |
+| Genres | `game_genres/` | What one kind of game shares: its simulation, plus its views kept apart. |
+| Games | `examples/` | Their own rules, data, scripts, menus and HUD. |
 
-## Documentation
-
-- [docs/README.md](docs/README.md) - index
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md), [SUBSYSTEMS.md](docs/SUBSYSTEMS.md), [BGFX_BACKEND.md](docs/BGFX_BACKEND.md) - the engine
-- [ZOMBIES_MODULE.md](docs/ZOMBIES_MODULE.md) - the Zombies example and its debug switches
-- [ANDROID.md](docs/ANDROID.md) - Android build and quality levels
-- [TOPDOWN_MODULE.md](docs/TOPDOWN_MODULE.md) - what top-down games share
-- [LEVEL_BUILDER.md](docs/LEVEL_BUILDER.md), [LEVEL_EDITOR.md](docs/LEVEL_EDITOR.md) - building and editing levels
-- [NETWORK.md](docs/NETWORK.md), [TELEMETRY.md](docs/TELEMETRY.md) - network play, run telemetry
+Dependencies only go down. A server, a bot or a test can link a genre's simulation without any graphics. More in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Platforms
 
-- Windows: Direct3D 11 (other bgfx renderers selectable with `PAKAL_BGFX_RENDERER`)
-- Android 8.0 or later, arm64: OpenGL ES 3
-- Linux: a development Dockerfile (Ubuntu 24.04) is provided; the Zombies example has not been verified there
+| Platform | Graphics | Status |
+|---|---|---|
+| Windows 10/11 | Direct3D 11 (others through `PAKAL_BGFX_RENDERER`) | Built and tested by CI |
+| Linux (Ubuntu 24.04) | OpenGL / Vulkan | Built and tested by CI |
+| Android 8.0+, arm64 | OpenGL ES 3 | Built with `android/build_apk.py` |
+
+## Get started
+
+[docs/QUICKSTART.md](docs/QUICKSTART.md) goes from an empty folder to the engine running. The full build guide is
+[docs/BUILDING.md](docs/BUILDING.md), and Android is in [docs/ANDROID.md](docs/ANDROID.md). Coding agents read
+[AGENTS.md](AGENTS.md).
+
+## Documentation
+
+[docs/README.md](docs/README.md) lists every page. The main ones:
+- **The engine:** [ARCHITECTURE.md](docs/ARCHITECTURE.md), [SUBSYSTEMS.md](docs/SUBSYSTEMS.md),
+  [BGFX_BACKEND.md](docs/BGFX_BACKEND.md).
+- **Genres and examples:** [TOPDOWN_MODULE.md](docs/TOPDOWN_MODULE.md), [ZOMBIES_MODULE.md](docs/ZOMBIES_MODULE.md).
+- **Levels:** [LEVEL_BUILDER.md](docs/LEVEL_BUILDER.md), [LEVEL_EDITOR.md](docs/LEVEL_EDITOR.md),
+  [EDITOR.md](docs/EDITOR.md).
+- **Platforms and performance:** [ANDROID.md](docs/ANDROID.md), [PROFILING.md](docs/PROFILING.md),
+  [NETWORK.md](docs/NETWORK.md), [TELEMETRY.md](docs/TELEMETRY.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE). The submodules and libraries keep their own licenses.

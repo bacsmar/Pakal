@@ -1,7 +1,8 @@
 # Zombies: Downtown level (new, additive level)
 
-Downtown is a level made with the Quaternius CC0 packs and the game's gameplay logic. It is opened with
-`run-zombies-downtown.bat`.
+Downtown is a level made with the Quaternius CC0 packs and the game's gameplay logic. It is built with
+`python tools/zombies_convert/build_downtown.py` and opened from `build-win64\bin` with
+`set ZOMBIES_LEVEL=Assets\zombies\downtown_survival_01\level.json` then `PakalPlayer.exe ZombiesModule.dll`.
 
 ## How it is put together
 

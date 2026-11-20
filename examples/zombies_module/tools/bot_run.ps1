@@ -5,7 +5,7 @@ param(
     [string]$Seed = "2026",
     [hashtable]$ExtraEnv = @{},    # more variables, e.g. @{ ZOMBIES_AUTOPLAY = "idle"; ZOMBIES_SCREENSHOT = "x.tga" }
     [float]$TimeScale = 1,         # game seconds per real second (ZOMBIES_TIMESCALE): the same game, sooner
-    [string]$Root = (Split-Path $PSScriptRoot -Parent)
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path
 )
 # Runs the Zombies bot on one level and waits for LEVEL COMPLETE, a failed mission or the timeout.
 # Prints VICTORY, DEFEAT (the player is down), FAILED, EXITED or TIMEOUT. The profile is a throwaway file, so the player's own is never touched.

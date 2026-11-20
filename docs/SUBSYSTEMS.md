@@ -59,6 +59,12 @@ simulation in fixed steps; the components run in order, once per step, on one th
 - `OSManager` handles windows and events. It can use SFML or native wrappers (Android) depending on defines.
 - `IInputManager` is obtained with `os_manager()->get_input_manager()` and is registered as a component provider.
 - `SoundManager` has a configurable backend (SFML or another implementation).
+- Music: `SoundManager::play_music(path, MusicSettings)`, `stop_music(fadeSeconds)` and `set_music_volume`. The music is an
+  OGG Vorbis resource that `MusicMixer` decodes as it plays (stb_vorbis). A new track crossfades with the one playing, and a
+  looping track crossfades its last `loopFadeSeconds` into its start. The desktop renders the mixer into an `sf::SoundStream`;
+  Android renders it into its AAudio stream. `tests/AudioTests.cpp` checks the loop, the stereo and the fade out on
+  `tests/fixtures/music_tone.ogg`.
+- `SoundManager::set_paused`: every sound holds while the engine is paused (`Engine::on_pause` / `on_resume`).
 - UI: no active implementation in the bgfx backend. Rocket GUI required Irrlicht and is no longer available.
 
 ## Other

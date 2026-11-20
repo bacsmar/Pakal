@@ -11,7 +11,10 @@ project(PakalAndroid LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
+# A config.h for case-sensitive hosts. Not on Windows: there it would resolve to itself, since the filesystem ignores case.
+if(NOT CMAKE_HOST_WIN32)
+    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/config.h" CONTENT "#include \"Config.h\"\n")
+endif()
 include_directories(${CMAKE_BINARY_DIR})
 
 get_filename_component(PAKAL_ROOT ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
@@ -28,20 +31,7 @@ set(BX_DIR ${PAKAL_ROOT}/external/bx)
 set(BIMG_DIR ${PAKAL_ROOT}/external/bimg)
 set(BGFX_DIR ${PAKAL_ROOT}/external/bgfx)
 
-# Our fixes to bgfx (patches/bgfx/*.patch), applied to the submodule when it does not have them yet
-find_package(Git QUIET)
-file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
-foreach(patch ${PAKAL_BGFX_PATCHES})
-    execute_process(COMMAND ${GIT_EXECUTABLE} apply --reverse --check --ignore-whitespace ${patch}
-        WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE applied OUTPUT_QUIET ERROR_QUIET)
-    if(NOT applied EQUAL 0)
-        execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace ${patch} WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed)
-        if(failed)
-            message(FATAL_ERROR "bgfx: ${patch} does not apply (a newer bgfx may have it, or need it redone)")
-        endif()
-        message(STATUS "bgfx: applied ${patch}")
-    endif()
-endforeach()
+include(${PAKAL_ROOT}/cmake/BgfxPatches.cmake)
 
 # ---------------------------------------------------------------------------------------------------
 # bx, bimg, bgfx
@@ -109,6 +99,8 @@ list(FILTER PAKAL_SOURCES EXCLUDE REGEX ".*/source/net/.*")
 
 # the TopDown genre (game_genres/topdown) the games are built on
 file(GLOB_RECURSE PAKAL_GENRE_SOURCES ${PAKAL_ROOT}/game_genres/*.cpp)
+# the level editor (topdown/editor) is the desktop player's
+list(FILTER PAKAL_GENRE_SOURCES EXCLUDE REGEX ".*/topdown/editor/.*")
 set(PAKAL_GENRE_NET_SOURCES ${PAKAL_GENRE_SOURCES})
 list(FILTER PAKAL_GENRE_SOURCES EXCLUDE REGEX ".*/topdown/net/.*")
 list(FILTER PAKAL_GENRE_NET_SOURCES INCLUDE REGEX ".*/topdown/net/.*")

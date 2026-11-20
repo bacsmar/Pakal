@@ -18,6 +18,7 @@ Modos (los del juego original):
 - marathon: la carrera del original con sus reglas: puntos que dan tiempo, muros, el corral del interruptor y la trampa
 - rattrap:  la jaula del original: la llave falsa tras las tablas, el perro zombi con la buena, abrir y limpiar
 """
+import re
 import sys
 from pathlib import Path
 
@@ -72,8 +73,17 @@ CLAPPER = 'ShowClapper(3, "%s");\n'
 
 def difficulty(mission):
     """The row of the zombies' tables the mission plays at (the original's difficultyLevel: health and damage rise with it);
-    the spec's 'difficulty', 0 by default. Set after the intro (which starts at 0)."""
-    return f'SetGameVariable("difficultyLevel", {int(mission.get("difficulty", 0))});\n'
+    the spec's 'difficulty', 0 by default. Set after the intro (which starts at 0). Also the zombies' teleports, when the
+    spec turns them off."""
+    out = f'SetGameVariable("difficultyLevel", {int(mission.get("difficulty", 0))});\n'
+    # the original's modes that bring every zombie from its real spawner toward the objective (Snack, Fire Chaser, Site
+    # Seeing, Wanderer, Marathon, Rat Trap, BBQ): its off-screen teleport and our stragglers' return off ("teleport": false)
+    if mission.get('teleport') is False:
+        out += 'EnableOffscreenTeleporting(false);\nSetStragglers(false);\n'
+    # a director profile of the game's (e.g. one that paces the horde: build-up, peak and relax)
+    if mission.get('director'):
+        out += f'Director.Start("{mission["director"]}");\n'
+    return out
 
 
 def survival(mission, title):
@@ -1294,6 +1304,14 @@ end;'''
             arrive += (f'EnableBerserk(true);\nShakeCamera(3500, "35");\nEnableRandomObject({GIFT}, true, 1);\n'
                        f'SetEnemySpawn(25001, {n(15)}, 500, 0);\n'
                        '__showAutoDialog("WOW, THOSE ICKY DEAD THINGS ARE GETTING OUT OF CONTROL!", 3500);\nSetGameVariable("W", 3);\nend;')
+    # each enemy type its own target, as the original's orders (SetEnemySpawn's 4th argument): some go for the escorted
+    # (-1), the fast ones for the player (-3), the rest by SetEscortRules (the nearer)
+    targets = {'25001': -1, '25009': -1, '25011': -1, '25016': -3, '25012': -3}
+
+    def targeted(text):
+        return re.sub(r'SetEnemySpawn\((\d+), ([^,]+), ([^,]+), 0\)',
+                      lambda m: f'SetEnemySpawn({m.group(1)}, {m.group(2)}, {m.group(3)}, {targets.get(m.group(1), 0)})', text)
+    walking, arrive = targeted(walking), targeted(arrive)
     on_activate = INTRO % {'start': START, 'kills': 0, 'pan_from': ids['start'], 'pan_to': home, 'title': title} \
         + CLAPPER % 'WALK PEPITO HOME IN ONE PIECE!' + difficulty(mission) + f'''
 StartEscort("civilian", {ids['start']}, {', '.join(str(p) for p in route)});

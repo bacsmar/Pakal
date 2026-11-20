@@ -89,10 +89,29 @@ namespace Pakal::TopDown
 		if (const MeleeRules* melee = consumable ? consumable->melee() : nullptr)
 		{
 			m_cycle = -1.0f;
-			// no windup: it hits as the swing starts
-			if (m_trigger && m_melee.start({ .cooldown = melee->attackRateMs / 1000.0f }))
+			// no windup: it hits as the swing starts. One that swings on its own (autoSwing) goes at the nearest foe within
+			// its reach and a little more when the player does not aim
+			if ((m_trigger || melee->autoSwing) && m_melee.start({ .cooldown = melee->attackRateMs / 1000.0f }))
 			{
-				swing(game, *melee, damageFactor);
+				b2Vec2 toward(0.0f, 0.0f);
+				bool aimed = false;
+				if (!m_trigger)
+				{
+					float best = meters(melee->reach) + 1.5f;
+					for (const auto& other : game.actors())
+					{
+						if (other->removed || other->kind != ActorKind::Character || !game.hostile(actor(), *other) || !game.is_alive(*other)) continue;
+						const b2Vec2 to = other->position - actor().position;
+						const float distance = to.Length();
+						if (distance < best && distance > 0.01f)
+						{
+							best = distance;
+							toward = (1.0f / distance) * to;
+							aimed = true;
+						}
+					}
+				}
+				swing(game, *melee, damageFactor, aimed ? &toward : nullptr);
 			}
 			return;
 		}
@@ -180,10 +199,10 @@ namespace Pakal::TopDown
 		m_recoil = 1.0f;
 	}
 
-	void WeaponComponent::swing(TopDownGame& game, const MeleeRules& melee, float damageFactor)
+	void WeaponComponent::swing(TopDownGame& game, const MeleeRules& melee, float damageFactor, const b2Vec2* toward)
 	{
 		const PlayerControlComponent* control = actor().get<PlayerControlComponent>();
-		const b2Vec2 facing = control ? control->facing() : b2Vec2(0.0f, 1.0f);
+		const b2Vec2 facing = toward ? *toward : control ? control->facing() : b2Vec2(0.0f, 1.0f);
 		const float reach = meters(melee.reach);
 		game.play(melee.swingSound, actor().position);
 		m_swingTimer = melee.clipSeconds;

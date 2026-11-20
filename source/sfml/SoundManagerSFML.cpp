@@ -13,6 +13,43 @@
 
 namespace Pakal
 {
+	SoundManagerSFML::~SoundManagerSFML() = default;
+
+	bool SoundManagerSFML::play_music(const std::string& path, const MusicSettings& settings)
+	{
+		const auto bytes = ResourceMgr.read_bytes(path);
+		if (!bytes || !m_music.play(bytes, settings)) return false;
+		if (!m_musicStream)
+		{
+			m_musicStream = std::make_unique<MusicStreamSFML>(m_music);
+		}
+		if (m_musicStream->getStatus() != sf::SoundSource::Playing)
+		{
+			m_musicStream->play();
+		}
+		return true;
+	}
+
+	void SoundManagerSFML::set_paused(bool paused)
+	{
+		mutex_guard lock(m_players_mutex);
+		for (auto& player : m_active_players)
+		{
+			if (paused && player->getStatus() == sf::SoundSource::Playing) player->pause();
+			else if (!paused && player->getStatus() == sf::SoundSource::Paused) player->play();
+		}
+		if (m_musicStream)
+		{
+			if (paused) m_musicStream->pause();
+			else m_musicStream->play();
+		}
+	}
+
+	void SoundManagerSFML::stop_music(float fadeSeconds)
+	{
+		m_music.stop(fadeSeconds);
+	}
+
 	void SoundManagerSFML::initialize()
 	{
 		ASSERT(m_clean_players_id == 0);
@@ -25,6 +62,7 @@ namespace Pakal
 	{
 		m_timer.stop();
 		m_timer.event_elapsed -= m_clean_players_id;
+		m_musicStream.reset();
 
 		mutex_guard lock2(m_buffer_mutex);
 		mutex_guard lock(m_players_mutex);

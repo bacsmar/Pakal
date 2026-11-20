@@ -261,8 +261,34 @@ def downsample_sounds(stage, rate=22050):
     return count, before, after
 
 
+def build_identity():
+    """Which build this is: a number that rises with each build (build-android/build_number.txt), and the commit it was
+    made from (PAKAL_BUILD_COMMIT/BRANCH/DIRTY from the host's build script; git itself when it runs here)."""
+    counter = BUILD / 'build_number.txt'
+    BUILD.mkdir(parents=True, exist_ok=True)
+    number = (int(counter.read_text().strip() or 0) if counter.is_file() else 0) + 1
+    counter.write_text(f'{number}\n')
+
+    def git(*args):
+        try:
+            return subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            return ''
+    commit = os.environ.get('PAKAL_BUILD_COMMIT') or git('rev-parse', '--short', 'HEAD') or 'unknown'
+    branch = os.environ.get('PAKAL_BUILD_BRANCH') or git('rev-parse', '--abbrev-ref', 'HEAD') or 'unknown'
+    dirty = (os.environ.get('PAKAL_BUILD_DIRTY') == '1') if 'PAKAL_BUILD_DIRTY' in os.environ else bool(git('status', '--porcelain', '--untracked-files=no'))
+    name = f'0.1+{number}.{commit}' + ('.dirty' if dirty else '')
+    return {'build': number, 'commit': commit, 'branch': branch, 'dirty': dirty, 'version': name}
+
+
+IDENTITY = {}
+
+
 def finish_stage(stage, raw_textures):
     """The textures compressed (unless raw), the sounds at a phone's rate, and the list of what is staged."""
+    if IDENTITY:   # the game reads it (Assets/build.json) to tell its profile which build it is
+        (stage / 'Assets').mkdir(parents=True, exist_ok=True)
+        (stage / 'Assets' / 'build.json').write_text(json.dumps(IDENTITY, indent=1) + '\n')
     if not raw_textures:
         count, before, after = pack_textures.compress_textures(stage, BUILD / 'texture_cache', TEXTUREC)
         print(f'{count} textures compressed ({pack_textures.FORMAT} with mips): {before / 1e6:.0f} MB -> {after / 1e6:.0f} MB')
@@ -298,6 +324,8 @@ def write_manifest(game, tools=False):
     text = (ROOT / 'android' / 'AndroidManifest.xml').read_text(encoding='utf-8')
     wanted = list(info['permissions']) + (['android.permission.INTERNET'] if tools and 'android.permission.INTERNET' not in info['permissions'] else [])
     permissions = ''.join(f'    <uses-permission android:name="{name}" />\n' for name in wanted)
+    text = text.replace('android:versionCode="1"', f'android:versionCode="{IDENTITY.get("build", 1)}"')
+    text = text.replace('android:versionName="0.1"', f'android:versionName="{IDENTITY.get("version", "0.1")}"')
     text = (text.replace('@PACKAGE@', info['package']).replace('@LABEL@', info['label'])
             .replace('@LIBRARY@', info['library']).replace('    @PERMISSIONS@\n', permissions))
     if info.get('icon'):
@@ -332,6 +360,9 @@ def compile_icon(game):
 
 
 def make_apk(game='zombies', raw_textures=False, cheats=False, tools=False):
+    IDENTITY.clear()
+    IDENTITY.update(build_identity())
+    print(f'build {IDENTITY["version"]} ({IDENTITY["branch"]})')
     stage = BUILD / f'apk_stage_{game}'
     stage_assets(stage, game, raw_textures)
     if not cheats:

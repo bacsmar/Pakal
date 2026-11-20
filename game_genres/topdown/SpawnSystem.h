@@ -31,8 +31,10 @@ namespace Pakal::TopDown
 		void add_point(const b2Vec2& at, int group = -1) { m_points.push_back({ at, 0.0f, group }); }
 		// Only the points of this group are used (and those of none); -1: all of them
 		void set_active_group(int group) { m_activeGroup = group; }
+		int active_group() const { return m_activeGroup; }
 		// A group shut for good (its hole plugged), or open again
 		void set_group_enabled(int group, bool on) { if (on) m_shutGroups.erase(group); else m_shutGroups.insert(group); }
+		bool group_enabled(int group) const { return m_shutGroups.count(group) == 0; }
 		size_t point_count() const { return m_points.size(); }
 
 		// SetEnemySpawn(type, alive, cooldownMs)

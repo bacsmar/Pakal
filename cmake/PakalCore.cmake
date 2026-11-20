@@ -3,7 +3,7 @@
 # folders the rest of the project shares), so a core file that reaches for a backend breaks this target. CoreTests starts
 # the engine with it, runs its systems a moment and ends it.
 
-file(GLOB_RECURSE PAKAL_CORE_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE PAKAL_CORE_SOURCES FOLLOW_SYMLINKS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/source/*.cpp"
     "${CMAKE_SOURCE_DIR}/source/*.h")
 # the backends and what is built on them

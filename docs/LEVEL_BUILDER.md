@@ -2,7 +2,7 @@
 
 `tools/levelbuilder` turns a request ("a small US town with a park and a couple of missions") into playable Zombies
 levels, using only the free Quaternius packs (CC0). It is driven from the command line (`lb.py`), so Claude can build and
-change levels step by step; `tools/levelbuilder/CLAUDE.md` is the short working guide, this page explains the parts.
+change levels step by step; `tools/levelbuilder/AGENTS.md` is the short working guide, this page explains the parts.
 
     python tools/levelbuilder/lb.py <command> <scene> [options]
 
@@ -176,7 +176,7 @@ A town that is not a grid, the way coastal towns grow (`coastal.py`, which `gene
 10. **Gameplay**: closed collision chains around the sea, the river (not under the bridges) and the hill; filled
    collision (convex pieces, so their inside is not walkable either) for garden beds, walls and bridge rails; zombie
    entrances where streets leave the playable area (each spawn point on a manhole, the theme's `manhole` role, marked
-   `"manhole": true` in the level's spawners) and at the top of the alleys; the start in a plaza; a reachability check (flood
+   `"manhole": true` in the level's spawners) and at the top of the alleys; each street that leaves closed across past its spawn point (`closures.py`: barriers end to end on one straight line from the street's middle out to each side, across the street and its sidewalks and on until a building, up to 12 m more; loose things in the wall's way, a parked car, a bin, a plant, are taken away so the wall has no gaps; a road block, cones and a stop sign on each curb in front); the start in a plaza; a reachability check (flood
    fill on a 1 m grid from the start) that reports the walkable area reached and any entrance with no path.
 
 **Themes** (`theme.py`): the models of each role can come from packs other than Quaternius, extracted under `Assets/`

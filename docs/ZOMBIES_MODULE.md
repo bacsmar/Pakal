@@ -50,7 +50,7 @@ module's. What is this game's own:
 The simulation runs in fixed steps of 1/60 s (`SimulationClock`). Characters and the camera are drawn between the last
 step and the next (`Actor::drawn_position`), so movement stays smooth whatever the frame rate. The same seed
 (`ZOMBIES_SEED`, through `RandomStreams`) plays the same game: the bot's runs are checked against stored traces
-(`tools/bot_check.ps1`, see `tests/baseline/README.md`), eight times faster than real time (`ZOMBIES_TIMESCALE`).
+(`examples/zombies_module/tools/bot_check.ps1`, see `tests/baseline/README.md`), eight times faster than real time (`ZOMBIES_TIMESCALE`).
 
 Controls: WASD moves (camera-relative), the character faces the mouse, the left button fires (arrows, IJKL to aim and Space to
 fire also work). `R` restarts, `P` pauses, `F3` shows the colliders. On Android: two virtual sticks (left moves, right aims and

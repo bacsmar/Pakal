@@ -170,6 +170,24 @@ void main()
 		color = sum / weight;
 	}
 
+	if (u_post2.z > 3.5)
+	{
+		// PAKAL_AO_VIEW=4: the depth in meters, its fraction every 10 cm (contour lines: stair steps show as bands)
+		gl_FragColor = vec4_splat(fract(linear_depth(uv) * 10.0));
+		return;
+	}
+	if (u_post2.z > 2.5)
+	{
+		// PAKAL_AO_VIEW=3: the depth in meters, its fraction every 4 m (contour lines)
+		gl_FragColor = vec4_splat(fract(linear_depth(uv) * 0.25));
+		return;
+	}
+	if (u_post2.z > 1.5)
+	{
+		// PAKAL_AO_VIEW: the occlusion alone, to look at its defects
+		gl_FragColor = vec4_splat(texture2D(s_postAo, target_uv(uv)).r);
+		return;
+	}
 	if (u_post2.z > 0.0)
 	{
 		color *= texture2D(s_postAo, target_uv(uv)).r;
