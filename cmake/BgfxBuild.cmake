@@ -14,8 +14,9 @@ if(NOT EXISTS ${BGFX_DIR}/src/bgfx.cpp OR NOT EXISTS ${BX_DIR}/include/bx/bx.h O
         "    git submodule update --init --recursive")
 endif()
 
-# Our fixes to bgfx are applied by cmake/BgfxPatches.cmake (included before this file); PAKAL_BGFX_PATCHED lists the
-# ones it applied in this configure, and the libraries are built again when it is not empty
+# Our fixes to bgfx are applied by cmake/BgfxPatches.cmake (included before this file). Whether the libraries must be
+# built again is decided by the stamp below, which holds each patch's hash: a patch applied again to a fresh checkout
+# of the same sources (every CI run, a submodule reset) does not rebuild libraries already built with it
 find_package(Git QUIET)
 file(GLOB PAKAL_BGFX_PATCHES ${PAKAL_ROOT}/patches/bgfx/*.patch)
 
@@ -53,7 +54,7 @@ set(PAKAL_BGFX_BUILT_FROM "")
 if(EXISTS ${PAKAL_BGFX_STAMP})
     file(READ ${PAKAL_BGFX_STAMP} PAKAL_BGFX_BUILT_FROM)
 endif()
-if(PAKAL_BGFX_PATCHED OR NOT PAKAL_BGFX_BUILT_FROM STREQUAL PAKAL_BGFX_SOURCE)
+if(NOT PAKAL_BGFX_BUILT_FROM STREQUAL PAKAL_BGFX_SOURCE)
     set(PAKAL_BGFX_STALE TRUE)
 else()
     set(PAKAL_BGFX_STALE FALSE)
