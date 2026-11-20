@@ -133,7 +133,13 @@ The 3D examples and new 3D games use Quaternius's free packs (CC0, free to use c
    Universal Animation Library 1 and 2. You cannot download them for the user: they come from the author's site.
 2. **Put them in place:** `python tools/fetch_free_assets.py`. It finds the zips, checks each one's CC0 license, and
    unpacks them.
-3. **What each file is:** docs/ASSET_INDEX.md lists every file of the packs, so you can pick models by name.
+3. **Export the shared models** (the animated characters, weapons and props): install Blender (blender.org; set
+   `PAKAL_BLENDER` to `blender.exe` if it is not in the default folder), then run
+   `python tools/zombies_convert/build_downtown.py --meshes-only`. It writes `build-win64/bin/Assets/zombies/downtown/meshes`.
+4. **Configure again** (`cmake --preset win64`) so the build copies the packs' pieces, then build.
+5. **Check:** `build-win64\bin\PakalPlayer.exe BrawlerModule.dll` and `DungeonModule.dll` show their characters.
+   The Zombies example's playable levels also need a converted level that is not free (section 2): don't promise them.
+6. **What each file is:** docs/ASSET_INDEX.md lists every file of the packs, so you can pick models by name.
 
 ## 5. Start a new game (for example: "set up Pakal for a zombie game")
 

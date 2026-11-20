@@ -78,9 +78,10 @@ One server runs the simulation, and each player's game sends its input and draws
 | `examples/engine_feature_lab` | 2D sprites, a camera and generated sounds, with no assets: the first program to run. |
 | `examples/mesh_viewer`, `examples/audio_demo`, `examples/basic_example` | Small samples of one part each. |
 
-The 3D examples use free CC0 model packs that are not stored in Git: [docs/ASSETS.md](docs/ASSETS.md) says how to get
-them. Today their levels and shared models are built from a level converted from an older game, which is not free and not
-included, so they don't run from a fresh clone yet. A build of their models from the free packs alone is on the way.
+The 3D examples use free CC0 model packs that are not stored in Git. One script puts them in place and another exports
+the models from them ([docs/QUICKSTART.md](docs/QUICKSTART.md)); the brawler and the dungeon then run from a fresh clone.
+The Zombies example's levels also take their rules, audio and effects from a level converted from an older game, which is
+not free and not included.
 `engine_feature_lab`, `audio_demo` and `basic_example` run without any assets.
 
 ## How it is built

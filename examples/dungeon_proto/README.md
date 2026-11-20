@@ -22,7 +22,11 @@ It needs:
 - the Medieval Village pack in `examples/zombies_module/assets/source/medieval-village` for the dungeon's floor, walls
   and props. CMake copies the pieces it uses to `Assets/dungeon/meshes`.
 
-Both are installed with the free packs (see docs/ASSET_INDEX.md).
+Both come from the free packs:
+1. `python tools/fetch_free_assets.py` puts the packs in place (it lists the pages to download them from).
+2. With [Blender](https://www.blender.org) installed, `python tools/zombies_convert/build_downtown.py --meshes-only`
+   exports the shared models. No converted level is needed.
+3. Configure again (`cmake --preset win64`), so the build copies the Medieval pieces, and build.
 
 | Key | Does |
 |---|---|
