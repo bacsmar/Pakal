@@ -1,7 +1,9 @@
 """Builds a Downtown level: the base city plus a mission's props, spawners and script.
 
 Usage: build_downtown.py [--mission survival_01] [--assets build-win64/bin/Assets/zombies]
-Needs the converted Survival level (hollywood_s01t01) in the assets folder: the game's rules, the audio and the shooting
+       build_downtown.py --meshes-only     (the shared models alone, from the free packs: what the brawler and dungeon
+                                            examples need; no converted level)
+A level needs the converted Survival level (hollywood_s01t01) in the assets folder: the game's rules, the audio and the shooting
 effects are shared with it. Writes <assets>/downtown_<mission>/level.json; the models go to <assets>/downtown/.
 """
 import argparse
@@ -197,6 +199,38 @@ def mannequin_visuals(pistol_mesh, weapons):
     }
 
 
+# Props the brawler and dungeon prototypes place (examples/*_proto/data), which no Downtown mission exports
+EXAMPLE_PROPS = ('Street_Asphalt_9x9', 'TrafficBarrier_1', 'Prop_Crate', 'Barrel', 'TrashBag_1', 'Chest', 'Axe',
+                 'Blood_1', 'Blood_2', 'Blood_3')
+
+
+def export_shared_meshes(shared):
+    """Writes <shared>/meshes/ from the free packs alone (no converted level): the heroes and zombies with the animation
+    library's clips (Blender), the dogs, the weapons, and the props the examples place. Models already exported are kept."""
+    packs = {'the Zombie Apocalypse Kit': citykit.KIT, 'the Downtown City MegaKit': citykit.CITY,
+             'the Medieval Village MegaKit': citykit.MEDIEVAL,
+             'the Universal Animation Library': citykit.UAL1, 'the Universal Animation Library 2': citykit.UAL2}
+    missing = [name for name, path in packs.items() if not Path(path).exists()]
+    if missing:
+        sys.exit(f'missing {", ".join(missing)}: download the free packs and run python tools/fetch_free_assets.py')
+    if not citykit.BLENDER.is_file():
+        sys.exit(f'Blender was not found at {citykit.BLENDER}: install Blender (blender.org), or set PAKAL_BLENDER to '
+                 f'its blender executable. It copies the animation clips onto the characters.')
+    for hero in HEROES:
+        citykit.export_retargeted(f'Characters_{hero}_SingleWeapon', PLAYER_UAL_CLIPS, shared, strip=KIT_HELD_WEAPONS)
+    citykit.export_retargeted('Zombie_Basic', ZOMBIE_UAL_CLIPS, shared, source=citykit.UAL2)
+    citykit.export_retargeted('Zombie_Chubby', BOOMER_UAL_CLIPS + ZOMBIE_UAL_CLIPS, shared, source=citykit.UAL2)
+    for name in ('Zombie_Arm', 'Zombie_Ribcage'):
+        citykit.export_retargeted(name, ZOMBIE_UAL_CLIPS, shared, source=citykit.UAL2)
+    models = ['Pistol', 'Characters_GermanShepherd', 'Characters_Pug']
+    models += [model for model, _, _, _ in KIT_MELEE_WEAPONS.values()]
+    models += [firearm['model'] for firearm in FIREARMS.values()]
+    models += list(EXAMPLE_PROPS)
+    for model in dict.fromkeys(models):
+        citykit.export_model(model, shared)
+    print(f'shared models written to {shared / "meshes"}')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--mission', default='survival_01')
@@ -205,7 +239,13 @@ def main(argv=None):
                         help='kit: the Zombie Apocalypse kit characters; mannequin: the Universal Animation Library mannequin')
     parser.add_argument('--no-gi', action='store_true', help='skip the baked global illumination')
     parser.add_argument('--survival', default='hollywood_s01t01', help='the converted Survival level to take rules, audio and effects from')
+    parser.add_argument('--meshes-only', action='store_true',
+                        help='only the shared models, from the free packs (what the brawler and dungeon examples need); '
+                             'no level, so no converted level is read')
     args = parser.parse_args(argv)
+    if args.meshes_only:
+        export_shared_meshes(args.assets / 'downtown')
+        return 0
     return build_level(f'downtown_{args.mission}', MISSIONS[args.mission].build, args)
 
 

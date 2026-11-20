@@ -4,6 +4,13 @@ Downtown is a level made with the Quaternius CC0 packs and the game's gameplay l
 `python tools/zombies_convert/build_downtown.py` and opened from `build-win64\bin` with
 `set ZOMBIES_LEVEL=Assets\zombies\downtown_survival_01\level.json` then `PakalPlayer.exe ZombiesModule.dll`.
 
+What needs what:
+- **The shared models** (`Assets/zombies/downtown/meshes`) come from the free packs alone:
+  `python tools/fetch_free_assets.py`, then `python tools/zombies_convert/build_downtown.py --meshes-only` (with Blender
+  installed). That is all the brawler and dungeon examples need.
+- **The playable level** also takes the game's rules, audio and shooting effects from the converted Survival level
+  (`hollywood_s01t01`), which is not free and not in the repository.
+
 ## How it is put together
 
 It is **additive**: a large base (the city) and, on top, mission layers that only add things.

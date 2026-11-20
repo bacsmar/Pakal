@@ -8,7 +8,9 @@ with --zip, or downloads them with --url), checks that each one carries its CC0 
     python tools/fetch_free_assets.py --zip "D:/x/Zombie Apocalypse Kit.zip"
     python tools/fetch_free_assets.py --url zombie-kit=https://example.com/kit.zip
 
-Packs already in place are left alone. Then: python tools/zombies_convert/build_downtown.py (see docs/ZOMBIES_DOWNTOWN.md).
+Packs already in place are left alone. Then: python tools/zombies_convert/build_downtown.py --meshes-only exports the shared
+models from the packs alone (with Blender; what the brawler and dungeon examples need). A Downtown level also needs the
+converted Survival level (docs/ZOMBIES_DOWNTOWN.md).
 """
 import argparse
 import fnmatch
@@ -122,7 +124,8 @@ def main():
         for name, page in missing:
             print(f'  {name}: {page}')
         sys.exit(1)
-    print('\nAll the free packs are in place.')
+    print('\nAll the free packs are in place. Next, the shared models (needs Blender):\n'
+          '  python tools/zombies_convert/build_downtown.py --meshes-only')
 
 
 if __name__ == '__main__':
