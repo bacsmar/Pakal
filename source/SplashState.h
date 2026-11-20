@@ -2,7 +2,8 @@
 // Copyright (C) 2026 The PakalEngine Open Source Project
 // File: SplashState.h
 // Purpose: The maker's logo when a game opens (docs/SPLASH.md; C-ID-1 in docs/RELEASE_CHECKLIST.md), as a
-//          game state any game pushes first. The picture is the game's (its own or a private pack's), never the engine's.
+//          game state any game pushes first. The picture is the game's (its own or a sealed pack's); a game that names
+//          none shows the engine's own logo (Assets/pakal/splash.png, copied next to every build).
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -21,8 +22,9 @@ namespace Pakal
 	public:
 		struct Settings
 		{
-			std::string image;                  // the logo (a path of the game's resources)
-			std::string background = "#000000"; // the color around it: the picture's own edge, so no box shows on any aspect
+			std::string image;                  // the logo (a path of the game's resources); empty: the engine's (kEngineLogo)
+			std::string background;             // the color around it: the picture's own edge, so no box shows on any aspect;
+			                                    // empty: kEngineBackground with the engine's logo, else black
 			// (a): the game has a loading screen of its own: the logo for fixed_seconds, never skipped, then the fade.
 			// (b), when 'ready' is set: the logo covers the game's first load; it stays until ready() and at least
 			// min_after_ready more, and any press skips it once the game is ready and it has shown min_after_ready
@@ -36,6 +38,10 @@ namespace Pakal
 		};
 
 		explicit SplashState(Settings settings);
+
+		// The engine's own logo and the color it is shown on (the logo's dark green and cream both read on it)
+		static constexpr const char* kEngineLogo = "Assets/pakal/splash.png";
+		static constexpr const char* kEngineBackground = "#7a8a6a";
 
 		// Bots and scripted captures leave the logo out (C-ID-1): PAKAL_NO_SPLASH=1 in the environment
 		static bool skipped_by_environment();

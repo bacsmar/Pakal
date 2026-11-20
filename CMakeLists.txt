@@ -482,6 +482,12 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/examples/basic_example/main.cpp)
     target_include_directories(PakalBasicExample PRIVATE ${CMAKE_SOURCE_DIR}/source)
 endif()
 
+# The engine's own logo, which SplashState shows when a game names none (docs/SPLASH.md), next to every build
+add_custom_command(TARGET Pakal POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/assets/engine/pakal_splash.png
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Assets/pakal/splash.png
+    VERBATIM)
+
 if(EXISTS ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
     add_executable(PakalFeatureLab ${CMAKE_SOURCE_DIR}/examples/engine_feature_lab/main.cpp)
     target_link_libraries(PakalFeatureLab Pakal)

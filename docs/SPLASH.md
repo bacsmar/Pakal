@@ -3,6 +3,11 @@
 `SplashState` shows the maker's logo when a game opens (C-ID-1 in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)). The engine has the
 timing and the fade. The picture is the game's, from its own resources or a sealed pack.
 
+A game that names no picture gets the engine's own logo (`SplashState::kEngineLogo`, `Assets/pakal/splash.png`) on
+its sage background (`kEngineBackground`, `#7a8a6a`: the logo's dark green and cream both read on it). The build copies
+it next to every desktop build, and `android/build_apk.py` puts it in every APK. Its source is
+`assets/engine/pakal_splash.png`. `examples/engine_feature_lab` opens with it.
+
 ```cpp
 Pakal::SplashState::Settings splash;
 splash.image = "Assets/<game>/ui/images/splash.png";
