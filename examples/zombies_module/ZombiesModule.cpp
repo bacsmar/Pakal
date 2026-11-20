@@ -16,7 +16,9 @@
 #include "ZombiesLevelState.h"
 #include "MenuState.h"
 #include "CharacterViewer.h"
+#if !defined(__ANDROID__)
 #include "topdown/editor/LevelEditorState.h"
+#endif
 
 #include <cstdlib>
 #include <string>
@@ -47,6 +49,7 @@ namespace
 			}
 			// ZOMBIES_VIEWER=heroes|enemies opens the character viewer or the zombie encyclopedia
 			const char* viewer = std::getenv("ZOMBIES_VIEWER");
+#if !defined(__ANDROID__)   // (the editor is the desktop player's)
 			// PAKAL_EDIT=<level.json> (PakalPlayer ZombiesModule.dll --edit [level.json]) opens the level editor ("*": on its level
 			// chooser); its Play runs the level
 			const char* edit = std::getenv("PAKAL_EDIT");
@@ -57,11 +60,17 @@ namespace
 					[](const std::string& level) -> Pakal::BaseGameState*
 					{
 						// played from the editor, the level follows its file: a change made while it plays is seen at once
+#ifdef _WIN32
 						_putenv_s("ZOMBIES_LIVE_RELOAD", "1");
+#else
+						setenv("ZOMBIES_LIVE_RELOAD", "1", 1);
+#endif
 						return new Zombies::ZombiesLevelState(level);
 					}), true);
 			}
-			else if (viewer && *viewer)
+			else
+#endif
+			if (viewer && *viewer)
 			{
 				const bool enemies = std::string(viewer) == "enemies";
 				engine.game_state_manager()->push_state(new Zombies::CharacterViewerState(
