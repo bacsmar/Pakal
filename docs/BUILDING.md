@@ -204,6 +204,9 @@ cmake --preset linux-tsan && cmake --build --preset linux-tsan
 cd build-tsan && TSAN_OPTIONS=halt_on_error=1 ctest --output-on-failure
 ```
 
+The whole engine, its genres and examples, with every test, is checked the same way once a week, and by hand from
+GitHub's Actions tab (`.github/workflows/tsan-full.yml`): too long for every pull request.
+
 On kernels that randomize addresses with more bits than TSan expects ("unexpected memory mapping"), run
 `sudo sysctl -w vm.mmap_rnd_bits=28` first.
 
