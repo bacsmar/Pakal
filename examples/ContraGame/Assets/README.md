@@ -18,8 +18,8 @@ Assets/
 The ContraGame build copies this `Assets/` folder next to the executable automatically:
 
 ```
-docker-build/bin/ContraGame      # Executable
-docker-build/bin/Assets/         # Copy of this folder
+build-linux/bin/PakalPlayer      # Executable (build-win64/bin on Windows)
+build-linux/bin/Assets/          # Copy of this folder
 ```
 
 ## Supported formats

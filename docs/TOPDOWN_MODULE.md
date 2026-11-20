@@ -187,7 +187,7 @@ See docs/NETWORK.md.
 
 - It runs in fixed steps (`SimulationClock`) and must not read anything that depends on the frame: not the drawn camera,
   not the drawn positions, not the presentation's random streams. Then the same seed plays the same game, and
-  `tools/bot_check.ps1` compares a change against stored traces.
+  `examples/zombies_module/tools/bot_check.ps1` compares a change against stored traces.
 - The views read the simulation; they never write what it reads.
 - No names of a game in the module: the names and sounds of a game's weapons, pickups and events come from its data or
   its own defaults (Zombies: `GameRules`).

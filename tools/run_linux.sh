@@ -23,7 +23,7 @@ else
 fi
 # Forward the engine/game diagnostic switches set by the caller.
 while IFS= read -r name; do
-    case "$name" in PAKAL_*|ZOMBIES_*|ZOMBIMEX_*) args+=(-e "$name");; esac
+    case "$name" in PAKAL_*|ZOMBIES_*) args+=(-e "$name");; esac
 done < <(compgen -e)
 module=${1:-./libContraGameModule.so}
 if (( $# )); then shift; fi

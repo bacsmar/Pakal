@@ -211,7 +211,7 @@ if(WIN32)
     )
     set(BGFX_SYSTEM_LIBS "")
 else()
-    # Built via makefile in Dockerfile
+    # Built by cmake/BgfxBuild.cmake (make linux-gcc-release64)
     set(BGFX_BUILD_DIR ${BGFX_DIR}/.build/linux64_gcc/bin)
     set(BGFX_LIBS
         ${BGFX_BUILD_DIR}/libbgfxRelease.a
