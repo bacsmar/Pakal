@@ -23,9 +23,10 @@ changes. Follow the steps in order. Each step says how to check that it worked.
   themselves with a debug key. A store build is signed by its owner.
 - **Assets:** the free 3D model packs (Quaternius, CC0) are not in Git. The user downloads them, and a script puts them
   in place (step 4).
-- **Converted data:** the Zombies example's levels also read a level converted from an older game. That data is not free
-  and not included. The tools that build those levels (`tools/zombies_convert/build_downtown.py`, the level builder's
-  `build`) stop without it. Do not promise the user those levels. For a game of their own, follow step 5.
+- **Converted data:** the Zombies example's levels can read a level converted from an older game, for its rules, sounds
+  and shot effects. That data is not free and not included. Without it, the level tools (`build_downtown.py`, the level
+  builder's `build`) use free rules written for Pakal (`tools/zombies_convert/free_base.json`): the levels play, silent
+  and without shot effects. For a game of their own, follow step 5.
 
 ## 3. Set up the build
 
@@ -138,7 +139,9 @@ The 3D examples and new 3D games use Quaternius's free packs (CC0, free to use c
    `python tools/zombies_convert/build_downtown.py --meshes-only`. It writes `build-win64/bin/Assets/zombies/downtown/meshes`.
 4. **Configure again** (`cmake --preset win64`) so the build copies the packs' pieces, then build.
 5. **Check:** `build-win64\bin\PakalPlayer.exe BrawlerModule.dll` and `DungeonModule.dll` show their characters.
-   The Zombies example's playable levels also need a converted level that is not free (section 2): don't promise them.
+   For Zombies: `python -m pip install -r tools/requirements.txt`, `python tools/zombies_convert/build_downtown.py`,
+   then run `ZombiesModule.dll` with `ZOMBIES_LEVEL=Assets/zombies/downtown_survival_01/level.json`. It plays silent
+   (free rules, section 2).
 6. **What each file is:** docs/ASSET_INDEX.md lists every file of the packs, so you can pick models by name.
 
 ## 5. Start a new game (for example: "set up Pakal for a zombie game")

@@ -8,8 +8,10 @@ What needs what:
 - **The shared models** (`Assets/zombies/downtown/meshes`) come from the free packs alone:
   `python tools/fetch_free_assets.py`, then `python tools/zombies_convert/build_downtown.py --meshes-only` (with Blender
   installed). That is all the brawler and dungeon examples need.
-- **The playable level** also takes the game's rules, audio and shooting effects from the converted Survival level
-  (`hollywood_s01t01`), which is not free and not in the repository.
+- **The playable level** takes the game's rules (enemies, weapons, pickups, breakable props) from
+  `tools/zombies_convert/free_base.json`, rules written for Pakal; the level is then silent and has no shot effects.
+  When the converted Survival level (`hollywood_s01t01`, not free, not in the repository) is in the assets folder, its
+  rules, audio and shooting effects are used instead. The tools also need `python -m pip install -r tools/requirements.txt`.
 
 ## How it is put together
 
@@ -85,7 +87,7 @@ generates `downtown_<name>/level.json`:
   berserk finale; 40 kills. It is played with `ZOMBIES_LEVEL=...\downtown_survival_02\level.json`.
 
 The special zombies (Boomer 25016, Tourist 25010, Zombinator 25011, DogWalker 25012, dog 25013) take their rules from the converted
-Survival level and their looks from `special_looks` in `build_downtown.py`: a kit model, and the clips of their attack steps
+Survival level (or, without it, from `free_base.json`) and their looks from `special_looks` in `build_downtown.py`: a kit model, and the clips of their attack steps
 (`actions`). The Boomer's throw is `OverhandThrow` of the Universal Animation Library, copied onto `Zombie_Chubby` with Blender.
 `survival_01` brings them in little by little. A mission can still add a type of its own by returning it in `result['enemies']`
 (rules and look object).
