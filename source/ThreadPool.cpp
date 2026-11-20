@@ -1,112 +1,98 @@
 #include "ThreadPool.h"
 #include "LogMgr.h"
 
-#include <functional>
-#include <sstream>
-
 #include <chrono>
 
 
 namespace Pakal
 {
 
-	ThreadPool::ThreadPool() : m_running(true), m_available_workers(0)
-	{
-		//add_worker();
-	}
+	ThreadPool::ThreadPool() = default;
 
 	ThreadPool::~ThreadPool()
 	{
-		m_running = false;
+		std::map<std::thread::id, SharedPtr<std::thread>> workers;
+		std::vector<SharedPtr<std::thread>> finished;
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_running = false;
+			// taken out of the pool: a worker that stops from now on finds itself no more in m_workers and just returns
+			workers.swap(m_workers);
+			finished.swap(m_finished);
+		}
 		m_job_available_condition.notify_all();
 		LOG_INFO("terminating threadpool waiting for worker threads to finish...");
-		for (auto& pair : m_workers)
-		{
-			pair.second->join();
-		}
-		m_workers.clear();
+		for (auto& pair : workers) pair.second->join();
+		for (auto& thread : finished) thread->join();
 	}
 
-	std::function<void()> ThreadPool::try_get_job()
+	void ThreadPool::worker_loop()
 	{
-		std::function<void()> job;
+		std::unique_lock<std::mutex> lock(m_mutex);
 
-		mutex_guard lock(m_jobs_mutex);
-		if (!m_jobs.empty())
+		for (;;)
 		{
-			job = m_jobs.front();
-			m_jobs.pop();
-			return job;
-		}
+			const bool woken = m_job_available_condition.wait_for(lock, std::chrono::seconds(60),
+				[this]() { return !m_jobs.empty() || !m_running; });
 
-		return job;
-	}
-
-	void ThreadPool::worker_loop() 
-	{
-		std::mutex jobAvailableMutex;
-		std::unique_lock<std::mutex> lk(jobAvailableMutex);
-
-		while (m_running)
-		{
-			bool waitExpired = !m_job_available_condition.wait_for(lk, std::chrono::seconds(60), [this]() { return !m_jobs.empty() || !m_running; });
-
-			if (waitExpired)
+			if (m_jobs.empty())
 			{
-				mutex_guard l(m_workers_mutex);
-
-				if (m_available_workers > 1)
+				// stopping with nothing left to run, or idle for 60 seconds while another idle worker can take the next job
+				if (!m_running || (!woken && m_idle_workers > 1))
 				{
-					LOG_INFO("removing worker not being used for 60 seconds");
-
-					--m_available_workers;
-					ASSERT(m_available_workers > 0);
-					m_workers.find(THIS_THREAD)->second->detach();
-					m_workers.erase(THIS_THREAD);
-					break;
+					--m_idle_workers;
+					auto self = m_workers.find(THIS_THREAD);
+					if (self != m_workers.end())
+					{
+						m_finished.push_back(self->second);
+						m_workers.erase(self);
+					}
+					return;
 				}
+				continue;
 			}
 
+			std::function<void()> job = std::move(m_jobs.front());
+			m_jobs.pop();
+			--m_idle_workers;
 
-			std::function<void()> job = try_get_job();
-			if (job != nullptr)
-			{
-				std::ostringstream ss;
-				ss << THIS_THREAD; 
-				LOG_INFO("worker thread with id %s processing job", ss.str().c_str());
-				job();
+			lock.unlock();
+			job();
+			lock.lock();
 
-				++m_available_workers;
-			}
-
+			++m_idle_workers;
 		}
 	}
-
-
 
 	void ThreadPool::add_worker()
 	{
-		mutex_guard lock(m_workers_mutex);
-
-		++m_available_workers;
+		++m_idle_workers;
 		auto thread = std::make_shared<std::thread>(&ThreadPool::worker_loop, this);
 		m_workers.emplace(thread->get_id(), thread);
 	}
-	
-	void ThreadPool::execute(const std::function<void()>& job) 
+
+	void ThreadPool::join_finished()
 	{
-		m_jobs_mutex.lock();
-		m_jobs.push(job);
-		m_jobs_mutex.unlock();
+		// a worker moves itself here under the mutex and then only returns: joining it waits for nothing else
+		for (auto& thread : m_finished) thread->join();
+		m_finished.clear();
+	}
 
-		--m_available_workers;
-
-		if (m_available_workers < 1)
+	void ThreadPool::execute(const std::function<void()>& job)
+	{
 		{
-			LOG_WARNING("not enought available workers adding a new one");
-			add_worker();
-		}
+			std::lock_guard<std::mutex> lock(m_mutex);
+			ASSERT(m_running);
+			join_finished();
+			m_jobs.push(job);
 
+			// each idle worker takes one queued job: one more worker for a job beyond them
+			if (m_jobs.size() > m_idle_workers)
+			{
+				LOG_DEBUG("[ThreadPool] adding a worker (%u running)", static_cast<unsigned>(m_workers.size()) + 1);
+				add_worker();
+			}
+		}
 		m_job_available_condition.notify_one();
 	}
 }

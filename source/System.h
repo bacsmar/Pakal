@@ -36,6 +36,7 @@ namespace Pakal
 
 		void update_loop();
 		void limit_fps();
+		void join_thread();
 
 	public:
 

@@ -2,43 +2,40 @@
 #include "Config.h"
 #include "TaskFwd.h"
 
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <map>
 #include <queue>
-#include <atomic>
+#include <thread>
+#include <vector>
 
 /*
-Author: Luis Gudiño Salinas
+Author: Luis GudiÃ±o Salinas
 Behaviour:
-	The threadpool is always going to have at least 1 available thread ready for when you call execute
-	
-	after the work is done the threads starts to sleep for 60 seconds , if no new job is queued then the thread 
-	is going to be removed (only if it is not the last available thread)
-
+	The pool grows when a job is queued and no worker is idle to take it, and a worker that waited 60 seconds for a job
+	leaves (unless it is the last idle one). One mutex guards the jobs, the workers and the count of idle ones, so a job
+	queued while a worker is about to sleep is never missed. When the pool ends, its workers run the jobs still queued
+	before they stop: a task someone waits on always completes.
 */
 
 namespace Pakal
 {
 	class _PAKALExport ThreadPool
 	{
+		std::mutex				m_mutex;
 		std::condition_variable m_job_available_condition;
 
-		std::mutex				m_jobs_mutex,
-								m_workers_mutex;
+		std::map<std::thread::id, SharedPtr<std::thread>> m_workers;
+		std::vector<SharedPtr<std::thread>>					m_finished;	// workers that left, joined later
+		std::queue<std::function<void()>>					m_jobs;
 
-		std::map<std::thread::id,SharedPtr<std::thread>> m_workers;
-		std::queue<std::function<void()>>				 m_jobs;
-
-		std::atomic_bool m_running;
-		std::atomic_int m_available_workers;
-
-		std::function<void()> try_get_job();
+		bool		m_running = true;
+		unsigned	m_idle_workers = 0;
 
 		void worker_loop();
-
-		void add_worker();
-
+		void add_worker();		// with m_mutex held
+		void join_finished();	// with m_mutex held
 
 	public:
 

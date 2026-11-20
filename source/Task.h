@@ -99,8 +99,8 @@ namespace Pakal
 			std::function<void()> onComplete = [myTask]()
 			{
 				auto t = static_cast<DummyTaskAtomic*>(myTask.get());
-				t->m_result-= 1;
-				if (t->m_result == 0)
+				// one atomic step: two tasks ending at once on two threads must not both see zero (it ran twice)
+				if (--t->m_result == 0)
 				{
 					t->runTask();
 				}
