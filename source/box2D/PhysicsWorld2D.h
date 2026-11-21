@@ -54,7 +54,9 @@ namespace Pakal
 		void add_static_circle(const Vec2& center, float radius, uint16 categoryBits = 0x0001, uintptr_t userData = 0);
 		// Static chain of edges through 'points' (meters). A closed chain joins the last point to the first.
 		void add_static_chain(const std::vector<Vec2>& points, bool closed, uint16 categoryBits = 0x0001);
-		// Convex solid polygon (3-8 vertices), with independent category/contact filters.
+		// Solid polygon, with independent category/contact filters: any simple polygon, either winding, convex or not and
+		// of any number of vertices. Box2D takes convex pieces of 8 at most: a bigger convex one is split in fans, a concave
+		// one in triangles, all on one body. Pieces too thin for Box2D are left out with a warning.
 		void add_static_polygon(const std::vector<Vec2>& points, uint16 categoryBits = 0x0001, uint16 maskBits = 0xFFFF);
 
 		// Turns on or off the static shapes made with this userData (a barricade that breaks and is repaired)
