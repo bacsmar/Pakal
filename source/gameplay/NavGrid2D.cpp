@@ -9,6 +9,7 @@
 #include "NavGrid2D.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -38,6 +39,7 @@ namespace Pakal
 		// half diagonal, answers the whole block when nothing static is that near (most of an open map); only the blocks
 		// near a wall test their cells one by one. The same answer as testing every cell, far fewer queries: a 1 km map
 		// at 0.5 m cells was 4 million of them, 7 s of a phone's load and of every restart.
+		const auto start = std::chrono::steady_clock::now();
 		constexpr int kBlock = 8;
 		const float halfDiagonal = 0.5f * kBlock * m_cellSize * 1.41421356f;
 		for (int by = 0; by < m_height; by += kBlock)
@@ -57,7 +59,10 @@ namespace Pakal
 				}
 			}
 		}
+		const auto cellsDone = std::chrono::steady_clock::now();
 		label_regions();
+		m_lastCellsMs = std::chrono::duration<double, std::milli>(cellsDone - start).count();
+		m_lastRegionsMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - cellsDone).count();
 	}
 
 	void NavGrid2D::rebuild_area(const PhysicsWorld2D& world, const Pakal::Vec2& minCorner, const Pakal::Vec2& maxCorner)

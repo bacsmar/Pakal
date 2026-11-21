@@ -11,6 +11,7 @@
 #include "gameplay/NavGrid2D.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -20,8 +21,9 @@ namespace Pakal::TopDown
 {
 	LevelPhysicsCount build_level_physics(const Pakal::LevelDocument& doc, Pakal::PhysicsWorld2D& world, Pakal::NavGrid2D& nav,
 		const TopDownLayers& layers, float agentRadius, const std::function<uintptr_t(int gameId)>& wallOwner,
-		const std::function<bool(uintptr_t actor)>& isBarricade)
+		const std::function<bool(uintptr_t actor)>& isBarricade, const Pakal::NavGrid2D* reuse)
 	{
+		const auto start = std::chrono::steady_clock::now();
 		LevelPhysicsCount count;
 		Pakal::Vec2 minCorner(1e9f, 1e9f), maxCorner(-1e9f, -1e9f);
 		auto extend = [&](float x, float y)
@@ -93,8 +95,17 @@ namespace Pakal::TopDown
 		}
 		const Pakal::Vec2 spawn(doc.meters(doc.spawn[0]), doc.meters(doc.spawn[1]));
 		extend(spawn.x, spawn.y);
+		count.staticsMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+		if (reuse)
+		{
+			nav = *reuse;
+			count.navReused = true;
+			return count;
+		}
 		const Pakal::Vec2 margin(10.0f, 10.0f);
 		nav.build(world, minCorner - margin, maxCorner + margin, agentRadius, layers.wall);
+		count.cellsMs = nav.last_cells_ms();
+		count.regionsMs = nav.last_regions_ms();
 		return count;
 	}
 }

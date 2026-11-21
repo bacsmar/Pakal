@@ -42,6 +42,9 @@ namespace Pakal
 		// Whether find_path would find one, without searching it (the regions): a question asked many times a second
 		bool connected(const Pakal::Vec2& from, const Pakal::Vec2& to) const;
 
+		// How long the last build's two parts took (ms): testing the cells, and connecting them into regions
+		double last_cells_ms() const { return m_lastCellsMs; }
+		double last_regions_ms() const { return m_lastRegionsMs; }
 		int get_width() const { return m_width; }
 		int get_height() const { return m_height; }
 		// The box it covers and its cells (another grid can be built over the same box)
@@ -57,6 +60,7 @@ namespace Pakal
 		bool walkable_cell(int x, int y) const;
 		void label_regions();
 
+		double m_lastCellsMs = 0.0, m_lastRegionsMs = 0.0;
 		float m_cellSize;
 		Pakal::Vec2 m_min;
 		int m_width;
