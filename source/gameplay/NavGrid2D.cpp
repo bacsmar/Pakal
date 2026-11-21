@@ -34,13 +34,27 @@ namespace Pakal
 		m_agentRadius = agentRadius;
 		m_obstacleMask = obstacleMask;
 
-		for (int y = 0; y < m_height; ++y)
+		// By blocks of kBlock x kBlock cells: one query from the block's center, over the agent's radius plus the block's
+		// half diagonal, answers the whole block when nothing static is that near (most of an open map); only the blocks
+		// near a wall test their cells one by one. The same answer as testing every cell, far fewer queries: a 1 km map
+		// at 0.5 m cells was 4 million of them, 7 s of a phone's load and of every restart.
+		constexpr int kBlock = 8;
+		const float halfDiagonal = 0.5f * kBlock * m_cellSize * 1.41421356f;
+		for (int by = 0; by < m_height; by += kBlock)
 		{
-			for (int x = 0; x < m_width; ++x)
+			for (int bx = 0; bx < m_width; bx += kBlock)
 			{
-				const Pakal::Vec2 center = center_of(x, y);
-				const bool free = !world.static_within(center, agentRadius, obstacleMask);
-				m_walkable[static_cast<size_t>(y) * m_width + x] = free ? 1 : 0;
+				const int x1 = std::min(bx + kBlock, m_width), y1 = std::min(by + kBlock, m_height);
+				const Pakal::Vec2 blockCenter(m_min.x + 0.5f * (bx + x1) * m_cellSize, m_min.y + 0.5f * (by + y1) * m_cellSize);
+				const bool open = !world.static_within(blockCenter, agentRadius + halfDiagonal, obstacleMask);
+				for (int y = by; y < y1; ++y)
+				{
+					for (int x = bx; x < x1; ++x)
+					{
+						const bool free = open || !world.static_within(center_of(x, y), agentRadius, obstacleMask);
+						m_walkable[static_cast<size_t>(y) * m_width + x] = free ? 1 : 0;
+					}
+				}
 			}
 		}
 		label_regions();
