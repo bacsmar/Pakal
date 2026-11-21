@@ -450,6 +450,7 @@ namespace Pakal
 		// Whether it casts into the shadow map: the sun sees it, and its shadow can fall in the camera's view
 		bool casts_into_view();
 		void build_palette();
+		static void tell_waited_release(double ms);   // (the destructor's waits for the graphics thread, told in the log)
 		void compute_node_transforms(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay = false);
 		void compute_nodes(const aiNode* node, const aiMatrix4x4& parent, bool animated, double timeTicks, bool inOverlay, size_t& index);
 		// What a pose looks up once (each frame it was found again for every node): each node's bind pose, decomposed,
