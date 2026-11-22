@@ -4,7 +4,9 @@ name: build
 
 on:
   push:
-    branches: [master, develop]
+    # the integration branches too ('<line>/engine' in a studio's repository): a pull request restores the caches its
+    # base branch saved, and caches saved by a pull request serve that pull request alone
+    branches: [master, develop, '**/engine']
   pull_request:
 
 jobs:
@@ -24,14 +26,14 @@ jobs:
         shell: bash
         run: echo "bgfx=$(git rev-parse HEAD:external/bgfx HEAD:external/bx HEAD:external/bimg | sha1sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
 
-      # vcpkg: a new key every run, restored from the newest one, so packages built here are saved for the next run
+      # vcpkg: one cache for what decides the packages (the manifest and the overlay ports), saved once; a change restores
+      # the last one and builds only what changed (a key a run saved 321 MB every run and filled the repository's 10 GB)
       - name: vcpkg binary cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+          key: vcpkg-${{ hashFiles('vcpkg.json', 'tools/vcpkg-overlay/**') }}
           restore-keys: |
-            vcpkg-${{ hashFiles('vcpkg.json') }}-
             vcpkg-
 
       # bgfx: what the libraries are built from (the submodules' commits, our patches, how we build them). The stamp
