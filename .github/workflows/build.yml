@@ -50,6 +50,9 @@ jobs:
         shell: cmd
         env:
           VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
+          # ports fixed upstream after the manifest's baseline (kubazip 0.3.15: GitHub's archive changed its hash; vcpkg's
+          # port-version 1 of 2026-11-21): a machine whose packages are already built never needs them
+          VCPKG_OVERLAY_PORTS: ${{ github.workspace }}/tools/vcpkg-overlay
         run: |
           set VCPKG_ROOT=%VCPKG_INSTALLATION_ROOT%
           cmake --preset win64
