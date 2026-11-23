@@ -1,7 +1,12 @@
 """Seals a game's assets into one pack that the engine reads as a zip (ZipSourceMiniz with a key): each file is deflated and mixed
 with a stream made from the key and its name, so that it cannot be opened by hand. Not strong encryption: the key lives in the game.
 
-    python pakal_pack.py <folder> <out.pak> <key> [--prefix Assets/]
+    python pakal_pack.py <folder> <out.pak> [--prefix Assets/]        the key from PAKAL_PACK_KEY
+    python pakal_pack.py <folder> <out.pak> - [--prefix Assets/]      the key from the standard input
+
+The key does not belong on the command line: any process listing (Task Manager, `ps`) shows a command line while it runs.
+A tool in Python seals in its own process instead: seal_folder(folder, out, key). A key given as a third argument is still
+taken, with a warning, until no tool passes it so.
 
 Every file under <folder> goes in under <prefix><its path in the folder>, lower case, with '/' (the names the engine asks for).
 The game mounts it with ResourceMgr.add_source<ZipSource>(path, true, key)."""
@@ -108,12 +113,8 @@ def seal(data, key, name):
     return b"PKP1" + struct.pack("<I", len(data)) + stream_xor(zlib.compress(data, 9), key, name)
 
 
-def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    prefix = sys.argv[sys.argv.index("--prefix") + 1] if "--prefix" in sys.argv else "Assets/"
-    if "--prefix" in sys.argv:
-        args.remove(prefix)
-    folder, out, key = args
+def seal_folder(folder, out, key, prefix="Assets/"):
+    """Every file under 'folder' sealed into the pack 'out' (see above). Returns how many files went in."""
     count = 0
     with zipfile.ZipFile(out, "w", zipfile.ZIP_STORED) as z:
         for d, _, files in os.walk(folder):
@@ -123,6 +124,31 @@ def main():
                 with open(full, "rb") as src:
                     z.writestr(name, seal(src.read(), key, name))
                 count += 1
+    return count
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    prefix = sys.argv[sys.argv.index("--prefix") + 1] if "--prefix" in sys.argv else "Assets/"
+    if "--prefix" in sys.argv:
+        args.remove(prefix)
+    if len(args) == 2:
+        key = os.environ.get("PAKAL_PACK_KEY", "")
+    elif len(args) == 3 and args[2] == "-":
+        key = sys.stdin.readline().rstrip("\r\n")
+    elif len(args) == 3:
+        # (still taken, for the tools that pass it so; it goes away once none does)
+        key = args[2]
+        print("pakal_pack.py: WARNING: the key was given on the command line, where any process listing shows it while the "
+              "pack is sealed: set PAKAL_PACK_KEY, give '-' and write it to the standard input, or call seal_folder() from Python",
+              file=sys.stderr)
+    else:
+        sys.exit("usage: pakal_pack.py <folder> <out.pak> [-] [--prefix Assets/]: the key from PAKAL_PACK_KEY, or from the "
+                 "standard input with '-' (never on the command line, where a process listing shows it)")
+    if not key:
+        sys.exit("no key: set PAKAL_PACK_KEY, or give '-' and write the key to the standard input")
+    folder, out = args[0], args[1]
+    count = seal_folder(folder, out, key, prefix)
     print(f"{out}: {count} files, {os.path.getsize(out) / 1e6:.0f} MB")
 
 

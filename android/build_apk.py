@@ -555,7 +555,11 @@ def seal_pack(stage, game):
     for folder in pack['folders']:
         if (stage / 'Assets' / folder).is_dir():
             shutil.move(str(stage / 'Assets' / folder), str(sealed / folder))
-    run([sys.executable, ROOT / 'tools' / 'pakal_pack.py', sealed, stage / pack['file'], found.group(1)], hidden=(found.group(1),))
+    # sealed in this process (pakal_pack.seal_folder): a child's command line with the key would show in any process listing
+    sys.path.insert(0, str(ROOT / 'tools'))
+    import pakal_pack
+    count = pakal_pack.seal_folder(str(sealed), str(stage / pack['file']), found.group(1))
+    print(f'> pakal_pack.seal_folder {sealed} {stage / pack["file"]} ***: {count} files')
     shutil.rmtree(sealed)
     write_asset_list(stage)
 
