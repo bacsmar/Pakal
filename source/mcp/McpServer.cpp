@@ -392,6 +392,16 @@ namespace Pakal
 				{
 					output = tool.call(arguments);
 				}
+				catch (const json::exception& e)
+				{
+					// an argument missing or of the wrong type (arguments.at("path") without one): said as the tool's error, with
+					// its schema, not as the JSON library's exception
+					std::string what = e.what();
+					const size_t bracket = what.find("] ");
+					if (bracket != std::string::npos) what = what.substr(bracket + 2);
+					output = { { "error", "the arguments do not fit the tool: " + what }, { "inputSchema", tool.inputSchema } };
+					isError = true;
+				}
 				catch (const std::exception& e)
 				{
 					output = { { "error", e.what() } };

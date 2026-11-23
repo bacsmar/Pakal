@@ -112,6 +112,20 @@ int main()
 		check(newRan == 1, "the next call gets the new tool");
 	}
 
+	// a missing argument is the tool's error, with its schema, not the JSON library's exception
+	{
+		McpServer server;
+		server.add_tool("shot", { "Needs a path", json{ { "type", "object" }, { "properties", { { "path", { { "type", "string" } } } } } },
+			[](const json& arguments) { return json{ { "path", arguments.at("path").get<std::string>() } }; } });
+		const json answer = json::parse(call(server, "shot"));
+		const json result = answer.value("result", json::object());
+		const std::string text = result.value("content", json::array()).empty() ? std::string()
+			: result["content"][0].value("text", std::string());
+		check(result.value("isError", false) && text.find("do not fit the tool") != std::string::npos
+			&& text.find("json.exception") == std::string::npos && text.find("inputSchema") != std::string::npos,
+			"a missing argument is a tool error with the schema, not a raw JSON exception");
+	}
+
 	// the engine's tools never start in a players' copy
 	{
 		std::string why;
