@@ -4,9 +4,8 @@ with a stream made from the key and its name, so that it cannot be opened by han
     python pakal_pack.py <folder> <out.pak> [--prefix Assets/]        the key from PAKAL_PACK_KEY
     python pakal_pack.py <folder> <out.pak> - [--prefix Assets/]      the key from the standard input
 
-The key does not belong on the command line: any process listing (Task Manager, `ps`) shows a command line while it runs.
-A tool in Python seals in its own process instead: seal_folder(folder, out, key). A key given as a third argument is still
-taken, with a warning, until no tool passes it so.
+The key never goes on the command line: any process listing (Task Manager, `ps`) shows a command line while it runs, so a
+key given as a third argument is refused. A tool in Python seals in its own process instead: seal_folder(folder, out, key).
 
 Every file under <folder> goes in under <prefix><its path in the folder>, lower case, with '/' (the names the engine asks for).
 The game mounts it with ResourceMgr.add_source<ZipSource>(path, true, key)."""
@@ -136,12 +135,6 @@ def main():
         key = os.environ.get("PAKAL_PACK_KEY", "")
     elif len(args) == 3 and args[2] == "-":
         key = sys.stdin.readline().rstrip("\r\n")
-    elif len(args) == 3:
-        # (still taken, for the tools that pass it so; it goes away once none does)
-        key = args[2]
-        print("pakal_pack.py: WARNING: the key was given on the command line, where any process listing shows it while the "
-              "pack is sealed: set PAKAL_PACK_KEY, give '-' and write it to the standard input, or call seal_folder() from Python",
-              file=sys.stderr)
     else:
         sys.exit("usage: pakal_pack.py <folder> <out.pak> [-] [--prefix Assets/]: the key from PAKAL_PACK_KEY, or from the "
                  "standard input with '-' (never on the command line, where a process listing shows it)")

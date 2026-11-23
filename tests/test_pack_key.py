@@ -54,16 +54,15 @@ class PackKey(unittest.TestCase):
             self.assertEqual(sorted(entries(inproc)), ['assets/sounds.json', 'assets/textures/wall.png'])
             self.assertTrue(all(data.startswith(b'PKP1') for data in entries(inproc).values()))
 
-    def test_the_tool_warns_of_a_key_on_its_command_line(self):
-        # (still taken while a tool passes it so; the warning says how not to)
+    def test_the_tool_refuses_a_key_on_its_command_line(self):
         with tempfile.TemporaryDirectory() as base:
             folder = make_folder(base)
             env = {k: v for k, v in os.environ.items() if k != 'PAKAL_PACK_KEY'}
             result = subprocess.run([sys.executable, str(ROOT / 'tools' / 'pakal_pack.py'), str(folder), str(Path(base) / 'x.pak'),
                                      DUMMY_KEY], env=env, capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0)
-            self.assertIn('WARNING', result.stderr)
-            self.assertIn('PAKAL_PACK_KEY', result.stderr)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((Path(base) / 'x.pak').exists(), 'nothing is sealed with a key from the command line')
+            self.assertIn('PAKAL_PACK_KEY', result.stderr + result.stdout)
 
     def test_the_tool_refuses_to_seal_without_a_key(self):
         with tempfile.TemporaryDirectory() as base:
