@@ -126,6 +126,21 @@ int main()
 			"a missing argument is a tool error with the schema, not a raw JSON exception");
 	}
 
+	// which requests are refused before their body is read: a web page's (an Origin, any case), one without the token
+	{
+		const std::string post = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n";
+		const std::string bearer = "Authorization: Bearer secret\r\n";
+		check(McpServer::refusal(post + bearer + "\r\n", "secret").empty(), "a request with the token is served");
+		check(McpServer::refusal(post + "\r\n", "").empty(), "without a token set, a plain request is served");
+		check(McpServer::refusal(post + bearer + "Origin: http://page.example\r\n\r\n", "secret") == "403 Forbidden",
+			"a request with an Origin is refused (403), even with the token");
+		check(McpServer::refusal(post + "origin: null\r\n\r\n", "") == "403 Forbidden", "... whatever the header's case");
+		check(McpServer::refusal(post + "X-Original: 1\r\n\r\n", "").empty(), "a header that only starts like it is not an Origin");
+		check(McpServer::refusal(post + "\r\n", "secret") == "401 Unauthorized", "without the bearer, refused (401)");
+		check(McpServer::refusal(post + "Authorization: Bearer wrong\r\n\r\n", "secret") == "401 Unauthorized", "a wrong bearer, refused");
+		check(McpServer::refusal("GET /mcp HTTP/1.1\r\n\r\n", "") == "404 Not Found", "not a POST to /mcp: 404");
+	}
+
 	// the engine's tools never start in a players' copy
 	{
 		std::string why;

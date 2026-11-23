@@ -65,6 +65,10 @@ namespace Pakal
 		// Answers one JSON-RPC message. Returns the response body, or an empty string for notifications.
 		// Public so the protocol can be tested without sockets.
 		std::string handle_message(const std::string& body);
+		// Whether a request's head (its request line and headers) is refused, before its body is read: "" when it is
+		// served, else the HTTP status sent ("404 Not Found" not POST /mcp, "403 Forbidden" with an Origin, "401
+		// Unauthorized" without the token's bearer when one is set). Public so it can be tested without sockets.
+		static std::string refusal(const std::string& head, const std::string& token);
 
 	private:
 		void serve();

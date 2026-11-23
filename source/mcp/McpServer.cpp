@@ -273,6 +273,15 @@ namespace Pakal
 		}
 	}
 
+	std::string McpServer::refusal(const std::string& head, const std::string& token)
+	{
+		if (head.rfind("POST /mcp", 0) != 0) return "404 Not Found";
+		// a web page's request (it carries an Origin): a browser posts to 127.0.0.1 as a "simple" request without asking first
+		if (has_header(head, "Origin:")) return "403 Forbidden";
+		if (!token.empty() && !has_bearer(head, token)) return "401 Unauthorized";
+		return std::string();
+	}
+
 	void McpServer::handle_connection(uintptr_t socketValue)
 	{
 		const SOCKET socket = static_cast<SOCKET>(socketValue);
@@ -281,21 +290,10 @@ namespace Pakal
 		{
 			return;
 		}
-		const bool isPost = head.rfind("POST /mcp", 0) == 0;
-		if (!isPost)
+		const std::string refused = refusal(head, m_token);
+		if (!refused.empty())
 		{
-			send_all(socket, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-			return;
-		}
-		// a web page's request (it carries an Origin): a browser posts to 127.0.0.1 as a "simple" request without asking first
-		if (has_header(head, "Origin:"))
-		{
-			send_all(socket, "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-			return;
-		}
-		if (!m_token.empty() && !has_bearer(head, m_token))
-		{
-			send_all(socket, "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+			send_all(socket, "HTTP/1.1 " + refused + "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
 			return;
 		}
 
