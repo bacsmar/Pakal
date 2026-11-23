@@ -7,7 +7,13 @@
 //          thread marshals the work itself (GraphicsSystem::execute_block).
 //
 // Security: loopback only (on a phone, reached from a computer through `adb forward`). When a token is set, every
-// request must carry "Authorization: Bearer <token>". Off unless the host starts it (PAKAL_MCP_PORT: EngineTools).
+// request must carry "Authorization: Bearer <token>". A request with an Origin header (a web page's) is refused: a
+// browser may post to 127.0.0.1 without asking first. Off unless the host starts it (PAKAL_MCP_PORT: EngineTools), and
+// never in a players' copy (start_engine_tools).
+//
+// A tool's lifetime: remove_tool returns only after the calls of that tool already running have ended, so a tool may
+// capture what its owner frees right after removing it. Call it from a thread no tool waits for (not the graphics
+// thread: a tool may wait for it); a tool that removes itself does not wait for itself.
 // Windows sockets or POSIX ones (Android, Linux).
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,6 +23,7 @@
 #include <nlohmann/json.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -45,6 +52,7 @@ namespace Pakal
 
 		// Before or after start() (a game adds its own when it starts); a name given again replaces the tool
 		void add_tool(const std::string& name, Tool tool);
+		// Removes it, and waits for the calls of it already running to end (see the lifetime above)
 		void remove_tool(const std::string& name);
 		// The server the host started (null when none): where a game or a genre adds its tools
 		static McpServer* active();
@@ -62,8 +70,15 @@ namespace Pakal
 		void serve();
 		void handle_connection(uintptr_t socket);
 
-		std::map<std::string, Tool> m_tools;
+		// a tool and how many calls of it are running (kept alive by a running call when it is removed or replaced)
+		struct ToolEntry
+		{
+			Tool tool;
+			int running = 0;
+		};
+		std::map<std::string, std::shared_ptr<ToolEntry>> m_tools;
 		std::recursive_mutex m_toolsMutex;
+		std::condition_variable_any m_toolsIdle;   // a call ended
 		std::string m_token;
 		std::thread m_thread;
 		std::atomic<bool> m_running{ false };

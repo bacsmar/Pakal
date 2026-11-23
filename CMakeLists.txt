@@ -859,6 +859,11 @@ add_test(NAME ComponentSchemaTests COMMAND ComponentSchemaTests)
 add_executable(McpServerTests ${CMAKE_SOURCE_DIR}/tests/McpServerTests.cpp)
 target_link_libraries(McpServerTests Pakal)
 add_test(NAME McpServerTests COMMAND McpServerTests)
+# The tool server's safety without sockets (it runs where McpServerTests, which needs a free port, is left out): a removed
+# tool's running call ends first; no tools in a players' copy
+add_executable(ToolLifetimeTests ${CMAKE_SOURCE_DIR}/tests/ToolLifetimeTests.cpp)
+target_link_libraries(ToolLifetimeTests Pakal)
+add_test(NAME ToolLifetimeTests COMMAND ToolLifetimeTests)
 # The QA hooks (source/mcp/QaTools: input, state, log, time scale, quit) on a headless engine: the core with its dummy
 # systems, the MCP server compiled in beside them
 add_executable(QaToolsTests ${CMAKE_SOURCE_DIR}/tests/QaToolsTests.cpp ${CMAKE_SOURCE_DIR}/source/mcp/QaTools.cpp

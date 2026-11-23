@@ -23,6 +23,7 @@
 #include "mcp/McpServer.h"
 
 #include <memory>
+#include <string>
 
 namespace Pakal
 {
@@ -30,6 +31,11 @@ namespace Pakal
 
 	// Adds the engine's tools to a server (its graphics system's, when it has one)
 	_PAKALExport void add_engine_tools(McpServer& server, Engine& engine);
-	// The server PAKAL_MCP_PORT asks for, with the engine's tools, started; null when it is not asked for or cannot start
+	// The server PAKAL_MCP_PORT asks for, with the engine's tools, started; null when it is not asked for, in a players'
+	// copy (engine_tools_allowed) or when it cannot start
 	_PAKALExport std::unique_ptr<McpServer> start_engine_tools(Engine& engine);
+	// Whether the engine's tools (and so every game's, which go on the same server) may start: never in a players' copy,
+	// PAKAL_RELEASE=1 ('release') or a build of the "store" channel (BuildIdentity::channel), whatever its environment says.
+	// Otherwise true; false with the reason in 'why'
+	_PAKALExport bool engine_tools_allowed(const char* release, const std::string& channel, std::string& why);
 }

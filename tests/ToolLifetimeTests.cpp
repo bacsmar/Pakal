@@ -1,0 +1,126 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2026 The PakalEngine Open Source Project
+// File: ToolLifetimeTests.cpp
+// Purpose: The tool server's safety without sockets (handle_message): remove_tool returns only after a
+//          running call of that tool ends (its owner may then free what the tool captured), a tool that
+//          removes itself does not wait for itself, a replaced tool's running call finishes with the old
+//          one; and the engine's tools never start in a players' copy (engine_tools_allowed).
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "mcp/EngineTools.h"
+#include "mcp/McpServer.h"
+
+#include <atomic>
+#include <chrono>
+#include <cstdio>
+#include <memory>
+#include <thread>
+
+using namespace Pakal;
+using json = nlohmann::json;
+
+namespace
+{
+	int g_failures = 0;
+
+	void check(bool condition, const char* what)
+	{
+		std::printf("[%s] %s\n", condition ? "PASS" : "FAIL", what);
+		std::fflush(stdout);
+		if (!condition) ++g_failures;
+	}
+
+	std::string call(McpServer& server, const std::string& name)
+	{
+		const json request = { { "jsonrpc", "2.0" }, { "id", 1 }, { "method", "tools/call" },
+			{ "params", { { "name", name }, { "arguments", json::object() } } } };
+		return server.handle_message(request.dump());
+	}
+}
+
+int main()
+{
+	const json schema = { { "type", "object" } };
+
+	// a running call holds its tool: remove_tool waits, then what it captured can go
+	{
+		McpServer server;
+		auto owned = std::make_unique<int>(41);   // what a level owns and a tool reads
+		std::atomic<bool> started{ false }, finished{ false };
+		server.add_tool("slow", { "Reads what the level owns, slowly", schema, [&](const json&)
+		{
+			started = true;
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			const int value = *owned + 1;   // freed under it, this would read freed memory
+			finished = true;
+			return json{ { "value", value } };
+		} });
+		std::string answer;
+		std::thread mcp([&]() { answer = call(server, "slow"); });
+		while (!started) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		server.remove_tool("slow");
+		check(finished.load(), "remove_tool returns only after the running call of that tool ended");
+		owned.reset();   // the level frees what the tool captured
+		mcp.join();
+		check(answer.find("42") != std::string::npos, "the running call finished with its answer");
+		check(call(server, "slow").find("unknown tool") != std::string::npos, "once removed it is unknown");
+	}
+
+	// a tool that removes itself does not wait for itself
+	{
+		McpServer server;
+		server.add_tool("once", { "Removes itself", schema, [&server](const json&)
+		{
+			server.remove_tool("once");
+			return json{ { "gone", true } };
+		} });
+		std::atomic<bool> done{ false };
+		std::thread mcp([&]() { call(server, "once"); done = true; });
+		for (int i = 0; i < 200 && !done; ++i) std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		check(done.load(), "a tool that removes itself returns (no wait for itself)");
+		if (!done) mcp.detach(); else mcp.join();
+	}
+
+	// removing a tool that is not running, or one that does not exist, returns at once
+	{
+		McpServer server;
+		server.add_tool("idle", { "Never called", schema, [](const json&) { return json::object(); } });
+		const auto at = std::chrono::steady_clock::now();
+		server.remove_tool("idle");
+		server.remove_tool("nothing");
+		check(std::chrono::steady_clock::now() - at < std::chrono::milliseconds(50), "removing an idle or unknown tool returns at once");
+	}
+
+	// a tool replaced while it runs: the running call ends with the old one, the next call gets the new one
+	{
+		McpServer server;
+		std::atomic<bool> started{ false };
+		std::atomic<int> oldEnded{ 0 }, newRan{ 0 };
+		server.add_tool("v", { "Old", schema, [&](const json&)
+		{
+			started = true;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			++oldEnded;
+			return json::object();
+		} });
+		std::thread mcp([&]() { call(server, "v"); });
+		while (!started) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		server.add_tool("v", { "New", schema, [&](const json&) { ++newRan; return json::object(); } });
+		mcp.join();
+		check(oldEnded == 1 && newRan == 0, "the running call ends with the tool it started");
+		call(server, "v");
+		check(newRan == 1, "the next call gets the new tool");
+	}
+
+	// the engine's tools never start in a players' copy
+	{
+		std::string why;
+		check(engine_tools_allowed(nullptr, "dev", why), "a dev build may start them");
+		check(engine_tools_allowed("0", "qa", why), "a qa build may start them");
+		check(!engine_tools_allowed("1", "dev", why) && !why.empty(), "not with PAKAL_RELEASE=1");
+		check(!engine_tools_allowed(nullptr, "store", why) && !why.empty(), "not in a store build, whatever its environment");
+	}
+
+	std::printf("%s\n", g_failures ? "FAILED" : "ALL PASSED");
+	return g_failures ? 1 : 0;
+}

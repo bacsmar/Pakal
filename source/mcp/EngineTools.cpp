@@ -329,10 +329,33 @@ namespace Pakal
 			} });
 	}
 
+	bool engine_tools_allowed(const char* release, const std::string& channel, std::string& why)
+	{
+		if (release && std::string(release) == "1")
+		{
+			why = "a players' copy (PAKAL_RELEASE=1)";
+			return false;
+		}
+		if (channel == "store")
+		{
+			why = "a players' copy (the store channel)";
+			return false;
+		}
+		why.clear();
+		return true;
+	}
+
 	std::unique_ptr<McpServer> start_engine_tools(Engine& engine)
 	{
 		const char* portText = std::getenv("PAKAL_MCP_PORT");
 		if (!portText || !*portText) return nullptr;
+		// a players' copy serves no tools, whatever its environment asks (on the desktop anyone can set PAKAL_MCP_PORT)
+		std::string refused;
+		if (!engine_tools_allowed(std::getenv("PAKAL_RELEASE"), engine.build_identity().channel, refused))
+		{
+			LOG_WARNING("[EngineTools] PAKAL_MCP_PORT is set, but no MCP server starts in %s", refused.c_str());
+			return nullptr;
+		}
 		auto server = std::make_unique<McpServer>();
 		add_engine_tools(*server, engine);
 		std::string error;
