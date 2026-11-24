@@ -53,6 +53,10 @@ OpenGL or Vulkan on Linux.
   - **shooter:** guns, reloads and fire cycles;
   - **brawler:** moves as data, combos, guards, launches and dodges;
   - **action RPG:** resources, levels and attributes, equipment, abilities and loot.
+- **Quests:** `game_genres/quests`, for a game of any genre: quests as data, checked at load and in CI, a state machine
+  per quest in the fixed step, one arbiter for the marker and the objective line, saves that survive damaged data, uses
+  and quest items, a development panel and MCP tools to read and move a stuck quest, and a route runner that plays
+  every quest.
 - **Scripting:** Lua for missions and events. An error names the script file it comes from.
 - **Physics and AI:** Box2D for 2D physics (static shapes from any simple polygon, concave ones included), character
   controllers, ray casts, a navigation grid built in blocks and reused while its level is unchanged, and an enemy
@@ -139,7 +143,7 @@ Dependencies only go down. A server, a bot or a test can link a genre's simulati
 [docs/README.md](docs/README.md) lists every page. The main ones:
 - **The engine:** [ARCHITECTURE.md](docs/ARCHITECTURE.md), [SUBSYSTEMS.md](docs/SUBSYSTEMS.md),
   [BGFX_BACKEND.md](docs/BGFX_BACKEND.md).
-- **Genres and examples:** [TOPDOWN_MODULE.md](docs/TOPDOWN_MODULE.md), [ZOMBIES_MODULE.md](docs/ZOMBIES_MODULE.md).
+- **Genres and examples:** [TOPDOWN_MODULE.md](docs/TOPDOWN_MODULE.md), [QUESTS.md](docs/QUESTS.md), [ZOMBIES_MODULE.md](docs/ZOMBIES_MODULE.md).
 - **Levels:** [LEVEL_BUILDER.md](docs/LEVEL_BUILDER.md), [LEVEL_EDITOR.md](docs/LEVEL_EDITOR.md),
   [EDITOR.md](docs/EDITOR.md).
 - **Platforms and performance:** [ANDROID.md](docs/ANDROID.md), [PROFILING.md](docs/PROFILING.md),
