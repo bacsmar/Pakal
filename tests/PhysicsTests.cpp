@@ -285,6 +285,22 @@ int main(int argc, char* argv[])
 		check(circles == 1 && circleRight, "a character made on a PhysicsWorld2D is a circle of the world, where it was put");
 	}
 
+	// Static polygons of any shape: a 16-sided circle (more corners than Box2D's 8) and an L (concave), clockwise
+	{
+		Pakal::PhysicsWorld2D world(Pakal::Vec2(0.0f, 0.0f));
+		std::vector<Pakal::Vec2> circle;
+		for (int i = 0; i < 16; ++i)
+			circle.push_back(Pakal::Vec2(10.0f + 2.0f * std::cos(i * 0.3926991f), 2.0f * std::sin(i * 0.3926991f)));
+		world.add_static_polygon(circle);
+		world.add_static_polygon({ {0, 0}, {0, 4}, {1, 4}, {1, 1}, {4, 1}, {4, 0} });   // an L, clockwise
+		check(world.point_in_static(Pakal::Vec2(10.0f, 0.0f)) && world.point_in_static(Pakal::Vec2(11.8f, 0.1f)) &&
+			world.point_in_static(Pakal::Vec2(8.2f, -0.1f)), "a static polygon of 16 corners is solid all over");
+		check(!world.point_in_static(Pakal::Vec2(12.3f, 0.0f)), "a static polygon of 16 corners ends at its edge");
+		check(world.point_in_static(Pakal::Vec2(0.5f, 3.5f)) && world.point_in_static(Pakal::Vec2(3.5f, 0.5f)),
+			"a concave static polygon is solid in both arms");
+		check(!world.point_in_static(Pakal::Vec2(2.5f, 2.5f)), "a concave static polygon is not filled to its hull");
+	}
+
 	std::printf("%s (%d failures)\n", g_failures == 0 ? "ALL PASSED" : "FAILED", g_failures);
 	std::fflush(stdout);
 	return g_failures == 0 ? 0 : 1;

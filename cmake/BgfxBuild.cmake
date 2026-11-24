@@ -116,11 +116,30 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
                     /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=${PAKAL_VS_TOOLSET}
                 WORKING_DIRECTORY ${BGFX_DIR}/.build/projects/vs2022
                 RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
+            # a build interrupted before (a configure stopped halfway) can leave a broken program database: its link fails
+            # (LNK1285, LNK1207, LNK1201) or its compile does (C1033, C1041). The error names the .pdb: it is deleted and the
+            # project built once more (msbuild's Rebuild alone keeps it when the failed build forgot it was its output)
+            if(failed AND log MATCHES "(LNK1285|LNK1207|LNK1201|C1033|C1041)[^']*'([^']+[.]pdb)'")
+                file(TO_CMAKE_PATH "${CMAKE_MATCH_2}" PAKAL_BROKEN_PDB)
+                message(STATUS "bgfx: ${project}: a broken ${PAKAL_BROKEN_PDB}, left by an interrupted build: deleted, building again")
+                file(REMOVE ${PAKAL_BROKEN_PDB})
+                execute_process(COMMAND ${CMAKE_COMMAND} -E env "CL=${PAKAL_PROJECT_CL}" ${PAKAL_MSBUILD} ${project}.vcxproj ${PAKAL_PROJECT_TARGET} /m /nologo /v:minimal
+                        /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=${PAKAL_VS_TOOLSET}
+                    WORKING_DIRECTORY ${BGFX_DIR}/.build/projects/vs2022
+                    RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
+            endif()
             if(failed)
                 file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")
+                # the hint says what the log shows
+                if(log MATCHES "C1083|Cannot open source file|cannot open source file")
+                    set(PAKAL_BGFX_HINT "A source file could not be opened: a path past Windows' 260 characters. Clone into a shorter folder (C:/dev/Pakal) or turn on long paths.")
+                elseif(log MATCHES "LNK1285|LNK1207|LNK1201|C1033|C1041")
+                    set(PAKAL_BGFX_HINT "A .pdb still broken after one was deleted: delete ${BGFX_DIR}/.build/win64_vs2022 and configure again.")
+                else()
+                    set(PAKAL_BGFX_HINT "The first error in the log says why.")
+                endif()
                 message(FATAL_ERROR "bgfx: ${project} did not build. Its log: ${CMAKE_BINARY_DIR}/bgfx_build.log
-"
-                    "\"Cannot open source file\" there is a path past 260 characters: clone into a shorter folder.")
+${PAKAL_BGFX_HINT}")
             endif()
         endforeach()
     else()

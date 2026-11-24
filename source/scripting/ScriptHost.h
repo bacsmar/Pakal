@@ -70,8 +70,9 @@ namespace Pakal
 
 		// A function the scripts can call by this name
 		void bind(const std::string& name, ScriptFunction function);
-		// Runs Lua code once now (definitions the game's scripts use). False when it fails (logged).
-		bool run(const std::string& code);
+		// Runs Lua code once now (definitions the game's scripts use). False when it fails (logged). 'chunk': the name its
+		// errors and debug.getinfo report ("game/scripts/world.lua": its source is "@" and that), "" the code itself
+		bool run(const std::string& code, const std::string& chunk = std::string());
 
 		// Starts a task from a Lua chunk. A looping task runs its chunk again each time it finishes. Returns false when the
 		// chunk does not compile (logged).

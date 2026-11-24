@@ -57,6 +57,8 @@ add_test(NAME BackendIncludes COMMAND ${PAKAL_CHECK_BACKEND_INCLUDES})
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
     add_test(NAME CdatScanTests COMMAND ${Python3_EXECUTABLE} -m unittest tests/test_cdat_scan.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    # a game pack's key on no command line (build_apk.py seals in its own process; pakal_pack.py reads it from the environment)
+    add_test(NAME PackKeyTests COMMAND ${Python3_EXECUTABLE} -m unittest tests/test_pack_key.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 # how a game builds on the engine: the engine's libraries by name (Pakal::TopDownView...) and pakal_add_game_module()
 include(${CMAKE_SOURCE_DIR}/cmake/PakalGameModule.cmake)
@@ -859,6 +861,11 @@ add_test(NAME ComponentSchemaTests COMMAND ComponentSchemaTests)
 add_executable(McpServerTests ${CMAKE_SOURCE_DIR}/tests/McpServerTests.cpp)
 target_link_libraries(McpServerTests Pakal)
 add_test(NAME McpServerTests COMMAND McpServerTests)
+# The tool server's safety without sockets (it runs where McpServerTests, which needs a free port, is left out): a removed
+# tool's running call ends first; no tools in a players' copy
+add_executable(ToolLifetimeTests ${CMAKE_SOURCE_DIR}/tests/ToolLifetimeTests.cpp)
+target_link_libraries(ToolLifetimeTests Pakal)
+add_test(NAME ToolLifetimeTests COMMAND ToolLifetimeTests)
 # The QA hooks (source/mcp/QaTools: input, state, log, time scale, quit) on a headless engine: the core with its dummy
 # systems, the MCP server compiled in beside them
 add_executable(QaToolsTests ${CMAKE_SOURCE_DIR}/tests/QaToolsTests.cpp ${CMAKE_SOURCE_DIR}/source/mcp/QaTools.cpp

@@ -11,11 +11,94 @@
 
 #include <box2d/b2_distance.h>
 
+#include "LogMgr.h"
+
 #include <algorithm>
 #include <cfloat>
 
 namespace Pakal
 {
+	namespace
+	{
+		float cross(const b2Vec2& o, const b2Vec2& a, const b2Vec2& b)
+		{
+			return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+		}
+
+		// The polygon as Box2D can take it: convex pieces of 3 to b2_maxPolygonVertices corners, counter-clockwise. Points
+		// that repeat the previous one are dropped. A convex polygon is split in fans around its first corner; a concave
+		// one is cut in triangles by ear clipping. 'dropped' counts the pieces too small or thin for Box2D.
+		std::vector<std::vector<b2Vec2>> convex_pieces(const std::vector<Vec2>& points, int& dropped)
+		{
+			std::vector<b2Vec2> ring;
+			for (const Vec2& point : points)
+			{
+				const b2Vec2 corner = to_b2(point);
+				if (ring.empty() || b2DistanceSquared(ring.back(), corner) > b2_linearSlop * b2_linearSlop) ring.push_back(corner);
+			}
+			if (ring.size() > 1 && b2DistanceSquared(ring.front(), ring.back()) <= b2_linearSlop * b2_linearSlop) ring.pop_back();
+			std::vector<std::vector<b2Vec2>> pieces;
+			dropped = 0;
+			if (ring.size() < 3) return pieces;
+			float area = 0.0f;
+			for (size_t i = 0; i < ring.size(); ++i) area += cross(b2Vec2_zero, ring[i], ring[(i + 1) % ring.size()]);
+			if (area < 0.0f) std::reverse(ring.begin(), ring.end());
+			const size_t n = ring.size();
+			bool convex = true;
+			for (size_t i = 0; i < n && convex; ++i) convex = cross(ring[i], ring[(i + 1) % n], ring[(i + 2) % n]) >= 0.0f;
+			// A piece Box2D would refuse (b2PolygonShape::Set asserts on it): too small, or all its corners in a line
+			auto keep = [&](std::vector<b2Vec2> piece)
+			{
+				float twice = 0.0f;
+				for (size_t i = 1; i + 1 < piece.size(); ++i) twice += cross(piece[0], piece[i], piece[i + 1]);
+				if (twice * 0.5f > b2_linearSlop * b2_linearSlop * 4.0f) pieces.push_back(std::move(piece));
+				else ++dropped;
+			};
+			if (convex)
+			{
+				// fans around corner 0: each piece takes up to b2_maxPolygonVertices - 1 corners after it, sharing its last edge
+				for (size_t first = 1; first + 1 < n; first += b2_maxPolygonVertices - 2)
+				{
+					std::vector<b2Vec2> piece{ ring[0] };
+					for (size_t i = first; i < n && piece.size() < b2_maxPolygonVertices; ++i) piece.push_back(ring[i]);
+					keep(std::move(piece));
+				}
+				return pieces;
+			}
+			std::vector<size_t> left(n);
+			for (size_t i = 0; i < n; ++i) left[i] = i;
+			while (left.size() > 3)
+			{
+				bool cut = false;
+				for (size_t k = 0; k < left.size() && !cut; ++k)
+				{
+					const b2Vec2& a = ring[left[(k + left.size() - 1) % left.size()]];
+					const b2Vec2& b = ring[left[k]];
+					const b2Vec2& c = ring[left[(k + 1) % left.size()]];
+					if (cross(a, b, c) <= 0.0f) continue;   // a reflex corner is no ear
+					bool empty = true;
+					for (size_t j = 0; j < left.size() && empty; ++j)
+					{
+						const b2Vec2& p = ring[left[j]];
+						if (&p == &a || &p == &b || &p == &c) continue;
+						empty = !(cross(a, b, p) >= 0.0f && cross(b, c, p) >= 0.0f && cross(c, a, p) >= 0.0f);
+					}
+					if (!empty) continue;
+					keep({ a, b, c });
+					left.erase(left.begin() + static_cast<std::ptrdiff_t>(k));
+					cut = true;
+				}
+				if (!cut)   // not a simple polygon (its edges cross): what is left is not cut
+				{
+					++dropped;
+					return pieces;
+				}
+			}
+			keep({ ring[left[0]], ring[left[1]], ring[left[2]] });
+			return pieces;
+		}
+	}
+
 	PhysicsWorld2D::PhysicsWorld2D(const Vec2& gravity) :
 		m_impl(std::make_unique<Impl>(to_b2(gravity)))
 	{
@@ -109,18 +192,24 @@ namespace Pakal
 
 	void PhysicsWorld2D::add_static_polygon(const std::vector<Vec2>& points, uint16 categoryBits, uint16 maskBits)
 	{
-		if (points.size() < 3 || points.size() > b2_maxPolygonVertices) return;
-		b2Vec2 corners[b2_maxPolygonVertices];
-		for (size_t i = 0; i < points.size(); ++i) corners[i] = to_b2(points[i]);
-		b2PolygonShape polygon;
-		polygon.Set(corners, static_cast<int32>(points.size()));
+		int dropped = 0;
+		const std::vector<std::vector<b2Vec2>> pieces = convex_pieces(points, dropped);
+		if (dropped > 0 || pieces.empty())
+			LOG_WARNING("[PhysicsWorld2D] a static polygon of %d points: %d piece(s) too thin or crossed left out, %d kept",
+				static_cast<int>(points.size()), std::max(dropped, pieces.empty() ? 1 : 0), static_cast<int>(pieces.size()));
+		if (pieces.empty()) return;
 		b2BodyDef def;
 		b2Body* body = m_impl->world.CreateBody(&def);
-		b2FixtureDef fixture;
-		fixture.shape = &polygon;
-		fixture.filter.categoryBits = categoryBits;
-		fixture.filter.maskBits = maskBits;
-		body->CreateFixture(&fixture);
+		for (const std::vector<b2Vec2>& piece : pieces)
+		{
+			b2PolygonShape polygon;
+			polygon.Set(piece.data(), static_cast<int32>(piece.size()));
+			b2FixtureDef fixture;
+			fixture.shape = &polygon;
+			fixture.filter.categoryBits = categoryBits;
+			fixture.filter.maskBits = maskBits;
+			body->CreateFixture(&fixture);
+		}
 	}
 
 	void PhysicsWorld2D::step(float dtSeconds)

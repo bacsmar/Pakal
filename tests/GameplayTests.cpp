@@ -128,6 +128,46 @@ namespace
 		return false;
 	}
 
+	// The grid built by blocks (one query answers an open block) is the grid of one query a cell: random boxes, circles
+	// and triangles, every cell compared with the direct query
+	void check_block_build()
+	{
+		PhysicsWorld2D world(Pakal::Vec2(0.0f, 0.0f));
+		uint32_t seed = 12345u;
+		auto random = [&seed](float lo, float hi)
+		{
+			seed = seed * 1664525u + 1013904223u;
+			return lo + (hi - lo) * float(seed >> 8) * (1.0f / 16777216.0f);
+		};
+		for (int i = 0; i < 60; ++i)
+		{
+			const Pakal::Vec2 at(random(0.0f, 120.0f), random(0.0f, 90.0f));
+			switch (i % 3)
+			{
+			case 0: world.add_static_box(at, Pakal::Vec2(random(0.2f, 3.0f), random(0.2f, 3.0f)), kWallCategory, 0, random(0.0f, 3.0f)); break;
+			case 1: world.add_static_circle(at, random(0.2f, 2.5f), kWallCategory); break;
+			default:
+				world.add_static_polygon({ at, at + Pakal::Vec2(random(1.0f, 4.0f), 0.0f), at + Pakal::Vec2(0.0f, random(1.0f, 4.0f)) }, kWallCategory);
+			}
+		}
+		const Pakal::Vec2 minCorner(-3.0f, -3.0f), maxCorner(123.0f, 93.0f);
+		const float cell = 0.5f, radius = 0.3f;
+		NavGrid2D nav(cell);
+		nav.build(world, minCorner, maxCorner, radius, kWallCategory);
+		int differ = 0, blocked = 0;
+		for (int y = 0; y < nav.get_height(); ++y)
+		{
+			for (int x = 0; x < nav.get_width(); ++x)
+			{
+				const Pakal::Vec2 center(minCorner.x + (x + 0.5f) * cell, minCorner.y + (y + 0.5f) * cell);
+				const bool free = !world.static_within(center, radius, kWallCategory);
+				blocked += free ? 0 : 1;
+				differ += nav.is_walkable(center) == free ? 0 : 1;
+			}
+		}
+		check(blocked > 100 && differ == 0, "the grid built by blocks matches one query a cell");
+	}
+
 	// A closed outline (a sea's, a river's) leaves its inside walkable but cut off: a target in it is reached at its
 	// shore, a target inside it from outside is no path
 	void check_closed_outline()
@@ -148,6 +188,7 @@ int main(int argc, char* argv[])
 	// Unbuffered: every early return keeps its output
 	std::setvbuf(stdout, nullptr, _IONBF, 0);
 	check_closed_outline();
+	check_block_build();
 	if (argc < 4)
 	{
 		std::fprintf(stderr, "Usage: GameplayTests <collision.txt> <spawn.txt> <entities.txt>\n");

@@ -7,6 +7,8 @@
 
 #include "LogMgr.h"
 
+#include <cstring>
+
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -100,6 +102,18 @@ namespace Pakal
 			return true;
 		}
 
+		bool has_header(const std::string& head, const char* name)
+		{
+			const size_t length = std::strlen(name);
+			size_t at = 0;
+			while ((at = head.find('\n', at)) != std::string::npos)
+			{
+				++at;
+				if (head.size() - at >= length && _strnicmp(head.c_str() + at, name, length) == 0) return true;
+			}
+			return false;
+		}
+
 		bool has_bearer(const std::string& head, const std::string& token)
 		{
 			size_t at = 0;
@@ -143,16 +157,30 @@ namespace Pakal
 		return s_active.load();
 	}
 
+	namespace
+	{
+		// the tool this thread is running (a tool that removes itself must not wait for itself)
+		thread_local const void* t_runningTool = nullptr;
+	}
+
 	void McpServer::add_tool(const std::string& name, Tool tool)
 	{
 		std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
-		m_tools[name] = std::move(tool);
+		auto entry = std::make_shared<ToolEntry>();
+		entry->tool = std::move(tool);
+		m_tools[name] = std::move(entry);
 	}
 
 	void McpServer::remove_tool(const std::string& name)
 	{
-		std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
-		m_tools.erase(name);
+		std::unique_lock<std::recursive_mutex> lock(m_toolsMutex);
+		const auto found = m_tools.find(name);
+		if (found == m_tools.end()) return;
+		const std::shared_ptr<ToolEntry> entry = found->second;
+		m_tools.erase(found);
+		if (t_runningTool == entry.get()) return;
+		// what the tool captured may be freed as soon as this returns: its running calls end first
+		m_toolsIdle.wait(lock, [&entry]() { return entry->running == 0; });
 	}
 
 	bool McpServer::start(unsigned short port, const std::string& token, std::string& error)
@@ -245,6 +273,15 @@ namespace Pakal
 		}
 	}
 
+	std::string McpServer::refusal(const std::string& head, const std::string& token)
+	{
+		if (head.rfind("POST /mcp", 0) != 0) return "404 Not Found";
+		// a web page's request (it carries an Origin): a browser posts to 127.0.0.1 as a "simple" request without asking first
+		if (has_header(head, "Origin:")) return "403 Forbidden";
+		if (!token.empty() && !has_bearer(head, token)) return "401 Unauthorized";
+		return std::string();
+	}
+
 	void McpServer::handle_connection(uintptr_t socketValue)
 	{
 		const SOCKET socket = static_cast<SOCKET>(socketValue);
@@ -253,15 +290,10 @@ namespace Pakal
 		{
 			return;
 		}
-		const bool isPost = head.rfind("POST /mcp", 0) == 0;
-		if (!isPost)
+		const std::string refused = refusal(head, m_token);
+		if (!refused.empty())
 		{
-			send_all(socket, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-			return;
-		}
-		if (!m_token.empty() && !has_bearer(head, m_token))
-		{
-			send_all(socket, "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+			send_all(socket, "HTTP/1.1 " + refused + "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
 			return;
 		}
 
@@ -314,8 +346,8 @@ namespace Pakal
 				json tools = json::array();
 				for (const auto& entry : m_tools)
 				{
-					tools.push_back({ { "name", entry.first }, { "description", entry.second.description },
-						{ "inputSchema", entry.second.inputSchema } });
+					tools.push_back({ { "name", entry.first }, { "description", entry.second->tool.description },
+						{ "inputSchema", entry.second->tool.inputSchema } });
 				}
 				return json({ { "jsonrpc", "2.0" }, { "id", id }, { "result", { { "tools", tools } } } }).dump();
 			}
@@ -323,23 +355,50 @@ namespace Pakal
 			{
 				const json params = request.value("params", json::object());
 				const std::string name = params.value("name", std::string());
-				Tool tool;
+				std::shared_ptr<ToolEntry> entry;
 				{
-					// called without the lock: a tool may wait for the graphics thread, which may be adding one
+					// called without the lock: a tool may wait for the graphics thread, which may be adding one. Counted as
+					// running, so remove_tool waits for it to end
 					std::lock_guard<std::recursive_mutex> lock(m_toolsMutex);
 					const auto found = m_tools.find(name);
 					if (found == m_tools.end())
 					{
 						return json_error(id, -32602, "unknown tool '" + name + "'");
 					}
-					tool = found->second;
+					entry = found->second;
+					++entry->running;
 				}
+				struct Running
+				{
+					McpServer& server;
+					ToolEntry& entry;
+					const void* previous;
+					~Running()
+					{
+						t_runningTool = previous;
+						std::lock_guard<std::recursive_mutex> lock(server.m_toolsMutex);
+						--entry.running;
+						server.m_toolsIdle.notify_all();
+					}
+				} running{ *this, *entry, t_runningTool };
+				t_runningTool = entry.get();
+				const Tool& tool = entry->tool;
 				const json arguments = params.value("arguments", json::object());
 				json output;
 				bool isError = false;
 				try
 				{
 					output = tool.call(arguments);
+				}
+				catch (const json::exception& e)
+				{
+					// an argument missing or of the wrong type (arguments.at("path") without one): said as the tool's error, with
+					// its schema, not as the JSON library's exception
+					std::string what = e.what();
+					const size_t bracket = what.find("] ");
+					if (bracket != std::string::npos) what = what.substr(bracket + 2);
+					output = { { "error", "the arguments do not fit the tool: " + what }, { "inputSchema", tool.inputSchema } };
+					isError = true;
 				}
 				catch (const std::exception& e)
 				{

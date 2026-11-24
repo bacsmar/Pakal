@@ -843,6 +843,30 @@ namespace Pakal
 		m_attached = false;
 	}
 
+	// A model freed from another thread than the graphics one waits for the graphics thread to release it, which runs other
+	// threads' work once a frame: freeing many one by one costs a frame each (a level's leftovers took 2 s to go on a phone).
+	// Those waits are added up and told in the log, at most once every few seconds, with the way out: free them together
+	// inside one execute_block (on the graphics thread nothing waits).
+	void MeshComponent3D_Bgfx::tell_waited_release(double ms)
+	{
+		static std::mutex mutex;
+		static int count = 0;
+		static double total = 0.0;
+		static auto windowFrom = std::chrono::steady_clock::now();
+		static auto toldAt = std::chrono::steady_clock::time_point();
+		std::lock_guard<std::mutex> lock(mutex);
+		const auto now = std::chrono::steady_clock::now();
+		if (now - windowFrom > std::chrono::seconds(2)) { count = 0; total = 0.0; windowFrom = now; }
+		++count;
+		total += ms;
+		if (count >= 8 && total >= 100.0 && now - toldAt > std::chrono::seconds(5))
+		{
+			LOG_WARNING("[MeshComponent3D_Bgfx] %d models freed one by one from another thread waited %.0f ms for the graphics thread "
+				"(about a frame each): free them together inside one execute_block", count, total);
+			toldAt = now;
+		}
+	}
+
 	MeshComponent3D_Bgfx::~MeshComponent3D_Bgfx()
 	{
 		auto releaseResources = [this]()
@@ -860,11 +884,13 @@ namespace Pakal
 			auto state = m_graphics_system->get_state();
 			if (state == SystemState::Running || state == SystemState::Paused)
 			{
+				const auto waitFrom = std::chrono::steady_clock::now();
 				auto task = m_graphics_system->execute_block(releaseResources);
 				if (task)
 				{
 					task->wait();
 				}
+				tell_waited_release(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - waitFrom).count());
 				return;
 			}
 		}

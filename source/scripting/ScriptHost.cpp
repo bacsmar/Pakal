@@ -144,9 +144,10 @@ namespace Pakal
 		lua_setglobal(m_lua, name.c_str());
 	}
 
-	bool ScriptHost::run(const std::string& code)
+	bool ScriptHost::run(const std::string& code, const std::string& chunk)
 	{
-		if (luaL_dostring(m_lua, code.c_str()) != LUA_OK)
+		const std::string name = chunk.empty() ? code : "@" + chunk;
+		if (luaL_loadbuffer(m_lua, code.data(), code.size(), name.c_str()) != LUA_OK || lua_pcall(m_lua, 0, LUA_MULTRET, 0) != LUA_OK)
 		{
 			LOG_ERROR("[Script] %s", lua_tostring(m_lua, -1));
 			lua_pop(m_lua, 1);

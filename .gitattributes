@@ -1,0 +1,3 @@
+
+# vcpkg overlay ports: patches applied to LF sources, kept as they are upstream
+tools/vcpkg-overlay/** text eol=lf
