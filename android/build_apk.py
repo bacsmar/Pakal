@@ -196,7 +196,11 @@ def referenced_files(level_dirs, shared_roots, documents=()):
         elif isinstance(value, str) and ('/' in value or '\\' in value) and len(value) < 400:
             # next to the document, or from the game's folder ("Assets/...": the games' rules name models so)
             for path in ((base / value).resolve(), (DESKTOP_ASSETS.parent / value).resolve()):
-                if path.is_file() and under_root(path):
+                try:
+                    is_file = path.is_file()
+                except OSError:   # (a sentence with a '/', no path: a part longer than the system's names, ENAMETOOLONG)
+                    continue
+                if is_file and under_root(path):
                     found.add(path)
 
     for level in level_dirs:
