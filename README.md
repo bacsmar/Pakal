@@ -41,7 +41,8 @@ OpenGL or Vulkan on Linux.
 - **The governor:** it watches the frame rate and steps the picture down when a phone cannot hold it, then back up when
   it can. First it steps from 60 to 30 fps, then the render scale. It knows about heat as well.
 - **Android packaging:** textures are compressed to ASTC with mipmaps. One script builds the APK, or the App Bundle a
-  store takes.
+  store takes. A game's assets can be sealed into one pack that only the game, with its key, reads; the key is never
+  passed on a command line.
 
 ### Simulation and gameplay
 - **Two models for a game's world:**
@@ -52,8 +53,10 @@ OpenGL or Vulkan on Linux.
   - **shooter:** guns, reloads and fire cycles;
   - **brawler:** moves as data, combos, guards, launches and dodges;
   - **action RPG:** resources, levels and attributes, equipment, abilities and loot.
-- **Scripting:** Lua for missions and events.
-- **Physics and AI:** Box2D for 2D physics, character controllers, ray casts, a navigation grid, and an enemy controller.
+- **Scripting:** Lua for missions and events. An error names the script file it comes from.
+- **Physics and AI:** Box2D for 2D physics (static shapes from any simple polygon, concave ones included), character
+  controllers, ray casts, a navigation grid built in blocks and reused while its level is unchanged, and an enemy
+  controller.
 
 ### Interface, sound and input
 - **Interface:** [RmlUi](https://github.com/mikke89/RmlUi). Screens are HTML/CSS-like documents bound to data models, so
@@ -74,7 +77,8 @@ One server runs the simulation, and each player's game sends its input and draws
 - **Level builder:** turns a short brief ("a small town with a park and two missions") into playable levels made from
   free CC0 model packs. It has generators for streets, lots, parks and buildings, plus placement rules and missions.
 - **MCP server:** a running game, desktop or phone, can be measured and tuned by tools: frame rate, GPU timings per
-  pass, quality settings, a fixed camera, screenshots.
+  pass, quality settings, a fixed camera, screenshots. It answers only local requests that carry its token, never a
+  web page's, and a release build does not start it.
 - **Profiling and telemetry:** per-pass timings, records written to a file, and a profile of how each run went.
 
 ## Examples
