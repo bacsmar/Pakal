@@ -1,0 +1,17 @@
+{
+ "note": "The templates' settings: copy the parts a game needs into its own. The catalog lists every signal a record waits on (with what emits it), every flag (with its one owner) and every quest item (with its text).",
+ "text": "keys",
+ "kinds": { "story": { "priority": 40 }, "errand": { "priority": 50 } },
+ "signals": { "enemy_down": "binding (a spawn killed)", "alias_lost": "core" },
+ "flags": {
+  "place.freed": "fetch_and_fit.json occupiers (its end)",
+  "machine.fixed": "fetch_and_fit.json fit (its end)",
+  "side.north": "choice_branch.json (the north branch)",
+  "side.south": "choice_branch.json (the south branch)",
+  "world.count": "the game (a count the world keeps)"
+ },
+ "items": { "spare_part": "ITEM_SPARE_PART" },
+ "limits": { "errand": 1 },
+ "spawnMeters": 60,
+ "despawnMeters": 30
+}

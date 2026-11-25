@@ -583,6 +583,28 @@ if(WIN32)
         -P ${CMAKE_SOURCE_DIR}/tests/ZombiesPlacementTests.cmake)
 endif()
 
+# Quests (game_genres/quests, namespace Pakal::Quests; docs/QUESTS.md): what a game's quests show and how they run, for
+# any genre. On the core only: it never includes a genre, the UI or graphics (a genre gives a binding, a game a presenter)
+file(GLOB PAKAL_QUESTS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/quests/*.cpp)
+add_library(PakalQuests STATIC ${PAKAL_QUESTS_SOURCES})
+target_link_libraries(PakalQuests PUBLIC Pakal)
+target_include_directories(PakalQuests PUBLIC ${CMAKE_SOURCE_DIR}/source ${CMAKE_SOURCE_DIR}/game_genres)
+add_executable(QuestArbiterTests ${CMAKE_SOURCE_DIR}/tests/QuestArbiterTests.cpp)
+target_link_libraries(QuestArbiterTests PRIVATE PakalQuests)
+add_test(NAME QuestArbiterTests COMMAND QuestArbiterTests)
+add_executable(QuestSystemTests ${CMAKE_SOURCE_DIR}/tests/QuestSystemTests.cpp)
+target_link_libraries(QuestSystemTests PRIVATE PakalQuests)
+add_test(NAME QuestSystemTests COMMAND QuestSystemTests)
+# The designers' quest templates (game_genres/quests/templates, docs/QUEST_GUIDE.md): each checks clean and plays to its end
+add_executable(QuestTemplatesTests ${CMAKE_SOURCE_DIR}/tests/QuestTemplatesTests.cpp)
+target_link_libraries(QuestTemplatesTests PRIVATE PakalQuests)
+add_test(NAME QuestTemplatesTests COMMAND QuestTemplatesTests ${CMAKE_SOURCE_DIR}/game_genres/quests/templates)
+# The quests' development panel (game_genres/quests/view, Dear ImGui through the engine's includes): what a game's F1
+# window shows of its quests, and the moves a tester makes on a stuck one. Apart from PakalQuests, which draws nothing
+file(GLOB PAKAL_QUESTS_VIEW_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/quests/view/*.cpp)
+add_library(PakalQuestsView STATIC ${PAKAL_QUESTS_VIEW_SOURCES})
+target_link_libraries(PakalQuestsView PUBLIC PakalQuests)
+
 # TopDown: the module of top-down action games (game_genres/topdown, namespace Pakal::TopDown). PakalTopDown is the
 # simulation (actors, components, rules, spawns, enemy movement) and draws nothing; PakalTopDownView draws it (character
 # models, props, effects, sounds). A game links both; a server or a test only the first. It goes through the engine's

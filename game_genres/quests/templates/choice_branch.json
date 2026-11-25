@@ -1,0 +1,16 @@
+{
+ "note": "A choice: the stage's 'choice' asks (its prompt, who asks), each 'choose' exit is an option leading to its own branch, where the branch puts its flags. The pick is saved and never asked again. An option may hold a condition of its own (offered only while it holds).",
+ "records": [
+  { "id": "choice_deliver", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_DELIVER",
+    "aliases": { "elder": { "find": "place", "type": "village", "protect": true } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_DELIVER" ], "marker": "elder", "exits": [ { "use": { "alias": "elder", "meters": 4, "action": "talk" }, "to": 20 } ] },
+     { "id": 20, "choice": { "prompt": "Q_DELIVER_ASK", "speaker": "elder" }, "exits": [
+       { "choose": { "option": "north", "text": "OPT_NORTH" }, "to": 30 },
+       { "choose": { "option": "south", "text": "OPT_SOUTH" }, "to": 40 },
+       { "choose": { "option": "both", "text": "OPT_BOTH" }, "when": { "flag": "world.count", "atLeast": 3 }, "to": 50 } ] },
+     { "id": 30, "end": "complete", "set": { "side.north": 1 }, "reward": "choice.north" },
+     { "id": 40, "end": "complete", "set": { "side.south": 1 }, "reward": "choice.south" },
+     { "id": 50, "end": "complete", "set": { "side.north": 1, "side.south": 1 }, "reward": "choice.both" } ] }
+ ]
+}

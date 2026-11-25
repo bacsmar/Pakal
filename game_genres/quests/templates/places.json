@@ -1,0 +1,24 @@
+{
+ "note": "Places and the world: clear a place's guards ('spawns' and 'cleared'), hold a place for a time ('hold': away pauses the count; 'checkpoint' to retry from), reach a place while a condition keeps holding ('reach' and a 'while'), and a generated errand (repeatable, its place picked at random among the open ones within its meters; it fails when the place is lost).",
+ "records": [
+  { "id": "place_clear", "kind": "errand", "title": "Q_CLEAR", "repeatable": true,
+    "aliases": { "camp": { "find": "place", "type": "camp", "pick": "random", "where": { "meters": [ 30, 300 ] } } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_CLEAR" ], "marker": "camp", "spawns": [ { "source": "guards", "type": "raider", "at": "camp", "count": [ 2, 4 ] } ],
+       "exits": [ { "cleared": true, "to": 100 } ] },
+     { "id": 100, "end": "complete", "reward": "place.clear" } ],
+    "fail": [ { "on": { "signal": "alias_lost", "alias": "camp" } } ] },
+  { "id": "place_hold", "kind": "story", "starts": { "by": "story" }, "onFail": "checkpoint", "title": "Q_HOLD",
+    "aliases": { "camp": { "find": "place", "type": "camp", "protect": true } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_HOLD" ], "marker": "camp", "checkpoint": true,
+       "exits": [ { "hold": { "alias": "camp", "meters": 8, "seconds": 30, "away": "pause" }, "to": 100 } ] },
+     { "id": 100, "end": "complete", "reward": "place.hold" } ] },
+  { "id": "place_reach", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_REACH",
+    "aliases": { "gate": { "find": "place", "type": "camp", "protect": true } },
+    "while": { "when": { "flag": "world.count", "atLeast": 1 } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_REACH" ], "marker": "gate", "exits": [ { "reach": { "alias": "gate", "meters": 5 }, "to": 100 } ] },
+     { "id": 100, "end": "complete", "reward": "place.reach" } ] }
+ ]
+}
