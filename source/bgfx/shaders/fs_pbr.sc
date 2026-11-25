@@ -1,6 +1,7 @@
 $input v_normal, v_texcoord0, v_worldpos, v_tangent, v_texcoord1
 
 #include <bgfx_shader.sh>
+#include "pakal_cutout.sh"
 #include "pakal_precision.sh"
 #include "pakal_lighting.sh"
 
@@ -13,11 +14,12 @@ uniform vec4 u_lightColor;    // rgb: light color
 uniform vec4 u_ambient;       // rgb: ambient color from above (the sky)
 uniform vec4 u_ambientGround; // rgb: ambient color from below (the light bounced by the ground)
 uniform vec4 u_tint;          // material color multiplier
-uniform vec4 u_material;      // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit, w: dithered opacity
+uniform vec4 u_material;      // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit, w: dithered opacity, -1 for alpha-to-coverage
 uniform vec4 u_cut;       // a model cut away (MeshComponent3D_Bgfx::set_fade_cut): x: the height (world y) above which
                           // nothing is drawn, y: the rim under it (m), drawn flat in u_cutColor; w: 1 = on
 uniform vec4 u_cutColor;
 uniform vec4 u_ground;        // x: how much a second, turned read of the texture breaks its tiling, y: the macro variation (0: off)
+uniform vec4 u_waterColors[3];   // water: deep, between, shallow (its material's: a sea's turquoise, a marsh's mud green)
 uniform vec4 u_uvScroll;      // z: water (how much it reflects the sky; 0 for the rest), w: its clock in seconds
 
 // Metal-rough shading for the models that come with a normal map and an ORM texture (occlusion, roughness, metalness in
@@ -32,10 +34,21 @@ void main()
 	texel = ground_mix(texel, v_worldpos.xz);
 	texel = paint_texel(texel, v_texcoord0);
 	vec4 albedo = texel * u_tint;
+	// the alpha written (a blended material keeps its texture's; the water's shore fades it below)
+	float outputAlpha = mix(1.0, albedo.a, u_material.y);
 	// the cutout follows the texture alone: a faded model (u_tint.a) keeps its leaves
-	if (u_material.x > 0.0 && texel.a < u_material.x)
+	if (u_material.x > 0.0)
 	{
-		discard;
+		// the alpha lifted by its mip level (pakal_cutout.sh): the coverage and the discard alike
+		float alpha = cutout_alpha(texel.a, v_texcoord0);
+		if (u_material.w < 0.0)
+		{
+			outputAlpha = clamp(0.5 + (alpha - u_material.x) / max(fwidth(alpha), 0.001), 0.0, 1.0);
+		}
+		else if (alpha < u_material.x)
+		{
+			discard;
+		}
 	}
 	// cut away: nothing above the cut; the band under it flat in the rim's color, so the edge reads from above
 	if (u_cut.w > 0.0)
@@ -69,7 +82,7 @@ void main()
 	// the whole lighting otherwise.
 	if (u_material.z > 1.5)
 	{
-		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), mix(1.0, albedo.a, u_material.y));
+		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), outputAlpha);
 		return;
 	}
 
@@ -79,13 +92,14 @@ void main()
 		// its own color farther out
 		// (three stops, as a stylized water graph blends its depth colors: deep, mid, shallow)
 		float shore = clamp(v_texcoord1.x, 0.0, 1.0);
-		vec3 water = mix(vec3(0.03, 0.20, 0.36), vec3(0.07, 0.46, 0.58), smoothstep(0.0, 0.4, shore));
-		water = mix(water, vec3(0.24, 0.74, 0.68), smoothstep(0.4, 0.9, shore));
+		vec3 water = mix(u_waterColors[0].rgb, u_waterColors[1].rgb, smoothstep(0.0, 0.4, shore));
+		water = mix(water, u_waterColors[2].rgb, smoothstep(0.4, 0.9, shore));
 		albedo.rgb = mix(albedo.rgb, water, 0.9);
 	}
 	vec3 orm = texture2D(s_texOrm, v_texcoord0).rgb;
 	float occlusion = orm.r;
-	float roughness = clamp(orm.g, 0.06, 1.0);
+	// Matte masked foliage keeps broad highlights on narrow leaves.
+	float roughness = clamp(orm.g, u_style.x < 0.0 ? 0.85 : 0.06, 1.0);
 	float metal = orm.b;
 
 	// Normal map: tangent space, green up (the glTF convention)
@@ -148,6 +162,12 @@ void main()
 		// foam: a band along the shore that breathes in and out (its edge slides with the clock and the wave's phase along
 		// the coast), broken up by the ripples' noise, and a few flecks on the crests farther out
 		float shoreNow = clamp(v_texcoord1.x, 0.0, 1.0);
+		float shoreFade = u_waterColors[2].w;
+		if (shoreFade > 0.0 && u_material.y > 0.0)
+		{
+			float depth = (1.0 - shoreNow) * 2.0;
+			outputAlpha *= smoothstep(0.0, shoreFade, depth);
+		}
 		float edge = 0.88 + 0.05 * sin(u_uvScroll.w * 0.8 + v_worldpos.x * 0.21 + v_worldpos.z * 0.17);
 		float band = smoothstep(edge - 0.04, edge + 0.03, shoreNow);
 		float lace = smoothstep(0.42, 0.62, waterNoise + (shoreNow - edge) * 1.4);
@@ -155,10 +175,11 @@ void main()
 		float foam = clamp(band * lace + crest, 0.0, 1.0);
 		// caustics: a bright web on the shallows, from the same ripples (it drifts as they do)
 		float web = smoothstep(0.60, 0.74, waterNoise) * smoothstep(0.5, 0.9, shoreNow);
-		color += vec3(0.10, 0.16, 0.12) * web * (0.4 + 0.6 * visibility);
-		color = mix(color, vec3(0.92, 0.97, 0.97) * (u_ambient.rgb * 0.9 + u_lightColor.rgb * 0.6 * visibility), foam * 0.85);
+		float detail = shoreFade > 0.0 ? 0.22 : 1.0;
+		color += vec3(0.10, 0.16, 0.12) * web * detail * (0.4 + 0.6 * visibility);
+		color = mix(color, vec3(0.92, 0.97, 0.97) * (u_ambient.rgb * 0.9 + u_lightColor.rgb * 0.6 * visibility), foam * (0.85 * detail));
 	}
 	color = mix(color, albedo.rgb, u_material.z);
 
-	gl_FragColor = vec4(color, mix(1.0, albedo.a, u_material.y));
+	gl_FragColor = vec4(color, outputAlpha);
 }

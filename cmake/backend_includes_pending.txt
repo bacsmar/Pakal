@@ -15,7 +15,6 @@ game_genres/topdown/view/LevelEditPanel.cpp
 game_genres/topdown/view/LevelObjects.cpp
 game_genres/topdown/view/LevelRuntime.cpp
 game_genres/topdown/view/OccluderFade.cpp
-game_genres/topdown/view/OccluderFade.h
 game_genres/topdown/view/PropMesh.cpp
 game_genres/topdown/view/SceneLook.cpp
 game_genres/topdown/view/SceneLook.h

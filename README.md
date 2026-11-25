@@ -24,12 +24,19 @@ Rendering goes through [bgfx](https://github.com/bkaradzic/bgfx): Direct3D 11 on
 OpenGL or Vulkan on Linux.
 
 - **Models:** static and skinned glTF and Collada models (Assimp), with metal-rough PBR materials. Repeated models are
-  drawn instanced.
+  drawn instanced. A character can be assembled from parts (a head, a torso, legs) into one skinned model, drawn in one
+  draw.
 - **Light:**
-  - a sun with shadows fitted to the camera, with simplified shadow casters;
+  - a sun with shadows fitted to the camera, with simplified shadow casters; a tree can cast through a few quads (a
+    shadow proxy) instead of its thousands of leaf cards;
   - baked lightmaps, and a baked ambient light volume;
   - soft cloud shadows drifting over the ground.
-- **Post-processing:** screen-space ambient occlusion, bloom, FXAA, color grading, tilt-shift blur and fades.
+- **Post-processing:** screen-space ambient occlusion (optionally depth-aware, so thin geometry does not darken the
+  background), bloom, FXAA, color grading, tilt-shift blur and fades. Optional 4x MSAA with alpha-to-coverage for
+  leaves and fences.
+- **Vegetation:** grass made on the GPU (solid blades by tiles, with density and height maps, clumps, wind and the sun's
+  shadow); ground cover, one model drawn at thousands of places in one instanced draw; trees' leaf cards thinned with
+  distance.
 - **Materials:** water with depth colors, foam and caustics; wind in the foliage. Models can fade, dither, or be cut
   away when they stand between the camera and the player.
 - **2D and effects:** sprites, a 2D camera, and particles, in the same frame as 3D.

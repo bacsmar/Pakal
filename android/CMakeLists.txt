@@ -231,7 +231,7 @@ function(pakal_compile_shader name type varying)
             --type ${type} --platform android -p ${profile}
             --varyingdef ${PAKAL_SHADER_SRC}/${varying}
             -i ${BGFX_DIR}/src -i ${PAKAL_SHADER_SRC}
-        DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh
+        DEPENDS ${PAKAL_SHADER_SRC}/${name}.sc ${PAKAL_SHADER_SRC}/${varying} ${PAKAL_SHADER_SRC}/pakal_lighting.sh ${PAKAL_SHADER_SRC}/pakal_precision.sh ${PAKAL_SHADER_SRC}/pakal_cutout.sh ${PAKAL_SHADER_SRC}/pakal_wind.sh ${PAKAL_SHADER_SRC}/pakal_ao_depth.sh
         VERBATIM)
     set(PAKAL_SHADER_OUTPUTS ${PAKAL_SHADER_OUTPUTS} ${out} PARENT_SCOPE)
 endfunction()
@@ -248,6 +248,10 @@ pakal_compile_shader(vs_shadow vertex varying_shadow.def.sc)
 pakal_compile_shader(vs_pbr_inst vertex varying_pbr.def.sc)
 pakal_compile_shader(vs_mesh_inst vertex varying_mesh.def.sc)
 pakal_compile_shader(vs_shadow_inst vertex varying_shadow.def.sc)
+pakal_compile_shader(vs_shadow_cutout vertex varying_shadow_cutout.def.sc)
+pakal_compile_shader(fs_shadow_cutout fragment varying_shadow_cutout.def.sc)
+pakal_compile_shader(vs_grass vertex varying_grass.def.sc)
+pakal_compile_shader(fs_grass fragment varying_grass.def.sc)
 pakal_compile_shader(vs_gpu_particle vertex varying_particle.def.sc)
 pakal_compile_shader(cs_particles compute varying_particle.def.sc)
 pakal_compile_shader(vs_shadow_skin vertex varying_shadow.def.sc)

@@ -158,7 +158,7 @@ the camera), `SceneLook` (the light and the picture of a scene, from a level's `
 (`lighting.shadows.clouds`) and the bloom (`post.bloom`) are drawn at the Extreme quality only, docs/ANDROID.md), `LevelRuntime` (what a
 level state does around its game: the camera and the input, models as instances of prototypes in an `AssetCache`, the
 scenery and the look, each character's animated model, the fixed steps and the views drawn between them, and letting it all
-go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand), `UiPanel` (the engine's too, `ui/UiPanel.h`, `Pakal::UiPanel`: a
+go on the graphics thread; the brawler and the dungeon are built on it; a look's `held` mesh goes in its hand; `LevelScenery::shadowProxy` gives trees a shadow proxy, docs/SHADOW_PROXIES.md, and `LevelScenery::grass` draws a level's grass models as one field of GPU grass, docs/GRASS.md), `UiPanel` (the engine's too, `ui/UiPanel.h`, `Pakal::UiPanel`: a
 game's interface of one RmlUi document: text, bars, style properties and classes by element id, and the buttons pressed
 on it),
 `LevelObjects` (a level document's objects by key: each one's model from its prefab or its own mesh, and for one with

@@ -9,7 +9,7 @@ PAKAL_SAMPLER2DSHADOW_HIGH(s_shadowMap, 4);   // compared by the sampler (BGFX_S
 uniform mat4 u_shadowMtx;     // world to the sun's view, with the texture's offset and scale (and depth) already applied
 uniform vec4 u_shadowParams;  // x: strength (0: no shadows), y: depth bias, z: 1 / map size, w: offset along the normal
                               // (meters)
-uniform vec4 u_shadowFilter;  // x: the filter's taps on each side (2 to 4), y: their spacing (texels)
+uniform vec4 u_shadowFilter;  // x: the filter's taps on each side (2 to 4; 1: a single read), y: their spacing (texels)
 
 PAKAL_SAMPLER3D_HIGH(s_giVolume, 5);
 
@@ -136,7 +136,13 @@ float sun_visibility(vec3 worldPos, vec3 n)
 			float spacing = u_shadowParams.z * u_shadowFilter.y;
 			float taps = u_shadowFilter.x;
 			float lit = 0.0;
-			if (taps > 2.5)
+			if (taps < 1.5)
+			{
+				// one read (the scattered ground cover: thousands of small leaves, where a soft edge is not seen and every read
+				// costs on a phone; the sampler's own comparison still blends the four texels around)
+				lit = shadow2D(s_shadowMap, vec3(proj.xy, depth));
+			}
+			else if (taps > 2.5)
 			{
 				float center = (taps - 1.0) * 0.5;
 				for (int ix = 0; ix < 4; ++ix)
@@ -202,6 +208,12 @@ float ground_patches(vec2 p, vec4 layer, vec2 seed)
 
 vec4 ground_mix(vec4 texel, vec2 worldXZ)
 {
+	if (u_groundMix0.z < 0.0)
+	{
+		if (u_groundMix0.w == 0.0) return texel;
+		float detail = texture2D(s_groundMix0, worldXZ * u_groundMix0.x).r;
+		return vec4(texel.rgb * (0.55 + detail * 0.9), texel.a);
+	}
 	if (u_groundMix0.x > 0.0)
 	{
 		vec4 other = texture2D(s_groundMix0, worldXZ * u_groundMix0.x);

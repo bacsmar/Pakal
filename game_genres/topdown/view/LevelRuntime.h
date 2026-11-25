@@ -67,6 +67,12 @@ namespace Pakal::TopDown
 		bool gi = true;
 		std::string giLook;
 		float giStrength = 0.75f;
+		// The models that cast their shadow through a proxy (TopDown::ShadowProxies, docs/SHADOW_PROXIES.md):
+		// {"suffix": "_shadow", "models": [name prefixes]}; null or without "models": none
+		nlohmann::json shadowProxy;
+		// A field of GPU grass in place of the level's grass models (TopDown::GrassFromPlants, docs/GRASS.md):
+		// {"replaces": [name prefixes], "cell", "full", the blades' look}; null or without "replaces": the models are drawn
+		nlohmann::json grass;
 	};
 
 	class LevelRuntime
@@ -169,6 +175,13 @@ namespace Pakal::TopDown
 		// begin; the game calls its update each frame with its own seconds, and end() clears it.
 		ParticleEffects& particles() { return *m_particles; }
 
+		// Graphics thread: 'proxy' casts the shadow of 'model' (placed at the same matrix): the proxy draws only in the sun's
+		// shadow pass and the model casts none. For a game's own level loader (TopDown::ShadowProxies says which file);
+		// place_level does it itself with LevelScenery::shadowProxy
+		static void cast_shadow_through(Pakal::MeshComponent3D_Bgfx& model, Pakal::MeshComponent3D_Bgfx& proxy);
+		// The grass field the last place_level made (LevelScenery::grass): 0 for none. It is destroyed at end()
+		uint32_t grass_field() const { return m_grassField; }
+
 		// Lets the models, the camera and the look go on the graphics thread (also when it is destroyed). Characters' models
 		// belong to the game's actors: the game is destroyed before this (or in 'beforeRelease').
 		void end(const std::function<void()>& beforeRelease = {});
@@ -191,8 +204,13 @@ namespace Pakal::TopDown
 		bool m_lightmapSet = false;
 		bool m_giSet = false;
 		// The keyed objects of the last place_level: their model in m_scenery and their matrices (render space)
-		struct LevelEntry { size_t scenery = 0; std::array<float, 16> placement{}, drawn{}; };   // as placed, and as drawn now
+		// (as placed, and as drawn now; 'proxy' its shadow proxy in m_scenery, kNoProxy for none)
+		static constexpr size_t kNoProxy = static_cast<size_t>(-1);
+		struct LevelEntry { size_t scenery = 0; std::array<float, 16> placement{}, drawn{}; size_t proxy = kNoProxy; };
 		std::map<std::string, LevelEntry> m_levelObjects;
+		uint32_t m_grassField = 0;   // the field of place_level's grass (GraphicsSystem::GrassHandle)
+		// the matrix of a keyed object and of its proxy
+		void draw_level_entry(const LevelEntry& entry);
 		std::string m_levelDir;
 		float m_frameSeconds = 0.0f;
 		bool m_ended = false;

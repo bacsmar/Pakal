@@ -82,6 +82,8 @@ namespace Pakal
 			field(out, "shadowSpacing", p.shadowSpacing);
 			field(out, "fullCasters", p.fullCasters);
 			field(out, "postQuality", p.postQuality);
+			field(out, "cutoutMsaa", p.cutoutMsaa);
+			field(out, "stableSsao", p.stableSsao);
 			field(out, "antialias", p.antialias);
 			field(out, "bloom", p.bloom);
 			field(out, "clouds", p.clouds);
@@ -97,6 +99,8 @@ namespace Pakal
 			read(in, "shadowSpacing", p.shadowSpacing);
 			read(in, "fullCasters", p.fullCasters);
 			read(in, "postQuality", p.postQuality);
+			read(in, "cutoutMsaa", p.cutoutMsaa);
+			read(in, "stableSsao", p.stableSsao);
 			read(in, "antialias", p.antialias);
 			read(in, "bloom", p.bloom);
 			read(in, "clouds", p.clouds);

@@ -23,7 +23,7 @@ namespace Pakal::TopDown
 
 	// Whether the segment from 'from' to 'to' (model units) passes through the model's surfaces: its part inside the box,
 	// walked in steps of half a column, each step checked against the column's lowest and highest surface
-	bool OccluderFade::segment_hits_columns(const Pakal::MeshComponent3D_Bgfx::Columns& columns, const Vec3& from, const Vec3& to,
+	bool OccluderFade::segment_hits_columns(const ModelShape::Columns& columns, const Vec3& from, const Vec3& to,
 		const Vec3& low, const Vec3& high)
 	{
 		float t0 = 0.0f, t1 = 1.0f;
@@ -52,10 +52,48 @@ namespace Pakal::TopDown
 		return false;
 	}
 
+	void OccluderFade::segment_hits_parts(const ModelShape::Columns& columns, const Vec3& from, const Vec3& to,
+		const Vec3& low, const Vec3& high, float split, bool& under, bool& over)
+	{
+		under = over = false;
+		float t0 = 0.0f, t1 = 1.0f;
+		const float a[3] = { from.x, from.y, from.z }, d[3] = { to.x - from.x, to.y - from.y, to.z - from.z };
+		const float lo[3] = { low.x, low.y, low.z }, hi[3] = { high.x, high.y, high.z };
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			if (std::fabs(d[axis]) < 1e-9f)
+			{
+				if (a[axis] < lo[axis] || a[axis] > hi[axis]) return;
+				continue;
+			}
+			float near = (lo[axis] - a[axis]) / d[axis], far = (hi[axis] - a[axis]) / d[axis];
+			if (near > far) std::swap(near, far);
+			t0 = std::max(t0, near);
+			t1 = std::min(t1, far);
+			if (t0 > t1) return;
+		}
+		const float length = std::sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) * (t1 - t0);
+		const int steps = std::clamp(int(std::ceil(length / (columns.cell * 0.5f))), 1, 512);
+		for (int s = 0; s <= steps; ++s)
+		{
+			const float t = t0 + (t1 - t0) * float(s) / float(steps);
+			const float y = a[1] + d[1] * t;
+			if (!columns.solid_at(a[0] + d[0] * t, y, a[2] + d[2] * t, columns.cell * 0.5f)) continue;
+			(y < split ? under : over) = true;
+			if (under) return;   // (the trunk: the whole tree goes)
+		}
+	}
+
 	OccluderFade::Occluder OccluderFade::make(Pakal::MeshComponent3D_Bgfx* mesh, const float placement[16], const float low[3], const float high[3])
 	{
 		Occluder occluder;
 		occluder.mesh = mesh;
+		// what the fade reads of the model, taken once: its columns and a split crown's base
+		if (mesh)
+		{
+			occluder.columns = mesh->shape().columns;
+			occluder.crownBase = mesh->shape().crownBase;
+		}
 		occluder.low = { low[0], low[1], low[2] };
 		occluder.high = { high[0], high[1], high[2] };
 		// the inverse of the placement's 3x3 (rotation and scale), and minus its position: model = R^-1 (world - position)
@@ -96,23 +134,63 @@ namespace Pakal::TopDown
 		for (auto& occluder : m_occluders)
 		{
 			bool blocks = false;
+			float goal = 1.0f;
+			// a tree split at load (its crown a submesh of its own): what the line meets says what goes - its crown alone,
+			// cut away at the crown's base, or the whole tree (its trunk in the way)
+			float crownBase = 0.0f;
+			const ModelShape::Columns* columns = occluder.columns.get();
+			crownBase = occluder.crownBase;
+			const bool split = occluder.cutKeep >= 0.0f && columns && !std::isnan(crownBase)
+				&& crownBase > occluder.low.y && crownBase < occluder.high.y;
+			bool crownOnly = false;
 			if (watching)
 			{
 				const Vec3 from = to_model(occluder.toModel, eye);
-				for (const Vec3& target : targets)
+				for (const Vec3& point : targets)
 				{
+					// (stopped m_targetMargin short of the point, toward the eye)
+					Vec3 target = point;
+					if (m_targetMargin > 0.0f)
+					{
+						const float dx = eye.x - point.x, dy = eye.y - point.y, dz = eye.z - point.z;
+						const float length = std::sqrt(dx * dx + dy * dy + dz * dz);
+						if (length > m_targetMargin * 2.0f)
+						{
+							const float k = m_targetMargin / length;
+							target = Vec3{ point.x + dx * k, point.y + dy * k, point.z + dz * k };
+						}
+					}
 					const Vec3 to = to_model(occluder.toModel, target);
 					// the box first (cheap); then, for a model with columns, whether the line meets its surfaces
-					const Pakal::MeshComponent3D_Bgfx::Columns* columns = occluder.mesh->get_columns();
-					if (segment_hits_box(from, to, occluder.low, occluder.high)
-						&& (!columns || segment_hits_columns(*columns, from, to, occluder.low, occluder.high)))
+					if (!segment_hits_box(from, to, occluder.low, occluder.high)) continue;
+					if (split)
+					{
+						bool under = false, over = false;
+						segment_hits_parts(*columns, from, to, occluder.low, occluder.high, crownBase, under, over);
+						if (under) { blocks = true; crownOnly = false; break; }
+						if (over) crownOnly = true;
+						continue;
+					}
+					if (!columns || segment_hits_columns(*columns, from, to, occluder.low, occluder.high))
 					{
 						blocks = true;
 						break;
 					}
 				}
 			}
-			const float goal = blocks ? occluder.faded : 1.0f;
+			if (blocks) goal = occluder.faded;
+			else if (crownOnly)
+			{
+				// the cut's height at the crown's base (the mesh cuts from its top down to 'keep' over its base, in the world)
+				float center[3], extent[3];
+				occluder.mesh->get_world_box(center, extent);
+				const float base = center[1] - extent[1], top = center[1] + extent[1];
+				const float share = (crownBase - occluder.low.y) / (occluder.high.y - occluder.low.y);
+				const float cut = base + share * (top - base) - 0.05f;
+				const float lowest = std::min(top, base + occluder.cutKeep);
+				const float t = top > lowest ? std::clamp((top - cut) / (top - lowest), 0.0f, 1.0f) : 1.0f;
+				goal = 1.0f - t * (1.0f - occluder.faded);
+			}
 			const float step = speed * dt;
 			occluder.opacity += std::clamp(goal - occluder.opacity, -step, step);
 			occluder.mesh->set_opacity(occluder.opacity);

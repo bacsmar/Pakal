@@ -9,6 +9,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <unordered_map>
+#include "BgfxGrass.h"
 #include "FrameTiming.h"
 #include "GraphicsSystem.h"
 #include "ICameraComponent_Bgfx.h"
@@ -18,8 +20,10 @@
 #include <bgfx/bgfx.h>
 #include <atomic>
 #include <chrono>
+#include <algorithm>
 #include <array>
 #include <functional>
+#include <cstdlib>
 #include <string>
 #include <vector>
 #include <map>
@@ -86,6 +90,7 @@ namespace Pakal
 		// otherwise (a phone's settings, PAKAL_RENDER_SCALE).
 		uint32_t m_auto_render_height = 0;
 		float m_pending_render_scale = 0.0f; // set_render_scale, for the next frame (0: none)
+		bool m_upscale_unavailable = false;  // the upscale targets could not be made here: drawn at the screen's size
 		unsigned m_ao_divisor = 2, m_ao_taps = 0;
 		float m_ao_boost = 1.0f;
 		struct Governor
@@ -103,6 +108,7 @@ namespace Pakal
 			double secondsSinceDown = 1e9;   // since it last stepped down (going back up waits)
 			double secondsSinceUp = 1e9;     // since it last stepped up
 			double backoff = 1.0;            // the waits before stepping up, doubled each time a step up does not hold
+			bool cutoutEffectsDropped = false;  // multisampling and stable SSAO can be shed before reducing the cap
 			bool fsrDropped = false;         // its first step: FSR's upscale traded for a plain stretch (far cheaper on phones)
 			bool lowestSet = false;          // the lowest quality's start taken (no FSR, a smaller picture)
 			// FSR tried again after it was dropped. Once a launch: what FSR costs is the GPU's, which a phone does not let us
@@ -171,6 +177,22 @@ namespace Pakal
 		// unregister; refreshed every so often too, for the models that finish loading)
 		std::vector<std::vector<MeshComponent3D_Bgfx*>> m_instanceGroups;
 		uint32_t m_meshesVersion = 1, m_groupsVersion = 0, m_groupsAge = 0, m_instanceFrame = 0;
+		// the scattered models (MeshComponent3D_Bgfx::set_scatter: ground cover), drawn instanced whether or not the copies
+		// are grouped; made again when a model comes or goes or one is scattered
+		std::vector<MeshComponent3D_Bgfx*> m_scattered;
+		// The ground cover made through create_scatter (graphics thread): each patch an instance of its model's prototype
+		// (decoded once, shared by the patches of that model; counted, and freed when its count is back to 0)
+		struct ScatterModel { std::unique_ptr<MeshComponent3D_Bgfx> prototype; size_t patches = 0; };
+		struct Scatter { ScatterModel* model = nullptr; std::string path; std::unique_ptr<MeshComponent3D_Bgfx> mesh; };
+		std::unordered_map<ScatterHandle, Scatter> m_scatters;
+		std::unordered_map<std::string, ScatterModel> m_scatterModels;
+		std::atomic<ScatterHandle> m_nextScatter{ 1 };
+		// The grass made on the GPU (create_grass): its fields, drawn after the scattered models
+		BgfxGrass m_grass;
+		std::atomic<GrassHandle> m_nextGrass{ 1 };
+		std::atomic<float> m_grassReachScale{ 1.0f }, m_grassDensityScale{ 1.0f };
+		std::atomic<bool> m_grassShadows{ !(std::getenv("PAKAL_GRASS_SHADOWS") && std::string(std::getenv("PAKAL_GRASS_SHADOWS")) == "0") };
+		uint64_t m_scatteredVersion = 0;
 		// The models that stay put in squares of kGridCell meters, each with the box of what is in it: a frame walks only the
 		// squares the camera (or the sun's shadows into its view) can see, and the rest of the models (animated, moving,
 		// new) one by one. Made again every second, and at once when a model in it goes or moves.
@@ -223,6 +245,9 @@ namespace Pakal
 		void render_meshes3d(float dt_seconds);
 		void create_post_resources();
 		void destroy_post_resources();
+		bool cutout_effects_allowed() const;
+		bool cutout_msaa_supported(bgfx::TextureFormat::Enum depth, bool sampleDepth) const;
+		bool stable_ssao_enabled() const;
 		bool prepare_post_target();       // (re)makes the frame target when the size changed; false when post-processing cannot run
 		void render_post();
 		// bgfx::setUniform, and the value kept when recording (record_uniforms): the frame's post, occlusion, bloom, FSR,
@@ -249,6 +274,7 @@ namespace Pakal
 		int m_shadow_taps = 2;             // the shadow's filter: taps on each side (2 at every level: four reads)
 		float m_shadow_spacing = 1.0f;     // and their spacing (texels)
 		bgfx::ProgramHandle m_shadow_program = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle m_shadow_cutout_program = BGFX_INVALID_HANDLE;   // a shadow proxy's alpha-tested quads
 		bgfx::ProgramHandle m_shadow_skin_program = BGFX_INVALID_HANDLE;
 		bgfx::FrameBufferHandle m_shadow_target = BGFX_INVALID_HANDLE;
 		bgfx::TextureHandle m_shadow_depth = BGFX_INVALID_HANDLE;
@@ -265,6 +291,8 @@ namespace Pakal
 		bgfx::UniformHandle m_s_post_depth = BGFX_INVALID_HANDLE;
 		bgfx::VertexLayout m_post_layout;
 		uint32_t m_post_width = 0, m_post_height = 0;
+		bool m_post_msaa_requested = false, m_post_msaa = false;
+		bool m_frame_msaa_requested = false, m_frame_msaa = false;
 		bool m_post_active = false;       // this frame is drawn into the post-process target
 		bool m_antialias = false;         // the post pass smooths the edges (FXAA; Extreme)
 
@@ -300,6 +328,8 @@ namespace Pakal
 		bool m_ao_active = false;         // this frame's post pass darkens by the occlusion
 
 		// Upscaling: what goes to the screen is drawn into the frame target, then scaled up to the back buffer
+		bgfx::FrameBufferHandle create_scene_target(bgfx::TextureFormat::Enum colorFormat, bgfx::TextureFormat::Enum depthFormat,
+			uint64_t flags, uint64_t depthFlags, bgfx::TextureHandle& color, bgfx::TextureHandle& depth);
 		bool prepare_upscale();           // (re)makes the targets; false when the picture is drawn at the screen's size
 		void render_upscale();
 		void destroy_upscale_resources();
@@ -409,13 +439,15 @@ namespace Pakal
 			uint32_t shadowMapMin = 0;     // the shadow map is the size the level asks for, kept within these (0: no bound)
 			uint32_t shadowMapMax = 0;
 			uint32_t movingOnlyMap = 0;    // under a lightmap, the map holds only what moves, at most this size (0: all of it)
-			int shadowTaps = 2;            // the shadow's filter: taps on each side (2: four reads; up to 4)
+			int shadowTaps = 2;            // the shadow's filter: taps on each side (1: a single filtered read; 2: four reads; up to 4)
 			float shadowSpacing = 1.0f;    // and their spacing in texels (1: an edge over 3x3 texels, 2: over 4x4)
 			bool fullCasters = false;      // characters and trees cast with all their triangles (else simplified)
 			float postQuality = 1.0f;      // the most of the post-process's samples (0..1)
 			bool antialias = false;        // the edges smoothed (FXAA)
 			bool bloom = false;            // the bright parts glow (when the look has bloom)
 			bool clouds = false;           // the clouds' shadows (when the look has them)
+			bool cutoutMsaa = false;       // 4x scene MSAA and cutout coverage on compatible offscreen targets
+			bool stableSsao = false;       // reject background SSAO at thin geometry and fixed sample orientation
 		};
 		static QualityPreset default_preset(Quality quality);
 		void set_quality_preset(Quality quality, const QualityPreset& preset) { m_presets[size_t(quality)] = preset; apply_quality(); }
@@ -472,6 +504,16 @@ namespace Pakal
 		std::shared_ptr<TexturePreload> preload_textures(const std::vector<std::string>& paths) override;
 		void release_preloaded() override;
 		IParticleRenderer* particle_renderer() override;
+		ScatterHandle create_scatter(const std::string& modelPath, std::vector<float> matrices, float reach, float grow) override;
+		void destroy_scatter(ScatterHandle handle) override;
+		void set_scatter_focus(float x, float y, float z) override;
+		void set_scatter_scale(float scale) override;
+		void set_scatter_density(float density) override;
+		void set_foliage_lod(float nearMeters, float farMeters, float farShare, float nearShare = 1.0f) override;
+		GrassHandle create_grass(GrassField field) override;
+		void destroy_grass(GrassHandle handle) override;
+		void set_grass_scale(float reach, float density) override;
+		void set_grass_shadows(bool on) override { m_grassShadows = on; }
 		// The window of the app changed (Android gives a new surface when the app comes back from the background): bgfx draws on it
 		// width x height: what the picture is drawn at; outputWidth x outputHeight: the window's buffers when bigger (scaled up)
 		void set_native_window(void* window, unsigned width, unsigned height, unsigned outputWidth = 0, unsigned outputHeight = 0);
@@ -492,7 +534,8 @@ namespace Pakal
 		uint32_t get_output_height() const { return m_output_height ? m_output_height : m_height; }
 		// The share of the screen's size the picture is drawn at (1: the screen's), the rest made up by the upscaler: FSR's
 		// modes are 0.77 (ultra quality), 0.67 (quality), 0.59 (balanced), 0.5 (performance). Applied at the next frame.
-		void set_render_scale(float scale) { m_pending_render_scale = scale; }
+		// (a GPU that cannot scale the picture up keeps it at the screen's size)
+		void set_render_scale(float scale) { m_pending_render_scale = m_upscale_unavailable ? std::max(scale, 1.0f) : scale; }
 		float get_render_scale() const { return float(m_height) / float(get_output_height()); }
 		// Performance governor (phones): watches how long each frame takes and the system's thermal status, and steps the
 		// picture down when the device cannot hold it (FSR traded for a plain stretch, then the frame cap one step at a time,
@@ -623,7 +666,7 @@ namespace Pakal
 		bool m_gpuProfiler = false, m_gpuProfilerAsked = false;
 		bool m_cameraHeld = false;
 		float m_heldEye[3] = {}, m_heldLook[3] = {};
-		void profile_frame(double frameMs);
+		void profile_frame(bool stableAoThisFrame);
 		uint32_t m_frameNumber = 0;          // what bgfx::frame returned last
 		bgfx::ViewId m_picture_view_id = 30; // a model's picture (30), then its copy for reading back (31)
 		// Before the frame is submitted: the next picture drawn; after: the ones read back handed over

@@ -1,6 +1,7 @@
 $input v_normal, v_texcoord0, v_worldpos, v_texcoord1, v_localpos
 
 #include <bgfx_shader.sh>
+#include "pakal_cutout.sh"
 #include "pakal_lighting.sh"
 
 SAMPLER2D(s_texColor, 0);
@@ -10,7 +11,7 @@ uniform vec4 u_lightColor; // rgb: light color
 uniform vec4 u_ambient;    // rgb: ambient color from above (the sky)
 uniform vec4 u_ambientGround; // rgb: ambient color from below (the light bounced by the ground)
 uniform vec4 u_tint;       // material color multiplier
-uniform vec4 u_material;   // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit
+uniform vec4 u_material;   // x: alpha test reference (0 = off), y: keep the texture alpha, z: unlit, -1 for alpha-to-coverage
 uniform vec4 u_cut;       // a model cut away (MeshComponent3D_Bgfx::set_fade_cut): x: the height (world y) above which
                           // nothing is drawn, y: the rim under it (m), drawn flat in u_cutColor; w: 1 = on
 uniform vec4 u_cutColor;
@@ -53,9 +54,19 @@ void main()
 	texel = paint_texel(texel, v_texcoord0);
 	vec4 albedo = texel * u_tint;
 	// the cutout follows the texture alone: a faded model (u_tint.a) keeps its leaves
-	if (u_material.x > 0.0 && texel.a < u_material.x)
+	float outputAlpha = mix(1.0, albedo.a, u_material.y);
+	if (u_material.x > 0.0)
 	{
-		discard;
+		// the alpha lifted by its mip level (pakal_cutout.sh): the coverage and the discard alike
+		float alpha = cutout_alpha(texel.a, v_texcoord0);
+		if (u_material.w < 0.0)
+		{
+			outputAlpha = clamp(0.5 + (alpha - u_material.x) / max(fwidth(alpha), 0.001), 0.0, 1.0);
+		}
+		else if (alpha < u_material.x)
+		{
+			discard;
+		}
 	}
 	// cut away: nothing above the cut; the band under it flat in the rim's color, so the edge reads from above
 	if (u_cut.w > 0.0)
@@ -89,7 +100,7 @@ void main()
 	// the whole lighting otherwise.
 	if (u_material.z > 1.5)
 	{
-		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), mix(1.0, albedo.a, u_material.y));
+		gl_FragColor = vec4(albedo.rgb * (u_ambient.rgb * 0.75 + u_lightColor.rgb * 0.12), outputAlpha);
 		return;
 	}
 
@@ -144,5 +155,5 @@ void main()
 
 	// Opaque materials write alpha 1: their texture alpha is a mask of the source art (gloss),
 	// not coverage, and writing it would leave holes in captures of the frame.
-	gl_FragColor = vec4(color, mix(1.0, albedo.a, u_material.y));
+	gl_FragColor = vec4(color, outputAlpha);
 }

@@ -6,6 +6,8 @@
 
 #include "topdown/view/LevelRuntime.h"
 #include "topdown/CameraInput.h"
+#include "topdown/view/GrassFromPlants.h"
+#include "topdown/ShadowProxies.h"
 #include "topdown/TopDownGame.h"
 #include "topdown/view/LevelPlacement.h"
 #include "topdown/view/OccluderFade.h"
@@ -184,10 +186,12 @@ namespace Pakal::TopDown
 		m_levelDir = levelDir;
 		m_levelObjects.clear();
 		if (!m_occluders) m_occluders = std::make_unique<OccluderFade>();
-		size_t placed = 0, failed = 0;
+		size_t placed = 0, failed = 0, proxies = 0;
 		const float turnC = std::cos(scenery.yaw), turnS = std::sin(scenery.yaw);
 		// rotation_y(-yaw), column-major
 		const Mat4 unturn{ turnC, 0, turnS, 0, 0, 1, 0, 0, -turnS, 0, turnC, 0, 0, 0, 0, 1 };
+		ShadowProxies shadowProxies(scenery.shadowProxy);
+		GrassFromPlants grass(scenery.grass);
 		for (const Pakal::LevelObject& object : doc.objects)
 		{
 			if (keep && !keep(object)) continue;
@@ -196,18 +200,25 @@ namespace Pakal::TopDown
 				++failed;   // (made from a prefab: not drawn yet)
 				continue;
 			}
-			auto mesh = model(levelDir + object.mesh);
-			if (!mesh || !mesh->is_loaded())
-			{
-				++failed;
-				continue;
-			}
 			Mat4 placement = level_placement(object, doc.unitsPerMeter);
 			// moved by -origin (level x is render x, level y is render -z), then turned by -yaw about the vertical (a turn
 			// counterclockwise from above in the level is rotation_y of the same angle in render space)
 			placement[12] -= scenery.origin.x;
 			placement[14] += scenery.origin.y;
 			if (scenery.yaw != 0.0f) placement = mat4_mul(unturn, placement);
+			// a grass model the field replaces (and no keyed object, which a game may move or swap): its place goes to the
+			// field, and no model is drawn
+			if (!grass.empty() && object.key.empty() && (grass.replaces(object.name) || grass.replaces(object.mesh)))
+			{
+				grass.add(placement[12], placement[13], placement[14]);
+				continue;
+			}
+			auto mesh = model(levelDir + object.mesh);
+			if (!mesh || !mesh->is_loaded())
+			{
+				++failed;
+				continue;
+			}
 			mesh->set_matrix(placement.data());
 			if (object.lightmap[0] > 0.0) mesh->set_lightmap_rect(float(object.lightmap[0]), float(object.lightmap[1]), float(object.lightmap[2]));
 			mesh->set_shadow_baked(object.baked);
@@ -263,11 +274,48 @@ namespace Pakal::TopDown
 				}
 				m_occluders->add(occluder);
 			}
-			if (!object.key.empty()) m_levelObjects[object.key] = LevelEntry{ m_scenery.size(), placement, placement };
+			// its shadow cast by its proxy (a tree's leaf cards drawn in the sun's map were most of its cost)
+			std::unique_ptr<Pakal::MeshComponent3D_Bgfx> shadow;
+			if (const std::string proxyFile = shadowProxies.proxy_for(levelDir + object.mesh); !proxyFile.empty())
+			{
+				shadow = model(proxyFile);
+				if (shadow && shadow->is_loaded())
+				{
+					shadow->set_matrix(placement.data());
+					cast_shadow_through(*mesh, *shadow);
+				}
+				else
+				{
+					shadow.reset();
+				}
+			}
+			LevelEntry entry{ m_scenery.size(), placement, placement };
 			m_scenery.push_back(std::move(mesh));
+			if (shadow)
+			{
+				entry.proxy = m_scenery.size();
+				m_scenery.push_back(std::move(shadow));
+				++proxies;
+			}
+			if (!object.key.empty()) m_levelObjects[object.key] = entry;
 			++placed;
 		}
 		if (failed) LOG_WARNING("[LevelRuntime] %s: %zu objects placed, %zu not drawn", levelPath.c_str(), placed, failed);
+		if (proxies) LOG_INFO("[LevelRuntime] %s: %zu models cast their shadow through a proxy", levelPath.c_str(), proxies);
+		// the grass models the field replaced: one field of blades over their places
+		if (m_grassField)
+		{
+			m_graphics->destroy_grass(m_grassField);
+			m_grassField = 0;
+		}
+		if (grass.plants() > 0)
+		{
+			Pakal::GraphicsSystem::GrassField field = grass.field();
+			const float width = field.maxX - field.minX, depth = field.maxZ - field.minZ;
+			m_grassField = m_graphics->create_grass(std::move(field));
+			LOG_INFO("[LevelRuntime] %s: %zu grass models drawn as one field of blades over %.0f x %.0f m", levelPath.c_str(),
+				grass.plants(), width, depth);
+		}
 
 		// the height of the floor as it is drawn (tools/levelbuilder/floor.py): a byte a cell, centimeters plus 128, rows
 		// from the south edge; between cells the height blends (a curb is a short ramp, not a step)
@@ -368,9 +416,25 @@ namespace Pakal::TopDown
 			swapped->set_matrix(found->second.drawn.data());
 			if (m_occluders) m_occluders->replace_mesh(mesh.get(), swapped.get());
 			mesh = std::move(swapped);
+			// the old model's shadow proxy is not the new one's: the new model casts its own shadow
+			if (found->second.proxy < m_scenery.size()) m_scenery[found->second.proxy]->set_visible(false);
+			found->second.proxy = kNoProxy;
 		}
 		mesh->set_visible(visible);
+		if (found->second.proxy < m_scenery.size()) m_scenery[found->second.proxy]->set_visible(visible);
 		return true;
+	}
+
+	void LevelRuntime::draw_level_entry(const LevelEntry& entry)
+	{
+		if (entry.scenery < m_scenery.size()) m_scenery[entry.scenery]->set_matrix(entry.drawn.data());
+		if (entry.proxy < m_scenery.size()) m_scenery[entry.proxy]->set_matrix(entry.drawn.data());
+	}
+
+	void LevelRuntime::cast_shadow_through(Pakal::MeshComponent3D_Bgfx& model, Pakal::MeshComponent3D_Bgfx& proxy)
+	{
+		proxy.set_shadow_only(true);
+		model.set_casts_shadow(false);
 	}
 
 	bool LevelRuntime::move_level_object(const std::string& key, const Pakal::Vec2& at, float height, float yaw)
@@ -384,7 +448,7 @@ namespace Pakal::TopDown
 		const float c = std::cos(yaw), s = std::sin(yaw);
 		const Mat4 turn{ c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, at.x, height, -at.y, 1 };
 		found->second.drawn = mat4_mul(turn, placement);
-		m_scenery[found->second.scenery]->set_matrix(found->second.drawn.data());
+		draw_level_entry(found->second);
 		return true;
 	}
 
@@ -393,7 +457,7 @@ namespace Pakal::TopDown
 		const auto found = m_levelObjects.find(key);
 		if (found == m_levelObjects.end() || found->second.scenery >= m_scenery.size()) return false;
 		found->second.drawn = found->second.placement;
-		m_scenery[found->second.scenery]->set_matrix(found->second.drawn.data());
+		draw_level_entry(found->second);
 		return true;
 	}
 
@@ -485,6 +549,8 @@ namespace Pakal::TopDown
 			if (m_floorHeight) CharacterViewComponent::set_floor(nullptr);
 			m_floorHeight = nullptr;
 			m_levelObjects.clear();
+			if (m_grassField) m_graphics->destroy_grass(m_grassField);
+			m_grassField = 0;
 			m_scenery.clear();
 			m_prototypes.clear();
 			m_camera.reset();
