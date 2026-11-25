@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "win64",
+      "displayName": "Windows x64 (MSVC, vcpkg static, the engine's manifest)",
+      "description": "Run from a Developer shell (vcvars64), with VCPKG_ROOT set. The first configure builds bgfx inside extern/Pakal (a few minutes, once).",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-win64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
+        "VCPKG_MANIFEST_DIR": "${sourceDir}/extern/Pakal",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "win64", "configurePreset": "win64" }
+  ]
+}

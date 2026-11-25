@@ -54,12 +54,12 @@ endif()
 # Include directories
 target_include_directories(ContraGameModule PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/source
-    ${CMAKE_SOURCE_DIR}/source/bgfx
-    ${CMAKE_SOURCE_DIR}/source/box2D
-    ${CMAKE_SOURCE_DIR}/external/bgfx/include
-    ${CMAKE_SOURCE_DIR}/external/bx/include
-    ${CMAKE_SOURCE_DIR}/external/bimg/include
+    ${PAKAL_ROOT}/source
+    ${PAKAL_ROOT}/source/bgfx
+    ${PAKAL_ROOT}/source/box2D
+    ${PAKAL_ROOT}/external/bgfx/include
+    ${PAKAL_ROOT}/external/bx/include
+    ${PAKAL_ROOT}/external/bimg/include
 )
 
 # Set C++ standard
@@ -78,7 +78,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets)
 endif()
 
 # Copy minimal bgfx shader binaries for sprite rendering
-set(BGFX_SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/external/bgfx/examples/runtime/shaders)
+set(BGFX_SHADER_SRC_DIR ${PAKAL_ROOT}/external/bgfx/examples/runtime/shaders)
 add_custom_command(TARGET ContraGameModule POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:ContraGameModule>/Assets/shaders/glsl
@@ -195,9 +195,9 @@ add_custom_command(TARGET ContraGameModule POST_BUILD
 )
 
 # Compile custom sprite shaders (RGBA sampling) with bgfx shaderc
-set(SPRITE_SHADERC ${CMAKE_SOURCE_DIR}/external/bgfx/.build/linux64_gcc/bin/shadercRelease)
+set(SPRITE_SHADERC ${PAKAL_ROOT}/external/bgfx/.build/linux64_gcc/bin/shadercRelease)
 set(SPRITE_SHADER_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-set(SPRITE_SHADER_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/bgfx/src)
+set(SPRITE_SHADER_INCLUDE_DIR ${PAKAL_ROOT}/external/bgfx/src)
 
 if(EXISTS ${SPRITE_SHADERC})
     add_custom_command(TARGET ContraGameModule POST_BUILD
@@ -244,7 +244,7 @@ endif()
 
 # Compile sprite shaders for Direct3D 11 on Windows (shaderc built by external/bgfx genie)
 if(WIN32)
-    set(SPRITE_SHADERC_WIN ${CMAKE_SOURCE_DIR}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe)
+    set(SPRITE_SHADERC_WIN ${PAKAL_ROOT}/external/bgfx/.build/win64_vs2022/bin/shadercRelease.exe)
     if(EXISTS ${SPRITE_SHADERC_WIN})
         add_custom_command(TARGET ContraGameModule POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory ${PAKAL_RUNTIME_DIR}/Assets/shaders/dx11

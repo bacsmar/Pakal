@@ -143,7 +143,8 @@ Dependencies only go down. A server, a bot or a test can link a genre's simulati
 
 [docs/QUICKSTART.md](docs/QUICKSTART.md) goes from an empty folder to the engine running. The full build guide is
 [docs/BUILDING.md](docs/BUILDING.md), and Android is in [docs/ANDROID.md](docs/ANDROID.md). Coding agents read
-[AGENTS.md](AGENTS.md).
+[AGENTS.md](AGENTS.md). A new game in a repository of its own, with the engine as a submodule:
+[AGENTS-NEWPROJECT.md](AGENTS-NEWPROJECT.md) (steps for agents) and [docs/GAME_REPOSITORY.md](docs/GAME_REPOSITORY.md).
 
 ## Documentation
 
