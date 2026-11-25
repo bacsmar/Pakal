@@ -105,6 +105,29 @@ namespace Pakal::TopDown
 		return instance;
 	}
 
+	std::unique_ptr<Pakal::MeshComponent3D_Bgfx> LevelRuntime::character(const Pakal::CharacterRecipe& recipe)
+	{
+		const std::string key = recipe.to_json();
+		auto found = m_characters.find(key);
+		if (found == m_characters.end())
+		{
+			auto prototype = std::make_unique<Pakal::MeshComponent3D_Bgfx>(m_graphics);
+			if (!prototype->load_character(recipe) || !prototype->is_loaded()) prototype.reset();   // (load_character logs why)
+			found = m_characters.emplace(key, std::move(prototype)).first;
+		}
+		if (!found->second) return nullptr;
+		auto instance = std::make_unique<Pakal::MeshComponent3D_Bgfx>(m_graphics);
+		instance->share_from(*found->second);
+		return instance;
+	}
+
+	std::unique_ptr<Pakal::MeshComponent3D_Bgfx> LevelRuntime::character_model(const CharacterViewComponent::Look& look, size_t variant)
+	{
+		if (!look.recipes.empty()) return character(look.recipes[variant % look.recipes.size()]);
+		if (variant == 0 || look.variants.empty()) return model(look.model);
+		return model(look.variants[(variant - 1) % look.variants.size()]);
+	}
+
 	std::unique_ptr<Pakal::MeshComponent3D_Bgfx> LevelRuntime::model_if_ready(const std::string& file, bool& failed)
 	{
 		failed = false;
@@ -481,10 +504,10 @@ namespace Pakal::TopDown
 	}
 
 	CharacterViewComponent* LevelRuntime::add_view(Actor& actor, const nlohmann::json& lookData, const CharacterViewComponent::Look& defaults,
-		const std::function<void(const std::string& mark)>& onMark, float clay, float dentsPerMeter)
+		const std::function<void(const std::string& mark)>& onMark, float clay, float dentsPerMeter, size_t variant)
 	{
 		const CharacterViewComponent::Look look = CharacterViewComponent::Look::from_json(lookData, defaults);
-		auto mesh = model(look.model);
+		auto mesh = character_model(look, variant);
 		if (!mesh) return nullptr;
 		const nlohmann::json marks = lookData.value("marks", nlohmann::json::object());
 		for (const auto& [clip, named] : marks.items())
@@ -553,6 +576,7 @@ namespace Pakal::TopDown
 			m_grassField = 0;
 			m_scenery.clear();
 			m_prototypes.clear();
+			m_characters.clear();
 			m_camera.reset();
 		});
 	}

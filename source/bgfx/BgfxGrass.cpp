@@ -5,11 +5,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "BgfxGrass.h"
-#include "MeshComponent3D_Bgfx.h"
 #include "LogMgr.h"
 #include "Profiler.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <vector>
 
@@ -266,23 +266,41 @@ namespace Pakal
 		m_fields.erase(it);
 	}
 
-	uint32_t BgfxGrass::render(bgfx::ViewId viewId, const float eye[3], double seconds)
+	namespace
 	{
+		// How many of 'wanted' instances fit in the frame's instance buffer now. bgfx answers all or none: a request fits in
+		// the buffer's last chunk, or a new chunk is made, which takes a vertex buffer handle; with none left (a level of
+		// thousands of buffers) only what fits in the last chunk is had, and the most of it is searched for
+		uint32_t instances_that_fit(uint32_t wanted, uint16_t stride)
+		{
+			if (bgfx::getAvailInstanceDataBuffer(wanted, stride) >= wanted) return wanted;
+			uint32_t fits = 0, over = wanted;
+			while (over - fits > 1)
+			{
+				const uint32_t mid = fits + (over - fits) / 2;
+				if (bgfx::getAvailInstanceDataBuffer(mid, stride) >= mid) fits = mid; else over = mid;
+			}
+			return fits;
+		}
+	}
+
+	uint32_t BgfxGrass::render(bgfx::ViewId viewId, const float eye[3], double seconds, const Frame& frame)
+	{
+		m_droppedTiles = 0;
 		if (!available() || m_fields.empty() || m_densityScale <= 0.0f || m_reachScale <= 0.0f) return 0;
 		PAKAL_PROFILE_SCOPE("gfx.grass");
-		float planes[6][4];
-		const bool culled = MeshComponent3D_Bgfx::main_frustum(planes);
-		float focus[3];
-		MeshComponent3D_Bgfx::scatter_origin(focus);
-		float wind[2];
-		MeshComponent3D_Bgfx::wind(wind);
+		const bool culled = frame.culled;
+		const auto& planes = frame.planes;
+		const float* focus = frame.focus;
+		const float* wind = frame.wind;
 		const float clock = float(std::fmod(seconds, 600.0));
 		// the sun's shadow, read once at each blade's root (none: strength 0, and a texture bound all the same)
-		bgfx::TextureHandle shadowMap = BGFX_INVALID_HANDLE;
-		float shadowMatrix[16] = {}, shadowParams[4] = {};
-		const bool shadows = MeshComponent3D_Bgfx::sun_shadow(shadowMap, shadowMatrix, shadowParams) && m_shadows;
+		bgfx::TextureHandle shadowMap = frame.shadowMap;
+		const float* shadowMatrix = frame.shadowMatrix;
+		const float* shadowParams = frame.shadowParams;
+		const bool shadows = frame.shadow && m_shadows;
 		const float shadow4[4] = { shadows ? shadowParams[0] : 0.0f, shadowParams[1], 0.0f, 0.0f };
-		if (!bgfx::isValid(shadowMap)) shadowMap = MeshComponent3D_Bgfx::white_texture();
+		if (!bgfx::isValid(shadowMap)) shadowMap = frame.white;
 		uint32_t drawn = 0;
 		thread_local std::vector<float> rings[kRings];
 		for (auto& [handle, fieldPtr] : m_fields)
@@ -352,14 +370,32 @@ namespace Pakal
 			const float thin4[4] = { std::clamp(d.thinFrom, 0.0f, 0.95f), std::clamp(d.farDensity, 0.0f, 1.0f), 0.0f, 0.0f };
 			for (int ring = 0; ring < kRings; ++ring)
 			{
-				const uint32_t tiles = uint32_t(rings[ring].size() / 2);
-				if (tiles == 0) continue;
+				const uint32_t wanted = uint32_t(rings[ring].size() / 2);
+				if (wanted == 0) continue;
 				// as many blades as the density needs at the ring's nearest edge
 				const float nearest = ring == 0 ? 0.0f : kRingEdge[ring - 1] * reach;
 				const uint32_t blades = std::min(field.blades, uint32_t(std::ceil(density_at(nearest, reach, m_densityScale, d.thinFrom, d.farDensity) * field.blades)));
 				if (blades == 0) continue;
 				const uint16_t stride = 16;
-				if (bgfx::getAvailInstanceDataBuffer(tiles, stride) < tiles) break;
+				// the frame's instance buffer is shared by every instanced draw: the tiles that fit are drawn, never none of the
+				// ring and the rings after it (a frame with no vertex buffer handle left drew none of a field)
+				const uint32_t tiles = instances_that_fit(wanted, stride);
+				m_droppedTiles += wanted - tiles;
+				if (tiles == 0) continue;
+				if (tiles < wanted)
+				{
+					// the ring's nearest tiles are the ones drawn (they are listed row by row)
+					std::vector<std::array<float, 2>> cells(wanted);
+					for (uint32_t k = 0; k < wanted; ++k) cells[k] = { rings[ring][k * 2], rings[ring][k * 2 + 1] };
+					const float half = 0.5f * field.tile;
+					std::partial_sort(cells.begin(), cells.begin() + tiles, cells.end(), [&](const auto& a, const auto& b)
+					{
+						const float ax = a[0] + half - focus[0], az = a[1] + half - focus[2];
+						const float bx = b[0] + half - focus[0], bz = b[1] + half - focus[2];
+						return ax * ax + az * az < bx * bx + bz * bz;
+					});
+					for (uint32_t k = 0; k < tiles; ++k) { rings[ring][k * 2] = cells[k][0]; rings[ring][k * 2 + 1] = cells[k][1]; }
+				}
 				bgfx::InstanceDataBuffer instances;
 				bgfx::allocInstanceDataBuffer(&instances, tiles, stride);
 				float* out = reinterpret_cast<float*>(instances.data);
@@ -399,6 +435,12 @@ namespace Pakal
 				bgfx::submit(viewId, m_program, uint32_t(ring));
 				drawn += blades * tiles;
 			}
+		}
+		if (m_droppedTiles > 0 && !m_droppedLogged)
+		{
+			m_droppedLogged = true;   // (once a run: a busy scene would say it every frame)
+			LOG_WARNING("[BgfxGrass] the frame's instance buffer is full: %u grass tiles not drawn (gpu.grass_dropped counts them)",
+				m_droppedTiles);
 		}
 		return drawn;
 	}

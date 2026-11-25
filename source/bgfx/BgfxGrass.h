@@ -43,10 +43,27 @@ namespace Pakal
 		void set_shadows(bool on) { m_shadows = on; }
 		size_t count() const { return m_fields.size(); }
 
-		// Draws the fields in the main view: 'eye' for the blades' facing, the cover's focus and the frustum from
-		// MeshComponent3D_Bgfx (shared with the scattered models). Returns the blades drawn (an upper bound: those the
-		// density folds away included).
-		uint32_t render(bgfx::ViewId viewId, const float eye[3], double seconds);
+		// What a frame's grass shares with the other drawers (the graphics system fills it from MeshComponent3D_Bgfx's
+		// frame state: the scattered models use the same)
+		struct Frame
+		{
+			bool culled = false;           // the main view's frustum planes are set
+			float planes[6][4] = {};
+			float focus[3] = {};           // where the reach is measured from
+			float wind[2] = {};            // bend, speed
+			bool shadow = false;           // the sun's shadow this frame
+			bgfx::TextureHandle shadowMap = BGFX_INVALID_HANDLE;
+			float shadowMatrix[16] = {};
+			float shadowParams[4] = {};
+			bgfx::TextureHandle white = BGFX_INVALID_HANDLE;   // bound where there is no shadow map
+		};
+		// Draws the fields in the main view: 'eye' for the blades' facing. Returns the blades drawn (an upper bound: those
+		// the density folds away included). The tiles go in the frame's instance buffer, which every instanced draw shares
+		// and which grows by chunks, each taking a vertex buffer handle: with none left, the tiles that fit are drawn (nearest
+		// first) and the rest are counted in dropped_tiles.
+		uint32_t render(bgfx::ViewId viewId, const float eye[3], double seconds, const Frame& frame);
+		// The tiles the last render could not draw for want of room in the frame's instance buffer
+		uint32_t dropped_tiles() const { return m_droppedTiles; }
 
 	private:
 		struct Field
@@ -64,6 +81,8 @@ namespace Pakal
 		void free_field(Field& field);
 
 		bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE;
+		uint32_t m_droppedTiles = 0;   // render's, for want of room in the instance buffer
+		bool m_droppedLogged = false;
 		bgfx::UniformHandle m_uField = BGFX_INVALID_HANDLE;   // u_grassField: x, y the rectangle's corner, z, w 1 / its size
 		bgfx::UniformHandle m_uShape = BGFX_INVALID_HANDLE;   // u_grassShape: heights, width, the ground's height
 		bgfx::UniformHandle m_uReach = BGFX_INVALID_HANDLE;   // u_grassReach: reach, density, the ground's range, tile

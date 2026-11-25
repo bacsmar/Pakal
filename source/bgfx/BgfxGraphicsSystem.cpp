@@ -963,6 +963,9 @@ namespace Pakal
 		profiler.counter("gpu.textures_mb", stats->textureMemoryUsed / (1024.0 * 1024.0));
 		profiler.counter("gpu.targets_mb", stats->rtMemoryUsed / (1024.0 * 1024.0));
 		profiler.counter("gpu.draws", stats->numDraw);
+		// (bgfx has 4096 handles: the frame's instance buffer grows by chunks that each take one, so a level near the limit
+		// starves the instanced draws: gpu.grass_dropped)
+		profiler.counter("gpu.vertex_buffers", stats->numVertexBuffers);
 		uint64_t primitives = 0;
 		for (uint32_t topology = 0; topology < bgfx::Topology::Count; ++topology) primitives += stats->numPrims[topology];
 		profiler.counter("gpu.primitives", double(primitives));
@@ -2668,6 +2671,29 @@ namespace Pakal
 		++frameParity;
 		unsigned crowdIndex = 0;
 
+		// The grass made on the GPU (solid blades by tiles, lit by the sun). First of the instanced draws: they all take the
+		// frame's instance buffer, and the grass's few bytes a tile must not wait behind thousands of copies and plants (a
+		// busy frame left the nearest grass out). The main view sorts the draws by depth all the same.
+		if (m_grass.available() && m_grass.count() > 0)
+		{
+			m_grass.set_scale(m_grassReachScale.load(std::memory_order_relaxed), m_grassDensityScale.load(std::memory_order_relaxed));
+			m_grass.set_shadows(m_grassShadows.load(std::memory_order_relaxed));
+			set_uniform(m_u_light_dir, "u_lightDir", m_light_dir);
+			set_uniform(m_u_light_color, "u_lightColor", m_light_color);
+			set_uniform(m_u_ambient, "u_ambient", m_ambient);
+			set_uniform(m_u_ambient_ground, "u_ambientGround", m_ambient_ground);
+			float eye[3];
+			MeshComponent3D_Bgfx::camera_eye(eye);
+			BgfxGrass::Frame frame;
+			frame.culled = MeshComponent3D_Bgfx::main_frustum(frame.planes);
+			MeshComponent3D_Bgfx::scatter_origin(frame.focus);
+			MeshComponent3D_Bgfx::wind(frame.wind);
+			frame.shadow = MeshComponent3D_Bgfx::sun_shadow(frame.shadowMap, frame.shadowMatrix, frame.shadowParams);
+			frame.white = MeshComponent3D_Bgfx::white_texture();
+			m_grass.render(m_main_view_id, eye, std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(), frame);
+			Profiler::get().counter("gpu.grass_dropped", m_grass.dropped_tiles());
+		}
+
 		// GPU instancing: the static copies of one model (a town's palms, lamps, benches, plants: the same model hundreds of
 		// times) in one draw per material instead of one per copy. Copies that are faded, tinted, lightmapped or few (under
 		// kMinInstances) are drawn one by one as before. Off on Android unless PAKAL_INSTANCING=1: on a Kirin 980 sending draws
@@ -2787,20 +2813,6 @@ namespace Pakal
 					mesh->mark_instanced(m_instanceFrame);
 				}
 			}
-		}
-
-		// The grass made on the GPU (solid blades by tiles: after the scattered cover, lit by the same sun)
-		if (m_grass.available() && m_grass.count() > 0)
-		{
-			m_grass.set_scale(m_grassReachScale.load(std::memory_order_relaxed), m_grassDensityScale.load(std::memory_order_relaxed));
-			m_grass.set_shadows(m_grassShadows.load(std::memory_order_relaxed));
-			set_uniform(m_u_light_dir, "u_lightDir", m_light_dir);
-			set_uniform(m_u_light_color, "u_lightColor", m_light_color);
-			set_uniform(m_u_ambient, "u_ambient", m_ambient);
-			set_uniform(m_u_ambient_ground, "u_ambientGround", m_ambient_ground);
-			float eye[3];
-			MeshComponent3D_Bgfx::camera_eye(eye);
-			m_grass.render(m_main_view_id, eye, std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count());
 		}
 
 		// Animation advances once per frame, whether or not the mesh is drawn (a model without bones has none: thousands of

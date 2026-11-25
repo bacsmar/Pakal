@@ -105,6 +105,13 @@ namespace Pakal::TopDown
 		// Graphics thread: the same without waiting: nullptr while the file is still decoding in the background (ask again
 		// next frame), and 'failed' set when it does not load
 		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> model_if_ready(const std::string& file, bool& failed);
+		// Graphics thread: an instance of a character made of parts (docs/MODULAR_CHARACTERS.md). Each recipe is assembled
+		// once (the same recipe again, by its JSON, shares that prototype) and kept until end(); nullptr, logged, when its
+		// parts cannot be assembled
+		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> character(const Pakal::CharacterRecipe& recipe);
+		// Graphics thread: the model a look draws: its recipe 'variant' (modulo how many it has) when it has recipes, else
+		// its "model" file (variant 0) or its "variants" (variant 1 on, modulo); nullptr when it does not load
+		std::unique_ptr<Pakal::MeshComponent3D_Bgfx> character_model(const CharacterViewComponent::Look& look, size_t variant = 0);
 		// Graphics thread: the scene's light and picture
 		void apply_look(const SceneLook& look);
 		// Any thread: the wind in the foliage (every alpha-tested model: leaves, palms, grass bend with gusts), 'bend' meters
@@ -147,10 +154,11 @@ namespace Pakal::TopDown
 		bool add_level_object(const std::string& key, const std::string& model, const Pakal::Vec2& at, float height = 0.0f,
 			float yaw = 0.0f, float scale = 1.0f);
 		// Graphics thread: a character's animated model from its look (a JSON look over 'defaults'; its "marks" on its clips
-		// call 'onMark' with the mark's name; 'clay' makes it plasticine). Its model file is the look's "model", and what it
-		// holds the look's "held" mesh.
+		// call 'onMark' with the mark's name; 'clay' makes it plasticine). Its model is character_model's (the look's
+		// "recipe"/"recipes", else its "model"/"variants", by 'variant'), and what it holds the look's "held" mesh.
 		CharacterViewComponent* add_view(Actor& actor, const nlohmann::json& look, const CharacterViewComponent::Look& defaults,
-			const std::function<void(const std::string& mark)>& onMark = {}, float clay = 0.0f, float dentsPerMeter = 9.0f);
+			const std::function<void(const std::string& mark)>& onMark = {}, float clay = 0.0f, float dentsPerMeter = 9.0f,
+			size_t variant = 0);
 
 		// Each frame: how many fixed steps the simulation runs now (call the game's step that many times with step_seconds())
 		int advance();
@@ -197,6 +205,8 @@ namespace Pakal::TopDown
 		std::unique_ptr<Pakal::CameraComponent3D_Bgfx> m_camera;
 		std::shared_ptr<Pakal::AssetCache> m_assets;
 		std::map<std::string, Pakal::AssetHandle<Pakal::MeshComponent3D_Bgfx>> m_prototypes;
+		// the characters assembled from recipes (character), by the recipe's JSON; nullptr for one that failed (not tried again)
+		std::map<std::string, std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_characters;
 		std::vector<std::unique_ptr<Pakal::MeshComponent3D_Bgfx>> m_scenery;
 		std::unique_ptr<OccluderFade> m_occluders;
 		std::unique_ptr<ParticleEffects> m_particles;

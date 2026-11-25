@@ -137,7 +137,8 @@ seconds and rates, the blood's color).
 
 ## Views
 
-`view/`: `CharacterViewComponent` (the animated model: clips after state and speed, what the hands hold, the hurt flash,
+`view/`: `CharacterViewComponent` (the animated model, from a model file or a character made of parts: a look's `recipe` and
+`recipes`, docs/MODULAR_CHARACTERS.md; clips after state and speed, what the hands hold, the hurt flash,
 the boost glow; the player's fire and reload clips play on the upper body (`overlayRoot` up) over the legs, and so do a
 hit and a melee swing taken on the run (`meleeMoving` empty), so the legs keep their run instead of sliding; a held weapon
 may bring its own `clips` (a rifle's hold, a launcher on the shoulder: those it names replace the look's while in hand;

@@ -9,6 +9,8 @@
 #include "topdown/Height.h"
 
 #include "bgfx/MeshComponent3D_Bgfx.h"
+#include "LogMgr.h"
+#include "ResourceManager.h"
 
 #include <nlohmann/json.hpp>
 
@@ -184,6 +186,30 @@ namespace Pakal::TopDown
 		return held;
 	}
 
+	namespace
+	{
+		// A look's recipe: inline (an object) or a recipe file's path (its parts' relative files from the file's folder)
+		bool read_recipe(const nlohmann::json& entry, Pakal::CharacterRecipe& recipe, std::string& error)
+		{
+			if (entry.is_object()) return recipe.from_json(entry.dump(), std::string(), error);
+			if (!entry.is_string())
+			{
+				error = "a recipe is an object or a file's path";
+				return false;
+			}
+			const std::string path = entry.get<std::string>();
+			bool found = false;
+			const std::string text = ResourceMgr.read_text(path, &found);
+			if (!found)
+			{
+				error = "no file " + path;
+				return false;
+			}
+			const size_t slash = path.find_last_of("/\\");
+			return recipe.from_json(text, slash == std::string::npos ? std::string() : path.substr(0, slash + 1), error);
+		}
+	}
+
 	CharacterViewComponent::Look CharacterViewComponent::Look::from_json(const nlohmann::json& json, const Look& defaults)
 	{
 		Look look = defaults;
@@ -197,6 +223,21 @@ namespace Pakal::TopDown
 		look.pool = json.value("pool", 0);
 		look.model = json.value("model", look.model);
 		look.variants = string_list(json.value("variants", nlohmann::json()), look.variants);
+		if (json.contains("recipe") || json.contains("recipes"))
+		{
+			look.recipes.clear();
+			nlohmann::json entries = nlohmann::json::array();
+			if (json.contains("recipe")) entries.push_back(json["recipe"]);
+			if (json.contains("recipes") && json["recipes"].is_array())
+				for (const auto& entry : json["recipes"]) entries.push_back(entry);
+			for (const auto& entry : entries)
+			{
+				Pakal::CharacterRecipe recipe;
+				std::string error;
+				if (read_recipe(entry, recipe, error)) look.recipes.push_back(std::move(recipe));
+				else LOG_WARNING("[CharacterView] a look's recipe left out: %s", error.c_str());
+			}
+		}
 		look.walkRef = json.value("walkRef", look.walkRef);
 		look.runRef = json.value("runRef", look.runRef);
 		look.clipSpeedMax = json.value("clipSpeedMax", look.clipSpeedMax);

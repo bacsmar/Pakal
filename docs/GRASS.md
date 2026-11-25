@@ -100,6 +100,11 @@ The rest of the spec is the blades' look: the fields of the table below, by thei
 - **Lighting** (`fs_grass`): the sky and ground ambient, a wrapped sun, and darker at the root. The vertex shader
   reads the sun's shadow map once at each blade's root, so a blade in a tree's shade is shaded all along. The grass
   casts no shadow.
+- **The instance buffer:** a frame's tiles go in the instance buffer that every instanced draw shares. bgfx grows it
+  by chunks, and each chunk takes a vertex buffer handle (4096 in all). In a level that holds nearly all of them, only
+  the last chunk's room is left: the tiles that fit are drawn, nearest first, and the rest are counted in
+  `gpu.grass_dropped` (logged once a run). The grass is drawn first of the instanced draws, so it takes its few bytes a
+  tile before the copies and the cover do. `gpu.vertex_buffers` says how near the limit a level is.
 
 ## Not yet
 

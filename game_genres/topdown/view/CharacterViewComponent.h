@@ -8,6 +8,7 @@
 
 #pragma once
 #include "topdown/TopDownComponents.h"
+#include "CharacterRecipe.h"
 
 #include <nlohmann/json_fwd.hpp>
 
@@ -95,6 +96,11 @@ namespace Pakal::TopDown
 			float height = 1.8f;
 			std::string model;      // model file of this type of enemy, relative to the level ("" for the level's enemy model)
 			std::vector<std::string> variants; // more models for the same type: each one gets one of them at random
+			// A character made of parts instead of a model file (docs/MODULAR_CHARACTERS.md): the look's "recipe" (a
+			// CharacterRecipe, inline or a recipe file's path) and "recipes" (more of them, a variant each, as "variants"). Its
+			// clips come from the recipe's skeleton. When there are any, they stand for 'model' and 'variants'
+			// (LevelRuntime::character_model). A recipe that does not read is logged and left out.
+			std::vector<Pakal::CharacterRecipe> recipes;
 			int pool = 0;           // copies of its model made at load (0: the level's enemyPool)
 			float tint[3] = { 1.0f, 1.0f, 1.0f };
 			float walkRef = 1.5f;   // meters per second one cycle of the move clip covers

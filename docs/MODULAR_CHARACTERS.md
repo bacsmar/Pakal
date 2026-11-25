@@ -49,6 +49,26 @@ for any skinned model. The assembly does these things:
 The log reports what was assembled, for example
 `character assembled: 3 parts, 3 meshes, 19 bones, 1 materials drawn, 1 textures, 27 clips`.
 
+## In a TopDown look
+
+A character's look (`CharacterViewComponent::Look`) takes a recipe where it takes a model file:
+
+```json
+{ "recipe": "characters/onlooker_a.json", "recipes": [ "characters/onlooker_b.json", { "parts": [ ... ] } ],
+  "height": 1.75, "clips": { "idle": ["Idle"], "move": ["Walk"] } }
+```
+
+- `recipe` is one recipe: inline, or a recipe file's path, whose parts' relative files are taken from the file's
+  folder. `recipes` adds more, one variant each, after `recipe`, as `variants` does for model files. When a look has
+  recipes, they stand for `model` and `variants`. A recipe that does not read is logged and left out.
+- The look's other fields (`clips`, `height`, `actions`, `weapons`, `held`, `marks`) work as they do for a model. The
+  clips are the recipe skeleton's.
+- `LevelRuntime::add_view(actor, look, defaults, onMark, clay, dents, variant)` draws the recipe `variant` (modulo how
+  many there are). `LevelRuntime::character_model(look, variant)` gives the model alone, for a game's own pool.
+- Each recipe is assembled once per level (`LevelRuntime::character`): its copies share it, as a model file's copies
+  share its prototype, until `end()`. A crowd of many people drawn from a few recipes costs a few assemblies, and the
+  package carries only the parts.
+
 ## Trying it
 
 - `tools/modular/split_character.py` (Blender) cuts a skinned character into head, torso and legs. It gives the
@@ -69,5 +89,7 @@ The log reports what was assembled, for example
 - **Colors:** recoloring by slot (skin, hair, cloth) by writing a palette texture at assembly.
 - **Packs that ship FBX only** (some commercial modular packs): an offline converter to glTF that keeps the blend shapes and bone
   names. Their files are licensed to their buyer and never enter the engine's repository.
-- **The TopDown genre:** `CharacterViewComponent` taking a recipe instead of a model path; recipes over the network.
-- **Loading off the graphics thread** (`decode` for a recipe), and caching characters by their recipe.
+- **Recipes over the network.**
+- **Loading off the graphics thread** (`decode` for a recipe). Each recipe reads its parts' files again, and recipes
+  sharing a part each upload its textures: a cache of the parts read, and of their textures, would share them.
+- **Random recipes:** a look built from slots and choices ("any of these heads") instead of a list of whole recipes.

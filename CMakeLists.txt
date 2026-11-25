@@ -604,6 +604,26 @@ if(EXISTS ${BGFX_MAIN_LIB})
     add_test(NAME SceneTargetTests COMMAND SceneTargetTests)
 endif()
 
+# The GPU grass when the frame's instance buffer is nearly full (the tiles that fit drawn, the rest counted), on bgfx's
+# Noop renderer with the build's compiled grass shaders
+if(EXISTS ${BGFX_MAIN_LIB} AND TARGET PakalShaders)
+    # BgfxGrass built in, on the test's own bgfx (the engine's library keeps its bgfx inside); the log and the profiler
+    # from the engine's library
+    add_executable(GrassInstanceTests ${CMAKE_SOURCE_DIR}/tests/GrassInstanceTests.cpp ${CMAKE_SOURCE_DIR}/source/bgfx/BgfxGrass.cpp)
+    target_include_directories(GrassInstanceTests PRIVATE ${CMAKE_SOURCE_DIR}/source ${BGFX_DIR}/include)
+    target_link_libraries(GrassInstanceTests PRIVATE Pakal ${BGFX_LIBS} ${BGFX_SYSTEM_LIBS})
+    target_compile_definitions(GrassInstanceTests PRIVATE BX_CONFIG_DEBUG=0)
+    if(MSVC)
+        target_compile_options(GrassInstanceTests PRIVATE /Zc:preprocessor /Zc:__cplusplus)
+        target_include_directories(GrassInstanceTests PRIVATE ${CMAKE_SOURCE_DIR}/external/bx/include/compat/msvc)
+        target_link_libraries(GrassInstanceTests PRIVATE psapi user32 gdi32)
+    else()
+        target_link_libraries(GrassInstanceTests PRIVATE X11 GL pthread)
+    endif()
+    add_dependencies(GrassInstanceTests PakalShaders)
+    add_test(NAME GrassInstanceTests COMMAND GrassInstanceTests ${PAKAL_SHADER_DIR})
+endif()
+
 # Quests (game_genres/quests, namespace Pakal::Quests; docs/QUESTS.md): what a game's quests show and how they run, for
 # any genre. On the core only: it never includes a genre, the UI or graphics (a genre gives a binding, a game a presenter)
 file(GLOB PAKAL_QUESTS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/quests/*.cpp)
@@ -708,6 +728,10 @@ if(WIN32 AND EXISTS ${CMAKE_SOURCE_DIR}/examples/zombies_module/ZombiesModule.cp
     add_executable(FoliageRulesTests tests/FoliageRulesTests.cpp)
     target_link_libraries(FoliageRulesTests PakalTopDownView nlohmann_json::nlohmann_json)
     add_test(NAME FoliageRulesTests COMMAND FoliageRulesTests)
+    # a look made of parts: its "recipe" and "recipes" read inline or from a recipe file (no GPU)
+    add_executable(LookRecipeTests tests/LookRecipeTests.cpp)
+    target_link_libraries(LookRecipeTests PakalTopDownView nlohmann_json::nlohmann_json)
+    add_test(NAME LookRecipeTests COMMAND LookRecipeTests)
     add_executable(CameraInputTests tests/CameraInputTests.cpp)
     target_include_directories(CameraInputTests PRIVATE ${CMAKE_SOURCE_DIR}/source)
     add_executable(ZombieRulesTests tests/ZombieRulesTests.cpp examples/zombies_module/GameRules.cpp game_genres/topdown/TopDownRules.cpp)
