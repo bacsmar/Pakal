@@ -2,6 +2,7 @@ $input v_texcoord0
 
 #include <bgfx_shader.sh>
 #include "pakal_precision.sh"
+#include "pakal_ao_depth.sh"
 
 SAMPLER2D(s_postColor, 0);
 PAKAL_SAMPLER2D_HIGH(s_postDepth, 1);
@@ -14,7 +15,7 @@ uniform vec4 u_post2; // x: tilt-shift focus line (0..1 from the top), y: sharp 
 uniform vec4 u_post3; // x: 1/width, y: 1/height, z: near plane, w: far plane
 uniform vec4 u_post6; // x: quality (the share of the samples taken), y: the sketch look's strength (0: off), z: 1 smooths
                       // the edges (FXAA), w: the bloom's strength (0: off)
-uniform vec4 u_post7; // xyz: the view's translation (the world's origin in the view: the sketch's strokes stay on the scene)
+uniform vec4 u_post7; // xyz: the view's translation (anchors the sketch); w: depth-aware SSAO composite
 uniform vec4 u_post5; // rgb: fade color, w: how much of the picture the fade covers
 uniform vec4 u_post4; // x: projection scale x, y: projection scale y, z: occlusion bias (meters), w: occlusion range (meters)
 uniform vec4 u_post8; // rgb: fog color, w: fog density per meter (0: off)
@@ -188,9 +189,20 @@ void main()
 		gl_FragColor = vec4_splat(texture2D(s_postAo, target_uv(uv)).r);
 		return;
 	}
+	bool depthAwareAo = u_post2.z > 0.0 && u_post7.w > 0.5;
+	float sceneDepth = 0.0;
+	if (depthAwareAo || u_post8.w > 0.0) sceneDepth = linear_depth(uv);
 	if (u_post2.z > 0.0)
 	{
-		color *= texture2D(s_postAo, target_uv(uv)).r;
+		vec3 ao = texture2D(s_postAo, target_uv(uv)).rgb;
+		float visibility = ao.r;
+		if (depthAwareAo)
+		{
+			float separation = abs(sceneDepth - ao_decode_depth(ao.gb));
+			float agreement = 1.0 - smoothstep(u_post2.w * 0.2, u_post2.w * 0.8, separation);
+			visibility = mix(1.0, visibility, agreement);
+		}
+		color *= visibility;
 	}
 	if (u_post6.y > 0.0)
 	{
@@ -199,7 +211,7 @@ void main()
 	// Fog by the distance from the camera: depth to the scene, and the horizon's haze over the sky
 	if (u_post8.w > 0.0)
 	{
-		float z = linear_depth(uv);
+		float z = sceneDepth;
 		float fog = 1.0 - exp(-u_post8.w * max(z - u_post9.x, 0.0));
 		fog = min(fog, z >= u_post3.w * 0.98 ? u_post9.z : u_post9.y);
 		color = mix(color, u_post8.rgb, fog);

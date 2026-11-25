@@ -6,12 +6,13 @@ $input v_texcoord0
 
 #include <bgfx_shader.sh>
 #include "pakal_precision.sh"
+#include "pakal_ao_depth.sh"
 
 SAMPLER2D(s_aoInput, 0);              // the occlusion, half size
 PAKAL_SAMPLER2D_HIGH(s_aoDepth, 1);   // the frame's depth, full size (point sampled)
 
 uniform vec4 u_ao0;   // x: 1 / the depth's width, y: 1 / its height, z: near plane, w: far plane
-uniform vec4 u_ao2;   // zw: one step along the blur's direction (texels of the occlusion)
+uniform vec4 u_ao2;   // x: stable mode; zw: one step along the blur's direction (texels of the occlusion)
 
 vec2 target_uv(vec2 uv)
 {
@@ -56,5 +57,6 @@ void main()
 		}
 	}
 	float light = sum / weight;
-	gl_FragColor = vec4(light, light, light, 1.0);
+	// Preserve the center surface's depth across both blur passes for the high-quality composite.
+	gl_FragColor = u_ao2.x > 0.5 ? vec4(light, ao_encode_depth(z), 1.0) : vec4(light, light, light, 1.0);
 }

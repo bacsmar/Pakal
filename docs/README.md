@@ -16,5 +16,8 @@ Included files:
 - `BUILD_IDENTITY.md` — Which copy is running: build.json, the channel, the build label the engine draws, and hiding it in production.
 - `SETTINGS.md` — The options every game has (GameSettings: music, sounds, language, telemetry, quality...) and the about data.
 - `PARTICLES.md` — Particle effects as JSON files (ParticleEffects, IParticleRenderer).
+- `GRASS.md` — Grass made on the GPU (GraphicsSystem::create_grass): solid blades by tiles, density and height maps, quality.
+- `SHADOW_PROXIES.md` — Trees that cast their shadow through a few quads (TopDown::ShadowProxies, tools/foliage).
+- `MODULAR_CHARACTERS.md` — A character made of parts (CharacterRecipe): one skinned model in one draw, shapes baked, bones folded.
 - `ATLAS.md` — Sprite atlases with polygon meshes (`tools/pakal_atlas`, SpriteAtlas).
 - `adr/` — Architecture decisions: games never see the backends (ADR-0017), SDL3 and miniaudio (ADR-0018), library upgrades (ADR-0019).

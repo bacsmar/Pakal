@@ -16,6 +16,8 @@
 #include <assimp/IOStream.hpp>
 #include <assimp/IOSystem.hpp>
 #include "ResourceManager.h"
+#include "AssimpResourceIO.h"
+#include "CharacterAssembly.h"
 #include <chrono>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -50,6 +52,7 @@ namespace Pakal
 		bgfx::UniformHandle s_texColorSampler = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_tintUniform = BGFX_INVALID_HANDLE;     // u_tint: color multiplier
 		bgfx::UniformHandle s_uvScrollUniform = BGFX_INVALID_HANDLE; // u_uvScroll: xy, the texture's offset now; z, w: water, its clock
+		bgfx::UniformHandle s_waterColorsUniform = BGFX_INVALID_HANDLE;   // u_waterColors[3]: water deep, between, shallow
 		bgfx::UniformHandle s_groundUniform = BGFX_INVALID_HANDLE;   // u_ground: x, y: the ground's detiling and macro variation
 		bgfx::UniformHandle s_groundMixUniform[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };   // u_groundMix0, 1
 		bgfx::UniformHandle s_groundMixSampler[2] = { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };   // s_groundMix0, 1
@@ -86,6 +89,7 @@ namespace Pakal
 		// every draw down)
 		bgfx::TextureHandle s_dummyShadow = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle s_depthProgram = BGFX_INVALID_HANDLE; // owned by the graphics system
+		bgfx::ProgramHandle s_shadowCutoutProgram = BGFX_INVALID_HANDLE;   // ... and this one (set_shadow_cutout_program)
 		bgfx::TextureHandle s_shadowMap = BGFX_INVALID_HANDLE;
 		float s_shadowMatrix[16] = {};
 		float s_shadowParams[4] = {};
@@ -105,6 +109,22 @@ namespace Pakal
 		bool s_fullShadows = false;    // set_full_shadows
 		std::atomic<bool> s_keepPick{ false };   // set_keep_pick_geometry
 		float s_cullEye[3] = { 0.0f, 0.0f, 0.0f };   // the camera's position (from its view matrix)
+		// (set by the game's thread, read by the graphics thread's frame: atomics, each value whole)
+		std::atomic<float> s_scatterScale{ 1.0f };   // set_scatter_scale
+		std::atomic<float> s_scatterDensity{ 1.0f };   // set_scatter_density
+		std::atomic<float> s_scatterFocus[3] = { 0.0f, 0.0f, 0.0f };   // set_scatter_focus
+		std::atomic<bool> s_scatterFocused{ false };
+		// set_foliage_lod (farShare 1: off)
+		std::atomic<float> s_foliageNear{ 15.0f }, s_foliageFar{ 35.0f }, s_foliageShare{ 1.0f }, s_foliageNearShare{ 1.0f };
+		constexpr int kThinSteps = 16;
+		// where the reach is measured from, into 'out': the focus once set, else the eye
+		const float* scatter_from(float out[3])
+		{
+			if (!s_scatterFocused) return s_cullEye;
+			for (int i = 0; i < 3; ++i) out[i] = s_scatterFocus[i].load(std::memory_order_relaxed);
+			return out;
+		}
+		uint32_t s_scatterVersion = 0;   // set_scatter
 		float s_drawPerMeter = 0.0f, s_drawMinimum = 0.0f;   // set_draw_distance: 0, off
 		std::atomic<bool> s_gridMoved{ false };   // a model in the graphics system's grid moved (take_grid_moved)
 		// The shadow casters: positions only
@@ -134,6 +154,7 @@ namespace Pakal
 				s_tintUniform = bgfx::createUniform("u_tint", bgfx::UniformType::Vec4);
 				s_uvScrollUniform = bgfx::createUniform("u_uvScroll", bgfx::UniformType::Vec4);
 				s_groundUniform = bgfx::createUniform("u_ground", bgfx::UniformType::Vec4);
+				s_waterColorsUniform = bgfx::createUniform("u_waterColors", bgfx::UniformType::Vec4, 3);
 				s_groundMixUniform[0] = bgfx::createUniform("u_groundMix0", bgfx::UniformType::Vec4);
 				s_groundMixUniform[1] = bgfx::createUniform("u_groundMix1", bgfx::UniformType::Vec4);
 				s_groundMixSampler[0] = bgfx::createUniform("s_groundMix0", bgfx::UniformType::Sampler);
@@ -225,6 +246,8 @@ namespace Pakal
 				if (bgfx::isValid(s_uvScrollUniform)) bgfx::destroy(s_uvScrollUniform);
 				s_uvScrollUniform = BGFX_INVALID_HANDLE;
 				if (bgfx::isValid(s_groundUniform)) bgfx::destroy(s_groundUniform);
+				if (bgfx::isValid(s_waterColorsUniform)) bgfx::destroy(s_waterColorsUniform);
+				s_waterColorsUniform = BGFX_INVALID_HANDLE;
 				s_groundUniform = BGFX_INVALID_HANDLE;
 				for (int i = 0; i < 2; ++i)
 				{
@@ -430,51 +453,6 @@ namespace Pakal
 			return parse_image(data->data(), data->size());
 		}
 
-		// Assimp reads a model and its buffers (a glTF's .bin) through the resource manager: from a folder, a zip or the APK
-		class ResourceIOStream final : public Assimp::IOStream
-		{
-		public:
-			explicit ResourceIOStream(SharedPtr<const std::vector<uint8_t>> bytes) : m_bytes(std::move(bytes)) {}
-			size_t Read(void* buffer, size_t size, size_t count) override
-			{
-				if (size == 0) return 0;
-				const size_t whole = std::min(count, (m_bytes->size() - m_at) / size);
-				std::memcpy(buffer, m_bytes->data() + m_at, whole * size);
-				m_at += whole * size;
-				return whole;
-			}
-			size_t Write(const void*, size_t, size_t) override { return 0; }
-			aiReturn Seek(size_t offset, aiOrigin origin) override
-			{
-				const size_t base = origin == aiOrigin_SET ? 0 : origin == aiOrigin_CUR ? m_at : m_bytes->size();
-				if (base + offset > m_bytes->size()) return aiReturn_FAILURE;
-				m_at = base + offset;
-				return aiReturn_SUCCESS;
-			}
-			size_t Tell() const override { return m_at; }
-			size_t FileSize() const override { return m_bytes->size(); }
-			void Flush() override {}
-		private:
-			SharedPtr<const std::vector<uint8_t>> m_bytes;
-			size_t m_at = 0;
-		};
-
-		class ResourceIOSystem final : public Assimp::IOSystem
-		{
-		public:
-			bool Exists(const char* file) const override { return ResourceMgr.exists(normal(file)); }
-			char getOsSeparator() const override { return '/'; }
-			Assimp::IOStream* Open(const char* file, const char* mode) override
-			{
-				if (mode && (std::strchr(mode, 'w') || std::strchr(mode, 'a'))) return nullptr;   // models are only read
-				auto bytes = ResourceMgr.read_bytes(normal(file));
-				return bytes ? new ResourceIOStream(std::move(bytes)) : nullptr;
-			}
-			void Close(Assimp::IOStream* stream) override { delete stream; }
-		private:
-			static std::string normal(const char* file) { return fs::path(file).lexically_normal().generic_string(); }
-		};
-
 		// A texture from a decoded image (the graphics thread); the image is freed
 		bgfx::TextureHandle create_texture(bimg::ImageContainer* image)
 		{
@@ -657,13 +635,33 @@ namespace Pakal
 	{
 		StatTimer timer(s_stats.shadow);
 		std::vector<uint32_t> solid;
+		// At High (whole casters) a model's one thinnable submesh of leaf cards goes last and whole, in its shuffled order, so the
+		// map can take a share of them as the screen does (set_foliage_lod); the rest is simplified as before
+		const SubMesh* cards = nullptr;
+		if (s_fullShadows)
+		{
+			// (a split tree: its crown; else the one thinnable submesh)
+			int thinnable = 0;
+			const SubMesh* crown = nullptr;
+			for (const auto& sub : m_subMeshes)
+			{
+				if (sub.thinCounts.empty()) continue;
+				++thinnable;
+				cards = &sub;
+				if (sub.sharesFrom >= 0) crown = &sub;
+			}
+			if (crown) cards = crown;
+			else if (thinnable != 1) cards = nullptr;
+		}
 		for (const auto& sub : m_subMeshes)
 		{
-			if (sub.blend == MaterialBlend::Opaque || sub.blend == MaterialBlend::AlphaTest)
+			if (&sub != cards && (sub.blend == MaterialBlend::Opaque || sub.blend == MaterialBlend::AlphaTest))
 			{
 				solid.insert(solid.end(), indices.begin() + sub.indexStart, indices.begin() + sub.indexStart + sub.indexCount);
 			}
 		}
+		const size_t restCount = solid.size();
+		if (cards) solid.insert(solid.end(), indices.begin() + cards->indexStart, indices.begin() + cards->indexStart + cards->indexCount);
 		if (solid.empty())
 		{
 			return;
@@ -683,7 +681,13 @@ namespace Pakal
 
 		// Models with few triangles keep them all; bigger ones go down to a quarter, with at most 1% of their size of error
 		const size_t sourceTriangles = solid.size() / 3;
-		if (sourceTriangles > 2000)
+		std::vector<uint32_t> cardPart;
+		if (cards)
+		{
+			cardPart.assign(solid.begin() + restCount, solid.end());
+			solid.resize(restCount);
+		}
+		if (sourceTriangles > 2000 && solid.size() >= 3)
 		{
 			std::vector<uint32_t> simplified(solid.size());
 			const size_t count = meshopt_simplify(simplified.data(), solid.data(), solid.size(), welded.data(), unique, sizeof(float) * 3,
@@ -707,6 +711,12 @@ namespace Pakal
 					solid.swap(sloppy);
 				}
 			}
+		}
+		if (cards)
+		{
+			m_shadowCardStart = static_cast<uint32_t>(solid.size());
+			m_shadowCardThin = cards->thinCounts;
+			solid.insert(solid.end(), cardPart.begin(), cardPart.end());
 		}
 		std::vector<float> compact(unique * 3);
 		const size_t used = meshopt_optimizeVertexFetch(compact.data(), solid.data(), solid.size(), welded.data(), unique, sizeof(float) * 3);
@@ -907,8 +917,10 @@ namespace Pakal
 		m_shadowVertexBuffer = source.m_shadowVertexBuffer;
 		m_shadowIndexBuffer = source.m_shadowIndexBuffer;
 		m_shadowIndexCount = source.m_shadowIndexCount;
+		m_shadowCardStart = source.m_shadowCardStart;
+		m_shadowCardThin = source.m_shadowCardThin;
 		m_geometry = source.m_geometry;
-		m_columns = source.m_columns;
+		m_shape = source.m_shape;
 		m_pick = source.m_pick;
 		m_subMeshes = source.m_subMeshes;
 		for (auto& sub : m_subMeshes)
@@ -973,7 +985,7 @@ namespace Pakal
 		}
 		m_subMeshes.clear();
 		m_geometry.reset();
-		m_columns.reset();
+		m_shape = ModelShape();
 		m_pbr = false;
 		m_hasTransparent = false;
 
@@ -990,6 +1002,8 @@ namespace Pakal
 		m_shadowVertexBuffer = BGFX_INVALID_HANDLE;
 		m_shadowIndexBuffer = BGFX_INVALID_HANDLE;
 		m_shadowIndexCount = 0;
+		m_shadowCardStart = 0;
+		m_shadowCardThin.clear();
 
 		m_palette.clear();
 		m_nodesByName.clear();
@@ -1002,6 +1016,7 @@ namespace Pakal
 		m_animations.clear();
 		m_scene = nullptr;
 		m_importer.reset();
+		m_ownedScene.reset();
 		m_motionRoot = nullptr;
 		m_currentAnimation = -1;
 		m_skinned = false;
@@ -1099,6 +1114,17 @@ namespace Pakal
 				sub.ownsTexture = false;
 			}
 		}
+		// a crown split off at load draws with its parent's textures
+		for (auto& sub : m_subMeshes)
+		{
+			if (sub.sharesFrom < 0 || size_t(sub.sharesFrom) >= m_subMeshes.size()) continue;
+			const SubMesh& from = m_subMeshes[size_t(sub.sharesFrom)];
+			sub.texture = from.texture;
+			sub.normalTexture = from.normalTexture;
+			sub.ormTexture = from.ormTexture;
+			sub.mixTexture[0] = from.mixTexture[0];
+			sub.mixTexture[1] = from.mixTexture[1];
+		}
 		if (m_skinned)
 		{
 			m_vertexBuffer = bgfx::createVertexBuffer(
@@ -1133,8 +1159,26 @@ namespace Pakal
 		return m_loaded;
 	}
 
+	bool MeshComponent3D_Bgfx::load_character(const CharacterRecipe& recipe)
+	{
+		AssembledCharacter character;
+		std::string error;
+		if (!assemble_character(recipe, character, error, kMaxPaletteEntries))
+		{
+			LOG_ERROR("[MeshComponent3D_Bgfx] character not assembled: %s", error.c_str());
+			release_resources();
+			return false;
+		}
+		LOG_INFO("[MeshComponent3D_Bgfx] character assembled: %s", character.report.c_str());
+		m_assembleInput = std::move(character.scene);
+		m_assembleFlipV = character.flipV;
+		return load_model(character.label, false);
+	}
+
 	bool MeshComponent3D_Bgfx::load_model(const std::string& path, bool deferGpu)
 	{
+		// an assembled character (load_character) is loaded from its scene instead of the file 'path' stands for
+		std::unique_ptr<aiScene> assembled = std::move(m_assembleInput);
 		release_resources();
 		m_pending = deferGpu ? std::make_unique<PendingUpload>() : nullptr;
 
@@ -1142,13 +1186,19 @@ namespace Pakal
 		// flipped for them. The level's Collada models use bottom-up TGA files and keep their V as is.
 		std::string extension = fs::path(path).extension().string();
 		std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-		const bool flipV = extension == ".gltf" || extension == ".glb";
+		const bool flipV = assembled ? m_assembleFlipV : extension == ".gltf" || extension == ".glb";
 
 		StatTimer totalTimer(s_stats.total);
 		count_stat(s_stats.models);
-		m_importer = std::make_unique<Assimp::Importer>();
-		m_importer->SetIOHandler(new ResourceIOSystem());   // the importer owns it
+		if (assembled)
 		{
+			m_ownedScene = std::move(assembled);
+			m_scene = m_ownedScene.get();
+		}
+		else
+		{
+			m_importer = std::make_unique<Assimp::Importer>();
+			m_importer->SetIOHandler(new ResourceIOSystem());   // the importer owns it
 			StatTimer importTimer(s_stats.import);
 			m_scene = m_importer->ReadFile(path,
 				aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights
@@ -1156,7 +1206,7 @@ namespace Pakal
 		}
 		if (!m_scene || !m_scene->mRootNode)
 		{
-			LOG_ERROR("[MeshComponent3D_Bgfx] Unable to load model '%s': %s", path.c_str(), m_importer->GetErrorString());
+			LOG_ERROR("[MeshComponent3D_Bgfx] Unable to load model '%s': %s", path.c_str(), m_importer ? m_importer->GetErrorString() : "no scene");
 			release_resources();
 			return false;
 		}
@@ -1490,6 +1540,156 @@ namespace Pakal
 			return false;
 		}
 
+		// An alpha-tested submesh of many small pieces (leaf cards): the pieces (triangles joined by shared vertices) put in a
+		// random order, and the index counts of its shares kept, for set_foliage_lod to draw a share of them far away. In a
+		// static model the pieces wholly above a third of its height (a tree's crown, sharing one material with the trunk)
+		// go to a submesh of their own, the one thinned: a model cut away (set_fade_cut) then skips the whole crown
+		std::vector<SubMesh> crowns;
+		const size_t subCount = m_subMeshes.size();
+		for (size_t si = 0; si < subCount; ++si)
+		{
+			SubMesh& sub = m_subMeshes[si];
+			if (sub.blend != MaterialBlend::AlphaTest || sub.indexCount < 3 * 64) continue;
+			uint32_t first = sub.indexStart, count = sub.indexCount;
+			std::unordered_map<uint32_t, uint32_t> parent;
+			std::function<uint32_t(uint32_t)> root = [&](uint32_t v) -> uint32_t
+			{
+				uint32_t r = v;
+				while (parent[r] != r) r = parent[r];
+				while (parent[v] != r) { const uint32_t next = parent[v]; parent[v] = r; v = next; }
+				return r;
+			};
+			// (in a static model, vertices at the same place are one: a flat-shaded trunk gives each face vertices of its own,
+			// and without this each face would be a piece of its own, thinned as a card)
+			std::unordered_map<uint32_t, uint32_t> same;
+			if (!m_skinned)
+			{
+				std::unordered_map<uint64_t, uint32_t> at;
+				for (uint32_t i = first; i < first + count; ++i)
+				{
+					const Vertex& v = staticVertices[indices[i]];
+					auto q = [](float f) { return uint64_t(uint32_t(int32_t(std::lround(f * 1000.0f)) & 0x1FFFFF)); };
+					const uint64_t key = (q(v.x) << 42) | (q(v.y) << 21) | q(v.z);
+					same.emplace(indices[i], at.emplace(key, indices[i]).first->second);
+				}
+			}
+			auto place = [&same](uint32_t v) { const auto it = same.find(v); return it == same.end() ? v : it->second; };
+			for (uint32_t i = first; i < first + count; ++i) parent.emplace(place(indices[i]), place(indices[i]));
+			for (uint32_t i = first; i + 2 < first + count; i += 3)
+			{
+				const uint32_t a = root(place(indices[i])), b = root(place(indices[i + 1])), c = root(place(indices[i + 2]));
+				parent[b] = a;
+				parent[root(c)] = a;
+			}
+			std::unordered_map<uint32_t, uint32_t> pieceOf;
+			std::vector<std::vector<uint32_t>> pieces;
+			for (uint32_t i = first; i + 2 < first + count; i += 3)
+			{
+				const uint32_t r = root(place(indices[i]));
+				auto found = pieceOf.find(r);
+				if (found == pieceOf.end()) { found = pieceOf.emplace(r, uint32_t(pieces.size())).first; pieces.emplace_back(); }
+				auto& piece = pieces[found->second];
+				piece.insert(piece.end(), { indices[i], indices[i + 1], indices[i + 2] });
+			}
+			// The pieces written at 'at' in thinning order: the solid ones first, always drawn (a trunk, a root, a branch: more
+			// than a few triangles; leaving out some would leave holes), then the cards shuffled, so the first share of them
+			// is an even share of the crown; 'target' keeps how many indices each step of thinning draws
+			auto write_thinned = [&indices](std::vector<std::vector<uint32_t>>& list, SubMesh& target, uint32_t from, uint32_t& at)
+			{
+				const size_t solidEnd = size_t(std::stable_partition(list.begin(), list.end(),
+					[](const std::vector<uint32_t>& piece) { return piece.size() > 12; }) - list.begin());
+				for (size_t k = 0; k < solidEnd; ++k) { std::copy(list[k].begin(), list[k].end(), indices.begin() + at); at += uint32_t(list[k].size()); }
+				const size_t cards = list.size() - solidEnd;
+				uint32_t seed = 0x9E3779B9u ^ uint32_t(list.size());
+				for (size_t k = cards; k > 1; --k)
+				{
+					seed = seed * 1664525u + 1013904223u;
+					std::swap(list[solidEnd + k - 1], list[solidEnd + (seed >> 8) % k]);
+				}
+				target.thinCounts.assign(kThinSteps + 1, at - from);   // (at step 0, the solid pieces still)
+				size_t done = 0;
+				for (int s = 1; s <= kThinSteps; ++s)
+				{
+					const size_t upTo = (cards * size_t(s) + kThinSteps - 1) / kThinSteps;
+					for (; done < upTo; ++done)
+					{
+						const auto& piece = list[solidEnd + done];
+						std::copy(piece.begin(), piece.end(), indices.begin() + at);
+						at += uint32_t(piece.size());
+					}
+					target.thinCounts[size_t(s)] = at - from;
+				}
+			};
+			// a few big pieces (a mesh of joined leaves) cannot be thinned evenly: left as they are
+			if (pieces.size() < 32) continue;
+			SubMesh* thinned = &sub;
+			if (!m_skinned)
+			{
+				float low = 1.0e30f, high = -1.0e30f;
+				std::vector<float> pieceLow(pieces.size(), 1.0e30f);
+				for (size_t p = 0; p < pieces.size(); ++p)
+				{
+					for (uint32_t v : pieces[p])
+					{
+						const float y = staticVertices[v].y;
+						pieceLow[p] = std::min(pieceLow[p], y);
+						low = std::min(low, y);
+						high = std::max(high, y);
+					}
+				}
+				const float split = low + (high - low) / 3.0f;
+				std::vector<std::vector<uint32_t>> below, above;
+				for (size_t p = 0; p < pieces.size(); ++p) (pieceLow[p] >= split ? above : below).push_back(std::move(pieces[p]));
+				if (!below.empty() && above.size() >= 32)
+				{
+					// the rest first (its cards thinned too when it has enough of them); the crown after it, a submesh of the same
+					// material
+					uint32_t at = first;
+					if (below.size() >= 32) write_thinned(below, sub, first, at);
+					else for (const auto& piece : below) { std::copy(piece.begin(), piece.end(), indices.begin() + at); at += uint32_t(piece.size()); }
+					SubMesh crown = sub;
+					crown.ownsTexture = crown.ownsExtraTextures = crown.ownsMix = false;
+					crown.sharesFrom = int(si);
+					crown.indexStart = at;
+					crown.indexCount = first + count - at;
+					sub.indexCount = at - first;
+					crowns.push_back(std::move(crown));
+					thinned = &crowns.back();
+					first = thinned->indexStart;
+					count = thinned->indexCount;
+					pieces = std::move(above);
+				}
+				else
+				{
+					pieces = std::move(below);
+					for (auto& piece : above) pieces.push_back(std::move(piece));
+				}
+			}
+			uint32_t at = first;
+			write_thinned(pieces, *thinned, first, at);
+		}
+
+		// the crowns split off above (their textures follow their parent's: a deferred load gives them to it by index)
+		for (auto& crown : crowns) m_subMeshes.push_back(std::move(crown));
+
+		// Each submesh's box in the model's own space (static models: their vertices are where they are drawn from)
+		if (!m_skinned)
+		{
+			for (auto& sub : m_subMeshes)
+			{
+				if (sub.indexCount == 0) continue;
+				for (int a = 0; a < 3; ++a) { sub.boxMin[a] = 1.0e30f; sub.boxMax[a] = -1.0e30f; }
+				for (uint32_t i = sub.indexStart; i < sub.indexStart + sub.indexCount; ++i)
+				{
+					const Vertex& v = staticVertices[indices[i]];
+					const float p[3] = { v.x, v.y, v.z };
+					for (int a = 0; a < 3; ++a) { sub.boxMin[a] = std::min(sub.boxMin[a], p[a]); sub.boxMax[a] = std::max(sub.boxMax[a], p[a]); }
+				}
+				sub.boxed = true;
+			}
+		}
+
+
 		// Bounds of the bind pose (before the object transform)
 		float minB[3] = { 0.0f, 0.0f, 0.0f };
 		float maxB[3] = { 0.0f, 0.0f, 0.0f };
@@ -1540,7 +1740,7 @@ namespace Pakal
 		else
 		{
 			build_shadow_mesh(staticVertices, indices, path);
-			m_columns = build_columns(staticVertices, indices);
+			m_shape.columns = build_columns(staticVertices, indices);
 			if (s_keepPick)
 			{
 				auto pick = std::make_shared<PickGeometry>();
@@ -1658,6 +1858,7 @@ namespace Pakal
 			std::copy(maxB, maxB + 3, m_boundsMax);
 		}
 
+		update_shape();
 		LOG_INFO("[MeshComponent3D_Bgfx] Loaded '%s': %u vertices, %zu triangles, %zu submeshes, %s, %zu palette entries, %zu animations, bounds (%.2f %.2f %.2f) .. (%.2f %.2f %.2f)",
 			path.c_str(), vertexCount, indices.size() / 3, m_subMeshes.size(), m_skinned ? "skinned" : "static",
 			m_palette.size(), m_animations.size(),
@@ -1714,7 +1915,7 @@ namespace Pakal
 		m_activeChannels = m_clipChannels.empty() ? nullptr : &m_clipChannels[static_cast<size_t>(index)];
 	}
 
-	void MeshComponent3D_Bgfx::play_overlay(int index, const std::string& fromNode, bool loop, float speed)
+	void MeshComponent3D_Bgfx::play_overlay(int index, const std::string& fromNode, bool loop, float speed, double startSeconds)
 	{
 		if (index < 0 || index >= static_cast<int>(m_animations.size()))
 		{
@@ -1728,7 +1929,7 @@ namespace Pakal
 		}
 		if (index != m_overlay || m_overlayEnding || !loop)
 		{
-			m_overlayElapsedTicks = 0.0;
+			m_overlayElapsedTicks = std::max(0.0, startSeconds) * m_ticksPerSecond;
 		}
 		m_overlay = index;
 		m_overlayLoop = loop;
@@ -2178,8 +2379,14 @@ namespace Pakal
 		}
 		values[0] = 1.0f / std::max(repeat, 0.01f);
 		values[1] = edge;
-		values[2] = 1.0f / std::max(patch, 0.1f);
-		values[3] = std::max(softness, 0.005f);
+		// A patch size of -1 modulates a baked ground color map with repeating detail.
+		values[2] = patch == -1.0f ? -1.0f : 1.0f / std::max(patch, 0.1f);
+		static const bool terrainDetail = []
+		{
+			const char* mode = std::getenv("PAKAL_TERRAIN_DETAIL");
+			return !mode || std::strcmp(mode, "0") != 0;
+		}();
+		values[3] = patch == -1.0f && !terrainDetail ? 0.0f : std::max(softness, 0.005f);
 		return true;
 	}
 
@@ -2256,6 +2463,15 @@ namespace Pakal
 				const char* scrollText = material.attribute("scroll").value();
 				if (*scrollText) std::sscanf(scrollText, "%f %f", &sub.scroll[0], &sub.scroll[1]);
 				if (material.attribute("water")) sub.water = material.attribute("water").as_float(0.0f);
+				// The shallow color's spare channel holds the depth over which the shore becomes opaque.
+				if (material.attribute("waterShoreFade"))
+					sub.waterColors[2][3] = std::max(0.0f, material.attribute("waterShoreFade").as_float(0.0f));
+				const char* waterNames[3] = { "waterDeep", "waterMid", "waterShallow" };
+				for (int w = 0; w < 3; ++w)
+				{
+					const char* text = material.attribute(waterNames[w]).value();
+					if (*text) std::sscanf(text, "%f %f %f", &sub.waterColors[w][0], &sub.waterColors[w][1], &sub.waterColors[w][2]);
+				}
 				if (material.attribute("lightmap")) sub.lightmap = std::string(material.attribute("lightmap").value()) != "off";
 				const char* detileText = material.attribute("detile").value();
 				if (*detileText) std::sscanf(detileText, "%f %f", &sub.detile[0], &sub.detile[1]);
@@ -2570,6 +2786,19 @@ namespace Pakal
 		return false;
 	}
 
+	void MeshComponent3D_Bgfx::update_shape()
+	{
+		std::copy(m_boundsMin, m_boundsMin + 3, m_shape.lo);
+		std::copy(m_boundsMax, m_boundsMax + 3, m_shape.hi);
+		// the crown split off at load (a submesh sharing its parent's material): its lowest point
+		m_shape.crownBase = std::numeric_limits<float>::quiet_NaN();
+		for (const auto& sub : m_subMeshes)
+		{
+			if (sub.sharesFrom < 0 || sub.indexCount == 0 || !sub.boxed) continue;
+			m_shape.crownBase = m_shape.has_crown() ? std::min(m_shape.crownBase, sub.boxMin[1]) : sub.boxMin[1];
+		}
+	}
+
 	void MeshComponent3D_Bgfx::get_bounds(float min[3], float max[3]) const
 	{
 		std::copy(m_boundsMin, m_boundsMin + 3, min);
@@ -2686,6 +2915,11 @@ namespace Pakal
 		}
 	}
 
+	void MeshComponent3D_Bgfx::set_shadow_cutout_program(bgfx::ProgramHandle program)
+	{
+		s_shadowCutoutProgram = program;
+	}
+
 	void MeshComponent3D_Bgfx::set_depth_program(bgfx::ProgramHandle program)
 	{
 		s_depthProgram = program;
@@ -2698,6 +2932,20 @@ namespace Pakal
 		std::copy(matrix, matrix + 16, s_shadowMatrix);
 		std::copy(params, params + 4, s_shadowParams);
 		std::copy(filter, filter + 4, s_shadowFilter);
+	}
+
+	int MeshComponent3D_Bgfx::foliage_step()
+	{
+		const float farShare = s_foliageShare.load(std::memory_order_relaxed), nearShare = s_foliageNearShare.load(std::memory_order_relaxed);
+		if (farShare >= 1.0f && nearShare >= 1.0f) return kThinSteps;
+		float center[3], extent[3], focus[3];
+		get_world_box(center, extent);
+		const float* from = scatter_from(focus);
+		const float dx = center[0] - from[0], dz = center[2] - from[2];
+		const float nearM = s_foliageNear.load(std::memory_order_relaxed), farM = s_foliageFar.load(std::memory_order_relaxed);
+		const float x = std::clamp((std::sqrt(dx * dx + dz * dz) - nearM) / std::max(0.1f, farM - nearM), 0.0f, 1.0f);
+		const float share = nearShare + (farShare - nearShare) * x;
+		return std::clamp(int(std::ceil(share * kThinSteps)), 1, kThinSteps);
 	}
 
 	void MeshComponent3D_Bgfx::set_cull_frustum(int slot, const float m[16], bool homogeneousDepth)
@@ -2783,6 +3031,7 @@ namespace Pakal
 		}
 		std::copy(low, low + 3, merged->m_boundsMin);
 		std::copy(high, high + 3, merged->m_boundsMax);
+		merged->update_shape();
 		merged->m_vertexBuffer = bgfx::createVertexBuffer(bgfx::copy(vertices.data(), static_cast<uint32_t>(vertices.size() * sizeof(Vertex))), Vertex::ms_layout);
 		merged->m_indexBuffer = bgfx::createIndexBuffer(bgfx::copy(indices.data(), static_cast<uint32_t>(indices.size() * sizeof(uint32_t))), BGFX_BUFFER_INDEX32);
 		merged->build_shadow_mesh(vertices, indices, "merged");
@@ -2925,7 +3174,8 @@ namespace Pakal
 
 	bool MeshComponent3D_Bgfx::drawn_in_depth_view()
 	{
-		if (hidden() || !m_loaded || (m_boundsMax[1] - m_boundsMin[1]) * m_scale < 0.35f && !m_skinned || outside_frustum(1))
+		if (hidden() || !m_loaded || !m_castsShadow || !m_scatter.empty()
+			|| (m_boundsMax[1] - m_boundsMin[1]) * m_scale < 0.35f && !m_skinned && !m_shadowOnly || outside_frustum(1))
 		{
 			return false;
 		}
@@ -2947,15 +3197,40 @@ namespace Pakal
 			set_transform();
 			transformCache = bgfx::setTransform(m_transform);
 		}
+		// A shadow proxy (set_shadow_only): its quads by their materials, their texture's alpha cut out, so the map gets the
+		// crown's silhouette and not the quads
+		if (m_shadowOnly && !m_skinned && bgfx::isValid(s_shadowCutoutProgram))
+		{
+			for (const auto& sub : m_subMeshes)
+			{
+				if (sub.blend != MaterialBlend::Opaque && sub.blend != MaterialBlend::AlphaTest) continue;
+				bgfx::setTransform(transformCache, transformCount);
+				bgfx::setVertexBuffer(0, m_vertexBuffer);
+				bgfx::setIndexBuffer(m_indexBuffer, sub.indexStart, sub.indexCount);
+				bgfx::setTexture(0, s_texColorSampler, bgfx::isValid(sub.texture) ? sub.texture : s_whiteTexture);
+				bgfx::setState(BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS);
+				bgfx::submit(viewId, s_shadowCutoutProgram);
+				s_passStats[0].triangles += sub.indexCount / 3;
+			}
+			++s_passStats[0].models;
+			return;
+		}
 		// (a character casts its simplified mesh below High, else all its triangles, by its materials)
 		if (m_shadowIndexCount > 0 && !(m_skinned && s_fullShadows))
 		{
 			bgfx::setTransform(transformCache, transformCount);
 			bgfx::setVertexBuffer(0, m_skinned ? m_vertexBuffer : m_shadowVertexBuffer);
-			bgfx::setIndexBuffer(m_shadowIndexBuffer);
+			// its leaf cards thinned as they are drawn (set_foliage_lod)
+			uint32_t casting = m_shadowIndexCount;
+			if (!m_shadowCardThin.empty())
+			{
+				const int step = foliage_step();
+				if (step < kThinSteps) casting = m_shadowCardStart + m_shadowCardThin[size_t(step)];
+			}
+			bgfx::setIndexBuffer(m_shadowIndexBuffer, 0, casting);
 			bgfx::setState(BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS);
 			bgfx::submit(viewId, program);
-			s_passStats[0].triangles += m_shadowIndexCount / 3;
+			s_passStats[0].triangles += casting / 3;
 			++s_passStats[0].models;
 			return;
 		}
@@ -3010,6 +3285,7 @@ namespace Pakal
 			const float scroll[4] = { static_cast<float>(std::fmod(seconds * sub.scroll[0], 1.0)),
 				static_cast<float>(std::fmod(seconds * sub.scroll[1], 1.0)), sub.water, static_cast<float>(std::fmod(seconds, 600.0)) };
 			bgfx::setUniform(s_uvScrollUniform, scroll);
+			if (sub.water > 0.0f) bgfx::setUniform(s_waterColorsUniform, sub.waterColors, 3);
 			// the wind bends what is alpha-tested (leaves, palms, grass): the same clock
 			const bool windy = sub.blend == MaterialBlend::AlphaTest && s_wind[0] > 0.0f;
 			const float wind[4] = { s_wind[0], s_wind[1], static_cast<float>(std::fmod(seconds, 600.0)), windy ? 1.0f : 0.0f };
@@ -3046,7 +3322,13 @@ namespace Pakal
 			lightmapped ? (s_lightmapRelative ? -1.0f : 1.0f) * (1.0f + s_lightmapShadow) : 0.0f };
 		bgfx::setUniform(s_lightmapUniform, lightmap);
 		// the dents are drawn in the model's own units: per meter, times its scale
-		const float style[4] = { s_style[0], s_style[1], m_clay, m_clayDents * std::max(m_scale, 0.0001f) };
+		static const bool matteFoliage = []
+		{
+			const char* mode = std::getenv("PAKAL_FOLIAGE_MATTE");
+			return mode && std::strcmp(mode, "1") == 0;
+		}();
+		const float gloss = matteFoliage && sub.blend == MaterialBlend::AlphaTest ? -1.0f : s_style[0];
+		const float style[4] = { gloss, s_style[1], m_clay, m_clayDents * std::max(m_scale, 0.0001f) };
 		bgfx::setUniform(s_styleUniform, style);
 		bgfx::setTexture(6, s_lightmapSampler, lightmapped ? s_lightmapAtlas : s_whiteTexture);
 		// its paint, on the materials of the atlas the mask lies over (a sampler is always bound: an unbound one draws
@@ -3056,9 +3338,17 @@ namespace Pakal
 		bgfx::setTexture(7, s_paintSampler, paintHere ? m_paintMask : s_whiteTexture);
 		bgfx::setUniform(s_paintWallUniform, paintHere ? m_paintWall : unpainted);
 		bgfx::setUniform(s_paintRoofUniform, paintHere ? m_paintRoof : unpainted);
-		bgfx::setUniform(s_shadowParamsUniform, s_shadowParams);
+		static const bool foliageReceivesShadows = []
+		{
+			const char* mode = std::getenv("PAKAL_FOLIAGE_SELF_SHADOW");
+			return !mode || std::strcmp(mode, "0") != 0;
+		}();
+		const float noShadow[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		const bool receiveSunShadow = s_shadowParams[0] > 0.0f
+			&& (foliageReceivesShadows || sub.blend != MaterialBlend::AlphaTest);
+		bgfx::setUniform(s_shadowParamsUniform, receiveSunShadow ? s_shadowParams : noShadow);
 		bgfx::setUniform(s_cloudsUniform, s_clouds);
-		if (s_shadowParams[0] > 0.0f)
+		if (receiveSunShadow)
 		{
 			bgfx::setUniform(s_shadowMtxUniform, s_shadowMatrix);
 			bgfx::setUniform(s_shadowFilterUniform, s_shadowFilter);
@@ -3071,7 +3361,7 @@ namespace Pakal
 	}
 
 	bool MeshComponent3D_Bgfx::render_instances(bgfx::ViewId viewId, bgfx::ProgramHandle program,
-		const std::vector<MeshComponent3D_Bgfx*>& copies, bool depth)
+		const std::vector<MeshComponent3D_Bgfx*>& copies, bool depth, bool alphaToCoverage)
 	{
 		if (copies.empty() || !bgfx::isValid(program)) return true;
 		const uint16_t stride = 64;   // a 4x4 matrix: i_data0..3, its columns
@@ -3112,10 +3402,12 @@ namespace Pakal
 			}
 			else
 			{
-				const float material[4] = { sub.blend == MaterialBlend::AlphaTest ? 0.5f : 0.0f, 0.0f, 0.0f, 0.0f };
+				const bool cutout = sub.blend == MaterialBlend::AlphaTest;
+				const bool coverage = cutout && alphaToCoverage;
+				const float material[4] = { cutout ? 0.5f : 0.0f, 0.0f, 0.0f, coverage ? -1.0f : 0.0f };
 				first.bind_material(sub, false, material);
 				bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS
-					| BGFX_STATE_MSAA | ((sub.doubleSided && !(s_cullOpaque && sub.blend == MaterialBlend::Opaque)) || noCull ? 0ull : BGFX_STATE_CULL_CW));
+					| (coverage ? BGFX_STATE_BLEND_ALPHA_TO_COVERAGE : 0) | BGFX_STATE_MSAA | ((sub.doubleSided && !(s_cullOpaque && sub.blend == MaterialBlend::Opaque)) || noCull ? 0ull : BGFX_STATE_CULL_CW));
 			}
 			bgfx::submit(viewId, program);
 			s_passStats[pass].triangles += sub.indexCount / 3 * count;
@@ -3124,9 +3416,273 @@ namespace Pakal
 		return true;
 	}
 
-	void MeshComponent3D_Bgfx::render(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool transparentPass)
+	void MeshComponent3D_Bgfx::set_scatter(std::vector<float> matrices, float reach, float grow)
 	{
-		const bool faded = m_opacity < 0.995f && !m_fadeDither;   // blended in the transparent pass
+		m_scatter = std::move(matrices);
+		m_scatter.resize(m_scatter.size() / 16 * 16);
+		m_scatterReach = std::max(0.0f, reach);
+		m_scatterGrow = std::clamp(grow, 0.0f, m_scatterReach);
+		m_scatterBoxed = false;
+		static const float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+		set_matrix(identity);
+		++s_scatterVersion;
+	}
+
+	void MeshComponent3D_Bgfx::set_scatter_scale(float scale)
+	{
+		s_scatterScale = std::max(0.0f, scale);
+	}
+
+	void MeshComponent3D_Bgfx::set_foliage_lod(float nearMeters, float farMeters, float farShare, float nearShare)
+	{
+		s_foliageNearShare = std::clamp(nearShare, 1.0f / kThinSteps, 1.0f);
+		s_foliageNear = std::max(0.0f, nearMeters);
+		s_foliageFar = std::max(s_foliageNear.load() + 0.1f, farMeters);
+		s_foliageShare = std::clamp(farShare, 1.0f / kThinSteps, 1.0f);
+	}
+
+	void MeshComponent3D_Bgfx::set_scatter_density(float density)
+	{
+		s_scatterDensity = std::clamp(density, 0.0f, 1.0f);
+	}
+
+	void MeshComponent3D_Bgfx::set_scatter_focus(float x, float y, float z)
+	{
+		s_scatterFocus[0] = x;
+		s_scatterFocus[1] = y;
+		s_scatterFocus[2] = z;
+		s_scatterFocused = true;
+	}
+
+	bool MeshComponent3D_Bgfx::main_frustum(float planes[6][4])
+	{
+		if (!s_cullFrusta[0].valid) return false;
+		for (int p = 0; p < 6; ++p) for (int i = 0; i < 4; ++i) planes[p][i] = s_cullFrusta[0].planes[p][i];
+		return true;
+	}
+
+	void MeshComponent3D_Bgfx::scatter_origin(float out[3])
+	{
+		float focus[3];
+		const float* from = scatter_from(focus);
+		for (int i = 0; i < 3; ++i) out[i] = from[i];
+	}
+
+	void MeshComponent3D_Bgfx::camera_eye(float out[3])
+	{
+		for (int i = 0; i < 3; ++i) out[i] = s_cullEye[i];
+	}
+
+	bool MeshComponent3D_Bgfx::sun_shadow(bgfx::TextureHandle& map, float matrix[16], float params[4])
+	{
+		map = s_shadowMap;
+		std::copy(s_shadowMatrix, s_shadowMatrix + 16, matrix);
+		std::copy(s_shadowParams, s_shadowParams + 4, params);
+		return bgfx::isValid(s_shadowMap) && s_shadowParams[0] > 0.0f;
+	}
+
+	bgfx::TextureHandle MeshComponent3D_Bgfx::white_texture()
+	{
+		return s_whiteTexture;
+	}
+
+	void MeshComponent3D_Bgfx::wind(float out[2])
+	{
+		out[0] = s_wind[0];
+		out[1] = s_wind[1];
+	}
+
+	uint32_t MeshComponent3D_Bgfx::scatter_version()
+	{
+		return s_scatterVersion;
+	}
+
+	// The box around every copy (each one a sphere round its model's middle, as wide as the model's box, times its scale),
+	// once the model is loaded and its box known
+	void MeshComponent3D_Bgfx::scatter_box()
+	{
+		if (m_scatterBoxed || !m_loaded) return;
+		m_scatterBoxed = true;
+		const float ex = 0.5f * (m_boundsMax[0] - m_boundsMin[0]), ey = 0.5f * (m_boundsMax[1] - m_boundsMin[1]), ez = 0.5f * (m_boundsMax[2] - m_boundsMin[2]);
+		m_scatterRadius = std::sqrt(ex * ex + ey * ey + ez * ez);
+		const float c[3] = { 0.5f * (m_boundsMin[0] + m_boundsMax[0]), 0.5f * (m_boundsMin[1] + m_boundsMax[1]), 0.5f * (m_boundsMin[2] + m_boundsMax[2]) };
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			m_scatterMin[axis] = 1.0e30f;
+			m_scatterMax[axis] = -1.0e30f;
+		}
+		for (size_t k = 0; k + 16 <= m_scatter.size(); k += 16)
+		{
+			const float* m = &m_scatter[k];
+			const float scale = std::sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+			for (int axis = 0; axis < 3; ++axis)
+			{
+				const float at = m[axis] * c[0] + m[4 + axis] * c[1] + m[8 + axis] * c[2] + m[12 + axis];
+				m_scatterMin[axis] = std::min(m_scatterMin[axis], at - m_scatterRadius * scale);
+				m_scatterMax[axis] = std::max(m_scatterMax[axis], at + m_scatterRadius * scale);
+			}
+		}
+	}
+
+	// Its box in the camera's frustum, and some of it within reach of the focus (set_scatter_focus)
+	bool MeshComponent3D_Bgfx::scatter_seen()
+	{
+		scatter_box();
+		if (!m_scatterBoxed || m_scatter.empty()) return false;
+		float center[3], extent[3];
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			center[axis] = 0.5f * (m_scatterMin[axis] + m_scatterMax[axis]);
+			extent[axis] = 0.5f * (m_scatterMax[axis] - m_scatterMin[axis]);
+		}
+		const CullFrustum& frustum = s_cullFrusta[0];
+		if (!frustum.valid) return true;
+		const float reach = m_scatterReach * s_scatterScale.load(std::memory_order_relaxed);
+		float focus[3];
+		const float* from = scatter_from(focus);
+		float nearest = 0.0f;   // the focus to the box, squared
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			const float d = std::max(0.0f, std::fabs(from[axis] - center[axis]) - extent[axis]);
+			nearest += d * d;
+		}
+		if (reach <= 0.0f || nearest > reach * reach) return false;
+		for (const auto& plane : frustum.planes)
+		{
+			const float distance = plane[0] * center[0] + plane[1] * center[1] + plane[2] * center[2] + plane[3];
+			const float radius = std::fabs(plane[0]) * extent[0] + std::fabs(plane[1]) * extent[1] + std::fabs(plane[2]) * extent[2];
+			if (distance + radius < 0.0f) return false;
+		}
+		return true;
+	}
+
+	bool MeshComponent3D_Bgfx::render_scatter(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool alphaToCoverage)
+	{
+		// (the caller tested drawn_in_main_view)
+		if (m_scatter.empty() || !bgfx::isValid(program) || !m_scatterBoxed) return true;
+		const CullFrustum& frustum = s_cullFrusta[0];
+		const float scale = s_scatterScale.load(std::memory_order_relaxed);
+		const float reach = m_scatterReach * scale, grow = m_scatterGrow * scale;
+		const float c[3] = { 0.5f * (m_boundsMin[0] + m_boundsMax[0]), 0.5f * (m_boundsMin[1] + m_boundsMax[1]), 0.5f * (m_boundsMin[2] + m_boundsMax[2]) };
+		// the copies seen, each with how grown it is (1 inside the reach's last 'grow' meters, down to 0 at the reach) and its
+		// distance from the focus
+		struct Seen { uint32_t k; float grown, d; };
+		thread_local std::vector<Seen> seen;
+		seen.clear();
+		float focus[3];
+		const float* from = scatter_from(focus);
+		// the planes the copies are tested against: none when the patch's box is wholly inside the frustum (each plane's
+		// length once, not per copy)
+		float planes[6][4];
+		int planeCount = 0;
+		if (frustum.valid)
+		{
+			float center[3], extent[3];
+			for (int axis = 0; axis < 3; ++axis)
+			{
+				center[axis] = 0.5f * (m_scatterMin[axis] + m_scatterMax[axis]);
+				extent[axis] = 0.5f * (m_scatterMax[axis] - m_scatterMin[axis]);
+			}
+			for (const auto& plane : frustum.planes)
+			{
+				const float distance = plane[0] * center[0] + plane[1] * center[1] + plane[2] * center[2] + plane[3];
+				const float radius = std::fabs(plane[0]) * extent[0] + std::fabs(plane[1]) * extent[1] + std::fabs(plane[2]) * extent[2];
+				if (distance - radius >= 0.0f) continue;   // the whole box on its inner side
+				const float len = std::sqrt(plane[0] * plane[0] + plane[1] * plane[1] + plane[2] * plane[2]);
+				if (len <= 0.0f) continue;
+				for (int i = 0; i < 4; ++i) planes[planeCount][i] = plane[i] / len;
+				++planeCount;
+			}
+		}
+		const float density = s_scatterDensity.load(std::memory_order_relaxed);
+		for (size_t k = 0; k + 16 <= m_scatter.size(); k += 16)
+		{
+			// the density's share of the copies: a hash of its place in the list, the same every frame
+			if (density < 1.0f && ((static_cast<uint32_t>(k / 16) * 2654435761u) >> 8) * (1.0f / 16777216.0f) >= density) continue;
+			const float* m = &m_scatter[k];
+			const float dx = m[12] - from[0], dy = m[13] - from[1], dz = m[14] - from[2];
+			const float d2 = dx * dx + dy * dy + dz * dz;
+			if (d2 > reach * reach) continue;
+			const float scale = std::sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+			const float at[3] = { m[0] * c[0] + m[4] * c[1] + m[8] * c[2] + m[12], m[1] * c[0] + m[5] * c[1] + m[9] * c[2] + m[13],
+				m[2] * c[0] + m[6] * c[1] + m[10] * c[2] + m[14] };
+			bool outside = false;
+			for (int p = 0; p < planeCount && !outside; ++p)
+			{
+				outside = planes[p][0] * at[0] + planes[p][1] * at[1] + planes[p][2] * at[2] + planes[p][3] < -m_scatterRadius * scale;
+			}
+			if (outside) continue;
+			const float d = std::sqrt(d2);
+			const float grown = grow > 0.0f ? std::clamp((reach - d) / grow, 0.0f, 1.0f) : 1.0f;
+			if (grown <= 0.01f) continue;
+			seen.push_back({ static_cast<uint32_t>(k), grown, d });
+		}
+		if (seen.empty()) return true;
+		// Nearest first: the near plants write depth before the far ones behind them are shaded, so the far ones fail the
+		// depth test instead of running the cutout shader (on a Mali-G77 among dense grass: 31.5 to 31.0 ms a frame)
+		std::sort(seen.begin(), seen.end(), [](const Seen& a, const Seen& b) { return a.d < b.d; });
+		// The patch's place in the main view's nearest-first order (its nearest corner, in centimeters): sorted among the
+		// other models, not ahead of them all (sort key 0), so trees and characters in front of it hide its pixels
+		uint32_t sortDepth = 0;
+		if (s_sortValid)
+		{
+			float nearest = 4.0e7f;
+			for (int corner = 0; corner < 8; ++corner)
+			{
+				const float p[3] = { (corner & 1) ? m_scatterMax[0] : m_scatterMin[0], (corner & 2) ? m_scatterMax[1] : m_scatterMin[1],
+					(corner & 4) ? m_scatterMax[2] : m_scatterMin[2] };
+				nearest = std::min(nearest, std::fabs(s_sortRow[0] * p[0] + s_sortRow[1] * p[1] + s_sortRow[2] * p[2] + s_sortRow[3]));
+			}
+			sortDepth = static_cast<uint32_t>(std::clamp(nearest * 100.0f, 0.0f, 4.0e9f));
+		}
+		const uint16_t stride = 64;
+		const uint32_t count = static_cast<uint32_t>(seen.size());
+		if (bgfx::getAvailInstanceDataBuffer(count, stride) < count) return false;
+		bgfx::InstanceDataBuffer instances;
+		bgfx::allocInstanceDataBuffer(&instances, count, stride);
+		float* out = reinterpret_cast<float*>(instances.data);
+		for (const Seen& copy : seen)
+		{
+			const float* m = &m_scatter[copy.k];
+			const float grown = copy.grown;
+			const float g = grown < 1.0f ? grown * grown * (3.0f - 2.0f * grown) : 1.0f;   // (smooth)
+			for (int i = 0; i < 12; ++i) out[i] = m[i] * g;   // its axes shrunk: it grows out of its foot
+			for (int i = 12; i < 16; ++i) out[i] = m[i];
+			out += 16;
+		}
+		static const bool noCull = std::getenv("PAKAL_NO_CULL") != nullptr;
+		for (const auto& sub : m_subMeshes)
+		{
+			if (sub.blend != MaterialBlend::Opaque && sub.blend != MaterialBlend::AlphaTest) continue;
+			bgfx::setInstanceDataBuffer(&instances);
+			bgfx::setVertexBuffer(0, m_vertexBuffer);
+			bgfx::setIndexBuffer(m_indexBuffer, sub.indexStart, sub.indexCount);
+			const bool cutout = sub.blend == MaterialBlend::AlphaTest;
+			const bool coverage = cutout && alphaToCoverage;
+			const float material[4] = { cutout ? 0.5f : 0.0f, 0.0f, 0.0f, coverage ? -1.0f : 0.0f };
+			bind_material(sub, false, material);
+			// the cover reads the sun's shadow once a pixel, not through the filter (a phone is held by the cover's pixels;
+			// PAKAL_COVER_SHADOW_FILTER=1 keeps the filter, to compare)
+			static const bool coverFilter = std::getenv("PAKAL_COVER_SHADOW_FILTER") && std::string(std::getenv("PAKAL_COVER_SHADOW_FILTER")) == "1";
+			if (!coverFilter)
+			{
+				const float single[4] = { 1.0f, s_shadowFilter[1], s_shadowFilter[2], s_shadowFilter[3] };
+				bgfx::setUniform(s_shadowFilterUniform, single);
+			}
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS
+				| (coverage ? BGFX_STATE_BLEND_ALPHA_TO_COVERAGE : 0)
+				| BGFX_STATE_MSAA | ((sub.doubleSided && !(s_cullOpaque && sub.blend == MaterialBlend::Opaque)) || noCull ? 0ull : BGFX_STATE_CULL_CW));
+			bgfx::submit(viewId, program, sortDepth);
+			s_passStats[1].triangles += sub.indexCount / 3 * count;
+		}
+		s_passStats[1].models += count;
+		return true;
+	}
+
+	void MeshComponent3D_Bgfx::render(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool transparentPass, bool alphaToCoverage)
+	{
+		// blended in the transparent pass (one cut away stays solid: its cut, not its alpha, fades it)
+		const bool faded = m_opacity < 0.995f && !m_fadeDither && !m_fadeCut;
 		const bool dithered = m_opacity < 0.995f && m_fadeDither;  // solid, with a share of its pixels left out
 		if (m_fadeCut && m_opacity < 0.995f && !transparentPass)
 		{
@@ -3141,8 +3697,8 @@ namespace Pakal
 			m_cutUniform[2] = 0.0f;
 			m_cutUniform[3] = 1.0f;
 		}
-		if (hidden() || !m_loaded || !bgfx::isValid(program) || (transparentPass && !m_hasTransparent && !faded)
-			|| outside_frustum(0))
+		if (hidden() || !m_loaded || m_shadowOnly || !bgfx::isValid(program) || (transparentPass && !m_hasTransparent && !faded)
+			|| !m_scatter.empty() || outside_frustum(0))
 		{
 			return;
 		}
@@ -3175,10 +3731,20 @@ namespace Pakal
 			sortDepth = static_cast<uint32_t>(std::clamp(std::fabs(along) * 100.0f, 0.0f, 4.0e9f));
 		}
 
+		// Foliage thinned with distance from the cover's focus (set_foliage_lod): the share of its leaf cards drawn, in steps
+		const int foliageStep = transparentPass ? kThinSteps : foliage_step();
+		const bool cutOn = m_fadeCut && m_opacity < 0.995f && !transparentPass;
+
 		// A faded model draws its solid materials blended, without writing depth: a depth pass of its own first would hide
-		// whatever blended thing is behind it (a faded tree, particles, glass)
-		for (const auto& sub : m_subMeshes)
+		// whatever blended thing is behind it (a faded tree, particles, glass). A tree's crown split off at load (sharesFrom)
+		// is drawn first: seen from above it hides most of the rest, whose pixels the depth test then spares
+		thread_local std::vector<const SubMesh*> order;
+		order.clear();
+		for (const auto& sub : m_subMeshes) if (sub.sharesFrom >= 0) order.push_back(&sub);
+		for (const auto& sub : m_subMeshes) if (sub.sharesFrom < 0) order.push_back(&sub);
+		for (const SubMesh* drawnSub : order)
 		{
+			const SubMesh& sub = *drawnSub;
 			// A faded instance draws its solid materials blended too, in the transparent pass
 			const bool fadedSolid = faded && (sub.blend == MaterialBlend::Opaque || sub.blend == MaterialBlend::AlphaTest);
 			const bool blended = fadedSolid || sub.blend == MaterialBlend::Alpha || sub.blend == MaterialBlend::Additive
@@ -3212,6 +3778,11 @@ namespace Pakal
 				}
 				state |= BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z;
 				material[0] = sub.blend == MaterialBlend::AlphaTest ? 0.5f : 0.0f;
+				if (alphaToCoverage && material[0] > 0.0f && !dithered && !cutAway)
+				{
+					state |= BGFX_STATE_BLEND_ALPHA_TO_COVERAGE;
+					material[3] = -1.0f;
+				}
 				break;
 			case MaterialBlend::Alpha:
 				state |= BGFX_STATE_BLEND_ALPHA;
@@ -3228,13 +3799,25 @@ namespace Pakal
 				break;
 			}
 
+			// cut away: a submesh wholly above the cut is not drawn at all (a tree's crown of thousands of cards, each pixel of
+			// which the shader would discard); it still casts its shadow (render_depth)
+			if (cutOn && sub.boxed && !m_skinned)
+			{
+				// the box's lowest world height: the transform's height row against each axis's nearer end
+				float lowest = m_transform[13];
+				for (int a = 0; a < 3; ++a) lowest += std::min(m_transform[a * 4 + 1] * sub.boxMin[a], m_transform[a * 4 + 1] * sub.boxMax[a]);
+				if (lowest >= m_cutUniform[0]) continue;
+			}
+			// a far tree's leaf cards: a share of them (set_foliage_lod)
+			uint32_t drawnIndices = sub.indexCount;
+			if (!sub.thinCounts.empty() && foliageStep < kThinSteps) drawnIndices = sub.thinCounts[size_t(foliageStep)];
 			bgfx::setTransform(transformCache, transformCount);
 			bgfx::setVertexBuffer(0, m_vertexBuffer);
-			bgfx::setIndexBuffer(m_indexBuffer, sub.indexStart, sub.indexCount);
+			bgfx::setIndexBuffer(m_indexBuffer, sub.indexStart, drawnIndices);
 			bind_material(sub, faded, material);
 			bgfx::setState(state);
 			bgfx::submit(viewId, program, sortDepth);
-			s_passStats[transparentPass ? 2 : 1].triangles += sub.indexCount / 3;
+			s_passStats[transparentPass ? 2 : 1].triangles += drawnIndices / 3;
 		}
 		++s_passStats[transparentPass ? 2 : 1].models;
 	}

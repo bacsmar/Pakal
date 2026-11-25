@@ -40,10 +40,16 @@ last 600), and the renderer times each of its passes on the GPU.
 A record (`get_stats`, `get_profile`, the recordings) is the profiler's: `t`, `clock`, `fps`, `frame_ms` (`p50`, `p95`,
 `p99`, `max`), `sections` (each `ms_per_frame`, `worst_ms`, `calls`), `counters`, and `info` once. The counters the
 renderer adds: `gpu.frame_ms`, `gpu.view.<pass>_ms` (`main`, `transparent`, `shadow`, `post`, `bloom`, `ao`, `fsr_easu`,
-`fsr_rcas`, `ui`, `debug_ui`...), `gpu.draws`, `gpu.primitives`, `gpu.textures_mb`, `gpu.targets_mb`, `cpu.submit_ms`,
+`fsr_rcas`, `ui`, `debug_ui`...), `gpu.draws`, `gpu.primitives`, `gpu.vertex_buffers` (of bgfx's 4096 handles: the frame's instance buffer grows by
+chunks that each take one), `gpu.grass_dropped` (grass tiles left out for want of room in that buffer), `gpu.textures_mb`, `gpu.targets_mb`, `cpu.submit_ms`,
 `render.width/height/scale/quality/fsr` (`render.fsr`: the upscale in use, which the governor may have traded for a
-plain stretch; `render.fsr_option`: the game's setting), `governor.on`, `governor.cap_fps`; and the profiler's
+plain stretch; `render.fsr_option`: the game's setting), `render.scene_msaa` (1 or 4 samples),
+`render.stable_ssao` (1 only while the depth-aware occlusion pass is active), `governor.on`, `governor.cap_fps`; and the profiler's
 `mem.process_mb` and, on Android, `thermal.status`.
+
+The presets' `cutoutMsaa` and `stableSsao` fields (off by default: a game turns them on for the quality levels it
+wants) give 4x offscreen scene MSAA with alpha-to-coverage for cutout meshes, and depth-aware SSAO when the scene uses
+it. The governor can suspend both under sustained load; `render.scene_msaa` and `render.stable_ssao` tell what was used.
 
 The sections: on the graphics thread `gfx.frame` holds `gfx.particles`, `gfx.meshes` (`gfx.pose` within),
 `gfx.sprites`, `gfx.ui` and `gfx.submit` (bgfx hands the frame to the driver and waits for the one before: vsync shows

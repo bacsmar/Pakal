@@ -11,6 +11,7 @@
 #pragma once
 #include "AnimationMarks.h"
 #include "Config.h"
+#include "graphics/ModelShape.h"
 #include <bgfx/bgfx.h>
 #include <assimp/matrix4x4.h>
 #include <assimp/quaternion.h>
@@ -57,6 +58,9 @@ namespace Pakal
 		// Static models get their node transforms baked into the vertices. Skinned models keep
 		// bind-pose vertices and move them with the bone palette. Returns false if the file cannot be read.
 		bool load_model(const std::string& path);
+		// A character made of parts (CharacterRecipe, docs/MODULAR_CHARACTERS.md): its parts assembled into one skinned model
+		// (CharacterAssembly), loaded as a file is. False (logged) when the parts cannot be assembled.
+		bool load_character(const struct CharacterRecipe& recipe);
 		bool is_loaded() const { return m_loaded; }
 
 		// The same in two halves, for loading in the background (AssetCache): decode() reads and builds the model on any
@@ -69,25 +73,12 @@ namespace Pakal
 		// Bounds of the model as loaded (bind pose for skinned models), before position, rotation and scale.
 		void get_bounds(float min[3], float max[3]) const;
 
-		// A tall static model seen from above, in columns (64 a side at most, over its box's x and z): in each, the lowest
-		// and highest point of its surfaces, in model units. What hides the player is tested against it: a box alone takes
-		// in the air beside an awning or under a sign.
-		struct Columns
-		{
-			float x0 = 0.0f, z0 = 0.0f, cell = 1.0f;
-			int nx = 0, nz = 0;
-			std::vector<float> low, high;   // per column (row-major along z); low > high: nothing there
-			// whether (x, y, z), model units, is within 'margin' of the surfaces of its column
-			bool solid_at(float x, float y, float z, float margin) const
-			{
-				const int i = int(std::floor((x - x0) / cell)), k = int(std::floor((z - z0) / cell));
-				if (i < 0 || k < 0 || i >= nx || k >= nz) return false;
-				const size_t c = size_t(k) * size_t(nx) + size_t(i);
-				return low[c] <= high[c] && y >= low[c] - margin && y <= high[c] + margin;
-			}
-		};
+		// The model's shape for the genres (graphics/ModelShape.h: its box, a split crown's base, its columns), filled at
+		// load and shared by its copies; get_bounds and get_columns read it too
+		const ModelShape& shape() const { return m_shape; }
+		using Columns = ModelShape::Columns;
 		// Its columns (static models 2 units tall or more), or null
-		const Columns* get_columns() const { return m_columns.get(); }
+		const Columns* get_columns() const { return m_shape.columns.get(); }
 
 		void set_position(float x, float y, float z);
 		void set_rotation(float pitch, float yaw, float roll); // radians, applied in X, Y, Z order
@@ -137,7 +128,10 @@ namespace Pakal
 
 		// A second clip on top of the main one for the branch of the skeleton under 'fromNode' (the upper body shooting
 		// while the legs run). It blends in and out over a moment; a clip that does not loop fades out when it ends.
-		void play_overlay(int index, const std::string& fromNode, bool loop, float speed = 1.0f);
+		// 'startSeconds': where in the clip it starts (a reaction moved from the whole body to the upper body goes on).
+		void play_overlay(int index, const std::string& fromNode, bool loop, float speed = 1.0f, double startSeconds = 0.0);
+		// Whether the model has a node (a bone) of that name
+		bool has_node(const std::string& name) const { return m_nodesByName.count(name) != 0; }
 		void stop_overlay();
 		bool overlay_playing() const { return m_overlay >= 0 && !m_overlayEnding; }
 		int get_overlay() const { return m_overlay; }
@@ -192,7 +186,8 @@ namespace Pakal
 		bool instanceable() const
 		{
 			return m_loaded && !m_skinned && !m_attachParent && !hidden() && m_opacity >= 0.995f && m_lightmapRect[0] <= 0.0f
-				&& m_clay <= 0.0f && m_color[0] == 1.0f && m_color[1] == 1.0f && m_color[2] == 1.0f && !painted();
+				&& m_clay <= 0.0f && m_color[0] == 1.0f && m_color[1] == 1.0f && m_color[2] == 1.0f && !painted()
+				&& m_scatter.empty() && !m_shadowOnly;   // (a shadow proxy casts through the cut-out program, drawn alone)
 		}
 		uint16_t instance_key() const { return m_vertexBuffer.idx; }
 		// The frame an instanced draw took it (the frame's loop then leaves it out)
@@ -207,13 +202,50 @@ namespace Pakal
 		// transform: their solid materials in the main view ('depth' false: the blended ones stay for the transparent pass),
 		// or their depth in the sun's ('depth' true). False when bgfx has no room for them this frame (draw them one by one)
 		static bool render_instances(bgfx::ViewId viewId, bgfx::ProgramHandle program, const std::vector<MeshComponent3D_Bgfx*>& copies,
-			bool depth);
+			bool depth, bool alphaToCoverage = false);
 		// A hidden model is not drawn (a held weapon that is not in use). Scale 0 hides it too (pooled models): neither is
 		// drawn in any pass nor animated.
 		void set_visible(bool visible) { m_visible = visible; }
 		bool hidden() const { return !m_visible || (!m_hasMatrix && !m_attachParent && m_scale <= 0.0f); }
 		// Whether the main view draws it this frame (seen, loaded, in the camera's frustum): the frame skips the rest
-		bool drawn_in_main_view() { return !hidden() && m_loaded && !outside_frustum(0); }
+		bool drawn_in_main_view() { return !hidden() && m_loaded && !m_shadowOnly && (m_scatter.empty() ? !outside_frustum(0) : scatter_seen()); }
+		// Scattered: one model drawn at many places in one instanced draw per material (a patch of grass, its plants and
+		// stones): 'matrices' are the copies' world transforms, 16 floats each (column-major), and the component's own
+		// transform is left out. A copy farther than 'reach' meters from the focus (set_scatter_focus) is not drawn, and it grows out of the
+		// ground over the last 'grow' meters of that (no plant pops in). A scattered model casts no shadow (ground cover)
+		// and is drawn by render_scatter only
+		void set_scatter(std::vector<float> matrices, float reach, float grow);
+		bool scattered() const { return !m_scatter.empty(); }
+		// The copies of a scattered model the camera sees, near enough, in one draw per material (its solid ones), once
+		// drawn_in_main_view said it is seen; false when bgfx has no room for them this frame
+		bool render_scatter(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool alphaToCoverage);
+		// Every scattered model's reach times 'scale' (a quality level's: a cheap phone draws its grass nearer)
+		static void set_scatter_scale(float scale);
+		// The share of every scattered model's copies drawn, 0..1 (a cheap phone draws fewer): always the same ones, picked
+		// by their place in the list, so none blinks
+		static void set_scatter_density(float density);
+		// Foliage thinned with distance from the cover's focus: an alpha-tested model's leaf cards (each submesh's pieces kept in
+		// a random order) all drawn out to 'nearMeters', then fewer, down to 'farShare' of them from 'farMeters' on. Thousands of
+		// overlapping cards still read as a full crown with a share of them, and the pixels shaded fall with it. farShare 1: off
+		// (the default). Any thread. The one-by-one draws only (instanced groups draw every card).
+		// 'nearShare': the share kept out to 'nearMeters' (from a top-down camera every crown in view is near the focus, and
+		// thousands of overlapping cards read full at half). The sun's shadow map takes the same share (at High, where the
+		// cards cast whole).
+		static void set_foliage_lod(float nearMeters, float farMeters, float farShare, float nearShare = 1.0f);
+		// Where the scattered models' reach is measured from: what the camera looks at (a top-down camera's eye is tens of
+		// meters up and back, and its narrow view sees a patch of ground round the player). Until it is set, the eye
+		static void set_scatter_focus(float x, float y, float z);
+		// Bumped by each set_scatter: the graphics system's list of scattered models is made again
+		static uint32_t scatter_version();
+		// What other drawers of the frame share with the models (BgfxGrass): the main view's frustum planes (false before a
+		// camera set it), where the reach of the cover is measured from, and the wind (bend, speed)
+		static bool main_frustum(float planes[6][4]);
+		static void scatter_origin(float out[3]);
+		static void wind(float out[2]);
+		static void camera_eye(float out[3]);   // the main camera's position (from its view matrix)
+		// The sun's shadow as set_shadow_state left it: false when there is none this frame (strength 0 or no map)
+		static bool sun_shadow(bgfx::TextureHandle& map, float matrix[16], float params[4]);
+		static bgfx::TextureHandle white_texture();   // one white texel (a sampler that must be bound to something)
 
 		// Color multiplied over every material of this instance (1, 1, 1: as authored)
 		void set_color(float r, float g, float b) { m_color[0] = r; m_color[1] = g; m_color[2] = b; }
@@ -232,6 +264,12 @@ namespace Pakal
 		// Its shadow on the floor is baked in the lightmap: the quality levels that keep only moving things in the sun's
 		// shadow map leave it out
 		void set_shadow_baked(bool baked) { m_shadowBaked = baked; }
+		// Shadow proxies: a model that casts no shadow (a tree whose crown of thousands of cards a few quads cast for), and one
+		// drawn only into the sun's shadow map, never on screen (those quads)
+		void set_casts_shadow(bool casts) { m_castsShadow = casts; }
+		bool casts_shadow() const { return m_castsShadow; }
+		void set_shadow_only(bool only) { m_shadowOnly = only; }
+		bool shadow_only() const { return m_shadowOnly; }
 		bool shadow_baked() const { return m_shadowBaked; }
 
 		// Advances the animation and updates the bone palette. Call once per frame.
@@ -242,7 +280,7 @@ namespace Pakal
 
 		// Called by BgfxGraphicsSystem for every frame. Expects the camera and light uniforms to be set.
 		// The opaque pass draws Opaque and AlphaTest materials; the transparent pass draws the rest.
-		void render(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool transparentPass = false);
+		void render(bgfx::ViewId viewId, bgfx::ProgramHandle program, bool transparentPass = false, bool alphaToCoverage = false);
 		// Draws only the depth of the solid materials (the sun's shadow map). Small flat models (ground, decals) are left out.
 		void render_depth(bgfx::ViewId viewId, bgfx::ProgramHandle program);
 		// The sun's shadow map and what the shaders need to read it; every draw after this sees it. Strength 0 turns it off.
@@ -275,6 +313,8 @@ namespace Pakal
 		// A position-only program that writes depth (the shadow one). Faded models write their depth with it before their
 		// color, so only their nearest surface is blended: one layer per pixel instead of every face of the building.
 		static void set_depth_program(bgfx::ProgramHandle program);
+		// The depth program with the texture's alpha cut out: a shadow-only model's (set_shadow_only) quads cast their silhouette
+		static void set_shadow_cutout_program(bgfx::ProgramHandle program);
 		// What the camera (slot 0) and the sun's shadow map (slot 1) see: static models outside it are not drawn.
 		// viewProj is the product view * projection as bgfx takes them; clear_cull_frustum turns the test off.
 		static void set_cull_frustum(int slot, const float viewProj[16], bool homogeneousDepth);
@@ -393,12 +433,24 @@ namespace Pakal
 			bool ownsMix = false;
 			bool lightmap = true; // false (materials.xml lightmap="off"): lit by the probes, not the lightmap (decals too thin to bake)
 			float water = 0.0f;   // its ripples wobble and it reflects the sky (materials.xml water="strength", 0: not water)
+			// water's colors where it is deep, between and shallow (materials.xml waterDeep, waterMid, waterShallow="r g b";
+			// the defaults: a turquoise sea's)
+			float waterColors[3][4] = { { 0.03f, 0.20f, 0.36f, 1.0f }, { 0.07f, 0.46f, 0.58f, 1.0f }, { 0.24f, 0.74f, 0.68f, 0.0f } };
 			// glTF metal-rough materials: the normal map and the ORM texture (occlusion, roughness, metalness)
 			bgfx::TextureHandle normalTexture = BGFX_INVALID_HANDLE;
 			bgfx::TextureHandle ormTexture = BGFX_INVALID_HANDLE;
 			bool ownsExtraTextures = false;
 			std::string textureName;   // its color texture's file name without the extension (a paint mask names it)
 			unsigned material = 0;     // the file's material it draws (its index and name)
+			// An alpha-tested submesh of many small pieces (a tree's leaf cards): its pieces in a random order, so the first k of
+			// them are an even share of the crown; thinCounts[s] is the index count of the first s/kThinSteps of them (set_foliage_lod)
+			std::vector<uint32_t> thinCounts;
+			// Its box in the model's own space (a static model's; boxed false when unknown): a model cut away (set_fade_cut) does
+			// not draw a submesh wholly above the cut (a tree's crown)
+			float boxMin[3] = { 0.0f, 0.0f, 0.0f }, boxMax[3] = { 0.0f, 0.0f, 0.0f };
+			bool boxed = false;
+			// A crown split off a submesh at load (its parent's index): it draws with the parent's textures, owning none
+			int sharesFrom = -1;
 			std::string materialName;
 		};
 
@@ -479,10 +531,16 @@ namespace Pakal
 		bgfx::VertexBufferHandle m_shadowVertexBuffer = BGFX_INVALID_HANDLE;
 		bgfx::IndexBufferHandle m_shadowIndexBuffer = BGFX_INVALID_HANDLE;
 		std::shared_ptr<const StaticGeometry> m_geometry;   // a small static model's, shared by its copies (merge)
-		std::shared_ptr<const Columns> m_columns;           // a tall static model's (get_columns), shared by its copies
+		ModelShape m_shape;                                  // its box, crown base and columns (shape), shared by its copies
+		void update_shape();                                 // m_shape's box and crown base from the bounds and submeshes
 		std::shared_ptr<const PickGeometry> m_pick;         // its triangles (set_keep_pick_geometry), shared by its copies
 		static std::shared_ptr<const Columns> build_columns(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 		uint32_t m_shadowIndexCount = 0;
+		// The shadow mesh's leaf cards (one alpha-tested submesh, kept whole at High after the simplified rest): where they
+		// start in it and the index counts of their sixteenths (set_foliage_lod), empty when not thinned
+		uint32_t m_shadowCardStart = 0;
+		std::vector<uint32_t> m_shadowCardThin;
+		int foliage_step();   // the sixteenths of its cards this model draws now (all of them: kThinSteps)
 		std::vector<SubMesh> m_subMeshes;
 		bool m_loaded;
 		bool m_skinned;
@@ -492,6 +550,10 @@ namespace Pakal
 
 		// Scene data kept for skinning and animation
 		std::unique_ptr<Assimp::Importer> m_importer;
+		// An assembled character's scene (load_character): m_scene points at it instead of at the importer's
+		std::unique_ptr<aiScene> m_ownedScene;
+		std::unique_ptr<aiScene> m_assembleInput;   // handed from load_character to load_model
+		bool m_assembleFlipV = false;
 		const aiScene* m_scene;
 		std::vector<PaletteEntry> m_palette;
 		std::unordered_map<std::string, const aiNode*> m_nodesByName;
@@ -542,6 +604,8 @@ namespace Pakal
 		float m_opacity = 1.0f;
 		bool m_fadeDither = false;
 		bool m_fadeCut = false;
+		bool m_castsShadow = true;   // set_casts_shadow
+		bool m_shadowOnly = false;   // set_shadow_only
 		float m_cutKeep = 0.0f, m_cutRim = 0.0f, m_cutFloor = 0.3f;
 		float m_cutColor[3] = { 1.0f, 1.0f, 1.0f };
 		float m_cutUniform[4] = { 0.0f, 0.0f, 0.0f, 0.0f };   // u_cut as this frame's draw sets it (render)
@@ -576,6 +640,13 @@ namespace Pakal
 		bool m_hasMatrix = false;
 		bool m_transformDirty = true;
 		uint32_t m_instancedFrame = 0;
+		// set_scatter: the copies' world matrices, how far they are drawn, their box (made once the model is loaded)
+		std::vector<float> m_scatter;
+		float m_scatterReach = 0.0f, m_scatterGrow = 0.0f, m_scatterRadius = 0.0f;
+		float m_scatterMin[3] = { 0.0f, 0.0f, 0.0f }, m_scatterMax[3] = { 0.0f, 0.0f, 0.0f };
+		bool m_scatterBoxed = false;
+		void scatter_box();
+		bool scatter_seen();
 		bool m_grouped = false;   // its place changed since m_transform was made (most models never move: made once)
 		float m_matrix[16] = {};
 	};

@@ -5,13 +5,15 @@
 //          player, and come back after. Each keeps the box of its model and its placement: the camera's
 //          line to the player is tested in the model's own frame, so a turned building fades only when
 //          the building itself is in the way, not the room around it; and, inside the box, against the
-//          model's columns (MeshComponent3D_Bgfx::Columns), so the air beside an awning or under a
+//          model's columns (ModelShape::Columns), so the air beside an awning or under a
 //          sign does not count.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "topdown/MouseAim.h"
-#include "bgfx/MeshComponent3D_Bgfx.h"
+#include "graphics/ModelShape.h"
 
+#include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -32,6 +34,13 @@ namespace Pakal::TopDown
 			float toModel[12] = { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };   // world -> model: 3x3 (columns) and the offset
 			float opacity = 1.0f;
 			float faded = 0.16f;                      // its opacity while it hides the target (a tree keeps more)
+			// from the model's shape (ModelShape, filled by make): its columns, and the base of a crown split off at load
+			// (NaN: none), in model units
+			std::shared_ptr<const ModelShape::Columns> columns;
+			float crownBase = std::numeric_limits<float>::quiet_NaN();
+			float cutKeep = -1.0f;                    // faded by cutting it away (MeshComponent3D_Bgfx::set_fade_cut's 'keep',
+			                                          // 'faded' its floor), -1 not: a split tree's crown in the way is cut
+			                                          // away alone, its trunk in the way cuts the whole tree
 		};
 
 		// 'placement': the model's world matrix (column-major 4x4, rotation, scale and position); 'low', 'high': its model box
@@ -44,6 +53,10 @@ namespace Pakal::TopDown
 		// The points of a character standing at 'at' (level meters) whose view counts: its chest and its head. Its feet behind
 		// a low wall do not make the wall fade.
 		static std::vector<Vec3> body_points(float x, float y) { return { Vec3{ x, 1.0f, -y }, Vec3{ x, 1.6f, -y } }; }
+
+		// The line to each body point stops this many meters short of it, toward the eye: a tree the player stands against,
+		// or one behind the player whose crown or roots reach over its feet, does not count as in the way (0: to the point)
+		void set_target_margin(float meters) { m_targetMargin = meters > 0.0f ? meters : 0.0f; }
 
 		void add(const Occluder& occluder) { m_occluders.push_back(occluder); }
 		bool empty() const { return m_occluders.empty(); }
@@ -59,10 +72,14 @@ namespace Pakal::TopDown
 		void update(const Vec3& eye, const std::vector<Vec3>& targets, bool watching, float dt);
 		void update(const Vec3& eye, const Vec3& target, bool watching, float dt) { update(eye, std::vector<Vec3>{ target }, watching, dt); }
 
-		static bool segment_hits_columns(const Pakal::MeshComponent3D_Bgfx::Columns& columns, const Vec3& from, const Vec3& to,
+		// As segment_hits_columns, telling apart what it meets under the height 'split' (model units) and over it
+		static void segment_hits_parts(const ModelShape::Columns& columns, const Vec3& from, const Vec3& to,
+			const Vec3& low, const Vec3& high, float split, bool& under, bool& over);
+		static bool segment_hits_columns(const ModelShape::Columns& columns, const Vec3& from, const Vec3& to,
 			const Vec3& low, const Vec3& high);
 
 	private:
 		std::vector<Occluder> m_occluders;
+		float m_targetMargin = 0.0f;
 	};
 }

@@ -7,12 +7,13 @@ $input v_texcoord0
 
 #include <bgfx_shader.sh>
 #include "pakal_precision.sh"
+#include "pakal_ao_depth.sh"
 
 PAKAL_SAMPLER2D_HIGH(s_aoDepth, 0);   // the frame's depth, full size (point sampled)
 
 uniform vec4 u_ao0;   // x: 1 / the depth's width, y: 1 / its height, z: near plane, w: far plane
 uniform vec4 u_ao1;   // x: projection scale x, y: projection scale y, z: radius (meters), w: bias (how much it must face)
-uniform vec4 u_ao2;   // x: strength, y: taps (4 to 8)
+uniform vec4 u_ao2;   // x: strength, y: taps (4 to 8), z: stable mode
 
 // The pass thinks of uv as running downward from the top of the picture. Render targets of OpenGL start at the bottom.
 vec2 target_uv(vec2 uv)
@@ -59,9 +60,10 @@ void main()
 	vec2 uv = v_texcoord0;
 	vec3 p = view_point(uv);
 	float z = p.z;
+	bool stable = u_ao2.z > 0.5;
 	if (z > u_ao0.w * 0.98)
 	{
-		gl_FragColor = vec4_splat(1.0); // sky
+		gl_FragColor = stable ? vec4(1.0, ao_encode_depth(z), 1.0) : vec4_splat(1.0); // sky
 		return;
 	}
 	// the surface's orientation from the nearer neighbor on each axis (not across an edge)
@@ -79,15 +81,25 @@ void main()
 	// the radius on screen (uv) at this depth, kept to a part of the picture up close
 	vec2 reach = vec2(radius * u_ao1.x * 0.5 / z, radius * u_ao1.y * 0.5 / z);
 	reach = min(reach, vec2_splat(0.12));
-	// the spiral turns by an ordered 4x4 pattern (16 turns), and the blur after this pass is a box of four texels (fs_ao_blur): the
-	// pattern's period and the blur's width are the same, so the pattern cancels exactly and leaves no stripes (interleaved
-	// gradient noise has a period that is not a whole number of texels, and no blur of a few texels cancels it)
-	vec2 cell = mod(floor(gl_FragCoord.xy), 4.0);
-	vec2 a2 = mod(cell, 2.0);
-	vec2 b2 = floor(cell * 0.5);
-	float inner = 2.0 * a2.x + 3.0 * a2.y - 4.0 * a2.x * a2.y;
-	float outer = 2.0 * b2.x + 3.0 * b2.y - 4.0 * b2.x * b2.y;
-	float angle = (4.0 * inner + outer + 0.5) / 16.0 * 6.2831853;
+	// Keep sample orientation fixed at high quality. A moving screen-space pattern and the
+	// depth-aware blur cannot cancel each other reliably across thin foliage.
+	float angle = 0.0;
+	float reliability = 1.0;
+	if (stable)
+	{
+		float edge = max(max(abs(px.z - z), abs(nx.z - z)), max(abs(py.z - z), abs(ny.z - z)));
+		reliability = 1.0 - smoothstep(radius * 0.35, radius, edge);
+	}
+	else
+	{
+		// At lower quality preserve the existing ordered spiral and cheaper composite.
+		vec2 cell = mod(floor(gl_FragCoord.xy), 4.0);
+		vec2 a2 = mod(cell, 2.0);
+		vec2 b2 = floor(cell * 0.5);
+		float inner = 2.0 * a2.x + 3.0 * a2.y - 4.0 * a2.x * a2.y;
+		float outer = 2.0 * b2.x + 3.0 * b2.y - 4.0 * b2.x * b2.y;
+		angle = (4.0 * inner + outer + 0.5) / 16.0 * 6.2831853;
+	}
 	float taps = u_ao2.y;
 	float occlusion = 0.0;
 	for (int i = 0; i < 8; ++i)
@@ -103,6 +115,6 @@ void main()
 		occlusion += facing * falloff;
 	}
 	occlusion /= taps;
-	float light = 1.0 - clamp(occlusion * 2.2 * u_ao2.x, 0.0, 0.85);
-	gl_FragColor = vec4(light, light, light, 1.0);
+	float light = 1.0 - clamp(occlusion * reliability * 2.2 * u_ao2.x, 0.0, 0.85);
+	gl_FragColor = stable ? vec4(light, ao_encode_depth(z), 1.0) : vec4(light, light, light, 1.0);
 }

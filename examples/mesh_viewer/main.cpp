@@ -19,12 +19,18 @@
 #include <bgfx/CameraComponent3D_Bgfx.h>
 #include <bgfx/MeshComponent3D_Bgfx.h>
 
+#include <CharacterRecipe.h>
+
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -81,7 +87,25 @@ public:
 			m_graphics->set_sky_colors(0.25f, 0.45f, 0.75f, 0.75f, 0.82f, 0.9f);
 
 			m_mesh = std::make_unique<MeshComponent3D_Bgfx>(m_graphics);
-			if (!m_mesh->load_model(m_modelPath))
+			// a .json is a character made of parts (CharacterRecipe, docs/MODULAR_CHARACTERS.md): assembled into one model
+			const bool recipe = m_modelPath.size() > 5 && m_modelPath.compare(m_modelPath.size() - 5, 5, ".json") == 0;
+			bool loaded = false;
+			if (recipe)
+			{
+				std::ifstream file(m_modelPath, std::ios::binary);
+				const std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+				CharacterRecipe character;
+				std::string error;
+				if (!character.from_json(text, std::filesystem::path(m_modelPath).parent_path().generic_string(), error))
+					std::cerr << "Not a character recipe: " << m_modelPath << ": " << error << std::endl;
+				else
+					loaded = m_mesh->load_character(character);
+			}
+			else
+			{
+				loaded = m_mesh->load_model(m_modelPath);
+			}
+			if (!loaded)
 			{
 				std::cerr << "Could not load model: " << m_modelPath << std::endl;
 			}
@@ -128,10 +152,91 @@ public:
 			m_camera->set_position(cx, cy + 0.35f * safeRadius, cz + distance);
 			m_camera->look_at(cx, cy, cz);
 			m_graphics->set_active_camera(m_camera.get());
+			m_ground = bmin[1] * m_scale;
+			m_radius = safeRadius;
 		});
 		if (task)
 		{
 			task->wait();
+		}
+
+		// MESHVIEWER_GRASS=1: the model stands in a field of the grass made on the GPU (docs/GRASS.md), with a clearing
+		// around it and bare patches, in a light wind; MESHVIEWER_GRASS=hills puts the field on rolling ground, =marsh makes it
+		// patchy marsh grass (strong clumps of olive, ochre and dead brown, in tufts)
+		if (const char* grass = std::getenv("MESHVIEWER_GRASS"))
+		{
+			GraphicsSystem::GrassField field;
+			const float half = std::max(30.0f, m_radius * 20.0f);
+			field.minX = -half; field.maxX = half; field.minZ = -half; field.maxZ = half;
+			field.groundY = m_ground;
+			field.densityWidth = field.densityHeight = 128;
+			field.density.resize(128 * 128);
+			for (int j = 0; j < 128; ++j)
+				for (int i = 0; i < 128; ++i)
+				{
+					const float x = -half + (i + 0.5f) * 2.0f * half / 128.0f, z = -half + (j + 0.5f) * 2.0f * half / 128.0f;
+					const float clearing = std::clamp((std::sqrt(x * x + z * z) - 0.8f * m_radius) / (0.6f * m_radius + 0.5f), 0.0f, 1.0f);
+					const float patches = std::clamp(0.85f + 0.6f * std::sin(x * 0.21f) * std::sin(z * 0.17f + 1.3f), 0.0f, 1.0f);
+					field.density[size_t(j * 128 + i)] = uint8_t(255.0f * clearing * patches);
+				}
+			if (std::string(grass) == "hills")
+			{
+				field.heightsWidth = field.heightsHeight = 64;
+				field.heights.resize(64 * 64);
+				for (int j = 0; j < 64; ++j)
+					for (int i = 0; i < 64; ++i)
+						field.heights[size_t(j * 64 + i)] = m_ground + 0.6f * std::sin(i * 0.31f) * std::cos(j * 0.23f);
+			}
+			if (std::string(grass) == "marsh")
+			{
+				const float root[3] = { 0.10f, 0.15f, 0.06f }, tip[3] = { 0.40f, 0.50f, 0.20f };
+				std::copy(root, root + 3, field.colorRoot);
+				std::copy(tip, tip + 3, field.colorTip);
+				field.clumpColors[0] = { { 0.62f, 0.54f, 0.26f }, 0.3f };   // yellow-ochre
+				field.clumpColors[1] = { { 0.30f, 0.40f, 0.14f }, 0.25f };  // dark olive
+				field.clumpColors[2] = { { 0.50f, 0.32f, 0.20f }, 0.1f };   // reddish-brown, dying
+				field.deadShare = 0.08f;
+				field.clumpStrength = 0.9f;
+				field.clumpSize = 2.5f;
+				field.heightMin = 0.2f;
+				field.heightMax = 0.8f;
+				field.tuftBlades = 6;
+				field.tuftSpread = 0.7f;
+			}
+			MeshComponent3D_Bgfx::set_wind(0.12f, 1.4f);
+			// MESHVIEWER_GROUND=<model>: that ground tile laid under the field (a 9 m tile of a pack, say), 7 x 7 of them
+			if (const char* ground = std::getenv("MESHVIEWER_GROUND"))
+			{
+				const std::string groundModel = ground;
+				auto made = m_graphics->execute_block([this, groundModel]()
+				{
+					for (int j = -3; j <= 3; ++j)
+						for (int i = -3; i <= 3; ++i)
+						{
+							auto tile = std::make_unique<MeshComponent3D_Bgfx>(m_graphics);
+							if (!tile->load_model(groundModel)) return;
+							float lo[3], hi[3];
+							tile->get_bounds(lo, hi);
+							const float w = std::max(0.5f, hi[0] - lo[0]), d = std::max(0.5f, hi[2] - lo[2]);
+							tile->set_position(i * w - 0.5f * (lo[0] + hi[0]), m_ground - hi[1], j * d - 0.5f * (lo[2] + hi[2]));
+							m_groundTiles.push_back(std::move(tile));
+						}
+				});
+				if (made) made->wait();
+			}
+			// MESHVIEWER_TOPDOWN=1: the camera of a top-down game, high and behind
+			if (std::getenv("MESHVIEWER_TOPDOWN"))
+			{
+				auto moved = m_graphics->execute_block([this]()
+				{
+					m_camera->set_perspective(45.0f, 0.1f, 200.0f);
+					m_camera->set_position(0.0f, m_ground + 11.0f, 9.0f);
+					m_camera->look_at(0.0f, m_ground, 0.0f);
+					m_graphics->set_shadows(BgfxGraphicsSystem::ShadowSettings());   // the sun's shadows, as a game's
+				});
+				if (moved) moved->wait();
+			}
+			m_grassField = m_graphics->create_grass(std::move(field));
 		}
 
 		// Timeline of the session (seconds from start). Clip 0 plays first; clip 1 takes over at a
@@ -206,9 +311,11 @@ public:
 		}
 
 		// Release the bgfx objects on the graphics thread, before the graphics system shuts down
+		m_graphics->destroy_grass(m_grassField);
 		auto task = m_graphics->execute_block([this]()
 		{
 			m_mesh.reset();
+			m_groundTiles.clear();
 			m_graphics->clear_active_camera(m_camera.get());
 			m_camera.reset();
 		});
@@ -231,6 +338,9 @@ private:
 	float m_pitchDegrees;
 	std::string m_screenshotPath;
 	bool m_fixedClip = false;
+	float m_ground = 0.0f, m_radius = 1.0f;
+	GraphicsSystem::GrassHandle m_grassField = 0;
+	std::vector<std::unique_ptr<MeshComponent3D_Bgfx>> m_groundTiles;
 
 	BgfxGraphicsSystem* m_graphics = nullptr;
 	std::unique_ptr<CameraComponent3D_Bgfx> m_camera;
