@@ -595,6 +595,10 @@ add_test(NAME QuestArbiterTests COMMAND QuestArbiterTests)
 add_executable(QuestSystemTests ${CMAKE_SOURCE_DIR}/tests/QuestSystemTests.cpp)
 target_link_libraries(QuestSystemTests PRIVATE PakalQuests)
 add_test(NAME QuestSystemTests COMMAND QuestSystemTests)
+# The designers' quest templates (game_genres/quests/templates, docs/QUEST_GUIDE.md): each checks clean and plays to its end
+add_executable(QuestTemplatesTests ${CMAKE_SOURCE_DIR}/tests/QuestTemplatesTests.cpp)
+target_link_libraries(QuestTemplatesTests PRIVATE PakalQuests)
+add_test(NAME QuestTemplatesTests COMMAND QuestTemplatesTests ${CMAKE_SOURCE_DIR}/game_genres/quests/templates)
 # The quests' development panel (game_genres/quests/view, Dear ImGui through the engine's includes): what a game's F1
 # window shows of its quests, and the moves a tester makes on a stuck one. Apart from PakalQuests, which draws nothing
 file(GLOB PAKAL_QUESTS_VIEW_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/game_genres/quests/view/*.cpp)

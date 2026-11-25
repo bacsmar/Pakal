@@ -56,6 +56,12 @@ namespace Pakal::Quests
 		// the player's quest items (QuestSystem::items, saved with the quests): an exit that 'needs' some is neither
 		// offered nor taken without them, and hands them over when it is taken; one that 'gives' some puts them in
 		std::vector<std::string> needs, gives;
+		// a 'choose': one option of the stage's choice (its 'choice' says what is asked). The core never draws it: the stage
+		// offers its options (QuestSystem::choices) while their other conditions hold, the game asks the player its own way
+		// and says which was picked (QuestSystem::choose); the option picked is kept in the save (never asked again after
+		// a load) and leads to its own stage, where the branch puts its flags, gives its items, starts its records
+		std::string chooseOption;  // its id, unique in the stage
+		std::string chooseText;    // what the player reads (a text key)
 		int to = 0;                // the stage it goes to
 	};
 
@@ -94,8 +100,14 @@ namespace Pakal::Quests
 		std::vector<SpawnRule> spawns;         // made on entry, owned by the quest, gone at its teardown
 		std::vector<TimedEvent> events;        // by the stage's elapsed seconds
 		std::map<std::string, double> set;     // flags put (through the binding) when the stage is entered
+		// records started when the stage is entered, beside this quest and on their own from then (a place's occupiers
+		// to clear while the player sneaks the part out): at the next step, as a 'then' is, so a start never recurses;
+		// one already running, or done and not repeatable, is not started again
+		std::vector<std::string> starts;
 		bool hasWhile = false;
 		Exit whileCond;                        // must keep holding while the stage is current ('when' or 'fact')
+		// what a stage with 'choose' exits asks: its text, and who asks it (an alias the game may point at or name)
+		std::string choicePrompt, choiceSpeaker;
 	};
 
 	struct AliasRule
@@ -175,7 +187,8 @@ namespace Pakal::Quests
 	// with a way to an end (a dead end only when marked final), its aliases' kinds known, its texts translated, a
 	// story record's onFail. One line per finding, empty when it is sound
 	std::vector<std::string> check_record(const QuestRecord& record, const QuestSettings& settings, const CheckContext& context);
-	// Checks across the records: every 'then' and every named 'onFail' is a record, and no chain of them comes back to
+	// Checks across the records: every 'then', every named 'onFail' and every stage's 'starts' is a record, and no chain of
+	// 'then'/'onFail' comes back to
 	// where it started (a cycle a chain credited at once would run forever); every item an exit needs is given by some
 	// exit (or the player could never have it). One line per finding
 	std::vector<std::string> check_chains(const std::map<std::string, QuestRecord>& records);

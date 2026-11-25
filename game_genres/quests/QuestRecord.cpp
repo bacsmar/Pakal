@@ -22,7 +22,14 @@ namespace Pakal::Quests
 
 		bool read_exit(const nlohmann::json& json, Exit& exit, bool needsTo, const std::string& where, std::vector<std::string>& errors)
 		{
-			known_fields(json, { "on", "when", "cleared", "fact", "reach", "past", "hold", "use", "needs", "gives", "to" }, where, errors);
+			known_fields(json, { "on", "when", "cleared", "fact", "reach", "past", "hold", "use", "needs", "gives", "choose", "to" }, where, errors);
+			if (json.contains("choose"))
+			{
+				known_fields(json["choose"], { "option", "text" }, where + ".choose", errors);
+				exit.chooseOption = json["choose"].value("option", std::string());
+				exit.chooseText = json["choose"].value("text", std::string());
+				if (exit.chooseOption.empty() || exit.chooseText.empty()) errors.push_back(where + ".choose: an option's id and its text");
+			}
 			if (json.contains("use"))
 			{
 				known_fields(json["use"], { "alias", "meters", "action" }, where + ".use", errors);
@@ -98,8 +105,10 @@ namespace Pakal::Quests
 				if (exit.whenVar.empty() == exit.whenFlag.empty()) errors.push_back(where + ".when: a var or a flag (one)");
 			}
 			if (exit.signal.empty() && exit.whenVar.empty() && exit.whenFlag.empty() && !exit.cleared && exit.fact.empty() && exit.reachMeters < 0.0
-				&& exit.pastAxis.empty() && exit.holdSeconds <= 0.0 && exit.useMeters < 0.0 && exit.needs.empty())
-				errors.push_back(where + ": none of 'on', 'when', 'cleared', 'fact', 'reach', 'past', 'hold', 'use'");
+				&& exit.pastAxis.empty() && exit.holdSeconds <= 0.0 && exit.useMeters < 0.0 && exit.needs.empty() && exit.chooseOption.empty())
+				errors.push_back(where + ": none of 'on', 'when', 'cleared', 'fact', 'reach', 'past', 'hold', 'use', 'choose'");
+			if (!exit.chooseOption.empty() && (!exit.signal.empty() || exit.useMeters >= 0.0))
+				errors.push_back(where + ": a 'choose' is the player's answer, not joined with a signal or a use");
 			if (needsTo)
 			{
 				if (!json.contains("to") || !json["to"].is_number_integer()) errors.push_back(where + ": no stage to go 'to'");
@@ -137,7 +146,7 @@ namespace Pakal::Quests
 		{
 			read_exit(json, out, false, where, errors);
 			if (!out.signal.empty() || out.cleared) errors.push_back(where + ": a 'while' holds a 'when' or a 'fact', not a signal or 'cleared'");
-			if (out.useMeters >= 0.0 || !out.needs.empty() || !out.gives.empty()) errors.push_back(where + ": a 'while' holds a 'when' or a 'fact', not a use or items");
+			if (out.useMeters >= 0.0 || !out.needs.empty() || !out.gives.empty() || !out.chooseOption.empty()) errors.push_back(where + ": a 'while' holds a 'when' or a 'fact', not a use, a choice or items");
 		}
 	}
 
@@ -212,7 +221,7 @@ namespace Pakal::Quests
 		for (const nlohmann::json& s : json.value("stages", nlohmann::json::array()))
 		{
 			const std::string at = where + ".stages[" + std::to_string(index++) + "]";
-			known_fields(s, { "id", "objectives", "marker", "exits", "end", "reward", "checkpoint", "spawns", "events", "while", "set", "game" }, at, errors);
+			known_fields(s, { "id", "objectives", "marker", "exits", "end", "reward", "checkpoint", "spawns", "events", "while", "set", "starts", "choice", "game" }, at, errors);
 			Stage stage;
 			if (!s.contains("id") || !s["id"].is_number_integer()) { errors.push_back(at + ": no integer id"); continue; }
 			stage.id = s["id"].get<int>();
@@ -241,6 +250,20 @@ namespace Pakal::Quests
 			for (auto f = sets.begin(); f != sets.end(); ++f)
 				if (f.value().is_number()) stage.set[f.key()] = f.value().get<double>();
 				else errors.push_back(at + ".set." + f.key() + ": not a number");
+			if (s.contains("choice"))
+			{
+				known_fields(s["choice"], { "prompt", "speaker" }, at + ".choice", errors);
+				stage.choicePrompt = s["choice"].value("prompt", std::string());
+				stage.choiceSpeaker = s["choice"].value("speaker", std::string());
+				if (stage.choicePrompt.empty()) errors.push_back(at + ".choice: its prompt (a text)");
+			}
+			if (s.contains("starts"))
+			{
+				const nlohmann::json& list = s["starts"];
+				if (list.is_string()) stage.starts.push_back(list.get<std::string>());
+				else if (list.is_array()) { for (const nlohmann::json& id : list) if (id.is_string() && !id.get<std::string>().empty()) stage.starts.push_back(id.get<std::string>()); }
+				if (stage.starts.empty()) errors.push_back(at + ".starts: a record's id, or a list of them");
+			}
 			if (s.contains("while")) { stage.hasWhile = true; read_while(s["while"], stage.whileCond, at + ".while", errors); }
 			if (!stage.end.empty() && stage.end != "complete" && stage.end != "fail" && stage.end != "abandon") errors.push_back(at + ": end '" + stage.end + "' unknown");
 			int e = 0;
@@ -259,8 +282,8 @@ namespace Pakal::Quests
 		{
 			Exit exit;
 			read_exit(f, exit, false, where + ".fail[" + std::to_string(index) + "]", errors);
-			if (exit.useMeters >= 0.0 || !exit.needs.empty() || !exit.gives.empty())
-				errors.push_back(where + ".fail[" + std::to_string(index) + "]: a fail waits on the world, not on a use or items");
+			if (exit.useMeters >= 0.0 || !exit.needs.empty() || !exit.gives.empty() || !exit.chooseOption.empty())
+				errors.push_back(where + ".fail[" + std::to_string(index) + "]: a fail waits on the world, not on a use, a choice or items");
 			++index;
 			out.fail.push_back(exit);
 		}
@@ -353,6 +376,23 @@ namespace Pakal::Quests
 				for (const SpawnRule& rule : event.spawns)
 					if (!record.aliases.count(rule.at)) out.push_back(at + ": an event spawns at '" + rule.at + "', not the quest's alias");
 			}
+			// a choice: asked by its prompt, each option an id of its own with its text; a 'choose' needs the stage's 'choice'
+			{
+				std::set<std::string> options;
+				int chooses = 0;
+				for (const Exit& exit : stage.exits)
+				{
+					if (exit.chooseOption.empty()) continue;
+					++chooses;
+					text(exit.chooseText, at + ": the option '" + exit.chooseOption + "'");
+					if (!options.insert(exit.chooseOption).second) out.push_back(at + ": the option '" + exit.chooseOption + "' twice");
+				}
+				if (chooses && stage.choicePrompt.empty()) out.push_back(at + ": options to choose and no 'choice' asking them");
+				if (!chooses && !stage.choicePrompt.empty()) out.push_back(at + ": a 'choice' with no option ('choose' exits)");
+				if (chooses == 1) out.push_back(at + ": a choice of one option");
+				text(stage.choicePrompt, at + ".choice");
+				if (!stage.choiceSpeaker.empty() && !record.aliases.count(stage.choiceSpeaker)) out.push_back(at + ".choice: the speaker '" + stage.choiceSpeaker + "' is not the quest's alias");
+			}
 			for (const Exit& exit : stage.exits)
 			{
 				exit_ok(exit, at);
@@ -426,6 +466,13 @@ namespace Pakal::Quests
 		for (const auto& [id, record] : records)
 			for (const std::string& to : next(record))
 				if (!records.count(to)) out.push_back("record " + id + ": its then/onFail names '" + to + "', which is no record");
+		for (const auto& [id, record] : records)
+			for (const Stage& stage : record.stages)
+				for (const std::string& started : stage.starts)
+				{
+					if (!records.count(started)) out.push_back("record " + id + ".stage " + std::to_string(stage.id) + ": starts '" + started + "', which is no record");
+					else if (started == id) out.push_back("record " + id + ".stage " + std::to_string(stage.id) + ": starts itself");
+				}
 		// an item needed is given somewhere: else no player could ever carry it
 		std::set<std::string> given;
 		for (const auto& [id, record] : records)
@@ -492,6 +539,7 @@ namespace Pakal::Quests
 				+ " (away: " + exit.holdAway + (exit.holdGrace > 0.0 ? ", " + number(exit.holdGrace) + " s grace" : std::string()) + ")");
 		if (exit.cleared) parts.push_back("its spawns beaten");
 		if (exit.useMeters >= 0.0) parts.push_back("use (" + exit.useAction + ") " + exit.useAlias + " within " + number(exit.useMeters) + " m");
+		if (!exit.chooseOption.empty()) parts.push_back("the choice '" + exit.chooseOption + "'");
 		auto list = [](const std::vector<std::string>& items)
 		{
 			std::string out;

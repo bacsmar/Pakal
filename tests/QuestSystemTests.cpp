@@ -26,6 +26,7 @@ namespace
 	void check(bool condition, const char* what)
 	{
 		std::printf("%s %s\n", condition ? "ok  " : "FAIL", what);
+		std::fflush(stdout);   // (a crash after it still shows the last check passed)
 		if (!condition) ++failures;
 	}
 
@@ -1415,6 +1416,174 @@ int main(int argc, char** argv)
 		std::vector<std::string> readErrors;
 		read_record(Json::parse(R"({ "id": "bad", "kind": "errand", "stages": [ { "id": 10, "exits": [ { "use": { "meters": 3 }, "to": 100 } ] }, { "id": 100, "end": "complete" } ] })"), bad, readErrors);
 		check(!readErrors.empty(), "read: a use with no alias is refused");
+	}
+	// a stage's 'starts': the records it starts beside it when it is entered (the workshop's occupiers, cleared on their
+	// own while the player sneaks the part out), at the next step, once, saved while pending; checked by check_chains
+	{
+		const char* kPart = R"({ "id": "part", "kind": "story", "starts": { "by": "story" }, "onFail": "retry",
+			"aliases": { "shop": { "find": "place", "type": "giver", "protect": true } },
+			"stages": [
+				{ "id": 10, "starts": "occupiers", "exits": [ { "when": { "var": "taken", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 100, "end": "complete" } ] })";
+		const char* kOccupiers = R"({ "id": "occupiers", "kind": "story", "starts": { "by": "story" }, "onFail": "retry",
+			"aliases": { "shop": { "find": "place", "type": "giver", "reserve": false, "protect": true } },
+			"stages": [ { "id": 10, "exits": [ { "when": { "var": "down", "atLeast": 1 }, "to": 100 } ] }, { "id": 100, "end": "complete" } ] })";
+		World s;
+		s.quests.add_record(parse(kPart));
+		s.quests.add_record(parse(kOccupiers));
+		const uint64_t part = s.quests.start("part", "test");
+		check(part && !s.quests.running("occupiers"), "starts: nothing started inside the transition (at the next step)");
+		const Json pendingSave = s.quests.save();
+		bool savedStart = false;
+		for (const Json& p : pendingSave.value("pending", Json::array())) savedStart = savedStart || p.value("start", std::string()) == "occupiers";
+		check(savedStart, "starts: a start still pending is saved");
+		s.step();
+		if (!s.quests.running("occupiers")) std::printf("     refused: %s\n", s.quests.last_refusal().c_str());
+		check(s.quests.running("occupiers"), "starts: the record started beside the quest at the next step");
+		bool logged = false;
+		for (const Json& e : s.quests.log()) logged = logged || (e["record"] == "occupiers" && e["cause"] == "starts of part");
+		check(logged, "starts: the start says which quest started it");
+		// the occupiers share the shop with the part's quest because their alias does not reserve; one that reserves is
+		// still kept off a target another quest reserves
+		s.quests.add_record(parse(R"({ "id": "rival", "kind": "errand", "aliases": { "shop": { "find": "place", "type": "giver" } },
+			"stages": [ { "id": 10, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] }, { "id": 100, "end": "complete" } ] })"));
+		check(s.quests.start("rival", "test") == 0, "reserve: a reserving alias is kept off a target another quest reserves");
+		s.quests.set_var(part, "taken", 1);
+		s.step();
+		check(s.quests.quest(part) && s.quests.quest(part)->state == "completed" && s.quests.running("occupiers"), "starts: it lives on its own after the quest that started it ends");
+		uint64_t occupiers = 0;
+		for (const auto& [serial, q] : s.quests.quests()) if (q.record == "occupiers") occupiers = serial;
+		s.quests.start("part", "test again");   // (a story record done: not started again, so neither is what it starts)
+		s.step();
+		int count = 0;
+		for (const auto& [serial, q] : s.quests.quests()) count += q.record == "occupiers" ? 1 : 0;
+		check(count == 1, "starts: one already running is not started twice");
+		s.quests.set_var(occupiers, "down", 1);
+		s.step();
+		check(s.quests.quest(occupiers) && s.quests.quest(occupiers)->state == "completed", "starts: the started record ends by its own exits");
+		std::map<std::string, QuestRecord> records = { { "part", parse(kPart) } };
+		bool missing = false;
+		for (const std::string& f : check_chains(records)) missing = missing || f.find("starts 'occupiers', which is no record") != std::string::npos;
+		check(missing, "check: a stage starting a record that does not exist is a finding");
+		records["occupiers"] = parse(kOccupiers);
+		check(check_chains(records).empty(), "check: a stage starting an existing record is sound");
+	}
+	// a stage's choice: its 'choose' exits asked together (the prompt, who asks, the options in order), the option picked
+	// leading to its own branch; one not offered (another stage, its condition not holding) refused; the pick kept in the
+	// save and never asked again; the validator's findings
+	{
+		const char* kDeliver = R"({ "id": "deliver", "kind": "story", "starts": { "by": "story" }, "onFail": "retry",
+			"aliases": { "mateo": { "find": "place", "type": "giver", "protect": true } },
+			"stages": [
+				{ "id": 10, "exits": [ { "when": { "var": "talked", "atLeast": 1 }, "to": 20 } ] },
+				{ "id": 20, "choice": { "prompt": "Q_DELIVER", "speaker": "mateo" }, "exits": [
+					{ "choose": { "option": "mateo", "text": "OPT_MATEO" }, "to": 30 },
+					{ "choose": { "option": "luz", "text": "OPT_LUZ" }, "to": 40 },
+					{ "choose": { "option": "split", "text": "OPT_SPLIT" }, "when": { "flag": "gate_open", "atLeast": 1 }, "to": 50 } ] },
+				{ "id": 30, "set": { "giver_friendly": 1 }, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 40, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 50, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 100, "end": "complete" } ] })";
+		World c;
+		c.quests.add_record(parse(kDeliver));
+		const uint64_t d = c.quests.start("deliver", "test");
+		c.step();
+		check(d && c.quests.choices().empty(), "choice: nothing asked before its stage");
+		c.quests.choose(d, 20, "mateo");
+		c.step();
+		check(c.quests.quest(d)->stage == 10 && c.quests.log().back()["outcome"] == "refused", "choice: a pick before it is asked is refused (logged)");
+		c.quests.set_var(d, "talked", 1);
+		c.step();
+		auto asked = c.quests.choices();
+		check(asked.size() == 1 && asked[0].prompt == "Q_DELIVER" && asked[0].speakerAlias == "mateo" && asked[0].speaker.valid(), "choice: asked at its stage, its prompt and who asks");
+		check(asked.size() == 1 && asked[0].options.size() == 2 && asked[0].options[0].id == "mateo" && asked[0].options[1].text == "OPT_LUZ",
+			"choice: the options in the record's order; one whose condition does not hold is not offered");
+		c.quests.choose(d, 20, "split");
+		c.step();
+		check(c.quests.quest(d)->stage == 20 && c.quests.chosen("deliver", 20).empty(), "choice: an option not offered is refused, nothing kept");
+		c.quests.choose(d, 20, "mateo");
+		c.step();
+		check(c.quests.quest(d)->stage == 30 && c.quests.chosen("deliver", 20) == "mateo" && c.binding.flags["giver_friendly"] == 1.0,
+			"choice: the option picked, its branch taken (its flag put), the pick kept");
+		check(c.quests.choices().empty(), "choice: answered, never asked again");
+		bool logged = false;
+		for (const Json& e : c.quests.log()) logged = logged || (e["outcome"] == "choice" && e["cause"] == "the player chose 'mateo'");
+		check(logged, "choice: the pick in the transitions' log");
+		const Json saved = c.quests.save();
+		check(saved.contains("chosen") && saved["chosen"]["deliver:20"] == "mateo", "choice: the pick saved");
+		World back;
+		back.quests.add_record(parse(kDeliver));
+		std::vector<std::string> errors;
+		check(back.quests.load(saved, errors) && back.quests.chosen("deliver", 20) == "mateo" && back.quests.quest(d)->stage == 30,
+			"choice: loaded, the pick and its branch are the same (a reload never changes it)");
+		// the validator
+		QuestRecord one = parse(kDeliver);
+		one.stages[1].exits.resize(1);
+		bool single = false;
+		for (const std::string& f : check_record(one, c.quests.settings(), {})) single = single || f.find("a choice of one option") != std::string::npos;
+		check(single, "check: a choice of one option is a finding");
+		QuestRecord twice = parse(kDeliver);
+		twice.stages[1].exits[1].chooseOption = "mateo";
+		bool dup = false;
+		for (const std::string& f : check_record(twice, c.quests.settings(), {})) dup = dup || f.find("the option 'mateo' twice") != std::string::npos;
+		check(dup, "check: an option twice in a choice is a finding");
+		QuestRecord unasked = parse(kDeliver);
+		unasked.stages[1].choicePrompt.clear();
+		bool noPrompt = false;
+		for (const std::string& f : check_record(unasked, c.quests.settings(), {})) noPrompt = noPrompt || f.find("no 'choice' asking them") != std::string::npos;
+		check(noPrompt, "check: options with no prompt are a finding");
+		bool clean = true;
+		for (const std::string& f : check_record(parse(kDeliver), c.quests.settings(), {})) clean = clean && f.find("choice") == std::string::npos && f.find("option") == std::string::npos;
+		check(clean, "check: a sound choice has no finding");
+		QuestRecord bad;
+		std::vector<std::string> readErrors;
+		read_record(Json::parse(R"({ "id": "bad", "kind": "errand", "stages": [ { "id": 10, "choice": { "prompt": "Q" }, "exits": [
+			{ "choose": { "option": "a" }, "to": 100 }, { "choose": { "option": "b", "text": "B" }, "on": { "signal": "talked" }, "to": 100 } ] },
+			{ "id": 100, "end": "complete" } ] })"), bad, readErrors);
+		check(readErrors.size() >= 2, "read: an option with no text, and one joined with a signal, are refused");
+	}
+	// a choice answered, then its stage entered again (the quest back at an earlier checkpoint): the same branch taken on
+	// entry, the choice never asked again, the other option refused, the other branch's flag never put
+	{
+		const char* kAgain = R"({ "id": "again", "kind": "story", "starts": { "by": "story" }, "onFail": "checkpoint",
+			"aliases": { "mateo": { "find": "place", "type": "giver", "protect": true } },
+			"stages": [
+				{ "id": 10, "checkpoint": true, "exits": [ { "when": { "var": "talked", "atLeast": 1 }, "to": 20 } ] },
+				{ "id": 20, "choice": { "prompt": "Q_DELIVER", "speaker": "mateo" }, "exits": [
+					{ "choose": { "option": "mateo", "text": "OPT_MATEO" }, "to": 30 },
+					{ "choose": { "option": "luz", "text": "OPT_LUZ" }, "to": 40 } ] },
+				{ "id": 30, "set": { "giver_friendly": 1 }, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 40, "set": { "gate_open": 1 }, "exits": [ { "when": { "var": "x", "atLeast": 1 }, "to": 100 } ] },
+				{ "id": 100, "end": "complete" } ] })";
+		World a;
+		a.quests.add_record(parse(kAgain));
+		const uint64_t q = a.quests.start("again", "test");
+		a.quests.set_var(q, "talked", 1);
+		a.step();
+		a.quests.choose(q, 20, "mateo");
+		a.step();
+		check(a.quests.quest(q)->stage == 30 && a.binding.flags["giver_friendly"] == 1.0, "choice again: answered, its branch taken");
+		a.binding.flags["giver_friendly"] = 0.0;   // (to see whether the branch puts it again)
+		a.quests.restart_checkpoint(q);            // (back to stage 10; 'talked' kept: stage 20 is entered again at once)
+		a.step();
+		check(a.quests.choices().empty(), "choice again: its stage entered again, the choice is not asked");
+		check(a.quests.quest(q)->stage == 30 && a.binding.flags["giver_friendly"] == 1.0, "choice again: the same branch taken on entry");
+		a.quests.force_stage(q, 20);   // (a tester's set_stage to the choice itself)
+		a.quests.choose(q, 20, "luz");
+		a.step();
+		a.step();
+		check(a.quests.quest(q)->stage == 30 && a.quests.chosen("again", 20) == "mateo" && a.binding.flags["gate_open"] == 0.0,
+			"choice again: the other option refused, the pick kept, the other branch's flag never put");
+		// an option the record no longer has: forgotten and asked again
+		std::vector<std::string> errors;
+		Json saved = a.quests.save();
+		saved["chosen"]["again:20"] = "gone";
+		World b;
+		b.quests.add_record(parse(kAgain));
+		b.quests.load(saved, errors);
+		b.quests.force_stage(q, 20);
+		b.step();
+		check(b.quests.choices().size() == 1 && b.quests.chosen("again", 20).empty(), "choice again: an option no longer in the record is forgotten, the choice asked again");
 	}
 	std::printf("%s\n", failures ? "SOME CHECKS FAILED" : "all checks passed");
 	return failures ? 1 : 0;

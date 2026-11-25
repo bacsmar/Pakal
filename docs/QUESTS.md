@@ -6,6 +6,8 @@ presenter per game), how it is saved, and how every quest is checked before it s
 
 Sections 1 to 12 are the design. Section 13 says what is built today and what of the design is not yet.
 
+Writing quests? Start with [QUEST_GUIDE.md](QUEST_GUIDE.md) and its templates (`game_genres/quests/templates/`).
+
 ## 1. Why
 
 A game's quests had grown as separate scripts (an opening, a story, generated errands, faction jobs, capture zones),
@@ -203,8 +205,9 @@ namespace Pakal::Quests
   the quest also records it in its vars, so its progress never depends on a fact that a later change of the world
   could undo.
 
-- Reservations live in the core (a ref reserved by one quest is filtered out for the others); the binding only
-  answers what exists.
+- Reservations live in the core (a ref reserved by one quest is filtered out for the others' reserving aliases); the
+  binding only answers what exists. An alias that does not reserve may find a target another quest reserves (a place
+  shared by two quests at once).
 - The top-down binding resolves places (a level's activities and points), actors (by type, faction) and objects (a
   level object by id), and spawns through the game's spawner.
 
@@ -451,6 +454,10 @@ Levels 2 and 3 run where the game's data is.
   to it with its spawns made anew, and the genre is told (`Binding::restarted`).
 - **Flags** are the game's store, read and set through the binding, and saved in the game's same write. A stage's `set`
   puts flags when it is entered.
+- **starts** (`"starts": "occupiers"` or a list): records started beside the quest when a stage is entered (a place's
+  occupiers to clear while the player takes a part out), each its own quest from then on. They start at the next step,
+  as a `then` does (never inside a transition, saved while pending), and one already running or done (not repeatable)
+  is not started again; `check_chains` finds a start of no record, or of itself.
 
 ### A game of levels
 
@@ -477,23 +484,41 @@ Levels 2 and 3 run where the game's data is.
 - **The catalog** (`settings.items`: name -> its text) names every item; `check_chains` finds an item needed that no
   record gives.
 
+### Choices
+
+- **The exits**: `{ "choose": { "option": "smith", "text": "OPT_SMITH" }, "to": 30 }`, one per option, and the stage's
+  `"choice": { "prompt": "Q_DELIVER", "speaker": "giver" }` (what is asked, and the alias who asks it). Each option leads
+  to its own stage: the branch puts its flags (`set`), gives or takes items, starts records. An option may hold a
+  condition of its own (`when`, `fact`...): it is offered only while it holds.
+- **Input-agnostic**, as `use`: `QuestSystem::choices()` lists the choices asked now (the prompt, the speaker's target,
+  the options offered in the record's order); the game asks them its own way and calls `choose(serial, stage, option)`.
+  The pick is taken at the next step only if it is still offered (else logged `refused`).
+- **Kept**: the option picked is saved (`"chosen": { "record:stage": option }`, read back by `chosen(record, stage)`)
+  and logged (`outcome: "choice"`). A choice answered is never asked again: its stage entered again (a story retry, a
+  checkpoint, `set_stage`) takes the same branch, and a second `choose` is refused (logged), so the other branch's
+  flags, items and starts never come. An option the record no longer has is forgotten (logged) and asked once more.
+- **Checks**: a choice needs its prompt and at least two options, each with its text, none twice; a `choose` is not
+  joined with a signal or a use; the speaker is the quest's alias.
+
 ### The tools
 
 - **MCP tools** of a development build, through a queue the game drains at its step: `quests.signal`, `start`,
   `set_var`, `set_stage` (a stage forced), `abandon`, `fail`, `save`, `load`, `validate`, `bench`, `kill_target`,
   `restart_checkpoint`, `teleport_to_alias`, `bring_player`, `journal`, `set_flag`, `use`, `items`, `set_item`,
-  `transitions`. Arguments that do not fit a tool's schema are answered with an error.
+  `choices`, `choose`, `transitions`. Arguments that do not fit a tool's schema are answered with an error.
 - **The quests' panel** (`game_genres/quests/view/QuestsPanel.h`, library `PakalQuestsView`, Dear ImGui): a game calls
   `draw_quests_panel(quests, arbiter, state, actions)` inside its own development window. It shows the claim shown,
   why the last start gave 0, and every quest kept: its stage and seconds, lines, marker, `while`, what each exit waits
   on, aliases, vars, spawns and checkpoint. A stuck quest is moved from there (to any stage, back to its checkpoint,
-  abandoned, failed); with `actions` false the panel only reads. It also validates the records and lists the last 20
-  transitions.
+  abandoned, failed); with `actions` false the panel only reads. It also lists the uses offered and the choices asked,
+  validates the records and lists the last 20 transitions.
 - **describe_exit** reads an exit as a line ("signal cache_opened x3 of cache", "flag waves >= 1 and past x 140 going
   -1"); `quests.journal` gives each running quest's `waits`, in the same lines.
 - **The route runner** (`tools/quest_routes.py`) plays a game's records over those tools (R-normal, R-save, R-disk,
   R-abandon, R-lost, R-order, R-checkpoint, R-limit, R-kill, R-director) and writes a report per quest. It plays the
-  game's own emitters first, and says when it had to inject a signal.
+  game's own emitters first, and says when it had to inject a signal. It makes a use and picks each option of a choice.
+- **Templates** (`game_genres/quests/templates`, with [QUEST_GUIDE.md](QUEST_GUIDE.md)): a talk, an item picked up and
+  fitted with the place's guards beside it, a choice with its branches, clearing, holding and reaching a place.
 
 ### Tests
 
@@ -505,6 +530,9 @@ Levels 2 and 3 run where the game's data is.
 - corrupt saves;
 - a fuzz of 10,000 seeded sequences of up to 200 events (a failing seed is printed with its replay);
 - a bench of 60 live quests.
+
+`QuestTemplatesTests` reads every template, checks it against the templates' settings and its chains, and plays
+each to its end on a made-up world, so a designer's copy starts sound.
 
 ### Not built yet
 

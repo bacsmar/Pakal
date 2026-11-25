@@ -109,6 +109,24 @@ namespace Pakal::Quests
 		bool carries(const std::vector<std::string>& items) const;
 		// A tester's (quests.set_item): an item's count set (0: none)
 		void set_item(const std::string& name, int count);
+
+		// A choice the player is asked now (a stage's 'choose' exits whose other conditions hold): its prompt, who asks it,
+		// and its options in the record's order. The game asks it its own way and calls choose() with the option picked
+		struct Choice
+		{
+			struct Option { int exit = 0; std::string id, text; };
+			uint64_t serial = 0;
+			int stage = 0;
+			std::string prompt, speakerAlias;
+			Ref speaker;
+			std::vector<Option> options;
+		};
+		std::vector<Choice> choices() const;
+		// The player picked an option: taken at the next step if it is still offered then (else refused, logged). The pick
+		// is kept ("record:stage" -> option, saved): what the player chose is never asked again, and a game reads it back
+		void choose(uint64_t serial, int stage, const std::string& option);
+		// what was picked at a record's stage ("" never asked or not answered yet)
+		std::string chosen(const std::string& record, int stage) const;
 		void set_var(uint64_t serial, const std::string& name, double value);
 		// The player's or the game's command, carried out at the next step()
 		void abandon(uint64_t serial);
@@ -242,6 +260,7 @@ namespace Pakal::Quests
 		// 'offering': whether a use would be offered, so the use itself is not asked yet
 		bool exit_holds(const Quest& quest, const Stage& stage, const Exit& exit, size_t index, bool offering = false) const;
 		std::map<std::string, int> m_items;            // the player's quest items (name -> count, none kept at 0)
+		std::map<std::string, std::string> m_chosen;   // the choices answered: "record:stage" -> the option (saved)
 		LogLine m_logLine;
 	};
 }

@@ -1,0 +1,29 @@
+{
+ "note": "Talk to someone, pick an item up, fit it somewhere: three records chained by 'then'. A 'use' is the player's action at a place (the game shows its button by 'action'); walking by credits nothing. 'gives' puts the item in the player's quest items, 'needs' offers the next use only to a player who carries it and hands it over. The pickup's stage 'starts' the place's occupiers as their own quest, so the item can be sneaked out while they stand.",
+ "records": [
+  { "id": "fetch_talk", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_TALK", "then": "fetch_pickup",
+    "aliases": { "giver": { "find": "place", "type": "village", "protect": true } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_TALK" ], "marker": "giver", "exits": [ { "use": { "alias": "giver", "meters": 4, "action": "talk" }, "to": 100 } ] },
+     { "id": 100, "end": "complete", "reward": "fetch.talk" } ] },
+  { "id": "fetch_pickup", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_PICKUP", "then": "fetch_fit",
+    "aliases": { "shop": { "find": "place", "type": "workshop", "protect": true } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_PICKUP" ], "marker": "shop", "starts": "fetch_occupiers",
+       "exits": [ { "use": { "alias": "shop", "meters": 4, "action": "pickup" }, "gives": "spare_part", "to": 100 } ] },
+     { "id": 100, "end": "complete", "reward": "fetch.pickup" } ] },
+  { "id": "fetch_occupiers", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_FREE",
+    "aliases": { "shop": { "find": "place", "type": "workshop", "reserve": false, "protect": true } },
+    "stages": [
+     { "id": 10, "spawns": [ { "source": "guards", "type": "raider", "at": "shop", "count": 2 } ],
+       "exits": [ { "cleared": true, "to": 100 }, { "when": { "flag": "place.freed", "atLeast": 1 }, "to": 110 } ] },
+     { "id": 100, "end": "complete", "set": { "place.freed": 1 }, "reward": "fetch.freed" },
+     { "id": 110, "end": "complete" } ] },
+  { "id": "fetch_fit", "kind": "story", "starts": { "by": "story" }, "onFail": "retry", "title": "Q_FIT",
+    "aliases": { "machine": { "find": "place", "type": "village", "protect": true } },
+    "stages": [
+     { "id": 10, "objectives": [ "OBJ_FIT" ], "marker": "machine",
+       "exits": [ { "use": { "alias": "machine", "meters": 4, "action": "install" }, "needs": "spare_part", "to": 100 } ] },
+     { "id": 100, "end": "complete", "set": { "machine.fixed": 1 }, "reward": "fetch.fit" } ] }
+ ]
+}

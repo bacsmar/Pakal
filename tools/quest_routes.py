@@ -110,6 +110,9 @@ class Bot:
     def __init__(self, mcp, aliases, timeout, home=None):
         self.mcp, self.aliases, self.timeout, self.home = mcp, aliases, timeout, home
         self.flags = set()   # (flags a route injected: put back to 0 before the next, or a record ends at its start)
+        # the flags the records' own stages set (their outcomes: a place freed): put back to 0 before each route too, or
+        # a record that ends on one is credited at its start by the route before (and its abandon or loss never played)
+        self.outcomes = set()
         self.facts = set()   # (facts a route put: (kind, id, name), taken back before the next)
 
     def teleport(self, serial, alias, meters):
@@ -161,7 +164,7 @@ class Bot:
     def clear(self):
         """Every quest gone (the world's own too, story quests included: they refuse an abandon), the counts of done
         records too (a story record runs once), by a load of the state with none."""
-        for name in sorted(self.flags):   # (what a route injected, put back: the game's own counts publish again)
+        for name in sorted(self.flags | self.outcomes):   # (what a route injected or a record put, back to 0)
             self.mcp.call('quests.set_flag', {'name': name, 'value': 0})
         for kind, ident, name in sorted(self.facts):
             self.mcp.call('quests.set_fact', {'kind': kind, 'id': ident, 'name': name, 'on': False})
@@ -223,6 +226,12 @@ class Bot:
             self.teleport(serial, marker, 6)
         for exit_ in stage.get('exits', []):
             on, when, reach = exit_.get('on'), exit_.get('when'), exit_.get('reach')
+            choose = exit_.get('choose')
+            if choose:
+                # the player's answer (quests.choose: only when the choice is asked): this exit's option
+                if not self.wait(lambda: self.mcp.call('quests.choose', {'serial': serial, 'option': choose['option']}).get('queued'), 6):
+                    return f"the choice '{choose['option']}' was never asked (quests.choose)"
+                return None if self.wait(lambda: self.moved(serial, stage_id), 6) else 'chosen, and the stage did not move'
             use = exit_.get('use')
             if use:
                 # the items it needs carried (a route plays one record: what an earlier one would have given is put as a
@@ -377,6 +386,7 @@ def main():
         kind, ident = args.home.split(':', 1)
         home = (kind, int(ident))
     bot = Bot(Mcp(args.mcp, args.token), aliases, args.timeout, home)
+    bot.outcomes = {flag for r in records for s in r.get('stages', []) for flag in s.get('set', {})}
     why = bot.ready(args.ready)
     if not why and home:
         # (the first trip home loads its part of the world: long frames, the first commands late; waited out here)

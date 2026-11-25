@@ -60,6 +60,12 @@ namespace Pakal::Quests
 		ImGui::Text("items: %s", items.empty() ? "(none)" : items.c_str());
 		for (const QuestSystem::Offer& o : quests.offers())
 			ImGui::Text("  offered: %s %s (quest %llu, stage %d, %.1f m)", o.action.c_str(), o.alias.c_str(), static_cast<unsigned long long>(o.serial), o.stage, o.distance);
+		for (const QuestSystem::Choice& c : quests.choices())
+		{
+			std::string options;
+			for (const auto& o : c.options) options += (options.empty() ? "" : " / ") + o.id;
+			ImGui::Text("  asked: %s (quest %llu, stage %d): %s", c.prompt.c_str(), static_cast<unsigned long long>(c.serial), c.stage, options.c_str());
+		}
 		// the running first, then the ended (newest first)
 		for (int pass = 0; pass < 2; ++pass)
 			for (auto it = quests.quests().rbegin(); it != quests.quests().rend(); ++it)

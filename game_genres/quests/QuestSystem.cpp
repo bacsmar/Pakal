@@ -12,7 +12,7 @@ namespace Pakal::Quests
 	namespace
 	{
 		std::string subject_key(const Ref& ref) { return ref.kind + ":" + std::to_string(ref.id); }
-		enum { kSignal = 1, kAbandon = 2, kFail = 3, kForce = 4, kRestart = 5, kStart = 6, kUse = 7 };
+		enum { kSignal = 1, kAbandon = 2, kFail = 3, kForce = 4, kRestart = 5, kStart = 6, kUse = 7, kChoose = 8 };
 	}
 
 	bool QuestSystem::add_record(const QuestRecord& record)
@@ -94,7 +94,9 @@ namespace Pakal::Quests
 			std::vector<std::pair<double, Ref>> fit;
 			for (const Ref& ref : candidates)
 			{
-				if (!ref.valid() || held.count(ref)) continue;
+				// (a target another quest reserves is not this one's, unless this alias does not reserve either: a shared one,
+				// as a given one is: the place's occupiers beside the part's step on the same workshop)
+				if (!ref.valid() || (rule.reserve && held.count(ref))) continue;
 				const double d = m_binding.distance(ref);
 				if (d >= 0.0 && (d < rule.minMeters || d > rule.maxMeters)) continue;
 				fit.push_back({ d < 0.0 ? 1e18 : d, ref });
@@ -191,6 +193,41 @@ namespace Pakal::Quests
 
 	void QuestSystem::force_stage(uint64_t serial, int stage) { m_pending.push_back({ kForce, {}, {}, serial, {}, stage }); }
 	void QuestSystem::use(uint64_t serial, int stage, int exit) { m_pending.push_back({ kUse, {}, {}, serial, {}, stage, exit }); }
+	void QuestSystem::choose(uint64_t serial, int stage, const std::string& option) { m_pending.push_back({ kChoose, option, {}, serial, {}, stage, 0 }); }
+
+	std::string QuestSystem::chosen(const std::string& record, int stage) const
+	{
+		auto found = m_chosen.find(record + ":" + std::to_string(stage));
+		return found != m_chosen.end() ? found->second : std::string();
+	}
+
+	std::vector<QuestSystem::Choice> QuestSystem::choices() const
+	{
+		std::vector<Choice> out;
+		for (const auto& [serial, quest] : m_quests)
+		{
+			if (quest.state != "active") continue;
+			const QuestRecord* record = this->record(quest.record);
+			const Stage* stage = record ? record->stage(quest.stage) : nullptr;
+			if (!stage || stage->choicePrompt.empty()) continue;
+			if (m_chosen.count(quest.record + ":" + std::to_string(stage->id))) continue;   // (answered: never asked again)
+			Choice choice;
+			choice.serial = serial;
+			choice.stage = stage->id;
+			choice.prompt = stage->choicePrompt;
+			choice.speakerAlias = stage->choiceSpeaker;
+			auto speaker = quest.aliases.find(stage->choiceSpeaker);
+			if (speaker != quest.aliases.end()) choice.speaker = speaker->second;
+			for (size_t i = 0; i < stage->exits.size(); ++i)
+			{
+				const Exit& exit = stage->exits[i];
+				if (!exit.chooseOption.empty() && exit_holds(quest, *stage, exit, i, true))
+					choice.options.push_back({ static_cast<int>(i), exit.chooseOption, exit.chooseText });
+			}
+			if (!choice.options.empty()) out.push_back(choice);
+		}
+		return out;
+	}
 
 	bool QuestSystem::carries(const std::vector<std::string>& items) const
 	{
@@ -342,6 +379,8 @@ namespace Pakal::Quests
 		const QuestRecord* record = this->record(quest.record);
 		const Stage* stage = record ? record->stage(to) : nullptr;
 		if (stage) for (const auto& [name, value] : stage->set) m_binding.set_flag(name, value);
+		// the records it starts beside it: at the next step (never inside a transition), saved with the pending starts
+		if (stage) for (const std::string& started : stage->starts) m_pending.push_back({ kStart, started, {}, 0, "starts of " + quest.record });
 		if (stage && !stage->end.empty())
 		{
 			end(quest, stage->end == "complete" ? "completed" : stage->end == "fail" ? "failed" : "abandoned", cause);
@@ -350,9 +389,31 @@ namespace Pakal::Quests
 		if (stage && stage->checkpoint) quest.checkpoint = to;
 		// a stage entered (again: a checkpoint restart, a loop back) starts clean: its timed events fire anew and its holds
 		// count from nothing, their away timers too (a hold of 25 s is 25 s after the restart)
-		const std::string fired = "event." + std::to_string(to) + ".", held = "hold." + std::to_string(to) + ".", used = "use." + std::to_string(to) + ".";
+		const std::string fired = "event." + std::to_string(to) + ".", held = "hold." + std::to_string(to) + ".", used = "use." + std::to_string(to) + ".",
+			picked = "choose." + std::to_string(to) + ".";
 		for (auto it = quest.vars.begin(); it != quest.vars.end();)
-			it = it->first.rfind(fired, 0) == 0 || it->first.rfind(held, 0) == 0 || it->first.rfind(used, 0) == 0 ? quest.vars.erase(it) : std::next(it);
+			it = it->first.rfind(fired, 0) == 0 || it->first.rfind(held, 0) == 0 || it->first.rfind(used, 0) == 0 || it->first.rfind(picked, 0) == 0
+				? quest.vars.erase(it) : std::next(it);
+		// a choice answered before (a retry, a checkpoint, a tester's set_stage brought the quest back to it): its option is
+		// credited on entry, so the same branch is taken and the choice is never asked again; an option the record no longer
+		// has is forgotten (logged) and the choice asked once more
+		if (stage && !stage->choicePrompt.empty())
+		{
+			auto answered = m_chosen.find(quest.record + ":" + std::to_string(to));
+			if (answered != m_chosen.end())
+			{
+				size_t index = stage->exits.size();
+				for (size_t i = 0; i < stage->exits.size(); ++i) if (stage->exits[i].chooseOption == answered->second) index = i;
+				if (index < stage->exits.size()) quest.vars["choose." + std::to_string(to) + "." + std::to_string(index)] = 1.0;
+				else
+				{
+					log_entry({ { "seq", m_nextSeq++ }, { "step", m_step }, { "serial", quest.serial }, { "record", quest.record }, { "from", to }, { "to", to },
+						{ "outcome", "choice" }, { "cause", "the option '" + answered->second + "' is no longer in the record: asked again" } });
+					m_chosen.erase(answered);
+					++m_revision;
+				}
+			}
+		}
 		if (stage) make_spawns(quest, *stage, false);
 		claim(quest);
 		check_conditions(quest);   // (what already holds is credited on entry: a 'when', a fact true at once; MIS-V7)
@@ -545,7 +606,7 @@ namespace Pakal::Quests
 			const Exit& exit = stage->exits[i];
 			if (!exit.signal.empty()) continue;   // (a signal's exit is taken where the signal arrives)
 			if (!exit_holds(quest, *stage, exit, i)) continue;
-			std::string cause = exit.useMeters >= 0.0 ? "use:" + exit.useAlias : !exit.fact.empty() ? "fact:" + exit.fact : exit.reachMeters >= 0.0 ? "reach:" + exit.reachAlias
+			std::string cause = !exit.chooseOption.empty() ? "choice:" + exit.chooseOption : exit.useMeters >= 0.0 ? "use:" + exit.useAlias : !exit.fact.empty() ? "fact:" + exit.fact : exit.reachMeters >= 0.0 ? "reach:" + exit.reachAlias
 				: exit.holdSeconds > 0.0 ? "hold" : !exit.pastAxis.empty() ? "past:" + exit.pastAxis : exit.cleared ? "cleared"
 				: !exit.whenVar.empty() || !exit.whenFlag.empty() ? "when:" + (exit.whenVar.empty() ? "flag." + exit.whenFlag : exit.whenVar) : "items";
 			take_exit(quest, exit, cause);
@@ -584,6 +645,7 @@ namespace Pakal::Quests
 	{
 		if (!exit.needs.empty() && !carries(exit.needs)) return false;
 		if (exit.useMeters >= 0.0 && !offering && !quest.vars.count("use." + std::to_string(stage.id) + "." + std::to_string(index))) return false;
+		if (!exit.chooseOption.empty() && !offering && !quest.vars.count("choose." + std::to_string(stage.id) + "." + std::to_string(index))) return false;
 		if ((!exit.whenVar.empty() || !exit.whenFlag.empty()))
 		{
 			Exit when;
@@ -804,6 +866,31 @@ namespace Pakal::Quests
 				if (r && r->stage(p.stage)) transition(found->second, p.stage, "next", "qa");
 			}
 			else if (p.kind == kStart) start(p.name, p.reason);
+			else if (p.kind == kChoose)
+			{
+				// the option picked, if it is still offered now (the same stage; its other conditions holding): kept, and its
+				// exit taken
+				const QuestRecord* r = found != m_quests.end() ? record(found->second.record) : nullptr;
+				const Stage* st = r && found->second.state == "active" && found->second.stage == p.stage ? r->stage(p.stage) : nullptr;
+				int index = -1;
+				const bool answered = st && m_chosen.count(found->second.record + ":" + std::to_string(p.stage));
+				for (size_t i = 0; st && !answered && i < st->exits.size(); ++i)
+					if (st->exits[i].chooseOption == p.name && exit_holds(found->second, *st, st->exits[i], i, true)) { index = static_cast<int>(i); break; }
+				if (index < 0)
+				{
+					log_entry({ { "seq", m_nextSeq++ }, { "step", m_step }, { "serial", p.serial }, { "record", found != m_quests.end() ? found->second.record : std::string() },
+						{ "from", p.stage }, { "to", p.stage }, { "outcome", "refused" },
+						{ "cause", "choice '" + p.name + "': " + (answered ? "answered already" : "not offered now") } });
+					continue;
+				}
+				Quest& q = found->second;
+				q.vars["choose." + std::to_string(p.stage) + "." + std::to_string(index)] = 1.0;
+				m_chosen[q.record + ":" + std::to_string(p.stage)] = p.name;
+				++m_revision;
+				log_entry({ { "seq", m_nextSeq++ }, { "step", m_step }, { "serial", q.serial }, { "record", q.record }, { "from", p.stage },
+					{ "to", p.stage }, { "outcome", "choice" }, { "cause", "the player chose '" + p.name + "'" } });
+				take_exit(q, st->exits[static_cast<size_t>(index)], "choice:" + p.name);
+			}
 			else if (p.kind == kUse)
 			{
 				// the use made, if it is still offered now (the same stage, the player still near): credited, and the exit taken
@@ -944,6 +1031,7 @@ namespace Pakal::Quests
 		{
 			const Exit& exit = stage->exits[i];
 			if (!exit.pastAxis.empty() && out["past"].is_null()) out["past"] = { { "axis", exit.pastAxis }, { "value", exit.pastValue }, { "way", exit.pastWay } };
+			if (!exit.chooseOption.empty() && !out.contains("choose")) out["choose"] = { { "exit", i }, { "option", exit.chooseOption } };
 			if (exit.useMeters >= 0.0 && !out.contains("use") && (exit.needs.empty() || carries(exit.needs)))
 			{
 				auto target = quest.aliases.find(exit.useAlias);
@@ -1009,6 +1097,7 @@ namespace Pakal::Quests
 		}
 		if (!pending.empty()) out["pending"] = pending;
 		if (!m_items.empty()) out["items"] = m_items;
+		if (!m_chosen.empty()) out["chosen"] = m_chosen;
 		return out;
 	}
 
@@ -1086,6 +1175,17 @@ namespace Pakal::Quests
 			{
 				if (it.key().empty() || !is_count(it.value(), 1000000) || it.value().get<int64_t>() == 0) { errors.push_back("quests: the item '" + it.key() + "' is not a count: left out"); continue; }
 				itemsLoaded[it.key()] = static_cast<int>(it.value().get<int64_t>());
+			}
+		}
+		// the choices answered: a bad entry left out
+		std::map<std::string, std::string> chosenLoaded;
+		if (saved.contains("chosen"))
+		{
+			if (!saved["chosen"].is_object()) { errors.push_back("quests: chosen is not an object"); return false; }
+			for (auto it = saved["chosen"].begin(); it != saved["chosen"].end(); ++it)
+			{
+				if (it.key().find(':') == std::string::npos || !it.value().is_string()) { errors.push_back("quests: the choice '" + it.key() + "' is not an option: left out"); continue; }
+				chosenLoaded[it.key()] = it.value().get<std::string>();
 			}
 		}
 		// what waited for the next step (a 'then', an 'onFail', a signal): a bad entry left out
@@ -1212,6 +1312,7 @@ namespace Pakal::Quests
 		m_done = std::move(done);
 		m_pending = std::move(pendingLoaded);   // (a tester's moves waiting are dropped: what was saved is what plays)
 		m_items = std::move(itemsLoaded);
+		m_chosen = std::move(chosenLoaded);
 		m_nextSerial = nextSerial;
 		m_draws = draws;
 		++m_revision;

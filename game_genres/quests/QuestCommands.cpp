@@ -159,6 +159,34 @@ namespace Pakal::Quests
 				offers.push_back({ { "serial", o.serial }, { "stage", o.stage }, { "exit", o.exit }, { "alias", o.alias }, { "action", o.action }, { "distance", o.distance } });
 			return nlohmann::json{ { "items", q.items() }, { "offers", offers } };
 		});
+		tool("quests.choices", "The choices the player is asked now: serial, stage, prompt, speaker, options (id, text); and the ones answered "
+			"(record:stage -> option)", schema({}),
+			[](QuestSystem& q, const nlohmann::json&)
+		{
+			nlohmann::json asked = nlohmann::json::array();
+			for (const QuestSystem::Choice& c : q.choices())
+			{
+				nlohmann::json options = nlohmann::json::array();
+				for (const auto& o : c.options) options.push_back({ { "id", o.id }, { "text", o.text } });
+				asked.push_back({ { "serial", c.serial }, { "stage", c.stage }, { "prompt", c.prompt }, { "speaker", c.speakerAlias }, { "options", options } });
+			}
+			return nlohmann::json{ { "asked", asked }, { "chosen", q.save().value("chosen", nlohmann::json::object()) } };
+		});
+		tool("quests.choose", "Picks an option of a choice as the player would, at the next step if it is still offered then: serial, option "
+			"(stage left out: the quest's current one)", schema({ { "serial", "integer" }, { "stage", "integer" }, { "option", "string" } }),
+			[](QuestSystem& q, const nlohmann::json& a)
+		{
+			const uint64_t serial = a.value("serial", static_cast<uint64_t>(0));
+			const std::string option = a.value("option", std::string());
+			for (const QuestSystem::Choice& c : q.choices())
+			{
+				if (c.serial != serial || (a.contains("stage") && a.value("stage", 0) != c.stage)) continue;
+				for (const auto& o : c.options)
+					if (o.id == option) { q.choose(serial, c.stage, option); return nlohmann::json{ { "queued", true }, { "stage", c.stage } }; }
+				return nlohmann::json{ { "queued", false }, { "why", "no option '" + option + "' offered in that choice" } };
+			}
+			return nlohmann::json{ { "queued", false }, { "why", "that quest asks no choice now" } };
+		});
 		tool("quests.set_item", "Sets how many of a quest item the player carries (0: none), as a tester: name, count",
 			schema({ { "name", "string" }, { "count", "integer" } }),
 			[](QuestSystem& q, const nlohmann::json& a) { q.set_item(a.value("name", std::string()), a.value("count", 1)); return nlohmann::json{ { "set", true } }; });
@@ -210,7 +238,7 @@ namespace Pakal::Quests
 	void remove_command_tools(McpServer& server)
 	{
 		for (const char* name : { "quests.signal", "quests.start", "quests.set_var", "quests.set_stage", "quests.abandon", "quests.fail",
-			"quests.save", "quests.load", "quests.transitions", "quests.restart_checkpoint", "quests.kill_target", "quests.teleport_to_alias", "quests.bring_player", "quests.set_fact", "quests.journal", "quests.use", "quests.items", "quests.set_item", "quests.set_flag", "quests.validate", "quests.bench" })
+			"quests.save", "quests.load", "quests.transitions", "quests.restart_checkpoint", "quests.kill_target", "quests.teleport_to_alias", "quests.bring_player", "quests.set_fact", "quests.journal", "quests.use", "quests.items", "quests.set_item", "quests.choices", "quests.choose", "quests.set_flag", "quests.validate", "quests.bench" })
 			server.remove_tool(name);
 	}
 
