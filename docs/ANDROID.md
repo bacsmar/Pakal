@@ -330,7 +330,7 @@ step up) it steps back up one step at a time, and a step up that does not hold m
 - **Background**: when going to the background (or losing the window) the engine pauses; on return, bgfx receives the new window
   (`BgfxGraphicsSystem::set_native_window`) and the engine continues where it was. Verified with HOME and reopening.
   The sound pauses with it (`Engine::on_pause` calls `SoundManager::set_paused`: the AAudio stream pauses, the music and the
-  effects hold where they are) and goes on as the engine resumes and the window has the focus again (both: a Galaxy S24
+  effects hold where they are) and goes on as the engine resumes and the window has the focus again (both: a phone
   locked with its button gave the focus back behind the lock screen, and the music played). A stream that Android disconnects (its route changed:
   headphones, a call, a screen recorder) is closed and opened again, by its error callback's mark or when it does not
   start on resume. The stream asks for a session id of its own (Android 9+), which keeps AAudio off MMAP: an MMAP stream

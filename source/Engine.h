@@ -119,7 +119,7 @@ namespace Pakal
 		EventId m_listener_terminate = 0;
 		EventId m_listener_focus = 0;   // the sound is held while no window of the app has the focus
 		// The sound plays only while the app has the focus AND the engine is not paused. Each of the two used to set the pause
-		// alone, the last one winning: a phone that gave the focus back behind its lock screen (a Galaxy S24, the lock button)
+		// alone, the last one winning: a phone that gave the focus back behind its lock screen (locked with its button)
 		// played the music with the engine still paused
 		std::atomic<bool> m_sound_focused{ true }, m_sound_engine_paused{ false };   // (the focus comes from the platform's thread)
 		void apply_sound_pause();
