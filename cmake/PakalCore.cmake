@@ -4,8 +4,8 @@
 # the engine with it, runs its systems a moment and ends it.
 
 file(GLOB_RECURSE PAKAL_CORE_SOURCES FOLLOW_SYMLINKS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/source/*.cpp"
-    "${CMAKE_SOURCE_DIR}/source/*.h")
+    "${PAKAL_ROOT}/source/*.cpp"
+    "${PAKAL_ROOT}/source/*.h")
 # the backends and what is built on them (source/runtime: the full engine's default systems, which name the backends;
 # the core's own are in source/core_only)
 list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/source/(bgfx|box2D|sfml|android|win32|unix|mcp|net|scripting|gameplay|runtime)/.*")
@@ -15,14 +15,14 @@ list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/examples/.*")
 # pugixml is compiled once, through the unity unit source/CompileUnit_1.cpp
 list(FILTER PAKAL_CORE_SOURCES EXCLUDE REGEX ".*/persist/pugixml/pugixml\\.cpp$")
 if(WIN32)
-    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/win32/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/win32/HttpPostImpl.cpp)
+    list(APPEND PAKAL_CORE_SOURCES ${PAKAL_ROOT}/source/win32/ClockImpl.cpp ${PAKAL_ROOT}/source/win32/HttpPostImpl.cpp)
 else()
-    list(APPEND PAKAL_CORE_SOURCES ${CMAKE_SOURCE_DIR}/source/unix/ClockImpl.cpp ${CMAKE_SOURCE_DIR}/source/unix/HttpPostImpl.cpp)
+    list(APPEND PAKAL_CORE_SOURCES ${PAKAL_ROOT}/source/unix/ClockImpl.cpp ${PAKAL_ROOT}/source/unix/HttpPostImpl.cpp)
 endif()
 
 add_library(PakalCore STATIC ${PAKAL_CORE_SOURCES})
 target_compile_definitions(PakalCore PUBLIC PAKAL_CORE_ONLY PAKAL_STATIC_LIB PRIVATE pugi=pugi_pakal)
-target_include_directories(PakalCore PUBLIC ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/source)
+target_include_directories(PakalCore PUBLIC ${PAKAL_BINARY_ROOT} ${PAKAL_ROOT}/source)
 # nlohmann-json (header only): the telemetry's records
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(PakalCore PRIVATE nlohmann_json::nlohmann_json)
@@ -35,10 +35,12 @@ if(MSVC)
     target_compile_options(PakalCore PRIVATE /W4 /Zc:__cplusplus /Zc:preprocessor)
 endif()
 
-add_executable(CoreTests ${CMAKE_SOURCE_DIR}/tests/CoreTests.cpp)
-target_link_libraries(CoreTests PRIVATE PakalCore)
-add_test(NAME CoreTests COMMAND CoreTests)
-# The file watcher behind reloading in dev builds (docs/UI_RELOAD.md)
-add_executable(FileWatcherTests ${CMAKE_SOURCE_DIR}/tests/FileWatcherTests.cpp)
-target_link_libraries(FileWatcherTests PRIVATE PakalCore)
-add_test(NAME FileWatcherTests COMMAND FileWatcherTests)
+if(PAKAL_BUILD_TESTS)
+    add_executable(CoreTests ${PAKAL_ROOT}/tests/CoreTests.cpp)
+    target_link_libraries(CoreTests PRIVATE PakalCore)
+    add_test(NAME CoreTests COMMAND CoreTests)
+    # The file watcher behind reloading in dev builds (docs/UI_RELOAD.md)
+    add_executable(FileWatcherTests ${PAKAL_ROOT}/tests/FileWatcherTests.cpp)
+    target_link_libraries(FileWatcherTests PRIVATE PakalCore)
+    add_test(NAME FileWatcherTests COMMAND FileWatcherTests)
+endif()

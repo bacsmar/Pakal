@@ -4,6 +4,7 @@ This folder contains the architecture documentation and usage examples for the P
 
 Included files:
 - `QUICKSTART.md` — From an empty folder to the engine running (Windows, Linux, Android).
+- `GAME_REPOSITORY.md` — A game in its own repository, with the engine as a submodule added by `add_subdirectory`.
 - `ARCHITECTURE.md` — Overview and execution flow.
 - `SUBSYSTEMS.md` — Documentation per subsystem with paths to the relevant files.
 - `USAGE.md` — Minimal guide to build and run, `main.cpp` example.

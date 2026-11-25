@@ -146,6 +146,10 @@ The 3D examples and new 3D games use Quaternius's free packs (CC0, free to use c
 
 ## 5. Start a new game (for example: "set up Pakal for a zombie game")
 
+**A game in a repository of its own** (the engine as a submodule at `extern/Pakal`) is the recommended way: follow
+[AGENTS-NEWPROJECT.md](AGENTS-NEWPROJECT.md) instead of this section. This section keeps the game inside the engine's
+tree, in `games/`, for trying things out.
+
 Make the game a module on the TopDown genre, in its own folder `games/<name>/`. The root CMake builds `games/` when
 `games/CMakeLists.txt` exists and Lua was found (vcpkg on Windows, `liblua5.4-dev` on Linux). The game then stays apart from the engine, and the engine can be updated under it.
 

@@ -5,7 +5,6 @@
 
 option(PAKAL_BGFX_AUTOBUILD "Build bgfx, bx, bimg, shaderc and texturec from external/ when they are missing" ON)
 
-set(PAKAL_ROOT ${CMAKE_SOURCE_DIR})
 set(BGFX_DIR ${PAKAL_ROOT}/external/bgfx)
 set(BX_DIR ${PAKAL_ROOT}/external/bx)
 
@@ -129,7 +128,7 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
                     RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
             endif()
             if(failed)
-                file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")
+                file(WRITE ${PAKAL_BINARY_ROOT}/bgfx_build.log "${log}")
                 # the hint says what the log shows
                 if(log MATCHES "C1083|Cannot open source file|cannot open source file")
                     set(PAKAL_BGFX_HINT "A source file could not be opened: a path past Windows' 260 characters. Clone into a shorter folder (C:/dev/Pakal) or turn on long paths.")
@@ -138,7 +137,7 @@ if((PAKAL_BGFX_MISSING OR PAKAL_BGFX_STALE) AND PAKAL_BGFX_AUTOBUILD)
                 else()
                     set(PAKAL_BGFX_HINT "The first error in the log says why.")
                 endif()
-                message(FATAL_ERROR "bgfx: ${project} did not build. Its log: ${CMAKE_BINARY_DIR}/bgfx_build.log
+                message(FATAL_ERROR "bgfx: ${project} did not build. Its log: ${PAKAL_BINARY_ROOT}/bgfx_build.log
 ${PAKAL_BGFX_HINT}")
             endif()
         endforeach()
@@ -158,8 +157,8 @@ ${PAKAL_BGFX_HINT}")
                 make linux-gcc-release64 -j${PAKAL_CORES}
             WORKING_DIRECTORY ${BGFX_DIR} RESULT_VARIABLE failed OUTPUT_VARIABLE log ERROR_VARIABLE log)
         if(failed)
-            file(WRITE ${CMAKE_BINARY_DIR}/bgfx_build.log "${log}")
-            message(FATAL_ERROR "bgfx: make linux-gcc-release64 failed. Its log: ${CMAKE_BINARY_DIR}/bgfx_build.log")
+            file(WRITE ${PAKAL_BINARY_ROOT}/bgfx_build.log "${log}")
+            message(FATAL_ERROR "bgfx: make linux-gcc-release64 failed. Its log: ${PAKAL_BINARY_ROOT}/bgfx_build.log")
         endif()
     endif()
     set(PAKAL_BGFX_MISSING "")

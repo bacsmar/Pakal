@@ -4,11 +4,11 @@
 
 # The engine's libraries by the names the games link (Pakal::Pakal, Pakal::TopDown, Pakal::TopDownView,
 # Pakal::TopDownEditor, Pakal::TopDownNet, Pakal::Net, Pakal::Scripting,
-# Pakal::LevelDoc). Called once every library is defined (the end of the root CMakeLists.txt); a name is resolved when
+# Pakal::LevelDoc, Pakal::Quests, Pakal::QuestsView). Called once every library is defined (the end of the root CMakeLists.txt); a name is resolved when
 # the build is generated, so a game may link it before this runs. A library this build lacks gets no name.
 function(pakal_name_targets)
     foreach(library Pakal PakalTopDown PakalTopDownView PakalTopDownEditor PakalTopDownNet PakalPlatformer PakalVersus
-            PakalNet PakalScripting PakalLevelDoc)
+            PakalNet PakalScripting PakalLevelDoc PakalQuests PakalQuestsView)
         string(REGEX REPLACE "^Pakal(.+)$" "\\1" name ${library})
         if(TARGET ${library} AND NOT TARGET Pakal::${name})
             add_library(Pakal::${name} ALIAS ${library})
